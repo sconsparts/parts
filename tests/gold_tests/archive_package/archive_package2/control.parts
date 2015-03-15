@@ -1,0 +1,3 @@
+Import('*')
+env.InstallPkgData('control', packagetype = ['tar','bz2','tarbz2'])
+

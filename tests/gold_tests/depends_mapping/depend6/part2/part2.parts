@@ -1,0 +1,9 @@
+Import('*')
+
+env.PartVersion("0.0.0")
+env.PartName("part2")
+env.DependsOn([
+               Component('part1',requires=REQ.DEFAULT(internal=True))
+               ])
+
+env.VerboseMessage(['gtest'],env['CPPPATH'],env['CPPPATH']==["${{PARTIDEXPORTS('name::part1@platform_match:{0}@version:*@config:debug','build','CPPPATH',0)}}".format(env['TARGET_PLATFORM'])])

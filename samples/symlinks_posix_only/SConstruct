@@ -1,0 +1,8 @@
+from parts import *
+
+Part(alias = 'client',    parts_file = 'client/client.parts')
+Part(alias = 'symlinks1', parts_file = 'symlinks1/symlinks1.parts')
+Part(alias = 'symlinks2', parts_file = 'symlinks2/symlinks2.parts')
+Part(alias = 'symlinks3', parts_file = 'symlinks3/symlinks3.parts')
+# vim: set et ts=4 sw=4 ai ft=python :
+

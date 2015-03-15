@@ -1,0 +1,7 @@
+from parts import *
+Part('proxy','proxy/proxy.parts')
+Part('engine','engine/engine.parts')
+
+Part('main1','main/main.parts')
+Part('main2','main2/main.parts')
+

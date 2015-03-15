@@ -1,0 +1,2 @@
+Parts: Error!: Failed to load Unknown ToolChain or Tool: foo{}
+scons: *** Unrecoverable Error!

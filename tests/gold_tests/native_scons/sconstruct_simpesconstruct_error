@@ -1,0 +1,5 @@
+import parts
+
+Install('test',['sconstruct'])
+
+1/0 # fake error case

@@ -1,0 +1,9 @@
+from parts import *
+import parts.datacache as dc
+
+if ARGUMENTS.get('LOAD_ONLY') != 'True':
+	dc.StoreData(name="foo",data="This is data",key="mytestkey")
+	dc.SaveCache(name="foo",key="mytestkey")
+	dc.ClearCache()
+tmp=dc.GetCache(name="foo",key="mytestkey")
+VerboseMessage(['gtest'],tmp)

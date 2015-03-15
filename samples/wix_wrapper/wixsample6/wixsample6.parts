@@ -1,0 +1,12 @@
+Import('*')
+
+env.PartName('wixsample6')
+env.PartVersion('1.0.0')
+
+# This sample tests plain installation: all sources are static and resides in src_dir
+
+result=env.MSIPackage('install',sources = ['pkg6','pkg_control'])
+env.Alias("${PART_SECTION}::alias::${PART_ALIAS}::dist",env.CCopy("#dist",result))[0]
+
+# vim: set et ts=4 sw=4 ft=python :
+

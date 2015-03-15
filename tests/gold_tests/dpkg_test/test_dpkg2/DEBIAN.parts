@@ -1,0 +1,4 @@
+Import('*')
+env.PartName("DEBIAN")
+env.InstallPkgData('control')
+

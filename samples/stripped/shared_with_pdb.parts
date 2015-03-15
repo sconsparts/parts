@@ -1,0 +1,18 @@
+Import('*')
+
+env.PartName('shared_with_pdb')
+env.PartVersion('1.0.0')
+
+# This parts file will generate stripped shared object (DLL) with debug information stored in
+# corresponding pdb file.
+
+env.InstallTarget(
+    env.SharedLibrary(
+        target = '${PART_NAME}',
+        source = 'stripped.cpp',
+        PDB = '${TARGETS[0].filebase}.pdb'
+    )
+)
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

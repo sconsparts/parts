@@ -1,0 +1,8 @@
+
+Import('*')
+env.PartVersion('1.0.0')
+env.PartName('main')
+env.DependsOn([Component('engine','2.*')])
+env['PDB']='${PART_NAME}_${PART_SHORT_VERSION}.pdb'
+ret=env.Program("main1","main.cpp")
+env.InstallTarget(ret)

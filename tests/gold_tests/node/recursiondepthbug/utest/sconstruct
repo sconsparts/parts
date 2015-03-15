@@ -1,0 +1,9 @@
+from parts import *
+
+BUILD_BUG_ROOT = '../'
+UTEST_ROOT = './'
+
+Part(parts_file=BUILD_BUG_ROOT+'build_bug.parts')
+Part(parts_file=UTEST_ROOT+'build_bug_utest.parts')
+
+Default('build_bug_utest')

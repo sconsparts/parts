@@ -1,0 +1,10 @@
+from parts import *
+
+
+Part ('part1/part1.parts')
+Part ('part2a/part2a.parts')
+Part ('part2b/part2b.parts')
+Part ('part3/part3.parts')
+
+
+

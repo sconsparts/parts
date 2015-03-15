@@ -1,0 +1,7 @@
+from parts import *
+
+Part ('DEBIAN','DEBIAN.parts', package_group='pkg_control')
+Part ('dpkg_package5','dpkg_package5.parts', package_group='pkg5')
+Part('packaging','packaging.parts')
+#PrintMessage(PackageGroups())
+

@@ -1,0 +1,6 @@
+from parts import *
+
+Part ('zip_package1','zip_package1.parts', package_group='pkg1')
+Part ('zip_package2','zip_package2.parts', package_group='pkg2')
+
+DefaultEnvironment().ZipPackage(target = 'install.zip', sources = ['pkg1', 'pkg2'])

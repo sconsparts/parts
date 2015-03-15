@@ -1,0 +1,1 @@
+extern void common_func(int i);

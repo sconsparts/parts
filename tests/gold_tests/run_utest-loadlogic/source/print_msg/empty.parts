@@ -1,0 +1,10 @@
+Import('*')
+
+env.PartName('empty')
+
+env.Tool('textfile')
+
+env.InstallBin(env.Textfile('empty', ['empty']))
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

@@ -1,0 +1,17 @@
+Import('*')
+
+env.PartName('intel_fortran')
+env.PartVersion('1.0.0')
+
+env.Append(FORTRANSUFFIXES = ['$F90FILESUFFIXES'], F90FILESUFFIXES = ['.f90'])
+env.Tool('ifort')
+env.Replace(FORTRANMODDIR = [env.Dir('.')], F90PATH = [env.Dir('.')])
+
+env.InstallTarget(
+    env.Program(
+        'hello', ['main.f90', 'hello.f90']
+    )
+)
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

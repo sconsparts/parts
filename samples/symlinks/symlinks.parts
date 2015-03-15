@@ -1,0 +1,89 @@
+'''
+This file demonstrates usage of env.SymLink and env.FileSymbolicLink functions.
+
+env.SymLink() is builder used to create symbolic links on the file system.
+FileSymbolicLink function only creates FileSymbolicLink nodes. The nodes may
+represent existing symbolic link files as well as ones to be created during
+a product build. It can be created by any builder: env.SymLink, env.Command,
+or some custom builder.
+'''
+Import('*')
+
+env.PartName('symlinks')
+env.PartVersion('1.0.0')
+
+targets  = env.SharedLibrary('symlinks', source = 'symlinks.c', SHLIBSUFFIX='.so.1.0')
+targets += env.SymLink('${SHLIBPREFIX}symlinks${SHLIBSUFFIX}', linkto=targets[0], SHLIBSUFFIX='.so.1')
+targets += env.SymLink('${SHLIBPREFIX}symlinks${SHLIBSUFFIX}', linkto=targets[-1], SHLIBSUFFIX='.so')
+
+env.InstallLib(targets)
+
+targets = env.SharedLibrary(
+                'symlinks2',
+                source = 'symlinks2.c',
+                SHLIBSUFFIX='.so.1.0'
+            )
+env.InstallLib(
+    env.ResolveSymLinkChain(
+        env.SymLink(
+            'libsymlinks2.so',
+            env.SymLink(
+                'libsymlinks2.so.1',
+                targets[0]
+            )
+        )
+    )
+)
+env.InstallTarget(targets[1:])
+
+targets = env.SharedLibrary(
+                    'symlinks3',
+                    source = 'symlinks3.c',
+                    SHLIBSUFFIX='.so.1.0'
+                )
+env.InstallLib(
+    env.SdkLib(
+        env.ResolveSymLinkChain(
+            env.SymLink(
+                'libsymlinks3.so',
+                env.SymLink(
+                    'libsymlinks3.so.1',
+                    env.Value(env.subst('${SHLIBPREFIX}symlinks3.so.1.0'))
+                )
+            )
+        )
+    )
+)
+env.InstallTarget(targets[1:])
+
+# FileSymbolicLink function example.
+#
+# A symbolic link can be created not only by env.SymLink builder, it also may be craeted
+# as a result of some custom action. For example it can be created by 'ln -s targetname'
+# shell command. By default SCons will create a File node in this case and it will be
+# handled incorrectly by env.InstallXXXX function. For correct handling of the node
+# we call FileSymbolicLink function to create a target node for env.Command builder
+# below:
+env['MKLINKCOM'] = '$MKLINK $MKLINKFLAGS $MKLINKTARGETS'
+
+if env.get('TARGET_OS') == 'win32':
+    env['MKLINK'] = 'mklink'
+    env['MKLINKFLAGS'] = ''
+    env['MKLINKTARGETS'] = '$TARGET ${SOURCE.name}'
+else:
+    env['MKLINK'] = 'ln'
+    env['MKLINKFLAGS'] = '-s'
+    env['MKLINKTARGETS'] = '${SOURCE.name} $TARGET'
+
+env.InstallLib(
+    env.Command(
+        # libsymlinks4.so is a symbolic link and to make sure it will be handled correctly
+        # we use FileSymbolicLink function here
+        env.FileSymbolicLink('libsymlinks4.so'),
+        '${SHLIBPREFIX}symlinks3.so.1.0', '$MKLINKCOM'
+    )
+)
+
+# vim: set et ts=4 sw=4 ai ft=python :
+
+

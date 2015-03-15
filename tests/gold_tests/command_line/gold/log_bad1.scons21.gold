@@ -1,0 +1,3 @@
+usage: scons [OPTION] [TARGET] ...
+
+SCons error: No logger called "foo" was found

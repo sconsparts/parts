@@ -1,0 +1,14 @@
+from parts import *
+
+SetOptionDefault('BUILD_DIR', '$BUILD_DIR_ROOT/${PART_SECTION}_${CONFIG}_${TARGET_PLATFORM}${DDK_MIN_WIN}/$ALIAS')
+SetOptionDefault('SDK_ROOT', '#_sdks/${CONFIG}_${TARGET_PLATFORM}${DDK_MIN_WIN}/${PART_ROOT_NAME}_${PART_VERSION}')
+SetOptionDefault('INSTALL_ROOT', '#_install/${CONFIG}_${TARGET_PLATFORM}${DDK_MIN_WIN}')
+
+Part(
+    alias = 'hello_wdk',
+    parts_file = 'hello.parts',
+    toolchain = ['wdk']
+)
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

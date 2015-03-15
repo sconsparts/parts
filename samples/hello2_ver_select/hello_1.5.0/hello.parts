@@ -1,0 +1,7 @@
+Import('*')
+env.PartVersion('1.0.0')
+env.PartName('hello1.5.0')
+env.DependsOn([Component('print_msg','1.*,!1.5.2')])
+
+ret=env.Program('${PART_NAME}',"hello.c")
+env.InstallTarget(ret)

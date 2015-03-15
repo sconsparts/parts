@@ -1,0 +1,2 @@
+from parts import *
+Default(Program('a2','a.c'))

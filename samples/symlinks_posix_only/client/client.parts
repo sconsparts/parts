@@ -1,0 +1,13 @@
+Import('*')
+
+env.PartName('client')
+env.PartVersion('1.0.0')
+
+env.DependsOn([
+    Component('symlinks1'),
+    Component('symlinks3'),
+])
+
+env.InstallTarget(env.Program('client', 'client.c'))
+# vim: set et ts=4 sw=4 ai ft=python :
+

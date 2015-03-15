@@ -1,0 +1,5 @@
+from parts import *
+Part('a', parts_file = 'a.parts')
+Part('b', parts_file = 'b.parts')
+# vim: set et ts=4 sw=4 ai ft=python :
+

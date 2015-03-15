@@ -1,0 +1,16 @@
+Import('*')
+
+env.PartName("packaging")
+
+#Please give mandatory values for NAME, VERSION, RELEASE AND TARGET_ARCH.
+# arch_mapper is optional, only when the target architecture needs to be set to different architecture.
+#Example: for current default arch 'x86_64', I want to create a rpm for 'alpha' architecure. I'll specify
+# arch_map = {'x86_64':'alpha'}.
+#If arch_map is not provided, the rpm will have default system architecture as the target_arch.
+
+out=env.RPMPackage('${NAME}-${VERSION}-${RELEASE}.${TARGET_ARCH}.rpm',sources = ['pkg1','pkg_control1'],TARGET_ARCH = 'x86_64',NAME = 'Software_Intel', VERSION = '1.0', RELEASE = '1', arch_mapper = {'x86_64':'alpha'})
+env.Alias("${PART_SECTION}::alias::${PART_ALIAS}::dist",env.CCopy("#dist",out))[0]
+
+out=env.RPMPackage('${NAME}-${VERSION}-${RELEASE}.${TARGET_ARCH}.rpm',sources = ['pkg1','pkg_control1'],TARGET_ARCH = 'x86_64',NAME = 'Software_Intel1', VERSION = '1.0', RELEASE = '1', arch_mapper = {'x86_64':'x86_64'})
+env.Alias("${PART_SECTION}::alias::${PART_ALIAS}::dist",env.CCopy("#dist",out))[0]
+

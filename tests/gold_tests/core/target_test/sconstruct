@@ -1,0 +1,8 @@
+from parts import *
+#Default("print_msg@version:1.0.0")
+#Default("print_msg@version:2.0.0")
+### comment out the folowing line for error to go away
+Part(parts_file='print_msg/print_msg.parts')
+Part(parts_file='print_msg2/print_msg.parts')
+
+

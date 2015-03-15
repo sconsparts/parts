@@ -1,0 +1,7 @@
+Import('*')
+
+env.PartName("packaging")
+
+out=env.RPMPackage('${NAME}-${VERSION}-${RELEASE}.${TARGET_ARCH}.rpm',sources = ['pkg1','pkg_control1'],TARGET_ARCH = 'FakeArch',NAME = 'Software_Intel', VERSION = '1.0', RELEASE = '1', arch_mapper = {})
+env.Alias("${PART_SECTION}::alias::${PART_ALIAS}::dist",env.CCopy("#dist",out))[0]
+

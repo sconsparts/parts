@@ -1,0 +1,4 @@
+Import('*')
+env.PartName("control2")
+env.InstallPkgData('control.spec', packagetype = ['rpm'])
+

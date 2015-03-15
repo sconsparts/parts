@@ -1,0 +1,25 @@
+Import('*')
+
+env.PartName('invalid_pdb_usage_model')
+env.PartVersion('1.0.0')
+
+# WARNING This is 'how NOT to do' example.
+
+# This parts file demonstrates a common mistake in pdb usage.
+# Users can specify PDB variable not only in call to Program/SharedLibrary
+# function but also it can be initialized in env object (env['PDB'] = 'my.pdb').
+# But this should be done *before* call to Program/SharedLibrary function
+# otherwise no pdb file will be generated.
+#
+# Do not use pdb creation/stripping the way it is done below.
+
+env.InstallTarget(
+    env.Program(
+        target = '${PART_NAME}',
+        source = 'stripped.cpp'
+    )
+)
+env['PDB'] = '${TARGETS[0].filebase}.pdb'
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

@@ -1,0 +1,10 @@
+Import('*')
+
+env.PartName("A")
+env.PartVersion("1.0")
+
+env.SdkTarget(
+env.StaticLibrary("Amod",'a_foo.c')
+)
+
+

@@ -1,0 +1,6 @@
+
+Test.Summary="This is a basic test script"
+
+t=Test.AddTestRun("setup")
+t.Command="python --version"
+t.ReturnCode=0

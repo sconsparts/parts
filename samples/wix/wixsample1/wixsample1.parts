@@ -1,0 +1,12 @@
+Import('*')
+
+env.PartName('wixsample1')
+env.PartVersion('1.0.0')
+
+# This sample tests plain installation: all sources are static and resides in src_dir
+
+wxsobj = env.WixObject(env.Glob('*.wxs'))
+env.InstallBin(env.MSI('wixsample1', source = wxsobj))
+
+# vim: set et ts=4 sw=4 ft=python :
+

@@ -1,0 +1,8 @@
+Import('*')
+
+env.PartName("B")
+env.PartVersion("1.0")
+
+env.SdkLib(
+env.StaticLibrary("Bmod",'b_foo.c')
+)

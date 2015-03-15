@@ -1,0 +1,17 @@
+
+Import('*')
+env.PartVersion('2.0.33')
+env.PartName('engine')
+
+env.Part('common','common/common.parts')
+env.Part('core','core/core.parts')
+env.Part('optional','optional/optional.parts')
+import SCons.Script
+if [x for x in SCons.Script.BUILD_TARGETS if 'utest::' in str(x)]:
+    env.Part('tests','utest/unit_test.parts')
+
+# by depending on engine you automatically depend on engine.core
+env.DependsOn([Component('engine.core',env.PartVersion())])
+
+env.SdkInclude(['include/engine.h'],sub_dir='engine',add_to_path=False)
+

@@ -1,0 +1,4 @@
+<!-- vim: set ft=xml et ts=4 sw=4 ai : -->
+<Include>
+    <?define  ReadmePath=$(sys.SOURCEFILEDIR)..\..\readme.txt ?>
+</Include>

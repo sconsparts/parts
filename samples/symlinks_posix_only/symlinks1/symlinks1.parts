@@ -1,0 +1,23 @@
+Import('*')
+
+env.PartName('symlinks1')
+env.PartVersion('1.0.0')
+
+env.SdkInclude('symlinks1.h', sub_dir = 'symlinks1')
+
+
+# This is a simplest example. We just create a shared object and make some symbolic links
+
+# Remember SHILBSUFFIX value
+SHILBSUFFIX = env.get('SHLIBSUFFIX', '')
+targets  = env.SharedLibrary('symlinks1', 'symlinks1.c', SHLIBSUFFIX = SHILBSUFFIX + '.${PART_VERSION}')
+targets += env.SymLink('${SHLIBPREFIX}symlinks1${SHLIBSUFFIX}', targets[0], SHLIBSUFFIX = SHILBSUFFIX + '.1')
+targets += env.SymLink('${SHLIBPREFIX}symlinks1${SHLIBSUFFIX}', targets[-1])
+
+# We want only libsymlinks1.so - the topmost symbolic link - be used
+# when linking binaries that use functions from symlinks1 dynamic loaded library.
+env.InstallLib(env.SdkLib(targets[:-1], auto_add_libs = False))
+env.InstallLib(targets[-1:])
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

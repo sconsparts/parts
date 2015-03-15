@@ -1,0 +1,12 @@
+Import('*')
+
+env.PartName("a")
+env.PartVersion("1.0")
+
+env.InstallOpt(
+env.OptFile("Amod",['a_foo.in'])
+)
+
+
+
+

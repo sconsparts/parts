@@ -1,0 +1,10 @@
+from parts import *
+Part('hello1','hello_1/hello.parts')
+Part('hello2','hello_1.0.0/hello.parts')
+Part('hello3','hello_1.5.0/hello.parts')
+Part('hello4','hello_2/hello.parts')
+
+Part('print1','print_msg_1.0.0/print_msg.parts')
+Part('print2','print_msg_1.5.0/print_msg.parts')
+Part('print3','print_msg_1.5.2/print_msg.parts')
+Part('print4','print_msg_2.0.0/print_msg.parts')

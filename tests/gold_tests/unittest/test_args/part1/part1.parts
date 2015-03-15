@@ -1,0 +1,4 @@
+Import('*')
+
+env.UnitTest('mytest',['test.c'],src_dir='../utest',command_args=env.get("MYARGS","1 2 3 4").split())
+

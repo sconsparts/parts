@@ -1,0 +1,36 @@
+###################
+### for easy testing
+import sys
+sys.path = ['../../']+sys.path
+import parts
+################
+
+import unittest
+import test_support
+
+# search for all tests
+
+found_tests, load_errors = test_support.find_tests()
+
+#create suite for tests to be added to
+suite = unittest.TestSuite()
+
+# add found tests
+for t in found_tests:  
+    r = unittest.defaultTestLoader.loadTestsFromModule(t)
+    suite.addTest(r)
+        
+print
+print "Running tests"
+testResult = unittest.TextTestRunner(sys.stdout, verbosity=2).run(suite)
+
+if sys.argv[-1] == 'extract_sources':
+    import json
+    print 'Automated run, reporting results\n\n'
+    sys.stdout.flush()
+    print '{JSON_LOAD_ERROR}%s{/JSON_LOAD_ERROR}' % json.dumps(load_errors)
+    jsonResult = {}
+    for attr in ('failures', 'errors', 'skipped', 'expectedFailures', 'unexpectedSuccesses'):
+        jsonResult[attr] = [(str(case), msg) for (case, msg) in getattr(testResult, attr, [])]
+    print '{JSON_UT_FAILS}%s{/JSON_UT_FAILS}' % json.dumps(jsonResult)
+    sys.stdout.flush()

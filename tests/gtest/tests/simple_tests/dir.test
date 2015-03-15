@@ -1,0 +1,10 @@
+#The finding of this test shows we find .test.py
+
+Test.Summary="Test the existance of a directory"
+
+t=Test.AddTestRun("stdout")
+t.Command='mkdir foo'
+t.Disk.Directory("foo",exists=True,id="foo")
+
+t.Disk.Directory("boo",id="boo")
+t.Disk.boo.Exists=False

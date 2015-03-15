@@ -1,0 +1,25 @@
+Import('*')
+
+env.PartName('test')
+env.PartVersion('1.0.0')
+
+# The following should cause a warning.
+# See parts.pnode.part.part.build_target_wrapper for more information
+for target in BUILD_TARGETS:
+    # Stringizing *target* node causes its name to be cached
+    # as absolute path because this file is in sub-dir
+    str(target)
+
+env.Tool('textfile')
+
+env.InstallBin(
+        env.SdkBin(
+            env.Textfile(
+                'hello.txt',
+                ['Hello world!\n']
+                )
+            )
+        )
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

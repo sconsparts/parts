@@ -1,0 +1,5 @@
+Import('*')
+
+env.PartName("part1")
+
+env.InstallTarget(env.Program('a1','a.c'))

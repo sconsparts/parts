@@ -1,0 +1,16 @@
+Import('*')
+
+env.PartName('a')
+env.PartVersion('1.0.0')
+
+env.SdkInclude('a.h', sub_dir = 'a', add_to_path = False)
+
+if "case1" in env['MODE']:
+	env.ExportCPPDEFINES(r'SAMPLES_CPPDEFINE=\"a a\"')
+elif "case2" in env['MODE']:
+	env.ExportCPPDEFINES([('SAMPLES_CPPDEFINE',"\"a a\"")])
+
+	
+	
+# vim: set et ts=4 sw=4 ai ft=python :
+

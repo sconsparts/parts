@@ -1,0 +1,12 @@
+from parts import *
+path=Dir('#svn/base').abspath.replace('\\','/')
+SetOptionDefault('SVN_SERVER','file:///'+path)
+
+
+Part('proxy','proxy.parts',vcs_type=VcsSvn(repository='proxy/',server='file:///'+path))
+Part('engine','engine.parts',vcs_type=VcsSvn(repository='engine/'))
+Part('print_msg','src/print_msg.parts',vcs_type=VcsSvn(repository='print_msg/'))
+
+Part('main','main.parts',vcs_type=VcsSvn(repository='main/'))
+
+

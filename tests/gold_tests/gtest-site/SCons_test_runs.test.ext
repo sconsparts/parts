@@ -1,0 +1,77 @@
+
+def AddCleanRun(Test,target='all'):
+        tr=Test.AddTestRun("cleaning_target","Cleaning Target: {0}".format(target))
+        tr.Command='scons -c {0} --console-stream=none'.format(target)
+        tr.ReturnCode=0
+        return tr
+
+def AddUpdateCheckSCons(Test,target='all'):
+    tr=Test.AddTestRun(
+        "up-to-date-scons-run-scons",
+        "SCons up to date check"
+        )
+    tr.Command='scons -q {0} --disable-parts-cache --console-stream=none'.format(target)
+    tr.ReturnCode=0
+    return tr
+
+def AddUpdateCheckParts(Test,target='all'):
+    tr=Test.AddTestRun(
+        "up-to-date-parts-run-parts",
+        "Parts up to date check"
+    )
+    tr.Command='scons -q {0} --console-stream=none'.format(target)
+    tr.ReturnCode=0
+    
+    return tr
+
+def AddUpdateCheck(Test,target='all'):
+    Test.AddUpdateCheckSCons(target)
+    Test.AddUpdateCheckParts(target)
+
+def AddOutOfDateCheckParts(Test,target="all"):
+    tr=Test.AddTestRun(
+        "out-of-date-check-run-parts",
+        "Parts out to date check"
+    )
+    tr.Command='scons -q {0} --console-stream=none'.format(target)
+    tr.ReturnCode=1
+    
+    return tr
+
+def AddOutOfDateCheckSCons(Test,target="all"):
+    tr=Test.AddTestRun(
+        "out-of-date-check-run-scons",
+        "SCons out to date check"
+    )
+    tr.Command='scons -q {0} --disable-parts-cache --console-stream=none'.format(target)
+    tr.ReturnCode=1
+    
+    return tr
+
+def AddBuildRun(Test,target="all",options=''):
+    if options:
+        s="Building target: {0} options: {1}".format(target,options)
+    else:
+        s="Building target: {0}".format(target)
+    tr=Test.AddTestRun(
+        "build_run",
+        s
+    )
+    tr.Command='scons {0} {1} --console-stream=none'.format(target,options)
+    tr.ReturnCode=0
+    
+    return tr
+
+def AddOutOfDateCheck(Test,target='all'):
+    Test.AddOutOfDateCheckSCons(target)
+    Test.AddOutOfDateCheckParts(target)
+
+
+AddTestRunSet(AddCleanRun)
+AddTestRunSet(AddUpdateCheckSCons)
+AddTestRunSet(AddUpdateCheckParts)
+AddTestRunSet(AddUpdateCheck)
+AddTestRunSet(AddOutOfDateCheckParts)
+AddTestRunSet(AddOutOfDateCheckSCons)
+AddTestRunSet(AddBuildRun)
+AddTestRunSet(AddOutOfDateCheck)

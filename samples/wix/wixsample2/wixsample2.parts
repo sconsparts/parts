@@ -1,0 +1,16 @@
+Import('*')
+
+env.PartName('wixsample2')
+env.PartVersion('1.0.0')
+
+# This sample tests plain installation: all sources are static and resides in src_dir
+
+env.Program('${PART_NAME}', source = env.Glob('*.c') + env.Glob('*.cpp'))
+wxsobj = env.WixObject(env.Glob('*.wxs'))
+
+# The program is indirect dependency of the resulting .msi package.
+# So the changes in the program source code will make scons re-build the package.
+env.InstallBin(env.MSI('${PART_NAME}', source = wxsobj))
+
+# vim: set et ts=4 sw=4 ft=python :
+

@@ -1,0 +1,16 @@
+Import('*')
+
+env.PartVersion('1.0.0')
+env.PartName('driver')
+#files
+cpp_files=['driver.cpp']
+
+if env['TARGET_OS']=='win32':
+    env.Append(CPPDEFINES= ['WINDOW_OS'])
+env.Append(CPPDEFINES= ['DRIVER_EXPORTS'])
+env['PDB']='${PART_NAME}_${PART_SHORT_VERSION}.pdb'
+outputs=env.SharedLibrary('${PART_NAME}_${PART_SHORT_VERSION}',cpp_files)
+
+env.InstallTarget(outputs)
+
+env.SdkInclude(['driver.h'])

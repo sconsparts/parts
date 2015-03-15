@@ -1,0 +1,5 @@
+Import('*')
+
+env.PartName('subfile')
+#This test case install a headers file that whill be platform_independent
+env.SdkInclude("common_def.h")

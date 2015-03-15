@@ -1,0 +1,6 @@
+Import('*')
+
+env.PartVersion('2.0.0')
+env.PartName('print_msg')
+
+env.InstallLib("print_msg_2.0.0.txt")

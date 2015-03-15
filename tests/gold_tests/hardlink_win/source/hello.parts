@@ -1,0 +1,8 @@
+Import('*')
+
+helloNode = env.SdkInclude("hello.c")
+if not ARGUMENTS.get('dup_run', False):
+    for node in helloNode:
+        node.set_precious(True)
+blahNode = env.Command(["blah.txt"], ["hello.c"], ['python -c "import time; f = open(r\'$SOURCE\', \'a\'); time.sleep(5); open(r\'$TARGET\', \'w\').close()"'])
+env.SdkInclude(blahNode)

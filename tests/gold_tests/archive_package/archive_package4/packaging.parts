@@ -1,0 +1,10 @@
+Import('*')
+
+env.PartName("packaging")
+env.DependsOn([Component('archive_package4')])
+
+out=env.TarGzPackage('install',sources = ['pkg4','pkg_control'])
+env.Alias("${PART_SECTION}::alias::${PART_ALIAS}::dist",env.CCopy("#dist",out))[0]
+
+out=env.TarBz2Package('install',sources = ['pkg4','pkg_control'])
+env.Alias("${PART_SECTION}::alias::${PART_ALIAS}::dist",env.CCopy("#dist",out))[0]

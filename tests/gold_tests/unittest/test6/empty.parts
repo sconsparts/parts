@@ -1,0 +1,8 @@
+Import('*')
+
+env.PartName('empty')
+
+env.InstallTarget(env.Program('empty', 'main.cpp'))
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

@@ -1,0 +1,7 @@
+
+from parts import *
+
+Part('A/a.part')
+Part('B/b.part')
+Part('merge/merge.part')
+

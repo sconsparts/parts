@@ -1,0 +1,4 @@
+from parts import *
+Part ('control','control.parts', package_group='pkg_control')
+Part ('archive_package2','archive_package2.parts', package_group='pkg2')
+Part('packaging','packaging.parts')

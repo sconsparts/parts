@@ -1,0 +1,10 @@
+usage: scons [OPTION] [TARGET] ...
+
+SCons Error: Error: Invalid stream type to set color for: "b:e" valid stream types are:
+ console, con, tty, c
+ stdout, out, o
+ stderr, error, err, e
+ stdwrn, warning, wrn, w
+ stdmsg, message, msg, m
+ stdverbose, verbose, ver, v
+ stdtrace, trace, t

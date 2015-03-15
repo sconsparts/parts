@@ -1,0 +1,9 @@
+Import('*')
+env.PartVersion('1.0.0')
+env.PartName('hello')
+# will cause sample to fail, as we only define version 1.0 in Sconstruct
+# since no version 2 is defined of print_msg this should cause a build failure.
+env.DependsOn([Component('print_msg','2.*')])
+
+ret=env.Program("hello","hello.c")
+env.InstallTarget(ret)

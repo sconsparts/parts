@@ -1,0 +1,5 @@
+from parts import *
+
+SetOptionDefault("INSTALL_ROOT","#install")
+
+Part ('part1','extract1.parts')

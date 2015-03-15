@@ -1,0 +1,10 @@
+Import('*')
+
+env.PartName('main')
+env.PartVersion('1.0.0')
+
+env.Part('empty', parts_file = 'empty.parts')
+env.Part('print_msg', parts_file = 'src/print_msg.parts')
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

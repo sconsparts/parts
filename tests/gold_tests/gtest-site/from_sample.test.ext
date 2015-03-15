@@ -1,0 +1,14 @@
+import os
+
+
+class FromSample(SetupTask):
+    def __init__(self,source):
+        super(FromSample, self).__init__(
+                    taskname="Setup test from Sample"
+                    )
+        self.source=source
+
+    def setup(self):
+        self.Copy(os.path.join(self.TestRootDir,'..','..','samples',self.source),self.SandBoxDir)
+
+AddSetupTask(FromSample,ns='Copy')

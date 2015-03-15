@@ -1,0 +1,4 @@
+Import('*')
+
+env.UnitTest('mytest',[env.File('../utest/test.c')],src_dir='../utest')
+

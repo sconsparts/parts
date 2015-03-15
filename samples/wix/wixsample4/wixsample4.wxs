@@ -1,0 +1,33 @@
+<?xml version='1.0'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+    <Product Id='63ac51d3-0930-4c54-bcac-d9fd57dd7496' Name='Test Package' Language='1033'
+             Version='1.0.0.0' Manufacturer='Acme Corportation' UpgradeCode='ee479c49-2bfd-4338-bdfd-5232b176c683' >
+        <Package Description='My first Windows Installer package'
+            Comments='This is my first attempt at creating a Windows Installer database'
+            Manufacturer='Acme Corporation' InstallerVersion='200' Compressed='yes' />
+
+        <Media Id='1' Cabinet='wixsample1.cab' EmbedCab='yes' />
+
+        <Directory Id='TARGETDIR' Name='SourceDir'>
+            <Directory Id='ProgramFilesFolder' Name='PFiles'>
+                <Directory Id='INSTALLDIR' Name='Test Program'>
+                    <Component Id='MyComponent' Guid='388f167f-25fc-41e3-95b8-94933e7077c3' >
+                        <File Id='Wixsample1Msi' Name='wixsample1.msi' DiskId='1' Source='wixsample1.msi' />
+                        <File Id='Wixsample2Msi' Name='wixsample2.msi' DiskId='1' Source='wixsample2.msi' />
+                        <File Id='Wixsample3Msi' Name='wixsample3.msi' DiskId='1' Source='wixsample3.msi' />
+                        <File Id='Wixsample5Msi' Name='wixsample5.msi' DiskId='1' Source='wixsample5.msi' />
+                    </Component>
+                </Directory>
+            </Directory>
+        </Directory>
+        <Feature Id='Complete' Title='Wix Sample 1.0' Description='My 1st Feature description' Display='expand'
+                ConfigurableDirectory='INSTALLDIR' Level='1'>
+            <Feature Id='MyFeature' Title='My 1st Feature' Level='1' >
+                <ComponentRef Id='MyComponent' />
+            </Feature>
+        </Feature>
+
+        <?include wixsample4.wxi?>
+    </Product>
+</Wix>
+

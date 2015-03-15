@@ -1,0 +1,3 @@
+Import('*')
+env.PartName("msi")
+env.InstallTarget(env.Program('test1', 'test.cpp'))

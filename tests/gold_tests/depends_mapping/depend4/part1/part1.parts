@@ -1,0 +1,6 @@
+Import('*')
+
+env.PartName("part1")
+env.ExportItem("foo","foo value")
+env.ExportItem("foo_list",["foo value"])
+env.ExportItem("dict_test",{1:2,3:4})

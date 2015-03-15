@@ -1,0 +1,5 @@
+import parts
+import parts.datacache as dc
+
+dc.StoreData(name="foo",data="This is data",key="mytestkey")
+dc.SaveCache(name="foo",key="mytestkey")

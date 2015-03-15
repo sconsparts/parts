@@ -1,0 +1,6 @@
+from parts import *
+
+Part('zip_package1','zip_package1.parts')
+Part('zip_package2','zip_package2.parts')
+
+Part('packaging','packaging.parts')

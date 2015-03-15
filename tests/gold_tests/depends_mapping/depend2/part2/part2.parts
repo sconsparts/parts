@@ -1,0 +1,11 @@
+Import('*')
+
+env.PartVersion("0.0.0")
+env.PartName("part2")
+env.DependsOn([
+               Component('part1',requires=REQ.foo(public=True)|REQ.foo_list(public=True)|REQ.dict_test(public=True))
+               ])
+
+env.VerboseMessage(['gtest'],env['foo'],env['foo']=="${PARTIDEXPORTS('part1','*','foo',3)}")
+env.VerboseMessage(['gtest'],env['foo_list'],env['foo_list']=="${PARTIDEXPORTS('part1','*','foo_list',3)}")
+env.VerboseMessage(['gtest'],env['dict_test'],env['dict_test']=="${PARTIDEXPORTS('part1','*','dict_test',3)}")

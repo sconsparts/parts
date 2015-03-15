@@ -1,0 +1,48 @@
+'''
+This example simulates shared object and symbolic links creation by external tool.
+For example, you want to use some 3rd party library which is build using standard
+configure -> make -> make install chain. You don't want to convert the library's
+Makefile into a Parts file. You decided to use Command builder to execute 'make'.
+You know that the makefile creates a shared object file and two symlinks:
+
+libsymlinks3.so -> libsymlinks3.so.1 -> libsymlinks3.so.1.0.0
+
+You instructs the Command builder to create three targets: two symlinks and one library.
+And then you want to install the targets correctly.
+
+Parts are smart enough to most of work for you.
+'''
+Import('*')
+
+env.PartName('symlinks3')
+env.PartVersion('1.0.0')
+
+env.SdkInclude('symlinks3.h', sub_dir = 'symlinks3')
+
+targets = env.Command(
+    # We expect this command to build two symbolic links and a shared library.
+    [env.FileSymbolicLink('${SHLIBPREFIX}${PART_NAME}${SHLIBSUFFIX}'), env.FileSymbolicLink('${SHLIBPREFIX}${PART_NAME}${SHLIBSUFFIX}.1'), '${SHLIBPREFIX}${PART_NAME}${SHLIBSUFFIX}.1.0.0'],
+
+    # This example uses only one source. The real world example may contain either
+    # a single Makefile and use some custom function to scan it for sources during build-time
+    # or you can specify full list of source files used to link your library.
+    ['symlinks3.c'],
+
+    # Here well be the call to 'make all' command.
+    ['ln -fs ${TARGETS[1].name} ${TARGETS[0]}', 'ln -fs ${TARGETS[2].name} ${TARGETS[1]}', '$CC $SHCCFLAGS -o ${TARGETS[2]} $SHLINKFLAGS $SOURCES']
+)
+
+env.InstallLib(targets[:1])
+env.InstallLib(env.SdkLib(targets[1:], auto_add_libs = False))
+
+# We want also make a copy of the library and symlinks in a location
+# different from '$INSTALL_LIB' for some reasons, for example for testing.
+# And Parts can make it for us keeping correct relations between symbolic links
+# and their targets
+env.PkgNoInstall(
+    env.SdkLib(targets, sub_dir = 'testing', add_to_path = False, auto_add_libs = False),
+    sub_dir = 'testing'
+)
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

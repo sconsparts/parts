@@ -1,0 +1,32 @@
+<?xml version='1.0'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+    <Product Id='63ac51d3-0930-4c54-bcac-d9fd57dd7496' Name='Test Package' Language='1033'
+             Version='1.0.0.0' Manufacturer='Acme Corportation' UpgradeCode='ee479c49-2bfd-4338-bdfd-5232b176c683' >
+        <Package Description='My first Windows Installer package'
+            Comments='This is my first attempt at creating a Windows Installer database'
+            Manufacturer='Acme Corporation' InstallerVersion='200' Compressed='yes' />
+
+        <Media Id='1' Cabinet='wixsample1.cab' EmbedCab='yes' />
+
+        <Directory Id='TARGETDIR' Name='SourceDir'>
+            <Directory Id='ProgramFilesFolder' Name='PFiles'>
+                <Directory Id='MyDir' Name='Test Program' FileSource='$(sys.SOURCEFILEDIR)'>
+                    <Component Id='MyComponent' Guid='388f167f-25fc-41e3-95b8-94933e7077c3' >
+                        <File Id='ReadmeTxt' Name='readme.txt' DiskId='1' Source='readme.txt' />
+                        <File Id='Readme1stTxt' Name='readme1st.txt' DiskId='1' Source='readme1st.txt' />
+                    </Component>
+                    <Directory Id='Documentation' Name='documentation'>
+                        <Component Id='readme2nd.txt' Guid='a0ed0846-cc7b-4a1b-ae9f-c1a2d7af2fc9' >
+                            <File Id='readme2nd.txt'/>
+                        </Component>
+                    </Directory>
+                </Directory>
+            </Directory>
+        </Directory>
+        <Feature Id='MyFeature' Title='My 1st Feature' Level='1'>
+            <ComponentRef Id='MyComponent' />
+            <ComponentRef Id='readme2nd.txt' />
+        </Feature>
+    </Product>
+</Wix>
+

@@ -1,0 +1,5 @@
+<!-- vim: set ft=xml set et ts=4 sw=4 ai -->
+<Include>
+    <UIRef Id='WixUI_Mondo' />
+    <UIRef Id='WixUI_ErrorProgressText' />
+</Include>

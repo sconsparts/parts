@@ -1,0 +1,6 @@
+Import('*')
+
+env.PartName("part1")
+env.ExportItem("foo","part1")
+env.ExportItem("foo_private","part1_private")
+env.ExportItem("foo_list",["part1"])

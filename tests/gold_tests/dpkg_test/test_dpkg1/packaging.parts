@@ -1,0 +1,6 @@
+Import('*')
+
+env.PartName("packaging")
+env.DependsOn([Component('dpkg_package1')])
+env.DependsOn([Component('DEBIAN')])
+

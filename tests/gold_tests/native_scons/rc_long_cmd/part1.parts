@@ -1,0 +1,17 @@
+Import('*')
+
+env.PartName("part1")
+
+# SCons uses temp files if command line is longer than 2 kb
+# Introduce defines with total length close to 3 kb
+# We cannot use a single 3 kb define because it causes
+# "RC : fatal error RC1000: Internal error" when macro is
+# longer than 547 (???) symbols
+cpp_defines = ['A' * 256 for i in range(4 * 3)]
+
+env.Append(CPPDEFINES = cpp_defines)
+
+cpp_files = Pattern(includes = ['*.cpp','*.c']).files()
+res_outs = env.RES('part1.rc')
+outputs = env.Program('test1',cpp_files + res_outs)
+env.InstallTarget(env.Sdk(outputs))

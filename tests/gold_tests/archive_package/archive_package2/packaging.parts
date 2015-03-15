@@ -1,0 +1,13 @@
+Import('*')
+
+env.PartName("packaging")
+env.DependsOn([Component('archive_package2')])
+
+out=env.TarPackage('install',sources = ['pkg2','pkg_control'])
+env.Alias("${PART_SECTION}::alias::${PART_ALIAS}::dist",env.CCopy("#dist",out))[0]
+
+out=env.Bz2Package('install',sources = ['pkg2','pkg_control'])
+env.Alias("${PART_SECTION}::alias::${PART_ALIAS}::dist",env.CCopy("#dist",out))[0]
+
+out=env.TarBz2Package('install',sources = ['pkg2','pkg_control'])
+env.Alias("${PART_SECTION}::alias::${PART_ALIAS}::dist",env.CCopy("#dist",out))[0]

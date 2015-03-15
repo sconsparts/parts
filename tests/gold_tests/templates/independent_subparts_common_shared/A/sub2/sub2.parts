@@ -1,0 +1,11 @@
+Import('*')
+
+env.PartName('sub2')
+
+env.DependsOn([Component("A.sub3")])
+
+#files
+c_files=['a_so.c']
+
+outputs=env.StaticLibrary('${PART_NAME}_${PART_SHORT_VERSION}',c_files)
+env.InstallTarget(outputs)

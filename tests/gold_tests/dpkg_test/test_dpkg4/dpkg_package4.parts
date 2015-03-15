@@ -1,0 +1,4 @@
+Import('*')
+
+env.PartName("dpkg_package4")
+env.InstallTarget(env.Program('test4', 'xyz.cpp'))

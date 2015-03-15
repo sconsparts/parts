@@ -1,0 +1,7 @@
+Import('*')
+
+env.PartName("packaging")
+env.DependsOn([Component('zip_package1'), Component('zip_package2'), Component('zip_package3'), Component('zip_package4')])
+
+out=env.ZipPackage(target = 'install.zip', sources = ['pkg1', 'pkg2', '', None])
+env.CCopy("#",out)

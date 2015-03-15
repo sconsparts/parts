@@ -1,0 +1,9 @@
+Import('*')
+
+env.PartName("b")
+env.PartVersion("1.0")
+
+env.DependsOn([Component('a',requires=REQ.OPT)])
+env.InstallOpt(
+env.OptFile("Bmod",['b_foo.in'])
+)

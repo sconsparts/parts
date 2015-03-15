@@ -1,0 +1,18 @@
+Import('*')
+
+env.PartName('optional')
+env.DependsOn([Component('engine.common',env.PartVersion())])
+
+#files
+cpp_files=['optional.cpp']
+
+if env['TARGET_OS']=='win32':
+    env.Append(CPPDEFINES= ['WINDOW_OS'])
+env.Append(CPPDEFINES= ['OPTIONAL_EXPORTS'])
+env.Append(CPPPATH= [AbsDir('../include')])
+
+outputs=env.SharedLibrary('${PART_NAME}_${PART_SHORT_VERSION}',cpp_files)
+
+env.InstallTarget(outputs)
+
+env.SdkInclude([AbsFile('../include/optional.h')],sub_dir='engine',add_to_path=False)

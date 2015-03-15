@@ -1,0 +1,12 @@
+import os
+Import('*')
+
+env.PartVersion("0.0.0")
+env.PartName("signing_key")
+env.DependsOn([])
+
+cfg=env.SdkData('prebuilt/signer.cfg')
+
+env.ExportItem("CFGFILE",cfg[0])
+
+

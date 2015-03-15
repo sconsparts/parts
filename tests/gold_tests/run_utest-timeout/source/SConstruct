@@ -1,0 +1,11 @@
+from parts import *
+
+SetOptionDefault('RUN_UTEST_TIME_OUT', 5)
+SetOptionDefault('LOGGER', '$TEXT_LOGGER')
+SetOptionDefault('PART_LOGGER', '$PART_TEXT_LOGGER')
+SetOptionDefault('LOG_PART_FILE_NAME', '${PART_NAME}.log')
+
+if DefaultEnvironment()['TARGET_OS'] == 'posix':
+    SetOptionDefault('toolchain', ['gcc'])
+
+Part('print', 'print_msg/src/print_msg.parts')

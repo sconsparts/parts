@@ -1,0 +1,12 @@
+###################
+### for easy testing
+import sys
+sys.path = ['../../']+sys.path
+import parts
+################
+from parts import *
+
+Part('A/a.part')
+Part('B/b.part')
+Part('C/c.part')
+

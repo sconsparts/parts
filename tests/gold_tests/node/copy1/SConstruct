@@ -1,0 +1,7 @@
+from parts import *
+
+SetOptionDefault('SDK_ROOT','#_sdk')
+SetOptionDefault('INSTALL_ROOT','#_install')
+
+Part('test.parts')
+

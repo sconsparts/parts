@@ -1,0 +1,16 @@
+Import('*')
+env.PartName('extract')
+env.PartVersion('1.0.0')
+
+from gen import TEST_TARBALL_NAME
+
+# TODO: replace the call to actual extract() to something that emulates it by opening some file
+# for writing and then waiting some time so we don't have to generate the workload each time
+env.Extract('%s.tar.gz' % TEST_TARBALL_NAME)
+
+env.InstallBin(env.Command('markerfile',
+                           '%s.sh' % TEST_TARBALL_NAME,
+                           'cd ${TARGET.dir} && ./%s.sh' % TEST_TARBALL_NAME))
+
+env.InstallBin(env.Command('blah1', '/bin/sh', 'sleep 0.1 && touch $TARGET'))
+env.InstallBin(env.Command('blah2', 'blah1', 'sleep 3 && touch $TARGET'))

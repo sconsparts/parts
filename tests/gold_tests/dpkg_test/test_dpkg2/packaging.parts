@@ -1,0 +1,9 @@
+Import('*')
+
+env.PartName("packaging")
+env.DependsOn([Component('dpkg_package2')])
+env.DependsOn([Component('DEBIAN')])
+
+out = DefaultEnvironment().DPKGPackage('test2', sources = ['pkg2','pkg_control'])
+env.Alias("${PART_SECTION}::alias::${PART_ALIAS}::dist",env.CCopy("#dist",out))[0]
+

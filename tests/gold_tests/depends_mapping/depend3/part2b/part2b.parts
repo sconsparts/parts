@@ -1,0 +1,11 @@
+Import('*')
+
+env.PartVersion("0.0.0")
+env.PartName("part2b")
+env.DependsOn([
+               Component('part1',requires=REQ.foo|REQ.foo_list|REQ.foo_private_INTERNAL)
+               ])
+
+env.ExportItem("foo","part2b")
+env.ExportItem("foo_list",["part2b"])
+

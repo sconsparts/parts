@@ -1,0 +1,12 @@
+Import('*')
+
+env.PartName('print_msg')
+
+env2=env.Clone()
+env2.UnitTest("test1",["test1.cpp"],src_dir='../utest')
+
+#files
+cpp_files=['print_msg.cpp']
+
+if env['TARGET_OS']=='win32':
+    env.Append(CPPDEFINES= ['WINDOW_OS'])

@@ -1,0 +1,19 @@
+Import('*')
+env.PartVersion('1.0.0')
+env.PartName('proxy')
+
+env.Part('driver','driver/driver.parts')
+env.DependsOn([Component('proxy.driver','1.*',requires=REQ.DEFAULT_INTERNAL )])
+
+#files
+cpp_files=['proxy.cpp']
+
+if env['TARGET_OS']=='win32':
+    env.Append(CPPDEFINES= ['WINDOW_OS'])
+env.Append(CPPDEFINES= ['PROXY_EXPORTS'])
+env['PDB']='${PART_NAME}_${PART_SHORT_VERSION}.pdb'
+outputs=env.SharedLibrary('${PART_NAME}_${PART_SHORT_VERSION}',cpp_files)
+
+env.InstallTarget(outputs)
+
+env.SdkInclude(['proxy.h'])

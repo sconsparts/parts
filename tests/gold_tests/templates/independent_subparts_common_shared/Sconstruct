@@ -1,0 +1,5 @@
+from parts import *	
+# this template has a number of subparts that it does not depend on
+
+Part('A/A.parts')
+Part('common/common.parts')

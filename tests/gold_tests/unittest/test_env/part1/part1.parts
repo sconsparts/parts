@@ -1,0 +1,4 @@
+Import('*')
+UNIT_TEST_ENV={'FOO_VAR':'baz'}
+env.UnitTest('mytest',[env.File('test.c')],src_dir='../utest', UNIT_TEST_ENV = UNIT_TEST_ENV)
+

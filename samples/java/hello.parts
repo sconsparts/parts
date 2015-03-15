@@ -1,0 +1,20 @@
+Import('*')
+
+env.PartName('hello')
+env.PartVersion('1.0.0.0')
+
+env.Tool('textfile')
+
+symbol_java = env.Textfile('sources/src/org/parts/string/symbol.java',
+'''package org.parts.string;
+
+public class symbol {
+    public static final String hello = "Hello, world!";
+}
+
+'''.splitlines())
+
+env.InstallBin(env.Java('subdir/bin', ['sources/src']))
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

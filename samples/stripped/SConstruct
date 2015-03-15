@@ -1,0 +1,56 @@
+from parts import *
+
+SetOptionDefault('LOGGER', 'TEXT_LOGGER')
+
+if DefaultEnvironment()['TARGET_OS'] <> 'win32':
+    SetOptionDefault('CCFLAGS', ['-g'])
+
+Part(
+    alias = 'regular_not_stripped',
+    parts_file = 'regular_not_stripped.parts'
+    )
+Part(
+    alias = 'shared_not_stripped',
+    parts_file = 'shared_not_stripped.parts'
+    )
+
+Part(
+    alias = 'regular_stripped',
+    parts_file = 'regular_stripped.parts'
+    )
+Part(
+    alias = 'shared_stripped',
+    parts_file = 'shared_stripped.parts'
+    )
+
+Part(
+    alias = 'regular_with_pdb',
+    parts_file = 'regular_with_pdb.parts'
+    )
+Part(
+    alias = 'shared_with_pdb',
+    parts_file = 'shared_with_pdb.parts'
+    )
+
+Part(
+    alias = 'invalid_pdb_usage_model',
+    parts_file = 'invalid_pdb_usage_model.parts'
+    )
+
+Part(
+    alias = 'regular_dep_on_shared_with_pdb',
+    parts_file = 'regular_dep_on_shared_with_pdb.parts'
+    )
+
+if DefaultEnvironment()['TARGET_PLATFORM'] in ('posix-x86', 'posix-x86_64'):
+    Part(
+        alias = 'advanced_strip_action',
+        parts_file = 'advanced_strip_action.parts'
+        )
+
+    Part(
+        alias = 'advanced_pdb_action',
+        parts_file = 'advanced_pdb_action.parts'
+        )
+# vim: set et ts=4 sw=4 ft=python :
+

@@ -1,0 +1,11 @@
+from parts import *
+
+SetOptionDefault('INSTALL_ROOT', '#install')
+
+Part('part1.parts', alias='part1', package_group='group1')
+Part('part2.parts', alias='part2', package_group='group2')
+Part('part3.parts', alias='part3', package_group='group3')
+Part('pack0.parts', alias='pack0')
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

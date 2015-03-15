@@ -1,0 +1,8 @@
+Import('*')
+
+env.InstallBin(
+	env.Command(
+	[AbsDir('foo')],
+	['script.py'],
+	'python ./script.py')
+)

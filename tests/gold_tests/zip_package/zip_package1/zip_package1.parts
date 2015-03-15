@@ -1,0 +1,4 @@
+Import('*')
+
+env.PartName("zip_package1")
+env.InstallTarget(env.Program('test1', 'test1.cpp'))

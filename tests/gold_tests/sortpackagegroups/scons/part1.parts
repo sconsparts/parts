@@ -1,0 +1,9 @@
+Import('*')
+
+env.PartName('part1')
+env.PartVersion('1.0.0')
+
+env.InstallTopLevel('part1.txt')
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

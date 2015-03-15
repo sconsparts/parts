@@ -1,0 +1,23 @@
+Test.Summary='''
+Basic test to test cases of mapping of CPPDEFINE data
+'''
+
+Setup.Copy.FromDirectory('depends_defines')
+
+t=Test.AddBuildRun(options='--mode=case1 INSTALL_ROOT=#_install')
+
+t=Test.AddTestRun("Run Output")
+t.Command='_install/bin/b'
+t.ReturnCode=0
+t.Streams.stdout='gold/define.gold'
+
+Test.AddCleanRun()
+
+# this test currently fail.. have no way to make them work at the moment
+# as i have no way to pass tuples correctly between different Parts
+#t=Test.AddBuildRun(options='--mode=case2 INSTALL_ROOT=#_install')
+
+#t=Test.AddTestRun("Run Output")
+#t.Command="_install/bin/b"
+#t.ReturnCode=0
+#t.Streams.stdout='gold/define.gold'

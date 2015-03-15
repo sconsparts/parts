@@ -1,0 +1,5 @@
+Import('*')
+
+env.PartName('compbar')
+env.PartVersion('0.0.1')
+env.InstallTarget(env.Program('compbar', 'compbar.cpp'))

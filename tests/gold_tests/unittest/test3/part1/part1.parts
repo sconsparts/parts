@@ -1,0 +1,4 @@
+Import('*')
+import os
+env.UnitTest('mytest',[os.path.abspath('../utest/test.c')],src_dir='../utest')
+

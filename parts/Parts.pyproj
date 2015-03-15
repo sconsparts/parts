@@ -1,0 +1,345 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{8f62fc3b-b6cf-46be-a8da-7c9c423a9db5}</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>C:\Python27\Scripts\scons-2.1.0.py</StartupFile>
+    <SearchPath>C:\Python27\scons-2.1.0\;..\</SearchPath>
+    <WorkingDirectory>C:\Users\jlkenny\code\pf132</WorkingDirectory>
+    <AssemblyName>Parts</AssemblyName>
+    <Name>Parts</Name>
+    <RootNamespace>Parts</RootNamespace>
+    <InterpreterPath />
+    <CommandLineArguments>all </CommandLineArguments>
+    <IsWindowsApplication>False</IsWindowsApplication>
+    <DebugStdLib>False</DebugStdLib>
+    <InterpreterId>{9a7a9026-48c1-4688-9d5d-e5699d47d074}</InterpreterId>
+    <InterpreterVersion>2.7</InterpreterVersion>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterArguments />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
+    <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
+    <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
+    <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
+    <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
+    <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
+    <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
+    <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
+    <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
+    <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
+    <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
+    <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
+    <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
+    <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
+    <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
+    <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
+    <SearchPath Include="C:\Python26\Lib\site-packages\scons-1.2.0\SCons\" />
+    <SearchPath Include="C:\Users\jlkenny\code\parts\" />
+    <SearchPath Include="C:\Users\jlkenny\code\parts\" />
+    <SearchPath Include="C:\Users\jlkenny\code\parts\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="api" />
+    <Folder Include="configurations" />
+    <Folder Include="configurations\debug" />
+    <Folder Include="configurations\default" />
+    <Folder Include="configurations\release" />
+    <Folder Include="loggers" />
+    <Folder Include="events" />
+    <Folder Include="loadlogic" />
+    <Folder Include="platformspecific\" />
+    <Folder Include="platformspecific\win32\" />
+    <Folder Include="pnode" />
+    <Folder Include="overrides" />
+    <Folder Include="tools\GnuCommon\" />
+    <Folder Include="tools\IntelCommon" />
+    <Folder Include="tools\MSCommon" />
+    <Folder Include="Variables" />
+    <Folder Include="tools" />
+    <Folder Include="toolchain" />
+    <Folder Include="pieces" />
+    <Folder Include="tools\Common" />
+    <Folder Include="vcs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ansi_stream.py" />
+    <None Include="api\platforms.py" />
+    <None Include="api\output.py" />
+    <None Include="api\register.py" />
+    <None Include="api\requirement.py" />
+    <None Include="api\__init__.py" />
+    <None Include="build_section.py" />
+    <None Include="color.py" />
+    <None Include="common.py" />
+    <None Include="config.py" />
+    <None Include="configurations\debug\g++.py" />
+    <None Include="configurations\debug\gcc.py" />
+    <None Include="configurations\debug\intelc_posix-any.py" />
+    <None Include="configurations\debug\intelc_win32-any.py" />
+    <None Include="configurations\debug\msvc_win32-any.py" />
+    <None Include="configurations\debug\__init__.py" />
+    <None Include="configurations\default\intelc_darwin-any.py" />
+    <None Include="configurations\default\intelc_posix-any.py" />
+    <None Include="configurations\default\intelc_win32-any.py" />
+    <None Include="configurations\default\msvc_win32-any.py" />
+    <None Include="configurations\default\__init__.py" />
+    <None Include="configurations\release\g++.py" />
+    <None Include="configurations\release\gcc.py" />
+    <None Include="configurations\release\intelc_posix-any.py" />
+    <None Include="configurations\release\intelc_win32-any.py" />
+    <None Include="configurations\release\msvc_win32-any.py" />
+    <None Include="configurations\release\__init__.py" />
+    <None Include="configurations\__init__.py" />
+    <None Include="console.py" />
+    <None Include="datacache.py" />
+    <None Include="dependent_ref.py" />
+    <None Include="dependson.py" />
+    <None Include="engine.py" />
+    <None Include="errors.py" />
+    <None Include="events\__init__.py" />
+    <None Include="exportitem.py" />
+    <None Include="filters.py" />
+    <None Include="functors.py" />
+    <None Include="glb.py" />
+    <None Include="installs.py" />
+    <None Include="load_module.py" />
+    <None Include="logger.py" />
+    <None Include="loggers\html.py" />
+    <None Include="loggers\rtf.py" />
+    <None Include="loggers\text.py" />
+    <None Include="loggers\__init__.py" />
+    <None Include="main.py" />
+    <None Include="mappers.py" />
+    <None Include="metatag.py" />
+    <None Include="node_helpers.py" />
+    <None Include="overrides\builder.py" />
+    <None Include="overrides\build_hook.py" />
+    <None Include="overrides\build_wrapper.py" />
+    <None Include="overrides\default_env.py" />
+    <None Include="overrides\dup_node_builder_env.py" />
+    <None Include="overrides\env_alias.py" />
+    <None Include="overrides\env_array.py" />
+    <None Include="overrides\env_clone.py" />
+    <None Include="overrides\error_handling.py" />
+    <None Include="overrides\nodes.py" />
+    <None Include="overrides\os_file.py" />
+    <None Include="overrides\scanner.py" />
+    <None Include="overrides\__init__.py" />
+    <None Include="packaging.py" />
+    <None Include="parts" />
+    <None Include="parts.bat" />
+    <None Include="parts.py" />
+    <None Include="parts_version.py" />
+    <None Include="part_logger.py" />
+    <None Include="part_manager.py" />
+    <None Include="part_ref.py" />
+    <None Include="pattern.py" />
+    <None Include="pieces\add_xml_header.py" />
+    <None Include="pieces\ccopy.py" />
+    <None Include="pieces\doxygen.py" />
+    <None Include="pieces\encode.py" />
+    <None Include="pieces\extract.py" />
+    <None Include="pieces\merge_script.py" />
+    <None Include="pieces\part_name.py" />
+    <None Include="pieces\part_version.py" />
+    <None Include="pieces\python_script.py" />
+    <None Include="pieces\strip_xml_comments.py" />
+    <None Include="pieces\tar.py" />
+    <None Include="pieces\unit_test.py" />
+    <None Include="pieces\__init__.py" />
+    <None Include="platform_info.py" />
+    <None Include="pnode\part.py" />
+    <None Include="pnode\pnode.py" />
+    <None Include="pnode\pnode_manager.py" />
+    <None Include="pnode\scons_node_info.py" />
+    <None Include="pnode\section.py" />
+    <None Include="pnode\stored_info.py" />
+    <None Include="pnode\part_info.py" />
+    <None Include="pnode\section_info.py" />
+    <None Include="pnode\__init__.py" />
+    <None Include="policy.py" />
+    <None Include="poptions.py" />
+    <None Include="reporter.py" />
+    <None Include="requirement.py" />
+    <None Include="sdk.py" />
+    <None Include="section.py" />
+    <None Include="settings.py" />
+    <None Include="target_type.py" />
+    <None Include="toolchain\cl.py" />
+    <None Include="toolchain\default.py" />
+    <None Include="toolchain\gcc.py" />
+    <None Include="toolchain\gnutools.py" />
+    <None Include="toolchain\gxx.py" />
+    <None Include="toolchain\icc.py" />
+    <None Include="toolchain\icl.py" />
+    <None Include="toolchain\mstools.py" />
+    <None Include="toolchain\null.py" />
+    <None Include="toolchain\perl.py" />
+    <None Include="toolchain\vsip.py" />
+    <None Include="toolchain\vssdk.py" />
+    <None Include="toolchain\__init__.py" />
+    <None Include="tools\c++.py" />
+    <None Include="tools\Common\Finders.py" />
+    <None Include="tools\Common\ScriptInfo.py" />
+    <None Include="tools\Common\ToolInfo.py" />
+    <None Include="tools\Common\ToolSetting.py" />
+    <None Include="tools\Common\__init__.py" />
+    <None Include="tools\g++.py" />
+    <None Include="tools\gcc.py" />
+    <None Include="tools\GnuCommon\common.py" />
+    <None Include="tools\GnuCommon\gcc.py" />
+    <None Include="tools\GnuCommon\gxx.py" />
+    <None Include="tools\GnuCommon\perl.py" />
+    <None Include="tools\GnuCommon\__init__.py" />
+    <None Include="tools\gnulink.py" />
+    <None Include="tools\install.py" />
+    <None Include="tools\intelc.py" />
+    <None Include="tools\IntelCommon\common.py" />
+    <None Include="tools\IntelCommon\filescanner.py" />
+    <None Include="tools\IntelCommon\intelc_posix.py" />
+    <None Include="tools\IntelCommon\intelc_win32.py" />
+    <None Include="tools\IntelCommon\intelc_win32_12.py" />
+    <None Include="tools\IntelCommon\intelc_win32_91.py" />
+    <None Include="tools\IntelCommon\regscanner.py" />
+    <None Include="tools\IntelCommon\__init__.py" />
+    <None Include="tools\masm.py" />
+    <None Include="tools\midl.py" />
+    <None Include="tools\MSCommon\common.py" />
+    <None Include="tools\MSCommon\sdk.py" />
+    <None Include="tools\MSCommon\vc10.py" />
+    <None Include="tools\MSCommon\vc8.py" />
+    <None Include="tools\MSCommon\vc9.py" />
+    <None Include="tools\MSCommon\vc_old.py" />
+    <None Include="tools\MSCommon\vsx_sdk.py" />
+    <None Include="tools\MSCommon\__init__.py" />
+    <None Include="tools\mslib.py" />
+    <None Include="tools\mslink.py" />
+    <None Include="tools\mssdk.py" />
+    <None Include="tools\msvc.py" />
+    <None Include="tools\msvs.py" />
+    <None Include="tools\perl.py" />
+    <None Include="tools\vssdk.py" />
+    <None Include="tools\wdk.py" />
+    <None Include="tools\__init__.py" />
+    <None Include="tool_mapping.py" />
+    <None Include="Variables\BoolVariable.py" />
+    <None Include="Variables\EnumVariable.py" />
+    <None Include="Variables\IntVariable.py" />
+    <None Include="Variables\ListVariable.py" />
+    <None Include="Variables\PackageVariable.py" />
+    <None Include="Variables\PathVariable.py" />
+    <None Include="Variables\variable.py" />
+    <None Include="Variables\variables.py" />
+    <None Include="Variables\__init__.py" />
+    <None Include="vcs\base.py" />
+    <None Include="vcs\file_system.py" />
+    <None Include="vcs\null.py" />
+    <None Include="vcs\reuse.py" />
+    <None Include="vcs\svn.py" />
+    <None Include="vcs\task.py" />
+    <None Include="vcs\task_master.py" />
+    <None Include="vcs\__init__.py" />
+    <None Include="version.py" />
+    <None Include="version_info.py" />
+    <None Include="__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <WorkingDirectory Include="C:\Users\jlkenny\code\parts\" />
+    <WorkingDirectory Include="C:\Users\jlkenny\code\parts\" />
+    <WorkingDirectory Include="C:\Users\jlkenny\code\parts\" />
+    <WorkingDirectory Include="C:\Users\jlkenny\code\parts\" />
+    <WorkingDirectory Include="C:\Users\jlkenny\code\parts\" />
+    <WorkingDirectory Include="C:\Users\jlkenny\code\parts\" />
+    <WorkingDirectory Include="C:\Users\jlkenny\code\parts\" />
+    <WorkingDirectory Include="C:\Users\jlkenny\code\parts\" />
+    <WorkingDirectory Include="C:\Users\jlkenny\code\parts\" />
+    <WorkingDirectory Include="C:\Users\jlkenny\code\parts\" />
+    <WorkingDirectory Include="C:\Users\jlkenny\code\parts\" />
+    <WorkingDirectory Include="C:\Users\jlkenny\code\parts\" />
+    <WorkingDirectory Include="C:\Users\jlkenny\code\parts\" />
+    <WorkingDirectory Include="C:\Users\jlkenny\Desktop\parts\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="configurations\debug\g++_any-any_android-arm.py" />
+    <Compile Include="configurations\debug\g++_any-any_android-x86.py" />
+    <Compile Include="configurations\debug\gcc_any-any_android-arm.py" />
+    <Compile Include="configurations\debug\gcc_any-any_android-x86.py" />
+    <Compile Include="configurations\debug\wdk_win32-any_win32-x86.py" />
+    <Compile Include="configurations\debug\wdk_win32-any_win32-x86_64.py" />
+    <Compile Include="configurations\default\as_any-x86_64_any-x86.py" />
+    <Compile Include="configurations\default\as_any-x86_any-x86_64.py" />
+    <Compile Include="configurations\default\g++_any-x86_64_any-x86.py" />
+    <Compile Include="configurations\default\g++_any-x86_any-x86_64.py" />
+    <Compile Include="configurations\default\gas_any-x86_64_any-x86.py" />
+    <Compile Include="configurations\default\gas_any-x86_any-x86_64.py" />
+    <Compile Include="configurations\default\gcc_any-x86_64_any-x86.py" />
+    <Compile Include="configurations\default\gcc_any-x86_any-x86_64.py" />
+    <Compile Include="configurations\default\gnulink_any-x86_64_any-x86.py" />
+    <Compile Include="configurations\default\gnulink_any-x86_any-x86_64.py" />
+    <Compile Include="configurations\release\g++_any-any_android-arm.py" />
+    <Compile Include="configurations\release\g++_any-any_android-x86.py" />
+    <Compile Include="configurations\release\gcc_any-any_android-arm.py" />
+    <Compile Include="configurations\release\gcc_any-any_android-x86.py" />
+    <Compile Include="configurations\release\wdk_win32-any_win32-x86.py" />
+    <Compile Include="configurations\release\wdk_win32-any_win32-x86_64.py" />
+    <Compile Include="loadlogic\all.py" />
+    <Compile Include="loadlogic\base.py" />
+    <Compile Include="loadlogic\changed.py" />
+    <Compile Include="loadlogic\nodepends.py" />
+    <Compile Include="loadlogic\target.py" />
+    <Compile Include="loadlogic\__init__.py" />
+    <Compile Include="overrides\executor.py" />
+    <Compile Include="overrides\override_env.py" />
+    <Compile Include="overrides\symlinks.py" />
+    <Compile Include="overrides\tool.py" />
+    <Compile Include="picklehelpers.py" />
+    <Compile Include="pieces\archive_package.py" />
+    <Compile Include="pieces\deb_wrapper.py" />
+    <Compile Include="pieces\dpkg.py" />
+    <Compile Include="pieces\msi_wrapper.py" />
+    <Compile Include="pieces\rpm.py" />
+    <Compile Include="pieces\rpm_package.py" />
+    <Compile Include="pieces\rpm_val.py" />
+    <Compile Include="pieces\zip_file.py" />
+    <Compile Include="pieces\zip_pkg.py" />
+    <Compile Include="platformspecific\win32\msi.py" />
+    <Compile Include="platformspecific\win32\__init__.py" />
+    <Compile Include="platformspecific\__init__.py" />
+    <Compile Include="pnode\dependent_info.py" />
+    <Compile Include="process_tools.py" />
+    <Compile Include="tools\ar.py" />
+    <Compile Include="tools\as.py" />
+    <Compile Include="tools\clang.py" />
+    <Compile Include="tools\gas.py" />
+    <Compile Include="tools\GnuCommon\android.py" />
+    <Compile Include="tools\GnuCommon\binutils.py" />
+    <Compile Include="tools\GnuCommon\clang.py" />
+    <Compile Include="tools\jar.py" />
+    <Compile Include="tools\javac.py" />
+    <Compile Include="tools\javah.py" />
+    <Compile Include="tools\ld.py" />
+    <Compile Include="tools\lipo.py" />
+    <Compile Include="tools\MSCommon\MsiFinder.py" />
+    <Compile Include="tools\MSCommon\vc11.py" />
+    <Compile Include="tools\MSCommon\vc12.py" />
+    <Compile Include="tools\MSCommon\wix.py" />
+    <Compile Include="tools\wix.py" />
+    <Compile Include="vcs\git.py" />
+    <Compile Include="vcs\smart_svn.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="{9a7a9026-48c1-4688-9d5d-e5699d47d074}\2.7" />
+  </ItemGroup>
+</Project>

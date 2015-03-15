@@ -1,0 +1,8 @@
+from parts import *
+
+Part('zip_package1','zip_package1.parts', package_group='pkg1')
+Part('zip_package2','zip_package2.parts', package_group='')
+Part('zip_package3','zip_package3.parts', package_group=None)
+Part('zip_package4','zip_package4.parts', package_group='pkg3')
+
+Part('packaging','packaging.parts')

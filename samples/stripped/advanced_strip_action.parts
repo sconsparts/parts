@@ -1,0 +1,28 @@
+Import('*')
+
+env.PartName('advanced_strip_action')
+env.PartVersion('1.0.0')
+
+# This parts file demonstrates another way to strip binary. This may be useful when you have
+# some pre-built binaries which you do not want to ship with debug information. In this case
+# you can use $STRIP_ACTION env variable and env.Command method. The variable points to
+# SCons Action object used to strip binaries.
+
+source = 'advanced_strip_action_example'
+
+if env.has_key('STRIP_ACTION'):
+    env.PrintMessage('Strip action defined. Create stripped copy of "%s" file' % source)
+    env.InstallTarget(
+        env.Command(
+            target = env.File(source).abspath,
+            source = env.File(source).srcnode().abspath,
+            action = [Copy('$TARGET', '$SOURCE'), '$STRIP_ACTION'],
+            NO_STRIP = False
+        )
+    )
+else:
+    env.PrintWarning('No strip action defined. File "%s" will not be stripped' % source)
+    env.InstallTarget(source)
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

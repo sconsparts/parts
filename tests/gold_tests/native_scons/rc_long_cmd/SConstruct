@@ -1,0 +1,6 @@
+from parts import *
+
+SetOptionDefault('LOGGER', '$TEXT_LOGGER')
+SetOptionDefault('PART_LOGGER', '$PART_TEXT_LOGGER')
+
+Part(alias='part1', parts_file='part1.parts')

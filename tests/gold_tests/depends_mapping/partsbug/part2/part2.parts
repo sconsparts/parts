@@ -1,0 +1,10 @@
+
+Import('*')
+
+env.PartVersion("0.0.0")
+env.PartName("part2")
+env.DependsOn([
+               Component('part1')
+               ])
+
+

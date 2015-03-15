@@ -1,0 +1,3 @@
+from parts import *
+SetOptionDefault('LOGGER', 'TEXT_LOGGER')
+Part('engine','engine/engine.parts')

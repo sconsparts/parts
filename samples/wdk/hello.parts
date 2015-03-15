@@ -1,0 +1,31 @@
+Import('*')
+
+env.PartName('hello_wdk')
+env.PartVersion('1.0.0')
+
+if env.subst('$TARGET_OS') != 'win32':
+    env.PrintError(env.subst('Invalid value for environment variable TARGET_OS. Expected "win32" but got "$TARGET_OS"'))
+
+env.DriverStaticLibrary(
+    target = 'library',
+    source = env.DriverObject(
+        ['tostatic.c'] + (['test64.asm'] if env['TARGET_ARCH'] <> 'x86' else []),
+        DDKCPPDEFINES=['DLL_EXPORTS']
+        )
+    )
+env.Append(DDKLIBPATH = ['$BUILD_DIR'])
+envsh = env.Clone()
+envsh.Append(DDKSHLIBS = ['library'])
+envsh.DriverSharedLibrary(
+        target = 'sharedlib',
+        source = env.DriverObject(
+            ['tolib.c'],
+            DDKCPPDEFINES = ['DLL_EXPORTS']
+            )
+        )
+env = env.Clone()
+env.Append(DDKLIBS = 'sharedlib')
+env.InstallBin(env.WinDriver(target = "hello", source = "hello.c"))
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

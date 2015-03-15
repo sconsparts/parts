@@ -1,0 +1,5 @@
+Import('*')
+
+env.PartName("extract1")
+filesExtracted = env.Extract(source = 'extract1.zip', EXTRACT_INCLUDES = ["*.cpp"])
+env.InstallTarget(env.Program('test', filesExtracted))

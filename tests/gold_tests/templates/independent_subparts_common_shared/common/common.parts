@@ -1,0 +1,8 @@
+Import('*')
+
+env.PartVersion('1.2.5')
+env.PartName('common')
+
+env.Part('sub1/sub1.parts')
+env.Part('subfile/subfile.parts',platform_independent=True)
+

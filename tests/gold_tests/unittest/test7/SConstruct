@@ -1,0 +1,9 @@
+from parts import *
+
+SetOptionDefault('RUN_UTEST_EXIT_FUNCTION', lambda rcode, env, stackframe: rcode != 1 and rcode or 0)
+SetOptionDefault('LOGGER', 'TEXT_LOGGER')
+SetOptionDefault('PART_LOGGER', 'PART_TEXT_LOGGER')
+
+Part('root', 'root.parts')
+# vim: set et ts=4 sw=4 ai ft=python :
+

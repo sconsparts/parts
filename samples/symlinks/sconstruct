@@ -1,0 +1,8 @@
+from parts import *
+
+SetOptionDefault('PDB', '${TARGET.name}.pdb')
+
+Part(alias='symlinks', parts_file='symlinks.parts')
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

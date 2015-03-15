@@ -1,0 +1,8 @@
+Import('*')
+
+env.PartVersion('1.2.3.test.5')
+env.PartName('A')
+
+env.Part('sub1/sub1.parts')
+env.Part('sub2/sub2.parts')
+env.Part('sub3/sub3.parts')

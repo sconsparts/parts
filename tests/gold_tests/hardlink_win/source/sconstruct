@@ -1,0 +1,28 @@
+from parts import *
+
+SetOptionDefault('LOGGER', 'TEXT_LOGGER')
+SetOptionDefault('PART_LOGGER', 'PART_TEXT_LOGGER')
+
+if ARGUMENTS.get('second_run', False):
+    import sys
+    import time
+    patched = False
+    for ccopyName in ('parts.pieces.ccopy', '<pieces>ccopy'):
+        try:
+            ccopy = sys.modules[ccopyName]
+        except KeyError:
+            continue
+        patched = True
+        ccopy.old_CCopyFunc = ccopy.CCopyFunc
+        def slow_CCopyFunc(*a, **kw):
+            time.sleep(1)
+            return ccopy.old_CCopyFunc(*a, **kw)
+        ccopy.CCopyFunc = slow_CCopyFunc
+    if not patched:
+        raise Exception('Huh, "ccopy" moved somewhere?..')
+
+if ARGUMENTS.get('second_run', False) or ARGUMENTS.get('dup_run', False):
+    with open('hello.c', 'a') as modifiedSource:
+        modifiedSource.write('\n// some comment\n')
+
+Part('hello', 'hello.parts')

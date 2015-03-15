@@ -1,0 +1,12 @@
+Import('*')
+
+env.PartName('sub3')
+
+env.DependsOn([Component("common.sub1")])
+
+#files
+c_files=['a_so.c']
+
+outputs=env.StaticLibrary('${PART_NAME}_${PART_SHORT_VERSION}',c_files)
+env.InstallTarget(outputs)
+env.SdkInclude("sub3.h")

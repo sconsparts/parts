@@ -1,0 +1,11 @@
+from parts import *
+
+Default('build::')
+
+SetOptionDefault('INSTALL_ROOT', '#install')
+SetOptionDefault('INSTALL_BIN', '${INSTALL_ROOT}/bin')
+
+Part(parts_file='subdir/test.part')
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

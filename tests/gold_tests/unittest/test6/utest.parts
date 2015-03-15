@@ -1,0 +1,12 @@
+Import('*')
+
+env.PartName('utest')
+
+env.DependsOn([Component('root.main', env.PartVersion(), REQ.EXISTS)])
+env2 = env.Clone()
+env2.DependsOn([Component('root.empty', env.PartVersion(), REQ.EXISTS)])
+
+env.UnitTest('test', 'utest-main.cpp', data_src='${INSTALL_BIN}/${PROGPREFIX}main${PROGSUFFIX}')
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

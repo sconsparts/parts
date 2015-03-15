@@ -1,0 +1,7 @@
+from parts import *
+
+SetOptionDefault('INSTALL_ROOT','#MY_INSTALL2')
+SetOptionDefault('BUILD_DIR_ROOT','mybuild')
+
+Part('hello','hello/hello.parts')
+Part('print','print_msg/print_msg.parts')

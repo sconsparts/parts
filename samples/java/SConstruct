@@ -1,0 +1,8 @@
+from parts import *
+
+SetOptionDefault('LOGGER', 'TEXT_LOGGER')
+
+Part('hello', 'hello.parts', append=dict(toolchain='java'))
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

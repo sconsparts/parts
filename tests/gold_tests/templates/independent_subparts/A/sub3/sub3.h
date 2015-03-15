@@ -1,0 +1,1 @@
+extern void a_func2(int i);

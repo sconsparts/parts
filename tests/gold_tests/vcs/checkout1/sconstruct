@@ -1,0 +1,13 @@
+from parts import *
+
+Part(
+    alias = 'compfoo',
+    parts_file = 'compfoo.parts',
+    vcs_type = VcsSvn(repository = 'compfoo/base/mainline/compfoo1')
+)
+
+Part(
+    alias = 'compbar',
+    parts_file = 'compbar.parts',
+    vcs_type = VcsSvn(repository = 'compbar/static/compbar_0.0.1')
+)

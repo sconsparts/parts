@@ -1,0 +1,7 @@
+from parts import *
+
+Part ('control1','spec.parts', package_group='pkg_control1')
+Part ('control2','control.parts', package_group='pkg_control2')
+Part ('rpm_package1','rpm_package1.parts', package_group='pkg1')
+Part ('rpm_package2','rpm_package2.parts', package_group='pkg2')
+Part('packaging','packaging.parts')

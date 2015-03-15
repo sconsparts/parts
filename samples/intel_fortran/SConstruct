@@ -1,0 +1,6 @@
+from parts import *
+
+Part('intel_fortran', parts_file = 'intel_fortran.parts', toolchain='icl,mstools')
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

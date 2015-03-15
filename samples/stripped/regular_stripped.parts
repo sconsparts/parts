@@ -1,0 +1,18 @@
+Import('*')
+
+env.PartName('regular_stripped')
+env.PartVersion('1.0.0')
+
+# This parts file will generate regular stripped executable from stripped.cpp source code.
+# Debugging information for the binary will be completely lost.
+
+env.InstallTarget(
+    env.Program(
+        target = '${PART_NAME}',
+        source = 'stripped.cpp',
+        NO_STRIP = False
+    )
+)
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

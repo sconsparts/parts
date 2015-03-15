@@ -1,0 +1,2 @@
+from parts import *
+Part('print','print_msg/src/print_msg.parts')

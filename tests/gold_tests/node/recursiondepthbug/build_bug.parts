@@ -1,0 +1,12 @@
+Import('*')
+
+# Normal stuff that all Parts should have
+env.PartName("build_bug")
+env.DependsOn([])
+
+#files
+cpp_files=Glob('src/*.c')
+
+outputs=env.Library('${PART_NAME}', cpp_files)
+env.InstallTarget(env.Sdk(outputs))
+env.InstallLib(outputs)

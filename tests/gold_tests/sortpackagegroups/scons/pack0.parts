@@ -1,0 +1,41 @@
+Import('*')
+
+env.PartName('pack0')
+env.PartVersion('1.0.0')
+
+import json
+def pack0_action(target, source, env):
+
+    result = dict()
+    for source in source:
+        for node in env.GetPackageGroupFiles(str(source)):
+            # In testing purposes we need to be sure
+            # the node has proper package.category meta-tag
+            assert 'TOP_LEVEL' == env.MetaTagValue(node, 'category', 'package')
+            with open(node.path, 'r') as file_to_read:
+                result[node.path.replace('\\', '/')] = file_to_read.read().strip()
+
+    with open(str(target[0]), 'w') as target:
+        target.write(json.dumps(result))
+
+def source_scanner(node, env, path):
+    return env.GetPackageGroupFiles(str(node))
+    
+
+import SCons.Node.Python
+SCons.Node.Python.Value.get_found_includes = (
+        lambda self, env, scanner, path:
+        scanner(self, env, path) if scanner else [])
+
+env['BUILDERS']['Pack0'] = Builder(
+        action=pack0_action,
+        source_factory=Value,
+        source_scanner=Scanner(source_scanner),
+        )
+
+result = env.Pack0('#pack0.txt', ['group1', 'group2', 'group3'])
+
+env.Alias('build::alias::${ALIAS}', result)
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

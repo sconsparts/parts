@@ -1,0 +1,25 @@
+Import('*')
+
+env.PartName('wixsample5')
+env.PartVersion('1.0.0')
+
+# This is the most complex sample. It demonstrates:
+#  1. How WIXFILEPATH works.
+#  2. How targets from parts referenced  in SConstruct later than this one are handled.
+#  3. How extensions work.
+#  4. How .wxi files are handled.
+
+env.Append(
+    WIXFILEPATH = ['${INSTALL_BIN}'],
+    WIXLINKEXTENSIONS = ['WixUIExtension'],
+)
+
+env['ENV']['WIXSAMPLE5WXI'] = env.subst('$SRC_DIR\\subdir0\\subdir1\\wixsample5.wxi')
+
+wxsobj = env.WixObject(env.Glob('*.wxs'))
+result = env.InstallBin(env.MSI('${PART_NAME}', source = wxsobj))
+
+env.Alias('build::alias::${ALIAS}::copy', result)
+
+# vim: set et ts=4 sw=4 ft=python :
+

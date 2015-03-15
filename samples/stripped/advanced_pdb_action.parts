@@ -1,0 +1,34 @@
+Import('*')
+
+env.PartName('advanced_pdb_action')
+env.PartVersion('1.0.0')
+
+# This parts file demonstrates another way to extract debug info from binary to pdb file.
+# This may be useful when you have some pre-built binaries which you do not want to ship
+# with debug information but want to store the information for future debugging.
+# This case is a bit more complex than 'advanced_strip_action' one because for one source
+# two targets are built and you will need to use emitter object for second target.
+# You will need to use $PDB_EMITTER and $PDB_ACTION environment variables.
+
+source = 'advanced_pdb_action_example'
+if env.has_key('PDB_ACTION') and env.has_key('PDB_EMITTER'):
+    env.PrintMessage('Prepare to extract PDB from %s' % source)
+    builder = Builder(
+            action = [Copy('${TARGETS[0]}', '$SOURCE'), '$PDB_ACTION'],
+            emitter = env['PDB_EMITTER']
+        )
+    env.InstallTarget(
+        builder(
+            env,
+            target = env.File(source).abspath,
+            source = env.File(source).srcnode().abspath, 
+            PDB = '${TARGETS[0].filebase}.pdb'
+        )
+    )
+else:
+    env.PrintWarning('No PDB creation action defined. '\
+            'File "%s" will not be stripped and no pdb will be created.')
+    env.InstallBin(source)
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

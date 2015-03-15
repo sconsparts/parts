@@ -1,0 +1,20 @@
+Import('*')
+
+# This parts file will generate regular not stripped executable from stripped.cpp source code.
+# The resulting executable will depend on shared_with_pdb SO.
+# This is a regression test on the bug when some files what to be linked against .pdb's on Linux.
+
+env.PartName('regular_dep_on_shared_with_pdb')
+env.PartVersion('1.0.0')
+
+env.DependsOn([Component('shared_with_pdb')])
+
+env.InstallTarget(
+    env.Program(
+        target = '${PART_NAME}',
+        source = 'stripped.cpp'
+    )
+)
+
+# vim: set et ts=4 sw=4 ai ft=python :
+

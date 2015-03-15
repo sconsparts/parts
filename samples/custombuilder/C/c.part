@@ -1,0 +1,10 @@
+Import('*')
+
+env.PartName("c")
+env.PartVersion("1.0")
+
+env.DependsOn([Component('b',requires=REQ.OPT)])
+
+env.InstallOpt(
+env.OptFile("Cmod",['c_foo.in'])
+)

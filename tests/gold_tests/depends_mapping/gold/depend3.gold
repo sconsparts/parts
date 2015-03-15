@@ -1,0 +1,6 @@
+Verbose: [gtest] ["${PARTIDEXPORTS('name::part2a@platform_match:{}-{}@version:*@config:debug','build','foo',3)}", "${PARTIDEXPORTS('name::part2b@platform_match:{}-{}@version:*@config:debug','build','foo',3)}"] False
+Verbose: [gtest] ["${PARTIDEXPORTS('name::part2a@platform_match:{}-{}@version:*@config:debug','build','foo_list',3)}", "${PARTIDEXPORTS('name::part2b@platform_match:{}-{}@version:*@config:debug','build','foo_list',3)}"] False
+Verbose: [gtest] ${PARTIDEXPORTS('name::part2a@platform_match:{}-{}@version:*@config:debug','build','foo',3)} False
+Verbose: [gtest] ${PARTIDEXPORTS('name::part2b@platform_match:{}-{}@version:*@config:debug','build','foo',3)} False
+Verbose: [gtest] ${PARTIDEXPORTS('name::part2a@platform_match:{}-{}@version:*@config:debug','build','foo_list',3)} False
+Verbose: [gtest] ${PARTIDEXPORTS('name::part2b@platform_match:{}-{}@version:*@config:debug','build','foo_list',3)} False

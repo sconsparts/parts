@@ -1,0 +1,16 @@
+Import('*')
+
+env.PartVersion('1.0.0')
+env.PartName('print_msg')
+
+#files
+cpp_files=['print_msg.c']
+
+if env['TARGET_PLATFORM']['OS']=='win32':
+    env.Append(CPPDEFINES= ['WINDOW_OS'])
+
+outputs=env.Library('print_msg',cpp_files)
+
+env.Sdk(outputs)
+
+env.SdkInclude(['print_msg.h'])

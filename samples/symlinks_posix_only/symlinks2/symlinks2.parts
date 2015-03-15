@@ -1,0 +1,43 @@
+'''
+This is an example on how to deal with existing symbolic links
+'''
+Import('*')
+
+env.PartName('symlinks2')
+env.PartVersion('1.0.0')
+
+# We want some C++ runtime shared object be shipped with our product
+gccFiles = ['libstdc++.so', 'libstdc++_shared.so', 'libgcc_s.so']
+
+import subprocess
+def isLibrary(path):
+    '''
+    This function determines whether the path points to a shared object.
+    It checks first four bytes of the binary to be an ELF signature.
+    '''
+    try:
+        with open(path) as file:
+            return file.read(4)[1:] == 'ELF'
+    except IOError:
+        return False
+
+def getLibraries(env, libraries):
+    '''
+    Returns iterable object defining a list of libraries used by compiler.
+    '''
+    for library in libraries:
+        out, _ = subprocess.Popen(
+                # We can't use $CC env variable here because it may point to icc
+                # which sometimes handles the --print-file-name option incorrectly.
+                # We use GCC.TOOL instead. The variable points to the same binary
+                # which is used to link binaries
+                env.subst('${GCC.TOOL} --print-file-name={0}').format(library), shell=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env['ENV']).communicate()
+        yield out.strip()
+
+# Here we us ResolveSymLinkChain function to go through symlinks on the file system and copy
+# not only them but also files they point to.
+env.InstallLib(env.ResolveSymLinkChain([env.Entry(library) for library in getLibraries(env, gccFiles) if isLibrary(library)]))
+
+# vim: set et ts=4 sw=4 ai ft=python :
+
