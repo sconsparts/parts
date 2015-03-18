@@ -5,9 +5,10 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{8f62fc3b-b6cf-46be-a8da-7c9c423a9db5}</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>C:\Python27\Scripts\scons-2.1.0.py</StartupFile>
-    <SearchPath>C:\Python27\scons-2.1.0\;..\</SearchPath>
-    <WorkingDirectory>C:\Users\jlkenny\code\pf132</WorkingDirectory>
+    <StartupFile>C:\Python27\Scripts\scons-2.3.4.py</StartupFile>
+    <SearchPath>C:\Python27\scons-2.3.4\</SearchPath>
+    <WorkingDirectory>
+    </WorkingDirectory>
     <AssemblyName>Parts</AssemblyName>
     <Name>Parts</Name>
     <RootNamespace>Parts</RootNamespace>
@@ -19,6 +20,7 @@
     <InterpreterVersion>2.7</InterpreterVersion>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterArguments />
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -43,9 +45,6 @@
     <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
     <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
     <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
-    <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
-    <SearchPath Include="C:\Program Files (x86)\IronPython 2.7\Lib\site-packages\scons-1.2.0\" />
-    <SearchPath Include="C:\Python26\Lib\site-packages\scons-1.2.0\SCons\" />
     <SearchPath Include="C:\Users\jlkenny\code\parts\" />
     <SearchPath Include="C:\Users\jlkenny\code\parts\" />
     <SearchPath Include="C:\Users\jlkenny\code\parts\" />
@@ -269,7 +268,6 @@
     <WorkingDirectory Include="C:\Users\jlkenny\code\parts\" />
     <WorkingDirectory Include="C:\Users\jlkenny\code\parts\" />
     <WorkingDirectory Include="C:\Users\jlkenny\code\parts\" />
-    <WorkingDirectory Include="C:\Users\jlkenny\Desktop\parts\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="configurations\debug\g++_any-any_android-arm.py" />
