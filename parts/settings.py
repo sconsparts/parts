@@ -594,19 +594,22 @@ class Settings(object):
         env['HOST_PLATFORM']=glb._host_sys
         env['_BUILD_CONTEXT_FILES']=set() # make a Var
 
-        if env['HOST_PLATFORM']['OS'] =='win32':
-            # add certain paths for windows, that have been missing.
-            env.AppendENVPath('PATH',SCons.Platform.win32.get_system_root(), delete_existing=1)
-            env.AppendENVPath('PATH',SCons.Platform.win32.get_system_root()+'\\system32', delete_existing=1)
-
-        elif env['HOST_PLATFORM'] == 'posix':
-            env['ENV']['HOME']=os.environ['HOME']
-
         # some general values we need to setup on any given system
         env['PART_USER']=common.GetUserName(env)
         env['RPATH']=[] # double check this case, linker tools may have this covered now.
 
+        # some setup we want in the "shell" Environment
 
+        if env['HOST_PLATFORM']['OS'] =='win32':
+            # add certain paths for windows, that have been missing.
+            env.AppendENVPath('PATH',SCons.Platform.win32.get_system_root(), delete_existing=1)
+            env.AppendENVPath('PATH',SCons.Platform.win32.get_system_root()+'\\system32', delete_existing=1)
+            env['ENV']['USERNAME']=env['PART_USER']
+
+        elif env['HOST_PLATFORM'] == 'posix':
+            env['ENV']['HOME']=os.environ['HOME']
+            env['ENV']['USER']=env['PART_USER']
+            
         #add path to current Python being used, so we use this instead of some other version
         # this allow Command that run python to work as expected
         env.PrependENVPath('PATH',os.path.split(sys.executable)[0],delete_existing=True)

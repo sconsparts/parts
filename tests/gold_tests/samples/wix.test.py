@@ -14,6 +14,8 @@ Test.SkipUnless(
             r'SOFTWARE\Wow6432Node\Microsoft\Windows Installer XML\3.7',
              r'SOFTWARE\Microsoft\Windows Installer XML\3.8',
             r'SOFTWARE\Wow6432Node\Microsoft\Windows Installer XML\3.8',
+            r'SOFTWARE\Microsoft\Windows Installer XML\3.9',
+            r'SOFTWARE\Wow6432Node\Microsoft\Windows Installer XML\3.9',
         ],
         'WiX not installed on the system')
     )

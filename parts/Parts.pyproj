@@ -299,7 +299,6 @@
     <Compile Include="loadlogic\target.py" />
     <Compile Include="loadlogic\__init__.py" />
     <Compile Include="overrides\executor.py" />
-    <Compile Include="overrides\override_env.py" />
     <Compile Include="overrides\symlinks.py" />
     <Compile Include="overrides\tool.py" />
     <Compile Include="picklehelpers.py" />

@@ -3,21 +3,21 @@
 from .. import glb
 from .. import common
 #
-#def Parts_Alias(self,target, source=[], action=None, **kw):
-#    if glb.pnodes.isKnownNode(target):
-#        a=glb.pnodes.GetNode(target)
-#        if hasattr(a,'builder') and a.builder is None:
-#            a.convert()
-#    tmp=self._orig_Alias(target,source,action,**kw)
-##    glb.pnodes.AddAlias(tmp)
-#    return tmp
+def Parts_Alias(self,target, source=[], action=None, **kw):
+    try:
+        self["PART_SECTION"] # checks that thsi is a "part" else we don't want to do this
+        t=self.subst(target)
+        if not t.startswith(self.subst("${PART_SECTION}::")) and not t.startswith("run_utest::"): # check that we want to modify this target
+            return self._orig_Alias("${{PART_SECTION}}::alias::${{PART_ALIAS}}::{0}".format(target),source,action,**kw)
+    except KeyError:
+        pass
+    return self._orig_Alias(target,source,action,**kw)
+
+from SCons.Script.SConscript import SConsEnvironment
 ##
-##
-#from SCons.Script.SConscript import SConsEnvironment
-#
-## override __setitem__ bind env with bindable objects when set
-#SConsEnvironment._orig_Alias=SConsEnvironment.Alias
-#SConsEnvironment.Alias=Parts_Alias
+### override __setitem__ bind env with bindable objects when set
+SConsEnvironment._orig_Alias=SConsEnvironment.Alias
+SConsEnvironment.Alias=Parts_Alias
 
 
 def alias_source_node(name, **kw):

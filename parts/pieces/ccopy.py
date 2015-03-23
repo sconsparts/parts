@@ -13,6 +13,7 @@ from SCons.Script.SConscript import SConsEnvironment
 import parts.common as common
 import parts.api as api
 import parts.overrides.symlinks as symlinks
+import parts.pattern as pattern
 
 class CCopyException(Exception):
     def __init__(self, exc):
@@ -304,6 +305,11 @@ def CCopyWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw):
                 # '#' on the file name portion as meaning the Node should
                 # be relative to the top-level SConstruct directory.
                 e = dnode.Entry(os.sep.join(['.', src.name]))
+            elif  isinstance(src, pattern.Pattern):
+                # this case needs some tweaking to deal with symlinks
+                t, sr = src.target_source(dnode.abspath)                
+                n_targets.extend(env.CCopyAs(target=t, source=sr))
+                continue
             elif isinstance(src, SCons.Node.FS.Dir):
                 e = dnode.Dir(os.sep.join(['.', src.name]))
             elif isinstance(src, symlinks.FileSymbolicLink):
@@ -337,8 +343,8 @@ def CCopyWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw):
                 pass
             n_targets.extend(copyTargets)
 
-    for target in n_targets:
-        target.set_precious(True)
+    #for target in n_targets:
+    #    target.set_precious(True)
     return n_targets
 
 def CCopyAsWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw):
