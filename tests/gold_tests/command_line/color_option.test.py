@@ -532,14 +532,14 @@ t.Streams.Debug='gold/color_good4.gold'
 t = Test.AddTestRun("bad")
 t.Command = "scons all --use-color=foo --trace=use_color_option --tc=null --console-stream=none"
 t.ReturnCode = 2
-t.Streams.stderr = ['gold/color_bad1.scons23.gold', 'gold/color_bad1.scons21.gold']
+t.Streams.stderr = 'gold/color_bad1.gold'
 
 t = Test.AddTestRun("bad")
 t.Command = "scons all --use-color=c=r:g,o=y,b:e=g:br,w=3:4,m=10:13,v=bold:default,t=blk:white --trace=use_color_option --tc=null --console-stream=none"
 t.ReturnCode = 2
-t.Streams.stderr = ['gold/color_bad2.scons23.gold', 'gold/color_bad2.scons21.gold']
+t.Streams.stderr = 'gold/color_bad2.gold'
 
 t = Test.AddTestRun("bad")
 t.Command = "scons all --use-color=stdout=badcolor --trace=use_color_option --tc=null --console-stream=none"
 t.ReturnCode = 2
-t.Streams.stderr = ['gold/color_bad3.scons23.gold', 'gold/color_bad3.scons21.gold']
+t.Streams.stderr = 'gold/color_bad3.gold'

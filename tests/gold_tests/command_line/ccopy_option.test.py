@@ -53,9 +53,9 @@ t.Streams.Debug='gold/ccopy_good5.gold'
 t = Test.AddTestRun("bad")
 t.Command = "scons all --ccopy-logic=hard --trace=ccopy_logic_option --tc=null --console-stream=none"
 t.ReturnCode = 2
-t.Streams.stderr = ['gold/ccopy_bad1.scons23.gold', 'gold/ccopy_bad1.scons21.gold']
+t.Streams.stderr = 'gold/ccopy_bad1.gold'
 
 t = Test.AddTestRun("bad")
 t.Command = "scons all --ccopy-logic=copy,foo --trace=ccopy_logic_option --tc=null --console-stream=none"
 t.ReturnCode = 2
-t.Streams.stderr = ['gold/ccopy_bad2.scons23.gold', 'gold/ccopy_bad2.scons21.gold']
+t.Streams.stderr = 'gold/ccopy_bad2.gold'

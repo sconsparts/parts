@@ -1,4 +1,4 @@
 usage: scons [OPTION] [TARGET] ...
 
-SCons Error: Error:  fake-x86 is not a valid --target_platform value
+SCons {}rror: Error:  fake-x86 is not a valid --target_platform value
 Value must be in form of <Plaform>-<Architecture>

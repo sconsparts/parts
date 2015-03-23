@@ -64,4 +64,4 @@ t.Streams.Debug='gold/log_good4.gold'
 t = Test.AddTestRun("bad")
 t.Command = "scons all --log=foo --trace=logger_option --tc=null --console-stream=none"
 t.ReturnCode = 2
-t.Streams.stderr = ['gold/log_bad1.scons23.gold', 'gold/log_bad1.scons21.gold']
+t.Streams.stderr = 'gold/log_bad1.gold'

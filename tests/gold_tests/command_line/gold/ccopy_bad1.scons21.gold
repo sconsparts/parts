@@ -1,3 +1,0 @@
-usage: scons [OPTION] [TARGET] ...
-
-SCons error: option --ccopy-logic: invalid choice: 'hard' (choose from 'hard-soft-copy', 'soft-hard-copy', 'soft-copy', 'hard-copy', 'copy')

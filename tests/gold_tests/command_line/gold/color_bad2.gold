@@ -1,6 +1,6 @@
 usage: scons [OPTION] [TARGET] ...
 
-SCons Error: Error: Invalid stream type to set color for: "b:e" valid stream types are:
+SCons {}rror: Error: Invalid stream type to set color for: "b:e" valid stream types are:
  console, con, tty, c
  stdout, out, o
  stderr, error, err, e
