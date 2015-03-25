@@ -184,7 +184,12 @@ def depends_on(env,depends):
         # do classic mapper connections to get data where we needed it
         depends_on_classic(env,depends_list)
 
-
+class dependsOnEnv(object):
+    def __init__(self,env):
+        if __debug__: logInstanceCreation(self)
+        self.env=env
+    def __call__(self,depends):
+        return self.env.DependsOn(depends)
 
 
 # This is what we want to be setup in parts
@@ -194,5 +199,6 @@ from SCons.Script.SConscript import SConsEnvironment
 SConsEnvironment.DependsOn=depends_on
 SConsEnvironment.Component=Component
 # allow us to add component to parts as a global objects
+api.register.add_global_parts_object('DependsOn',dependsOnEnv,True)
 api.register.add_global_parts_object('Component',ComponentEnv,True)
 api.register.add_global_parts_object('REQ',REQ)

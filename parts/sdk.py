@@ -239,6 +239,11 @@ def SdkNoPkg(env, sources, sub_dir='', create_sdk=True):
     ret = SdkItem(env, '$SDK_NO_PKG', sources, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
+def SdkTools(env, sources, sub_dir='', create_sdk=True):
+
+    ret = SdkItem(env, '$SDK_TOOLS', sources, sub_dir, '', [], create_sdk=create_sdk)
+    return ret
+
 def SdkAPI(env, sources, sub_dir='', create_sdk=True):
 
     ret = SdkItem(env, '$SDK_API', sources, sub_dir, '', [], create_sdk=create_sdk)
@@ -443,6 +448,7 @@ SConsEnvironment.SdkSample = SdkSample
 SConsEnvironment.SdkTopLevel = SdkTopLevel
 SConsEnvironment.SdkNoPkg = SdkNoPkg
 SConsEnvironment.SdkPkgNo = SdkNoPkg
+SConsEnvironment.SdkTools = SdkTools
 SConsEnvironment.SdkAPI = SdkAPI
 SConsEnvironment.SdkPython = SdkPython
 SConsEnvironment.SdkScript = SdkScript
@@ -468,6 +474,7 @@ api.register.add_variable('SDK_INCLUDE_ROOT', '$SDK_ROOT/include', 'Full SDK dir
 api.register.add_variable('SDK_LIB', '$SDK_LIB_ROOT', 'Full SDK directory for the lib concept')
 api.register.add_variable('SDK_BIN', '$SDK_BIN_ROOT', 'Full SDK directory for the bin concept')
 api.register.add_variable('SDK_INCLUDE', '$SDK_INCLUDE_ROOT', 'Full SDK directory for the include or header concept')
+api.register.add_variable('SDK_TOOLS', '$SDK_ROOT/tools', 'Full SDK directory for the tools concept')
 api.register.add_variable('SDK_API', '$SDK_ROOT/API', 'Full SDK directory for the API concept')
 api.register.add_variable('SDK_CONFIG', '$SDK_ROOT/config', 'Full SDK directory for the configuration file concept')
 api.register.add_variable('SDK_DOC', '$SDK_ROOT/doc', 'Full SDK directory for the documenation concept')

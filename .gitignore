@@ -1,2 +1,3 @@
 tests/gold_tests/_sandbox/
 build/
+*.dblite

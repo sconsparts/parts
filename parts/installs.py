@@ -310,6 +310,14 @@ def InstallTarget(env, src_files, sub_dir='',no_pkg=False,create_sdk=True,**kw):
     return installed_files
 
 
+def InstallTools(env, src_files, sub_dir='',no_pkg=False,create_sdk=True,**kw):
+
+    installed_files = InstallItem(env, '$INSTALL_TOOLS', src_files,
+        sub_dir=sub_dir,sdk_dir='$SDK_TOOLS',no_pkg=no_pkg,create_sdk=create_sdk,
+        **get_args('TOOLS',**kw))
+    env.ExportItem('INSTALLTOOLS',installed_files,create_sdk,True)
+    return installed_files
+
 def InstallAPI(env, src_files, sub_dir='',no_pkg=False,create_sdk=True,**kw):
 
     installed_files = InstallItem(env, '$INSTALL_API', src_files,
@@ -471,6 +479,7 @@ from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
 SConsEnvironment.InstallTarget=InstallTarget
+SConsEnvironment.InstallTools=InstallTools
 SConsEnvironment.InstallAPI=InstallAPI
 SConsEnvironment.InstallConfig=InstallConfig
 SConsEnvironment.InstallDoc=InstallDoc
@@ -503,6 +512,7 @@ api.register.add_variable('INSTALL_LIB', '${INSTALL_ROOT}/lib', '')
 api.register.add_variable('INSTALL_BIN', '${INSTALL_ROOT}/bin', '')
 api.register.add_variable('INSTALL_RELATIVE_LIB', '${__env__.Dir(INSTALL_BIN).rel_path(__env__.Dir(INSTALL_LIB))}', '')
 
+api.register.add_variable('INSTALL_TOOLS','${INSTALL_ROOT}/tools','')
 api.register.add_variable('INSTALL_API','${INSTALL_ROOT}/API','')
 api.register.add_variable('INSTALL_INCLUDE','${INSTALL_ROOT}/include','')
 api.register.add_variable('INSTALL_CONFIG','${INSTALL_ROOT}/config','')
@@ -511,7 +521,7 @@ api.register.add_variable('INSTALL_HELP','${INSTALL_ROOT}/help','')
 api.register.add_variable('INSTALL_MANPAGE','${INSTALL_ROOT}/man','')
 api.register.add_variable('INSTALL_MESSAGE','${INSTALL_ROOT}/message','')
 api.register.add_variable('INSTALL_RESOURCE','${INSTALL_ROOT}/resource','')
-api.register.add_variable('INSTALL_SAMPLE','${INSTALL_ROOT}/sample','')
+api.register.add_variable('INSTALL_SAMPLE','${INSTALL_ROOT}/samples','')
 api.register.add_variable('INSTALL_DATA','${INSTALL_ROOT}/data','')
 api.register.add_variable('INSTALL_TOP_LEVEL','${INSTALL_ROOT}/','')
 api.register.add_variable('PKG_NO_INSTALL','${INSTALL_ROOT}/NOINSTALL','')

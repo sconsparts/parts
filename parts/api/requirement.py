@@ -24,6 +24,7 @@ DefineRequirementSet('SDKSAMPLE',[requirement_internal('SDKSAMPLE',policy=REQ.Po
 DefineRequirementSet('SDKTOPLEVEL',[requirement_internal('SDKTOPLEVEL',policy=REQ.Policy.ignore,listtype=True,internal=True)])
 DefineRequirementSet('SDKPKGNO',[requirement_internal('SDKPKGNO',policy=REQ.Policy.ignore,listtype=True,internal=True)])
 DefineRequirementSet('SDKAPI',[requirement_internal('SDKAPI',policy=REQ.Policy.ignore,listtype=True,internal=True)])
+DefineRequirementSet('SDKTOOLS',[requirement_internal('SDKTOOLS',policy=REQ.Policy.ignore,listtype=True,internal=True)])
 DefineRequirementSet('SDKPYTHON',[requirement_internal('SDKPYTHON',policy=REQ.Policy.ignore,listtype=True,internal=True)])
 DefineRequirementSet('SDKSCRIPT',[requirement_internal('SDKSCRIPT',policy=REQ.Policy.ignore,listtype=True,internal=True)])
 
@@ -43,6 +44,7 @@ DefineRequirementSet('SDKFILES',[
                         'SDKTOPLEVEL',
                         'SDKPKGNO',
                         'SDKAPI',
+                        'SDKTOOLS',
                         'SDKPYTHON',
                         'SDKSCRIPT'
                         ],weight=-5000)
