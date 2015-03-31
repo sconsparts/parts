@@ -37,10 +37,9 @@ def map_archive_builder(env, target, sources, archive_type, stackframe, **kw):
 
         # copy source node to build area, have to keep directory structure
         # Following logic will maintain the directory structure, e.g /bin/setup.py
-        # try make a hardlink for the source files else do a full copy
-
+        # try make a hardlink for the source files else do a full copy        
         new_sources=env.CCopyAs(
-                ['${{BUILD_DIR}}/_{2}/{0}/{1}'.format(target, env.Dir('${INSTALL_ROOT}').rel_path(n), archive_type_proper) for n in new_sources ],
+                ['${{BUILD_DIR}}/_{2}/{0}/{1}'.format(target.name, env.Dir('${INSTALL_ROOT}').rel_path(n), archive_type_proper) for n in new_sources ],
                 new_sources,
                 CCOPY_LOGIC='hard-copy'
                 )
@@ -53,7 +52,7 @@ def map_archive_builder(env, target, sources, archive_type, stackframe, **kw):
 
         function_name="{0}File".format(archive_type_proper)
         getattr(env, function_name)(target, new_sources+control_sources,
-                                    src_dir="$BUILD_DIR/_{0}/{1}".format(target, archive_type_proper),
+                                    src_dir="$BUILD_DIR/_{1}/{0}".format(target.name, archive_type_proper),
                                     **kw)
     return archive_builder
 
