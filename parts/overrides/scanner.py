@@ -25,7 +25,7 @@ except:
             pass
         _scan.__code__ = func.__code__
         _scan.__globals__.update(print_find_libs = SCons.Scanner.Prog.print_find_libs)
-        _scan.__globals__.update(_subst_libs = SCons.Scanner.Prog._subst_libs)
+        #_scan.__globals__.update(_subst_libs = SCons.Scanner.Prog._subst_libs)
         def scan(node, env, libpath = ()):
             global _scan
             prop_lst = env.get('LIBS')
