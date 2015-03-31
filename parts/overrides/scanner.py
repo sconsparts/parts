@@ -14,28 +14,31 @@ import SCons.Scanner
 from .. import mappers
 import thread
 
-#def wrap_Prog_scan(func):
-#    '''
-#    this deal with issue with the program scanner for stuff that has .a/.lib./dylib/.so files
-#    '''
-#    def _scan(node, env, libpath = ()):
-#        pass
-#    _scan.__code__ = func.__code__
-#    _scan.__globals__.update(print_find_libs = SCons.Scanner.Prog.print_find_libs)
-#    _scan.__globals__.update(_subst_libs = SCons.Scanner.Prog._subst_libs)
-#    def scan(node, env, libpath = ()):
-#        global _scan
-#        prop_lst = env.get('LIBS')
-#        if prop_lst:
-#            mappers.sub_lst(env, prop_lst, thread.get_ident(), recurse = False)
-#        return _scan(node, env, libpath)
-#    func.__code__ = scan.__code__
-#    func.__globals__.update(
-#            _scan = _scan,
-#            mappers = mappers,
-#            thread = thread,
-#            )
-#wrap_Prog_scan(SCons.Scanner.Prog.scan)
+try:
+    SCons.Scanner.Prog._subst_libs
+except:
+    def wrap_Prog_scan(func):
+        '''
+        this deal with issue with the program scanner for stuff that has .a/.lib./dylib/.so files
+        '''
+        def _scan(node, env, libpath = ()):
+            pass
+        _scan.__code__ = func.__code__
+        _scan.__globals__.update(print_find_libs = SCons.Scanner.Prog.print_find_libs)
+        _scan.__globals__.update(_subst_libs = SCons.Scanner.Prog._subst_libs)
+        def scan(node, env, libpath = ()):
+            global _scan
+            prop_lst = env.get('LIBS')
+            if prop_lst:
+                mappers.sub_lst(env, prop_lst, thread.get_ident(), recurse = False)
+            return _scan(node, env, libpath)
+        func.__code__ = scan.__code__
+        func.__globals__.update(
+                _scan = _scan,
+                mappers = mappers,
+                thread = thread,
+                )
+    wrap_Prog_scan(SCons.Scanner.Prog.scan)
 
 def wrap_FindPathDirs(klass):
     def _call(self, env, dir, target = None, source = None, argument = None):
