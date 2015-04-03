@@ -32,9 +32,9 @@ def add_files_content(env, file_contents, pkg_files, prefix, idx=-1):
 
     files = []
     for f in pkg_files:
-        repstr = env.subst(f.env['INSTALL_ROOT']).lstrip('#')
-        files.append(f.ID.replace(repstr, env.subst('${RPM_BUILD_ROOT}')))
-
+        repstr = env.subst('${RPM_BUILD_ROOT}').lstrip('#')
+        files.append(f.ID.replace(repstr, ''))
+        
     #TODO add like of MetaTag attributes mapping to RPM
 
     #if files section does not exist

@@ -53,23 +53,25 @@ def rpm_wrapper_mapper(env, target, sources, **kw):
             target[0].name,show_stack=False)
         # This depends statement seems to help address issues with getting symlink.linkto data        
         env.Depends(spec_in,src)
-
+                        
+        # copy the source files to be archived... this has to match how it would be installed
+        # make note of meta values so we correctly copy to correct place in our fake root
+        pkg_nodes=[]
+        env['RPM_BUILD_ROOT']="${{BUILD_DIR}}/{0}".format(filename)
+        for n in src:
+            #get Package directory for node
+            pkg_dir="${{PACKAGE_{0}}}".format(env.MetaTagValue(n, 'category','package'))
+            pkg_nodes.append(env.Entry('${{BUILD_DIR}}/{0}/{1}/{2}'.format(filename,pkg_dir,env.Dir(n.env['INSTALL_ROOT']).rel_path(n))))
+            
         spec_file = env._rpmspec(
                             '${{BUILD_DIR}}/SPECS/{0}/{1}'.format(target[0].name[:-4],spec_in.name), 
                             spec_in,
                             NAME=target_name,
                             VERSION=target_version,
                             RELEASE=target_release,
-                            PKG_FILES=src,
+                            PKG_FILES=pkg_nodes
                             )
-                
-        # copy the source files to be archived... this has to match how it would be installed
-        # make note of meta values so we correctly copy to correct place in our fake root
-        pkg_nodes=[]
-        for n in src:
-            #get Package directory for node
-            pkg_dir="${{PACKAGE_{0}}}".format(env.MetaTagValue(node, 'category','package'))
-            pkg_nodes.append('${{BUILD_DIR}}/{0}/{1}/{2}').format(filename,pkg_dir,env.Dir(n.env['INSTALL_ROOT']).rel_path(n))
+            
         ret = env.CCopyAs(pkg_nodes, src, CCOPY_LOGIC='hard-copy')
         
         # archive the source file to be added to RPM needs to be in form of <target_name>-<target_version>.tar.gz
