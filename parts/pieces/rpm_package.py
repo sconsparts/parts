@@ -46,7 +46,11 @@ def rpm_wrapper_mapper(env, target, sources, **kw):
         ##create the source gz file
         #Replace source with the name and version  from the specfile for proper formatting of build of the tar.gz file
         #and building the rpm 
-
+        try:
+            spec_in
+        except:
+            api.output.error_msgf("No rpm spec file defined for RPM: {0}\n try adding a call to env.InstallPkgData('<yourRPM>.spec', packagetype = ['rpm'])",
+            target[0].name,show_stack=False)
         # This depends statement seems to help address issues with getting symlink.linkto data        
         env.Depends(spec_in,src)
 
@@ -58,7 +62,7 @@ def rpm_wrapper_mapper(env, target, sources, **kw):
                             RELEASE=target_release,
                             PKG_FILES=src,
                             )
-        
+                
         # copy the source files to be archived
         ret = env.CCopyAs([('${{BUILD_DIR}}/'+filename+'/{0}').format(env.Dir(n.env['INSTALL_ROOT']).rel_path(n)) for n in src ], src, CCOPY_LOGIC='hard-copy')
 
@@ -149,7 +153,7 @@ def RpmPackage_wrapper(_env, target, sources, **kw):
     api.output.verbose_msgf(['rpm'],"validating string value of: {0}",target[0].name)
     grps=re.match(rpm_reg,target[0].name,re.IGNORECASE)
     if grps is None:
-        api.output.error_msg("RPM target files must be in format of <name>-<version>-<release>.<arch>.rpm")
+        api.output.error_msg("RPM target files must be in format of <name>-<version>-<release>.<arch>.rpm\n current format of value of target file is '{0}'".format(target[0].name))
 
     # subst all source values to get finial package group names
     sources=[env.subst(s) for s in sources]

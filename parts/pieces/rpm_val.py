@@ -19,8 +19,14 @@ def add_install_content(env, file_contents):
     for line in deflines:
         file_contents.append(line)
 
+def add_prep_content(env, file_contents,prefix):
+    deflines = ['%install', 'setup -q']
 
-def add_files_content(env, file_contents, pkg_files, idx=-1):
+    #add default install contents
+    for line in deflines:
+        file_contents.append(line)
+
+def add_files_content(env, file_contents, pkg_files, prefix, idx=-1):
     # add all content in archive file
     defattrs = '%defattr(-,root,root,-)'
 
@@ -33,14 +39,16 @@ def add_files_content(env, file_contents, pkg_files, idx=-1):
 
     #if files section does not exist
     if idx == -1:
+        file_contents.append('\n')
         file_contents.append('%files')
         file_contents.append(defattrs)
         for i in xrange(len(files)):
-            file_contents.append(files[i])
+            file_contents.append('"{0}"'.format(files[i]))
     else:
         file_contents.insert(idx+1, defattrs)
         for i in xrange(len(files)):
-            file_contents.insert(idx+2+i, files[i])
+            print '"{0}"'.format(files[i])
+            file_contents.insert(idx+2+i, '"{0}"'.format(files[i]))
 
 
 def rpm_spec(env, target, source):
@@ -63,7 +71,12 @@ def rpm_spec(env, target, source):
     # override some value to match name of out rpm files.
     found_install = False
     found_files = False
-
+    found_prep = False
+    
+    #default rpm prefix value
+    prefix = '/usr'
+    
+    # make this all the api.output...
     print "Overriding the spec file values for name, version, release"
     i=0
     #tmp set to detect duplicates of values that should only be defined once
@@ -85,6 +98,10 @@ def rpm_spec(env, target, source):
                 tmp.remove('version')
             except KeyError:
                pass
+               
+        elif file_contents[i].startswith('Prefix'):
+            prefix=file_contents[i].split(":")[1].strip()
+
 
         elif file_contents[i].startswith('Release'):
             file_contents[i] = 'Release:'+target_release
@@ -95,20 +112,26 @@ def rpm_spec(env, target, source):
 
         elif file_contents[i].startswith('%install'):
             found_install = True
+            
+        elif file_contents[i].startswith('%prep'):
+            found_prep = True
 
         #add file contents that will be installed in rpm
         elif file_contents[i].startswith('%files'):
             found_files = True   
-            add_files_content(env, file_contents, pkg_files, i)
+            add_files_content(env, file_contents, pkg_files,prefix, i)
          
         i+=1
-
+    
     #add sections if they do not exist
     if not found_install:
         add_install_content(env, file_contents)
+        
+    if not found_prep:
+        add_prep_content(env, file_contents,prefix)
 
     if not found_files:
-        add_files_content(env, file_contents, pkg_files)
+        add_files_content(env, file_contents, pkg_files,prefix)
         
 
     if tmp:
