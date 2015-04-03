@@ -11,7 +11,6 @@ def map_archive_builder(env, target, sources, archive_type, stackframe, **kw):
     def archive_builder():
         new_sources, _ = env.Override(kw).GetFilesFromPackageGroups(target, sources, stackframe)
         control_sources=[]
-
         #for proper formatting of the package type to be used as archive builder type
         # without throwing any error.
 

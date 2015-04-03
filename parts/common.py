@@ -302,7 +302,7 @@ def is_dictionary(obj):
     return SCons.Util.is_Dict(obj)
 
 def is_string(obj):
-    return SCons.Util.is_String(obj)
+    return isinstance(obj, basestring) or SCons.Util.is_String(obj) 
 
 def is_bool(obj):
     return isinstance(obj,bool)
