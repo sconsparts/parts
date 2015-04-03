@@ -1,5 +1,6 @@
 from .. import glb
 from .. import common
+from ..core import util
 from .. import datacache
 from .. import api
 from .. import target_type
@@ -229,7 +230,7 @@ class section(pnode.pnode):
             for i in lst:
                 if isinstance(i,SCons.Node.FS.Base):
                     newval.append(i.ID)
-                elif common.is_list(i):
+                elif util.isList(i):
                     newval.append(replace_nodes(i))
                 elif i is None or i == [] or i =='':
                     pass
@@ -248,7 +249,7 @@ class section(pnode.pnode):
 
             export_csig={}
             for key, value in self.Exports.items():
-                if common.is_list(value):
+                if util.isList(value):
                     # We want to modify self.Exports but leave the Env intact
                     # so we call subst list with recurse == True
                     mappers.sub_lst(self.Env, value, thread.get_ident(), recurse = True)
@@ -257,7 +258,7 @@ class section(pnode.pnode):
                         del self.__exports[key]
                         continue
                 else:
-                    if common.is_string(value) and '$' in value:
+                    if util.isString(value) and '$' in value:
                         tmp = self.Env.subst(value, conv = lambda x: x)
                         if not tmp:
                             del self.__exports[key]

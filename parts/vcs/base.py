@@ -12,6 +12,7 @@ except ImportError:
     import urllib.parse as urlparse
 
 from .. import common
+from ..core import util
 from .. import datacache
 from .. import api
 from .. import part_ref
@@ -169,7 +170,7 @@ class base(object):
 
     def _has_target_match(self,update_option):
 
-        if common.is_list(update_option):
+        if util.isList(update_option):
             for i in update_option:
                 target=target_type.target_type(i)
                 tmp=part_ref.part_ref(target)

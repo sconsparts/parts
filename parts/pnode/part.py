@@ -6,6 +6,7 @@ import part_info
 import pnode_manager
 from .. import api
 from .. import common
+from ..core import util
 from .. import settings
 from .. import part_logger
 from .. import packaging
@@ -392,7 +393,7 @@ class part(pnode.pnode):
             except KeyError:
                 tmp=[]
                 for p in self.__uses:
-                    if common.is_string(p):
+                    if util.isString(p):
                         # assume this is an Alias
                         tmp_alias=p
                         p=glb.engine._part_manager._from_alias(p)

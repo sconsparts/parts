@@ -5,6 +5,7 @@ yet as i need a way to safely add the global object to parts export statement
 
 import glb
 import common
+import core.util as util
 import api.output
 import metatag
 import ctypes

@@ -16,6 +16,7 @@ from SCons.Debug import logInstanceCreation
 
 from .. import metatag
 from .. import common
+from ..core import util
 from .. import api
 
 ## Begin OS level support for symbolic links

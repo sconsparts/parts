@@ -4,6 +4,7 @@ some helpfunction to help dump data, or get the correct configuration data
 '''
 
 import common
+import core.util
 import version
 import configurations
 import api.output

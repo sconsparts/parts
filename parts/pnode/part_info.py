@@ -2,6 +2,7 @@ import stored_info
 from .. import glb
 from .. import platform_info
 from .. import common
+from ..core import util
 
 class part_info(stored_info.stored_info):
     """description of class"""

@@ -11,7 +11,7 @@ import types
 import getpass
 
 import glb
-
+import core.util as util
 # import Scons stuff
 import SCons.Script
 import SCons.Errors
@@ -77,7 +77,7 @@ class namespace(dict,bindable):
         if hasattr(tmp,'__eval__'):
             tmp=tmp.__eval__()
             self[name]=tmp
-        if (is_string(tmp) or tmp is None) and self.__dict__.has_key('env'):
+        if (util.isString(tmp) or tmp is None) and self.__dict__.has_key('env'):
             return self.env.subst(tmp)
         return tmp
 
@@ -110,7 +110,7 @@ class namespace(dict,bindable):
 def process_tool_arg(lst):
     tmplst=[]
     for i in lst:
-        if is_string(i):
+        if util.isString(i):
             tmp=string.split(i,'_',2)
         else:
             tmp=i
@@ -173,10 +173,10 @@ def matches(value, includes, excludes=None):
 
 def make_list(obj):
     '''
-    The purpose of thsi function is to make the obj into a list if it is not
+    The purpose of this function is to make the obj into a list if it is not
     already one. It will flatten as well
     '''
-    if SCons.Util.is_List(obj):
+    if util.isList(obj):
         return SCons.Util.flatten(obj)
     return [obj]
 
@@ -277,10 +277,10 @@ def _wrap_to_string(obj, knownObjIds):
         return '...'
 
     knownObjIds.add(id(obj))
-    if is_dictionary(obj):
+    if util.isDictionary(obj):
         return dict([[_wrap_to_string(k, knownObjIds),
             _wrap_to_string(v, knownObjIds)] for k, v in obj.iteritems()])
-    elif is_list(obj):
+    elif util.isList(obj):
         return [_wrap_to_string(i, knownObjIds) for i in obj]
     elif isinstance(obj, tuple):
         return tuple([_wrap_to_string(i, knownObjIds) for i in obj])
@@ -295,23 +295,6 @@ def _wrap_to_string(obj, knownObjIds):
     else:
         return str(obj)
 
-def is_list(obj):
-    return SCons.Util.is_List(obj)
-
-def is_dictionary(obj):
-    return SCons.Util.is_Dict(obj)
-
-def is_string(obj):
-    return isinstance(obj, basestring) or SCons.Util.is_String(obj) 
-
-def is_bool(obj):
-    return isinstance(obj,bool)
-
-def is_int(obj):
-    return isinstance(obj,int)
-
-def is_float(obj):
-    return isinstance(obj,float)
 
 def is_catagory_file(env,cat,file):
     ''' this function is the master function for finding a if a file matches a type pattern.'''
@@ -326,7 +309,7 @@ def is_catagory_file(env,cat,file):
         return False
 
 def option_bool(val,option, default=False):
-    if is_string(val):
+    if util.isString(val):
         if val.lower() == 'true':
             return True
         elif val.lower() == 'false':
@@ -525,7 +508,7 @@ def gen_arg(env,sdk_path,value):
         ret+=value.string_it(env,sdk_path)
     elif isinstance(value,named_parms):
         ret+=value.string_it(env,sdk_path)
-    elif is_string(value):
+    elif util.isString(value):
         ret+="'"+env.subst(value)+"'"
     else:
         ret+=str(value)

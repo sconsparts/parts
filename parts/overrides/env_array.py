@@ -2,6 +2,7 @@
 
 from .. import glb
 from .. import common
+from ..core import util
 
 def Parts__setitem__(self,key,val):
     if getattr(self,'_log_keys',False):
@@ -10,7 +11,7 @@ def Parts__setitem__(self,key,val):
             sec=None
             if pobj:
                 sec=pobj.DefiningSection
-            if sec and common.is_string(val):
+            if sec and util.isString(val):
                 sec.UserEnvDiff[key]=val
     self._orig__setitem__(key,val)
     if isinstance(val,common.bindable):

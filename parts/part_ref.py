@@ -1,5 +1,6 @@
 import glb
 import common
+import core.util as util
 import version
 import target_type
 
@@ -17,7 +18,7 @@ class part_ref(object):
     def __init__(self,target,local_space=None):
         if __debug__: logInstanceCreation(self, 'parts.part_ref.part_ref')
         self.__local_space=local_space
-        if common.is_string(target):
+        if util.isString(target):
             target=target_type.target_type(target)
         self.__target=target
         self.__matches=None
@@ -88,7 +89,7 @@ class part_ref(object):
         properties=''
         for k,v in self.Target.Properties.iteritems():
             if k == 'version':
-                if common.is_string(v):
+                if util.isString(v):
                     v=version.version_range(v+'.*')
                 stmp="   Version Range == {0}\n".format(v)
 
@@ -130,7 +131,7 @@ class part_ref(object):
             stmp=''
             for k,v in self.Target.Properties.iteritems():
                 if k == 'version':
-                    if common.is_string(v):
+                    if util.isString(v):
                         v=version.version_range(v+'.*')
                     if pobj.Version in v:
                         stmp="   Version Range {0} in {1}\n".format(pobj.Version,v)

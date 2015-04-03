@@ -1,5 +1,6 @@
 
 import common
+import core.util as util
 import load_module
 import SCons.Tool
 import os
@@ -59,7 +60,7 @@ def get_tools(env, tlset):
             continue
         else:
             configured = True
-        if configuration is None or common.is_string(configuration):
+        if configuration is None or util.isString(configuration):
             #get the list subst for the value
             repeat = True
             mod = get_tlset_module(tool, configuration)
@@ -102,7 +103,7 @@ def _ToolChain(env, chainlist):
         # apply pre tool configurtation part so the tool will setup correctly
         if configuration is None:
             pass
-        elif common.is_dictionary(configuration):
+        elif util.isDictionary(configuration):
             env.Replace(**configuration)
         else:
             configuration(env)
@@ -117,13 +118,13 @@ def _ToolChain(env, chainlist):
         tool(env)
 
 def tool_converter(str_val, raw_val):
-    if common.is_string(raw_val):
+    if util.isString(raw_val):
         tmp=raw_val.split(',')
         lst=[]
         for i in tmp:
             lst.append(i.split('_'))
         return lst
-    if common.is_list(raw_val):
+    if util.isList(raw_val):
         return raw_val
     raise "Invalid tool value '%s'" % raw_val
 

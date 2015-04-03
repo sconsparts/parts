@@ -6,6 +6,7 @@ internal here instead, and then possiblely removing pattern 100%
 
 ## patterns
 import common
+import core.util
 import api
 
 import SCons.Script
@@ -96,7 +97,7 @@ class Pattern(object):
 ##                files=g_db[path]
 
 ##                for f in files:
-##                    if common.is_list(f):
+##                    if util.isList(f):
 ##                        currpath = os.path.join(path,f[0])
 ##                        paths.append(currpath)
 ##                        continue

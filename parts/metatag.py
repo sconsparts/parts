@@ -1,4 +1,5 @@
 import common
+import core.util
 import api.output
 
 def MetaTag(nodes,ns='meta',**metakv):

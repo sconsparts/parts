@@ -2,6 +2,7 @@ import SCons.Script
 
 from .. import glb
 from .. import common
+from ..core import util
 
 # no need to redirect data.. assume it is correct.
 def error_msg(*lst,**kw):

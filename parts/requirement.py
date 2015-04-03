@@ -1,5 +1,6 @@
 
 import common
+import core.util as util
 import api
 import copy
 from policy import REQPolicy,ReportingPolicy
@@ -94,17 +95,17 @@ class requirement(object):
     #    return requirement(self._key, self._internal, self._public, self._policy, self._mapper, self._listtype,self._weight)
 
     def __or__(self,lhs):
-        if common.is_int(lhs):
+        if util.isInt(lhs):
             return REQ([self])
         return REQ([self])|lhs
 
     def __ror__(self,rhs):
-        if common.is_int(rhs):
+        if util.isInt(rhs):
             return REQ([self])
         return REQ([self])|rhs
 
     def __ior__(self,lhs):
-        if common.is_int(lhs):
+        if util.isInt(lhs):
             return REQ([self])
         return REQ([self])|lhs
 
@@ -174,17 +175,17 @@ class requirement_set(object):
         return requirement_set(self._values,self._weight)
 
     def __or__(self,lhs):
-        if common.is_int(lhs):
+        if util.isInt(lhs):
             return REQ(self._values,self._weight)
         return REQ(self._values,self._weight)|lhs
 
     def __ror__(self,rhs):
-        if common.is_int(rhs):
+        if util.isInt(rhs):
             return REQ(self._values,self._weight)
         return REQ(self._values,self._weight)|rhs
 
     def __ior__(self,lhs):
-        if common.is_int(lhs):
+        if util.isInt(lhs):
             return REQ(self._values,self._weight)
         return REQ(self._values,self._weight)|lhs
 

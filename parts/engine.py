@@ -12,6 +12,7 @@ import SCons.Node.FS
 
 import glb
 import common
+import core.util as util
 import api.output
 import errors
 import logger
@@ -204,7 +205,7 @@ class parts_addon(object):
             bf_lst_len = len(bf_lst)
             msg=''
             for bf in bf_lst:
-                if common.is_list(bf.command):
+                if util.isList(bf.command):
                     cmd=' '.join(bf.command)
                 else:
                     cmd=bf.command

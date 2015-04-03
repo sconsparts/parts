@@ -1,6 +1,7 @@
 import time
 import glb
 import common
+import core.util as util
 import console
 import api.output
 import version
@@ -151,11 +152,11 @@ class part_logger(object):
         self.cacheLock = threading.RLock()
 
         log = env['PART_LOGGER']
-        if common.is_string(log):
+        if util.isString(log):
             if log[0] != '$':
                 log = "$" + log
             log = env.subst(log, raw = 1, conv = lambda x: x)
-            if common.is_string(log):
+            if util.isString(log):
                 log = part_nil_logger
         self.other_out = log(env)
         self.streamWrite = {console.Console.out_stream: self.reporter.stdout,
@@ -352,7 +353,7 @@ def _get_part_log_mapper(env):
     except KeyError:
         result = part_nil_logger(env)
     else:
-        if common.is_string(result):
+        if util.isString(result):
             result = env.subst(result, raw = 1, conv = lambda x: x)
     return result
 from SCons.Environment import SubstitutionEnvironment as SConsEnvironment

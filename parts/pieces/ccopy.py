@@ -11,6 +11,7 @@ import SCons.Script
 from SCons.Script.SConscript import SConsEnvironment
 
 import parts.common as common
+import parts.core.util as util
 import parts.api as api
 import parts.overrides.symlinks as symlinks
 import parts.pattern as pattern
@@ -248,7 +249,7 @@ class CCopy(object):
 
     @classmethod
     def convert(cls, logicName):
-        if common.is_string(logicName):
+        if util.isString(logicName):
             result = getattr(cls, logicName.replace('-', '_'), None)
             if isinstance(result, int):
                 return result
@@ -299,7 +300,7 @@ def CCopyWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw):
 
     for dnode in dnodes:
         for src in sources:
-            if common.is_string(src):
+            if util.isString(src):
                 src = env.arg2nodes(src, env.fs.Entry)[0]
                 # Prepend './' so the lookup doesn't interpret an initial
                 # '#' on the file name portion as meaning the Node should
@@ -358,7 +359,7 @@ def CCopyAsWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw
     for src, tgt in zip(source, target):
         # if the target is a string and the source is a symlink,
         # we want to make the target a symlink as well
-        if common.is_string(tgt) and isinstance(src, symlinks.FileSymbolicLink):
+        if util.isString(tgt) and isinstance(src, symlinks.FileSymbolicLink):
             targetDirName, targetFileName = os.path.split(tgt)
             tgt = env.Dir(targetDirName).FileSymbolicLink(os.sep.join(('.', targetFileName)))
             try:

@@ -8,6 +8,7 @@ import glb
 import api
 import Variables
 import common
+import core.util as util
 import load_module
 #import platform_info
 
@@ -24,12 +25,12 @@ def normalize_map(m):
     forms and translate them to a common one'''
     key='mode'
     value=m.get(key,None)
-    if common.is_string(value) and not common.is_list(value):
+    if util.isString(value) and not util.isList(value):
         m[key]=value.split(',')
 
     key='toolchain'
     value=m.get(key,None)
-    if common.is_string(value) and not common.is_list(value):
+    if util.isString(value) and not util.isList(value):
         tmp=common.process_tool_arg(value.split(','))
         tmp.reverse()
         m[key]=tmp
@@ -485,18 +486,18 @@ class Settings(object):
             #will probally need better error handling later
             for k,v in append.iteritems():
                 has_hey=env.has_key(k)
-                if common.is_list(v) and has_hey:
+                if util.isList(v) and has_hey:
                     env.AppendUnique(**{k:v})
-                elif common.is_list(v) and not has_hey:
+                elif util.isList(v) and not has_hey:
                     env[k]=v
                 else:
                     api.output.warning_msg('Ignoring appending value', k,"as it is not a list. It is type",type(v),".")
 
             for k,v in prepend.iteritems():
                 has_hey=env.has_key(k)
-                if common.is_list(v) and has_hey:
+                if util.isList(v) and has_hey:
                     env.PrependUnique(**{k:v})
-                elif common.is_list(v) and not has_hey:
+                elif util.isList(v) and not has_hey:
                     env[k]=v
                 else:
                     api.output.warning_msg('Ignoring prepending value', k,"as it is not a list. It is type",type(v),".")

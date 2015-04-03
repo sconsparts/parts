@@ -1,6 +1,7 @@
 import glb
 import pattern
 import common
+import core.util as util
 import exportitem as Xp
 import node_helpers
 import api.output
@@ -64,7 +65,7 @@ def process_Sdk_Copy(env, target_dir, sources, create_sdk=True, do_clean=False):
                 out.extend(env.CCopy(target=target_dir, source=s))
             #src.append(s)
             #print "File type"
-        elif isinstance(s, SCons.Node.Node) or common.is_string(s):
+        elif isinstance(s, SCons.Node.Node) or util.isString(s):
             t = os.path.split(str(s))[0]
             if t not in src_dir:
                 src_dir.append(t)
@@ -267,12 +268,12 @@ def Sdk(env, sources, sub_dir='', add_to_path=True, auto_add_libs=True, use_src_
     errors.SetPartStackFrameInfo(True)
     if sources == None:
         return
-    if common.is_list(sources) == False:
+    if util.isList(sources) == False:
         sources = [sources]
     sources = SCons.Script.Flatten(sources)
     out = []
     for i in sources:
-        if isinstance(i, SCons.Node.FS.File)or isinstance(i, SCons.Node.Node) or common.is_string(i):
+        if isinstance(i, SCons.Node.FS.File)or isinstance(i, SCons.Node.Node) or util.isString(i):
             try:
                 the_file = i.attributes.FilterAs
             except AttributeError:

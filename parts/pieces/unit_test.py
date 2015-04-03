@@ -1,6 +1,7 @@
 
 import parts.glb as glb
 import parts.common as common
+import parts.core.util as util
 import parts.api as api
 import parts.errors as errors
 import parts.node_helpers as node_helpers
@@ -195,7 +196,7 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
                     fs = f.ID[len(f.Dir(relpath).ID)+1:]
                     src_files.append(build_dir_node.Entry(fs))
 
-            elif common.is_string(f):
+            elif util.isString(f):
                 # normalize the path so we get matches on windows and posix based systems
                 f = os.path.normpath(f)
                 if f.startswith(rel_src_dir):
@@ -227,7 +228,7 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
                 #print "File type"
             elif isinstance(s, SCons.Node.Node):
                 out += sec.Env.CCopy(target=dest_dir, source=s)
-            elif common.is_string(s):
+            elif util.isString(s):
                 f = env.subst(s)
                 if f.startswith(rel_src_dir):
                     f = f[len(rel_src_dir)+1:]
@@ -260,7 +261,7 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
 
         tmp = []
         for i in ret:
-            if isinstance(i, SCons.Node.FS.File)or isinstance(i, SCons.Node.Node) or common.is_string(i):
+            if isinstance(i, SCons.Node.FS.File)or isinstance(i, SCons.Node.Node) or util.isString(i):
                 if common.is_catagory_file(sec.Env, 'INSTALL_LIB_PATTERN', i):
                     tmp += sec.Env.CCopy(target='$INSTALL_LIB', source=i)
                 else:#if common.is_catagory_file(env, 'SDK_BIN_PATTERN', i):

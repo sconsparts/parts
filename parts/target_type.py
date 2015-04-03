@@ -1,5 +1,6 @@
 import glb
 import common
+import core.util
 import api.output
 
 import SCons.Node.FS

@@ -2,6 +2,7 @@ import glb
 import pattern
 import sdk
 import common
+import core.util as util
 import platform_info
 import exportitem
 import api.output
@@ -131,10 +132,10 @@ def ProcessInstall(env,target,sources,sub_dir,create_sdk,sdk_dir='',no_pkg=False
                     ret=[s]
 
                 installed_files.extend(env.Install(dest_dir, ret,tags=tags,**kw))
-                if SCons.Util.is_String(ret[0]):
+                if util.isString(ret[0]):
                     ret[0] = env.File(ret[0])
                 src_lst.append(ret[0])
-            elif isinstance(s,SCons.Node.Node) or common.is_string(s):
+            elif isinstance(s,SCons.Node.Node) or util.isString(s):
                 if s not in sdk.g_sdked_files:
                     if target==target_lib:
                         ret=env.SdkItem('$SDK_LIB',[s],sub_dir,'',[(exportitem.EXPORT_TYPES.FILE ,'LIBS'),(exportitem.EXPORT_TYPES.PATH ,'LIBPATH')],
@@ -184,7 +185,7 @@ def InstallItem(env, target, source, sub_dir="" ,sdk_dir='',no_pkg=False,create_
     errors.SetPartStackFrameInfo(True)
     if env['CREATE_SDK'] == False and create_sdk == True:
         create_sdk=False;
-    if common.is_list(source)==False:
+    if util.isList(source)==False:
         source=[source]
     source=SCons.Script.Flatten(source)
 
@@ -231,7 +232,7 @@ def InstallTarget(env, src_files, sub_dir='',no_pkg=False,create_sdk=True,**kw):
     # we know what kind of thing it is. That's the future direction.
 
     errors.SetPartStackFrameInfo(True)
-    if common.is_list(src_files)==False:
+    if util.isList(src_files)==False:
         src_files=[src_files]
     src_files=SCons.Script.Flatten(src_files)
 
@@ -239,7 +240,7 @@ def InstallTarget(env, src_files, sub_dir='',no_pkg=False,create_sdk=True,**kw):
     sdk_mapping_set=set([])
     for i in src_files:
         # We have an individual item
-        if isinstance(i,SCons.Node.FS.File) or isinstance(i,SCons.Node.FS.Dir) or isinstance(i,SCons.Node.Node) or common.is_string(i):
+        if isinstance(i,SCons.Node.FS.File) or isinstance(i,SCons.Node.FS.Dir) or isinstance(i,SCons.Node.Node) or common.isString(i):
 
             if i not in sdk.g_sdked_files:
                 ret= env.SdkTarget([i],sub_dir)

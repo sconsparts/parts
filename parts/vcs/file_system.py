@@ -1,5 +1,6 @@
 from base import base
 from .. import common
+from ..core import util
 from .. import api
 import SCons.Defaults
 import os

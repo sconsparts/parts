@@ -1,5 +1,6 @@
 from .. import glb
 from .. import common
+from ..core import util
 from ..pnode import part
 from .. import api
 from base import base
@@ -68,7 +69,7 @@ class reuse_part_vcs(base):
         # get the real vcs object so we can proxy it
         if  isinstance(self._partref,part.part):
             self._vcs=self._partref.Vcs
-        elif common.is_string(self._partref):
+        elif util.isString(self._partref):
             # assume this is a part alias
             tmpalias=None
             if self._env['ALIAS_POSTFIX'] or self._env['ALIAS_PREFIX']:

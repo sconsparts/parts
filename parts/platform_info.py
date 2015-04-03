@@ -17,6 +17,7 @@ import glb
 import api.output
 import api.register
 import common
+import core.util
 
 from SCons.Debug import logInstanceCreation
 
@@ -247,7 +248,7 @@ class SystemPlatform(common.bindable):
         return tmp
 
     def __eq__(self,rhs):
-        if common.is_string(rhs):
+        if core.util.isString(rhs):
             rhs = target_convert(rhs,base=self)
 
         return (self.OS == rhs.OS or \

@@ -1,5 +1,6 @@
 
 from .. import common
+from ..core import util
 from .. import policy
 
 from ..requirement import DefineRequirementSet, requirement,REQ,requirement_internal

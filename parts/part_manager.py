@@ -1,6 +1,7 @@
 
 import glb
 import common
+import core.util as util
 import errors
 import pnode.part
 import api.output
@@ -979,7 +980,7 @@ class part_manager(object):
                     pass
                 elif k == 'version':
                     api.output.verbose_msgf("stored_reduce_target_mapping","  Matching Attibute: {0} Values:{1} {2}",k,v,pobj.Stored.Version)
-                    if common.is_string(v):
+                    if util.isString(v):
                         v=version.version_range(v+'.*')
                     if pobj.Stored.Version not in v:
                         api.output.verbose_msgf("stored_reduce_target_mapping","  Removing Part {0}",pobj.ID)
@@ -1025,7 +1026,7 @@ class part_manager(object):
                 api.output.verbose_msgf("reduce_target_mapping"," Testing Part {0}",pobj.ID)
                 if k == 'version':
                     api.output.verbose_msgf("reduce_target_mapping","  Matching Attibute: {0} Values:{1} {2}",k,v,pobj.Version)
-                    if common.is_string(v):
+                    if util.isString(v):
                         v=version.version_range(v+'.*')
                     if pobj.Version not in v:
                         api.output.verbose_msgf("reduce_target_mapping","  Removing Part {0}",pobj.ID)
@@ -1058,7 +1059,7 @@ class part_manager(object):
                     #look up in the parts environment
                     try:
                         api.output.verbose_msgf("reduce_target_mapping","  Matching Attibute: {0} Values:{1} {2}",k,v,pobj.Env[k])
-                        if common.is_list(pobj.Env[k]):
+                        if util.isList(pobj.Env[k]):
                             mv=v.split(',')
                             for v in mv:
                                 if v not in pobj.Env[k]:

@@ -1,5 +1,6 @@
 import glb
 import common
+import core.util as util
 import api.output
 import settings
 
@@ -35,7 +36,7 @@ def PackageGroup(name,parts=None):
     if parts:
         parts = common.make_list(parts)
         for p in parts:
-            if common.is_string(p):
+            if util.isString(p):
                 result.add(p)
                 api.output.verbose_msg('packaging','Adding to PackageGroup :"{0}" Part: "{1}"'.format(name,p))
             else:
@@ -192,7 +193,7 @@ def SortPackageGroups():
                     _no_pkg, group_val = package.get('no_package', False), package.get('group', set())
 
                 # Add file to group
-                if common.is_string(group_val): # Check most common case first
+                if util.isString(group_val): # Check most common case first
                     get_group_set(group_val, _no_pkg).add(f)
                 elif not group_val:
 
@@ -259,6 +260,32 @@ SConsEnvironment.PrependPackageGroupCritera = PrependPackageGroupCriteriaEnv_old
 SConsEnvironment.ReplacePackageGroupCriteria = ReplacePackageGroupCriteriaEnv
 SConsEnvironment.AppendPackageGroupCriteria = AppendPackageGroupCriteriaEnv
 SConsEnvironment.PrependPackageGroupCriteria = PrependPackageGroupCriteriaEnv
+
+
+# these tell the packging system locations to use on the user to map install location for a real install on that system
+# basically it maps the INSTALL_ROOT to the current "real system" location to use in the packaging code
+
+api.register.add_variable('PACKAGE_PREFIX',"/opt", "")
+
+#api.register.add_variable('PACKAGE_LIB', '${PACKAGE_PREFIX}/lib', '')
+#api.register.add_variable('PACKAGE_BIN', '${PACKAGE_PREFIX}/bin', '')
+
+#api.register.add_variable('PACKAGE_TOOLS','${PACKAGE_PREFIX}/tools','')
+#api.register.add_variable('PACKAGE_API','${PACKAGE_PREFIX}/API','')
+#api.register.add_variable('PACKAGE_INCLUDE','${PACKAGE_PREFIX}/include','')
+#api.register.add_variable('PACKAGE_CONFIG','${PACKAGE_PREFIX}/config','')
+#api.register.add_variable('PACKAGE_DOC','${PACKAGE_PREFIX}/doc','')
+#api.register.add_variable('PACKAGE_HELP','${PACKAGE_PREFIX}/help','')
+#api.register.add_variable('PACKAGE_MANPAGE','${PACKAGE_PREFIX}/man','')
+#api.register.add_variable('PACKAGE_MESSAGE','${PACKAGE_PREFIX}/message','')
+#api.register.add_variable('PACKAGE_RESOURCE','${PACKAGE_PREFIX}/resource','')
+#api.register.add_variable('PACKAGE_SAMPLE','${PACKAGE_PREFIX}/samples','')
+#api.register.add_variable('PACKAGE_DATA','${PACKAGE_PREFIX}/data','')
+#api.register.add_variable('PACKAGE_TOP_LEVEL','${PACKAGE_PREFIX}/','')
+#api.register.add_variable('PACKAGE_PYTHON','${PACKAGE_PREFIX}/python','')
+#api.register.add_variable('PACKAGE_SCRIPT','${PACKAGE_PREFIX}/scripts','')
+
+
 
 api.register.add_variable('PACKAGE_GROUP_FILTER', {}, "")
 

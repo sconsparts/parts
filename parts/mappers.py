@@ -2,6 +2,7 @@ import glb
 import part_ref
 import policy as Policy
 import common
+import core.util as util
 import version
 import api.output
 import errors
@@ -130,7 +131,7 @@ class mapper(object):
             result = replace_list_items(export_table, rvalue, value, wrap = lambda x: [x])
             def recurse_list(container):
                 for item in container:
-                    if common.is_list(item):
+                    if util.isList(item):
                         replace_list_items(item, rvalue, value)
                         recurse_list(item)
             recurse_list(result)
@@ -139,7 +140,7 @@ class mapper(object):
             return result if recursed else value
         except (TypeError, KeyError):
             # This means export_table is a string or the value is a dictionary
-            if common.is_string(value):
+            if util.isString(value):
                 sec.Exports[prop] = export_table.replace(rvalue,value)
             else:
                 sec.Exports[prop] = value
@@ -157,7 +158,7 @@ class mapper(object):
             return
         api.output.trace_msg(['partexport_mapper','mapper'],spacer,"Value to set: {0}".format(value))
         try:
-            if common.is_list(env[prop]):
+            if util.isList(env[prop]):
                 replace_list_items(env[prop], rvalue, value)
             else:
                 env[prop] = value
@@ -187,10 +188,10 @@ class mapper(object):
 
 def _sub_lst(env, obj, thread_id):
     ret = []
-    if common.is_list(obj):
+    if util.isList(obj):
         for i in obj:
             tmp = _sub_lst(env,i,thread_id)
-            if common.is_list(tmp):
+            if util.isList(tmp):
                 common.extend_unique(ret,tmp)
             else:
                 common.append_unique(ret,tmp)
@@ -212,12 +213,12 @@ def _sub_lst(env, obj, thread_id):
         else:
             tmp = env.subst(obj, conv = lambda x: x)
 
-        if common.is_list(tmp):
+        if util.isList(tmp):
             with env_guard(thread_id):
                 for j in tmp:
                     r = _sub_lst(env,j,thread_id)
                     if r:
-                        if common.is_list(r[0]):
+                        if util.isList(r[0]):
                             common.extend_unique(ret,r)
                         else:
                             common.append_unique(ret,r)
@@ -240,7 +241,7 @@ def sub_lst(env, lst, thread_id,recurse = True):
         ret = []
         for v in lst[:]:
             tmp = _sub_lst(env,v,thread_id)
-            if tmp and common.is_list(tmp[0]):
+            if tmp and util.isList(tmp[0]):
                 common.extend_unique(ret,tmp,)
             else:
                 common.append_unique(ret,tmp)
@@ -257,7 +258,7 @@ def sub_lst(env, lst, thread_id,recurse = True):
 def _concat(prefix, list, suffix, env, f = lambda x: x, target = None, source = None):
     if not list:
         return list
-    elif common.is_string(list):
+    elif util.isString(list):
         list = [list]
     #fully expand the list
 
@@ -352,7 +353,7 @@ class part_mapper(mapper):
             return ''
         api.output.trace_msg(['parts_mapper','mapper'],spacer,'Property {0} = {1} '.format(self.part_prop,ret))
         penv = pobj.Env
-        if common.is_list(ret):
+        if util.isList(ret):
             if len(ret)>1:
                 ret = sub_lst(penv,ret,thread_id)
 
@@ -361,7 +362,7 @@ class part_mapper(mapper):
                 api.output.trace_msg(['parts_mapper','mapper'],spacer,"Trying to replace value in env[{0}]".format(self.part_prop))
                 api.output.trace_msg(['parts_mapper','mapper'],spacer,"Before env value: {0}".format(env[self.part_prop]))
                 api.output.trace_msg(['parts_mapper','mapper'],spacer,"Value to set: {0}".format(ret))
-                if common.is_list(env[self.part_prop]):
+                if util.isList(env[self.part_prop]):
                     if ret:
                         rvalue = "${{{name}('{part_alias}','{part_prop}')}}".format(**self.__dict__)
                         replace_list_items(env[self.part_prop], rvalue, ret)
@@ -434,7 +435,7 @@ class part_id_mapper(mapper):
 
         penv = pobj.Env
 
-        if common.is_list(ret):
+        if util.isList(ret):
             if ret:
                 ret = sub_lst(penv, ret, thread_id)
             if env_guard.can_modify(thread_id):
@@ -442,7 +443,7 @@ class part_id_mapper(mapper):
                 api.output.trace_msg(['partid_mapper','mapper'],spacer,"Before env value: {0}".format(env[self.part_prop]))
                 api.output.trace_msg(['partid_mapper','mapper'],spacer,"Value to set: {0}".format(ret))
 
-                if common.is_list(env[self.part_prop]):
+                if util.isList(env[self.part_prop]):
                     if ret:
                         if self.ignore:
                             rvalue = "${{{name}('{part_name}','{ver_range}','{part_prop}',{ignore})}}"
@@ -516,7 +517,7 @@ class part_id_export_mapper(mapper):
         api.output.trace_msg(['partexport_mapper','mapper'],spacer,'Property {0} = {1} '.format(self.part_prop,ret))
 
         #if we get back a list, we want to fill in the data in the list
-        if common.is_list(ret):
+        if util.isList(ret):
             ret = sub_lst(penv,ret,thread_id)
 
         # update the export table

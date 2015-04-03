@@ -4,6 +4,7 @@ import part_ref
 import dependent_ref
 import version
 import common
+import core.util as util
 import functors
 import api
 import errors
@@ -77,7 +78,7 @@ def depends_on_classic(env,depends):
 
     api.output.verbose_msg('dependson', "Mapping data to Part",pobj.Name)
     # depends that get passed on
-    if common.is_list(depends) ==False:
+    if util.isList(depends) ==False:
         depends=[depends]
 
     for comp in depends:
@@ -158,12 +159,12 @@ def depends_on(env,depends):
 
     depends_list=[]
     # make this a list if it is not already
-    if common.is_list(depends) ==False:
+    if util.isList(depends) ==False:
         depends=[depends]
 
     # make any string a component object
     for i in depends:
-        if common.is_string(i):
+        if util.isString(i):
             depends_list.append(Component(env,i))
         else:
             depends_list.append(i)

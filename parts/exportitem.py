@@ -1,5 +1,6 @@
 import glb
 import common
+import core.util as util
 import api.output
 import errors
 
@@ -34,7 +35,7 @@ def export_path(env, target_dirs, source_dirs, pobj, prop, use_src = False, crea
             if create_sdk==True:
                 for t in target_dirs:
                 # make this a node
-                    if common.is_string(t):
+                    if util.isString(t):
                         t=env.Dir(t)
                     final_path=t.srcnode()
                     if final_path not in tmp:
@@ -43,7 +44,7 @@ def export_path(env, target_dirs, source_dirs, pobj, prop, use_src = False, crea
     else:
         for t in target_dirs:
             # make this a node
-            if common.is_string(t):
+            if util.isString(t):
                 t=env.Dir(t)
 
             build_path=t
@@ -66,7 +67,7 @@ _reg=re.compile('[\w\-\.]*.so.([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)', r
 def export_file(env,targets,pobj,prop):
     ret = []
     for target in targets:
-        if common.is_string(target):
+        if util.isString(target):
             target = env.File(target)
         file = target.name
         ret.append(file)
@@ -87,7 +88,7 @@ def export_file_path(env,targets,pobj,prop,use_src):
     ret=[]
     prop_val=[]
     for t in targets:
-        if common.is_string(t):
+        if util.isString(t):
             t=env.File(t)
         build_path=t
         final_path=t.srcnode()
@@ -137,7 +138,7 @@ def ExportItem(env,variable,values,create_sdk=True,map_as_depenance=False):#, pu
 
     # test to see if the variable or value should be a list.
     # ie if the variable is a list in the Environment, we want this to be a list here
-    if common.is_list(values) or common.is_list(env.get(variable)):
+    if util.isList(values) or util.isList(env.get(variable)):
 
         values=common.make_list(values)
         if variable in ('CPPPATH', 'LIBPATH'):
@@ -146,7 +147,7 @@ def ExportItem(env,variable,values,create_sdk=True,map_as_depenance=False):#, pu
         if pobj.DefiningSection.Exports.has_key(variable)==False:
             pobj.DefiningSection.Exports[variable]=[[]]
         # this is not a list already.. make it one
-        if common.is_list(pobj.DefiningSection.Exports[variable]) == False:
+        if util.isList(pobj.DefiningSection.Exports[variable]) == False:
             pobj.DefiningSection.Exports[variable]=[common.make_list(pobj.DefiningSection.Exports[variable])]
 
         # add our values

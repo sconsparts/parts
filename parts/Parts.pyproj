@@ -55,9 +55,11 @@
     <Folder Include="configurations\debug" />
     <Folder Include="configurations\default" />
     <Folder Include="configurations\release" />
+    <Folder Include="core\util\" />
     <Folder Include="loggers" />
     <Folder Include="events" />
     <Folder Include="loadlogic" />
+    <Folder Include="core\" />
     <Folder Include="platformspecific\" />
     <Folder Include="platformspecific\win32\" />
     <Folder Include="pnode" />
@@ -292,6 +294,18 @@
     <Compile Include="configurations\release\gcc_any-any_android-x86.py" />
     <Compile Include="configurations\release\wdk_win32-any_win32-x86.py" />
     <Compile Include="configurations\release\wdk_win32-any_win32-x86_64.py" />
+    <Compile Include="core\util\declorators.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="core\util\is_a.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="core\util\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="core\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="loadlogic\all.py" />
     <Compile Include="loadlogic\base.py" />
     <Compile Include="loadlogic\changed.py" />
@@ -310,7 +324,6 @@
     <Compile Include="pieces\rpm_package.py" />
     <Compile Include="pieces\rpm_val.py" />
     <Compile Include="pieces\zip_file.py" />
-    <Compile Include="pieces\zip_pkg.py" />
     <Compile Include="platformspecific\win32\msi.py" />
     <Compile Include="platformspecific\win32\__init__.py" />
     <Compile Include="platformspecific\__init__.py" />
