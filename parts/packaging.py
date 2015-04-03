@@ -264,28 +264,29 @@ SConsEnvironment.PrependPackageGroupCriteria = PrependPackageGroupCriteriaEnv
 
 # these tell the packging system locations to use on the user to map install location for a real install on that system
 # basically it maps the INSTALL_ROOT to the current "real system" location to use in the packaging code
+# TODO ... update the Var to map based on target platform
+api.register.add_variable('PACKAGE_ROOT',"/", "")
 
-api.register.add_variable('PACKAGE_PREFIX',"/opt", "")
+api.register.add_variable('PACKAGE_LIB', '${PACKAGE_ROOT}/lib', '')
+api.register.add_variable('PACKAGE_BIN', '${PACKAGE_ROOT}/bin', '')
 
-#api.register.add_variable('PACKAGE_LIB', '${PACKAGE_PREFIX}/lib', '')
-#api.register.add_variable('PACKAGE_BIN', '${PACKAGE_PREFIX}/bin', '')
+api.register.add_variable('PACKAGE_TOOLS','${PACKAGE_ROOT}/tools','')
+api.register.add_variable('PACKAGE_API','${PACKAGE_ROOT}/API','')
+api.register.add_variable('PACKAGE_INCLUDE','${PACKAGE_ROOT}/include','')
+api.register.add_variable('PACKAGE_CONFIG','${PACKAGE_ROOT}/config','')
+api.register.add_variable('PACKAGE_DOC','${PACKAGE_ROOT}/doc','')
+api.register.add_variable('PACKAGE_HELP','${PACKAGE_ROOT}/help','')
+api.register.add_variable('PACKAGE_MANPAGE','${PACKAGE_ROOT}/man','')
+api.register.add_variable('PACKAGE_MESSAGE','${PACKAGE_ROOT}/message','')
+api.register.add_variable('PACKAGE_RESOURCE','${PACKAGE_ROOT}/resource','')
+api.register.add_variable('PACKAGE_SAMPLE','${PACKAGE_ROOT}/samples','')
+api.register.add_variable('PACKAGE_DATA','${PACKAGE_ROOT}/data','')
+api.register.add_variable('PACKAGE_TOP_LEVEL','${PACKAGE_ROOT}/','')
+api.register.add_variable('PACKAGE_PYTHON','${PACKAGE_ROOT}/python','')
+api.register.add_variable('PACKAGE_SCRIPT','${PACKAGE_ROOT}/scripts','')
 
-#api.register.add_variable('PACKAGE_TOOLS','${PACKAGE_PREFIX}/tools','')
-#api.register.add_variable('PACKAGE_API','${PACKAGE_PREFIX}/API','')
-#api.register.add_variable('PACKAGE_INCLUDE','${PACKAGE_PREFIX}/include','')
-#api.register.add_variable('PACKAGE_CONFIG','${PACKAGE_PREFIX}/config','')
-#api.register.add_variable('PACKAGE_DOC','${PACKAGE_PREFIX}/doc','')
-#api.register.add_variable('PACKAGE_HELP','${PACKAGE_PREFIX}/help','')
-#api.register.add_variable('PACKAGE_MANPAGE','${PACKAGE_PREFIX}/man','')
-#api.register.add_variable('PACKAGE_MESSAGE','${PACKAGE_PREFIX}/message','')
-#api.register.add_variable('PACKAGE_RESOURCE','${PACKAGE_PREFIX}/resource','')
-#api.register.add_variable('PACKAGE_SAMPLE','${PACKAGE_PREFIX}/samples','')
-#api.register.add_variable('PACKAGE_DATA','${PACKAGE_PREFIX}/data','')
-#api.register.add_variable('PACKAGE_TOP_LEVEL','${PACKAGE_PREFIX}/','')
-#api.register.add_variable('PACKAGE_PYTHON','${PACKAGE_PREFIX}/python','')
-#api.register.add_variable('PACKAGE_SCRIPT','${PACKAGE_PREFIX}/scripts','')
-
-
+api.register.add_variable('PACKAGE_NAME','unknown','')
+api.register.add_variable('PACKAGE_VERSION','0.0.0','')
 
 api.register.add_variable('PACKAGE_GROUP_FILTER', {}, "")
 

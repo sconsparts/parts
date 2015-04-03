@@ -63,12 +63,17 @@ def rpm_wrapper_mapper(env, target, sources, **kw):
                             PKG_FILES=src,
                             )
                 
-        # copy the source files to be archived
-        ret = env.CCopyAs([('${{BUILD_DIR}}/'+filename+'/{0}').format(env.Dir(n.env['INSTALL_ROOT']).rel_path(n)) for n in src ], src, CCOPY_LOGIC='hard-copy')
-
-
+        # copy the source files to be archived... this has to match how it would be installed
+        # make note of meta values so we correctly copy to correct place in our fake root
+        pkg_nodes=[]
+        for n in src:
+            #get Package directory for node
+            pkg_dir="${{PACKAGE_{0}}}".format(env.MetaTagValue(node, 'category','package'))
+            pkg_nodes.append('${{BUILD_DIR}}/{0}/{1}/{2}').format(filename,pkg_dir,env.Dir(n.env['INSTALL_ROOT']).rel_path(n))
+        ret = env.CCopyAs(pkg_nodes, src, CCOPY_LOGIC='hard-copy')
+        
         # archive the source file to be added to RPM needs to be in form of <target_name>-<target_version>.tar.gz
-        d1=env.TarGzFile((('${{BUILD_DIR}}/_rpm/{0}/SOURCES/{1}.tar.gz').format(target[0].name[:-4],filename)),ret)
+        d1=env.TarGzFile(('${{BUILD_DIR}}/_rpm/{0}/SOURCES/{1}.tar.gz').format(target[0].name[:-4],filename),ret)
 
         # copy the processed spec file to correct location for RPM build to work
         d2=env.CCopyAs(env.Dir('${{BUILD_DIR}}/_rpm/{0}/SPECS'.format(target[0].name[:-4])),env.Dir('${{BUILD_DIR}}/SPECS/{0}'.format(target[0].name[:-4])))

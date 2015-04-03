@@ -37,11 +37,14 @@ def map_archive_builder(env, target, sources, archive_type, stackframe, **kw):
         # copy source node to build area, have to keep directory structure
         # Following logic will maintain the directory structure, e.g /bin/setup.py
         # try make a hardlink for the source files else do a full copy        
-        new_sources=env.CCopyAs(
-                ['${{BUILD_DIR}}/_{2}/{0}/{1}'.format(target.name, env.Dir('${INSTALL_ROOT}').rel_path(n), archive_type_proper) for n in new_sources ],
-                new_sources,
-                CCOPY_LOGIC='hard-copy'
-                )
+
+        pkg_nodes=[]
+        for n in new_sources:
+            #get Package directory for node
+            pkg_dir="${{PACKAGE_{0}}}".format(env.MetaTagValue(n, 'category','package'))
+            pkg_nodes.append('${{BUILD_DIR}}/_{0}/{1}/{2}/{3}'.format(archive_type_proper,target.name,pkg_dir,env.Dir('${INSTALL_ROOT}').rel_path(n)))
+        new_sources = env.CCopyAs(pkg_nodes, new_sources, CCOPY_LOGIC='hard-copy')
+
         # really call the builder so everything is setup correctly
         # new sources are added along with control sources (files installed with PkgData for tar package)
         # to the target
