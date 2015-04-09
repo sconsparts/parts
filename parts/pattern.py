@@ -121,7 +121,7 @@ class Pattern(object):
 
                     # see if this is really a path
                     is_dir=os.path.isdir(currpath)
-                    if is_dir and self.recursive and file[0]!='.':
+                    if is_dir and self.recursive and file not in ('.svn','.git','.hg'):
                         tmp=os.path.split(currpath)
                         g_db[tmp[0]].append([tmp[1]])
                         # if so and we want to recurse, add to paths list
