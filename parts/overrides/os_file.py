@@ -57,9 +57,15 @@ if sys.platform == 'win32':
         else:
             return OPEN_ALWAYS
 
+    GetFullPathNameW = ctypes.windll.kernel32.GetFullPathNameW
+    GetFullPathNameW.argtypes = (ctypes.c_wchar_p,
+           ctypes.wintypes.DWORD,
+           ctypes.c_wchar_p,
+           ctypes.c_void_p)
+    GetFullPathNameW.restype = ctypes.wintypes.DWORD
+
     CreateFileW = ctypes.windll.kernel32.CreateFileW
-    CreateFileW.argtypes = (
-            ctypes.c_wchar_p, # lpFileName
+    CreateFileW.argtypes = (ctypes.c_wchar_p, # lpFileName
             ctypes.c_uint32,  # dwDesiredAccess
             ctypes.c_uint32,  # dwSharedMode
             ctypes.c_void_p,  # lpSecurityAttributes
@@ -70,7 +76,7 @@ if sys.platform == 'win32':
     CreateFileW.restype = ctypes.c_long
 
     DeleteFileW = ctypes.windll.kernel32.DeleteFileW
-    DeleteFileW.argtypes = (ctypes.c_wchar_p, )
+    DeleteFileW.argtypes = (ctypes.c_wchar_p,)
     DeleteFileW.restype = ctypes.wintypes.BOOL
 
     def shared_open(filename, mode='r', bufsize=-1):
@@ -79,21 +85,23 @@ if sys.platform == 'win32':
 
         if not (set(['a', 'w', 'r']) & set(mode)):
             mode = 'r' + mode
-
-        filename = unicode(filename)
+        #make this and abspath to help deal with long path names
+        if len(filename) > 16 and not filename.startswith("\\\\"):
+            filename = unicode("\\\\?\\" + os.path.abspath(filename))
+        else:
+            filename = unicode(filename)        
         desired_access = get_win32_desired_access(mode)
         shared_mode = get_win32_shared_mode(mode)
         creation_disposition = get_win32_creation_disposition(mode)
-        handle = CreateFileW(
-                    filename, # the file
+        handle = CreateFileW(filename, # the file
                     desired_access,# read, write modes
                     shared_mode,# add share delete
                     None, #default securtity
                     creation_disposition, #If we create the file or not
-                    128, # normal attribute.. FILE_ATTRIBUTE_NORMAL
+                    128, # normal attribute..  FILE_ATTRIBUTE_NORMAL
                     0 # no Template
                 )
-        if handle == -1:
+        if handle == -1:            
             # we have some error, return it in a python compatible way
             raise IOError(ctypes.GetLastError(), ctypes.FormatError(ctypes.GetLastError()),
                           filename)
@@ -119,17 +127,57 @@ if sys.platform == 'win32':
     _SConscript.open = _original_open
     _SConscript.file = _original_file
 
-    ## at this level these call replace the os.<file calls> that may be called by the user
+    ## at this level these call replace the os.<file calls> that may be called
+    ## by the user
     ## as for some reason some of these call lock the files in the python imple
-    ## ideally this should be done with a reimpl of SCons.Node.FS.LocalFS as all uses will use
+    ## ideally this should be done with a reimpl of SCons.Node.FS.LocalFS as
+    ## all uses will use
     ## the File or Dir nodes to do all file operation in SCon someday
     ## this will then change to allow help in that migration
     def win32_rm(path):
-        if not DeleteFileW(unicode(path)):
+        if len(path) >= 200 and not path.startswith("\\\\?\\"):
+            path = unicode("\\\\?\\" + os.path.abspath(path))
+        else:
+            path=unicode(path)
+        if not DeleteFileW(path):
             raise WindowsError(ctypes.GetLastError(), ctypes.FormatError(ctypes.GetLastError()),
                           path)
 
     os.remove = win32_rm
     os.unlink = win32_rm
+
+    _orginal_listdir = os.listdir
+    def listdir(dir):
+        if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
+            dir = unicode("\\\\?\\" + os.path.abspath(dir))
+        return _orginal_listdir(dir)
+    os.listdir = listdir
+
+    _orginal_stat = os.stat
+    def stat(dir):        
+        if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
+            dir = unicode("\\\\?\\" + os.path.abspath(dir))
+        return _orginal_stat(dir)
+    os.stat = stat
+    
+    _orginal_mkdir = os.mkdir
+    def mkdir(dir,mode=0777):
+        if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
+            dir = unicode("\\\\?\\" + os.path.abspath(dir))
+        return _orginal_mkdir(dir,mode)
+    os.mkdir = mkdir
+        
+    def abspath(dir):
+        buf = ctypes.create_unicode_buffer(1024)
+        ret = GetFullPathNameW(dir,1024,buf,0)
+        if ret > 1024:
+            buf = ctypes.create_unicode_buffer(ret)
+            ret = GetFullPathNameW(dir,1024,buf,0)
+        if ret == 0:
+            # we have an error
+            raise WindowsError(ctypes.GetLastError(), ctypes.FormatError(ctypes.GetLastError()),dir)
+        return buf.value
+    os.path.abspath = abspath
+
 
 # vim: set et ts=4 sw=4 ai :
