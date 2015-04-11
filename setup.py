@@ -76,7 +76,9 @@ setup(name="parts",
         author_email="jason.l.kenny@intel.com",
         version=parts_version._PARTS_VERSION,
         packages=['parts']+get_packages('./parts')+pk_package,
-        scripts=['parts/parts.bat','parts/parts'],
+		entry_points={
+			'console_scripts': [ 'parts=parts.version_info:parts_version_text' ],
+		},
         package_dir={'parts.parts-site':'parts-site'},
         package_data={
                 'parts.parts-site': pk_data,

@@ -33,15 +33,8 @@ import parts
 ### import the pieces
 import pieces
 
-if not sys._getframe(2).f_code.co_filename.endswith(".py"):
-
-    # start up logic ... runs during import of the code
-    glb.engine.Start() # sets up everything
-
-else:
-    import pnode.pnode_manager
-    glb.pnodes=pnode.pnode_manager.manager()
-
+# start up logic ... runs during import of the code
+glb.engine.Start() # sets up everything
 
 # import extra funcion
 ## this will be viewed as global function to the user in the Sconstruct file

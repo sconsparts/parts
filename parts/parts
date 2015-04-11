@@ -1,3 +1,0 @@
-#!/bin/sh
-# display the version number of parts
-python -c "from os.path import join; import sys; sys.path = [ join(sys.prefix, 'lib', 'python%d.%d' % (sys.version_info[0], sys.version_info[1]), 'site-packages', 'parts')] + sys.path; import parts_version; print 'Parts Version:', parts_version._PARTS_VERSION"
