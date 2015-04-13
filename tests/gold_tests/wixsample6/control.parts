@@ -1,0 +1,2 @@
+Import('*')
+env.InstallPkgData(['wixsample6.txt','extra.txt'], packagetype = ['msi'])

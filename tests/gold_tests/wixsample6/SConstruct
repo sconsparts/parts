@@ -1,0 +1,17 @@
+import os
+import sys
+sys.path = [os.path.realpath(os.path.normpath('../..'))] + sys.path
+#os.environ['APPDATA'] = os.path.realpath(os.path.normpath('../../'))
+
+from parts import *
+
+
+Part ('control','control.parts', package_group='pkg_control')
+Part ('msi','msi.parts', package_group='pkg6')
+Part('A/A.parts',package_group='sub_folders')
+Part(
+    'wixsample6','wixsample6.parts'
+    )
+
+# vim: set et ts=4 sw=4 ft=python :
+

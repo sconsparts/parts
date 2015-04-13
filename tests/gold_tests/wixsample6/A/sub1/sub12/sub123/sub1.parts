@@ -1,0 +1,9 @@
+Import('*')
+
+env.PartName('sub1')
+#files
+
+
+files=Pattern()
+env.InstallTopLevel(files,sub_dir="nexus")
+
