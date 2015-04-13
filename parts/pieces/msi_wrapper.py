@@ -20,8 +20,8 @@ def map_msi_builder(env, target, sources, stackframe, **kw):
                 return False
             return True
         msi_name=target
-        print "msi_name=",msi_name, type(target)
         # for each group ( source is a list of package groups
+        wix_paths=[]
         for g in sources:
             #get files from group
             files = env.GetPackageGroupFiles(g)
@@ -39,12 +39,12 @@ def map_msi_builder(env, target, sources, stackframe, **kw):
             # copy filea with hard links to save space
             grp_sources = env.CCopyAs(pkg_nodes, src, CCOPY_LOGIC='hard-copy')
             # run Heat on directory to make file list
-            print env._heat("${{BUILD_DIR}}/{0}".format(g),"${{BUILD_DIR}}/_msi/{0}".format(g))[0]
+            wxs_files.extend(env._heat("${{BUILD_DIR}}/{0}".format(g),"${{BUILD_DIR}}/_msi/{0}".format(g)))
 
-
-
-
-
+        print "wxs_files to build =",wxs_files
+        #env.Append("WIXPPPATH",)
+        env.MSI(target,wxs_files)
+        
 
 
 
