@@ -1,0 +1,7 @@
+Import('*')
+
+env.PartName('A')
+
+files=Pattern()
+env.InstallTopLevel(files,sub_dir="sub1")
+
