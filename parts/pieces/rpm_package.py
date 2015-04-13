@@ -60,8 +60,9 @@ def rpm_wrapper_mapper(env, target, sources, **kw):
         env['RPM_BUILD_ROOT']="${{BUILD_DIR}}/{0}".format(filename)
         for n in src:
             #get Package directory for node
-            pkg_dir="${{PACKAGE_{0}}}".format(env.MetaTagValue(n, 'category','package'))
-            pkg_nodes.append(env.Entry('${{BUILD_DIR}}/{0}/{1}/{2}'.format(filename,pkg_dir,env.Dir(n.env['INSTALL_ROOT']).rel_path(n))))
+            pk_type=env.MetaTagValue(n, 'category','package')
+            pkg_dir="${{PACKAGE_{0}}}".format(pk_type)
+            pkg_nodes.append(env.Entry('${{BUILD_DIR}}/{0}/{1}/{2}'.format(filename,pkg_dir,env.Dir(n.env['INSTALL_{0}'.format(pk_type)]).rel_path(n))))
             
         spec_file = env._rpmspec(
                             '${{BUILD_DIR}}/SPECS/{0}/{1}'.format(target[0].name[:-4],spec_in.name), 

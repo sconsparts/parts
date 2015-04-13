@@ -414,6 +414,10 @@ def generateCopyBuilder(description):
         own unique instance of doCopy() with "description" bound by closure thing).
         If all functions failed try simple copying.
         '''
+        if len(dest) >= 200 and not dest.startswith("\\\\?\\"):
+            dest = unicode("\\\\?\\" + os.path.abspath(dest))
+        if len(source) >= 200 and not source.startswith("\\\\?\\"):
+            source = unicode("\\\\?\\" + os.path.abspath(source))
         if copy_hard in description.copyFunctions:
             # Check if dest is a hardlink of source - to save time; also on Windows
             # hardlinks have a quirk - if a file is opened without # SHARED_DELETE via some
