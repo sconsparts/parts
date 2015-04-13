@@ -45,8 +45,9 @@ def generate(env):
     env['MSISUFFIX'] = '.msi'
 
     wix.MergeShellEnv(env)
-    env['WIXCL']=parts.tools.Common.toolvar('candle', ('candle',), env = env)
-    env['WIXLINK']=parts.tools.Common.toolvar('light', ('light',), env = env)
+    env['HEAT']=parts.tools.Common.toolvar('heat', ('heat','wix'), env = env)
+    env['WIXCL']=parts.tools.Common.toolvar('candle', ('candle','wix'), env = env)
+    env['WIXLINK']=parts.tools.Common.toolvar('light', ('light','wix'), env = env)
 
 def exists(env):
     return wix.Exists(env)
