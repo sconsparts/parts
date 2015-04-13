@@ -7,7 +7,7 @@ import parts.api as api
 
 # TODO need to add package group to scan directory
 heat_action = SCons.Action.Action("heat.exe dir ${SOURCE} -o ${TARGET}"
-                                 " -sw5150 -gg -cg ProductComponents -srd -sfrag -dr INSTALLFOLDER -var var.PartsBuildDir"
+                                 " -sw5150 -gg -cg ProductComponents -srd -sfrag -dr INSTALLFOLDER"# -var var.PartsBuildDir"
                                  
                                  )
 
