@@ -495,13 +495,14 @@ def createWixObjectBuilder(env):
     except KeyError:
         result = SCons.Builder.Builder(
                 action = '$WIXCLCOM',
-                emitter = {},
                 prefix = '$WIXOBJPREFIX',
                 suffix = '$WIXOBJSUFFIX',
                 src_suffix = '.wxs',
                 single_source = 1,
                 source_scanner = SCons.Tool.SourceFileScanner,
                 target_scanner = wixObjEnvScanner,
+                target_factory = SCons.Node.FS.File,
+                source_factory = SCons.Node.FS.File
                 )
         env['BUILDERS']['WixObject'] = result
 
@@ -516,13 +517,14 @@ def createMsiBuilder(env):
     except KeyError:
         result = SCons.Builder.Builder(
                 action = '$WIXLINKCOM',
-                emitter = {},
                 prefix = '$MSIPREFIX',
                 suffix = '$MSISUFFIX',
                 src_suffix = '$WIXOBJSUFFIX',
                 src_builder = 'WixObject',
                 source_scanner = SCons.Tool.SourceFileScanner,
                 target_scanner = wixMsiEnvScanner,
+                target_factory = SCons.Node.FS.File,
+                source_factory = SCons.Node.FS.File
                 )
         env['BUILDERS']['MSI'] = result
 

@@ -8,7 +8,7 @@ def map_msi_builder(env, target, sources, stackframe, **kw):
         
         wxs_files = []
         def control_sources(node):
-            global wxs_files
+            
             if env.MetaTagValue(node, 'category', 'package') == 'PKGDATA':
                 if 'msi' in env.MetaTagValue(node, 'types', 'package', ['msi']):   
                     if node.ID.endswith(".wxs"):
@@ -39,10 +39,10 @@ def map_msi_builder(env, target, sources, stackframe, **kw):
             # copy filea with hard links to save space
             grp_sources = env.CCopyAs(pkg_nodes, src, CCOPY_LOGIC='hard-copy')
             # run Heat on directory to make file list
+            env.Append(WIXFILEPATH=["${{BUILD_DIR}}/_msi/{0}".format(g)])
             wxs_files.extend(env._heat("${{BUILD_DIR}}/{0}".format(g),"${{BUILD_DIR}}/_msi/{0}".format(g)))
 
-        print "wxs_files to build =",wxs_files
-        #env.Append("WIXPPPATH",)
+        
         env.MSI(target,wxs_files)
         
 
@@ -107,9 +107,9 @@ def MsiPackage_wrapper(env,target,sources,**kw):
         raise SCons.Errors.UserError('Only one target is allowed.')
     
     if str(target[0]).endswith('.msi'):
-        target = [env.Dir(".").File(target[0])]
+        target = [env.Dir(".").File(env.subst(target[0]))]
     else:
-        target = [env.Dir(".").File(target[0] + ".msi")]
+        target = [env.Dir(".").File(env.subst(target[0]) + ".msi")]
 
     sources = [env.subst(s) for s in sources]
     #print env.subst(target),25
