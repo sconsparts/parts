@@ -41,9 +41,7 @@ def map_msi_builder(env, target, sources, stackframe, **kw):
             # run Heat on directory to make file list
             env.Append(WIXFILEPATH=["${{BUILD_DIR}}/_msi/{0}".format(g)])
             wxs_files.extend(env._heat("${{BUILD_DIR}}/{0}".format(g),"${{BUILD_DIR}}/_msi/{0}".format(g)))
-
-        
-        env.MSI(target,wxs_files,WIXLINKEXTENSIONS=["WixUtilExtension"],WIXCLFLAGS=["-arch","x64"])
+        env.MSI(target,wxs_files)
 
     return msi_builder
 
