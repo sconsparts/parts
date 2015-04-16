@@ -139,8 +139,6 @@
     <None Include="overrides\scanner.py" />
     <None Include="overrides\__init__.py" />
     <None Include="packaging.py" />
-    <None Include="parts" />
-    <None Include="parts.bat" />
     <None Include="parts.py" />
     <None Include="parts_version.py" />
     <None Include="part_logger.py" />
@@ -319,6 +317,7 @@
     <Compile Include="pieces\archive_package.py" />
     <Compile Include="pieces\deb_wrapper.py" />
     <Compile Include="pieces\dpkg.py" />
+    <Compile Include="pieces\msi_wix.py" />
     <Compile Include="pieces\msi_wrapper.py" />
     <Compile Include="pieces\rpm.py" />
     <Compile Include="pieces\rpm_package.py" />
