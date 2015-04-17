@@ -5,18 +5,18 @@ from SCons.Debug import logInstanceCreation
 
 def map_msi_builder(env, target, sources, stackframe, **kw):
     def msi_builder():
-        
+
         wxs_files = []
         def control_sources(node):
-            
+
             if env.MetaTagValue(node, 'category', 'package') == 'PKGDATA':
-                if 'msi' in env.MetaTagValue(node, 'types', 'package', ['msi']):   
+                if 'msi' in env.MetaTagValue(node, 'types', 'package', ['msi']):
                     if node.ID.endswith(".wxs"):
                         # these are wxs file we need to build
-                        wxs_files.extend(env.CCopy('.',node))
-                    else:                
+                        wxs_files.extend(env.CCopy('${BUILD_DIR}',node))
+                    else:
                         # these are I don't know what.. might be resourecs for wxs files.
-                        env.CCopy('.',node)
+                        env.CCopy('${BUILD_DIR}',node)
                 return False
             return True
         msi_name=target
@@ -26,9 +26,9 @@ def map_msi_builder(env, target, sources, stackframe, **kw):
             #get files from group
             files = env.GetPackageGroupFiles(g)
             # filter sources and copy to staging area to make a file list off of
-            pkg_nodes=[]        
+            pkg_nodes=[]
             src=filter(control_sources,files)
-            if not src:                
+            if not src:
                 continue
             for n in src:
                 #get Package directory for node
