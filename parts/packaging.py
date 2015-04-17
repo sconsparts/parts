@@ -8,10 +8,12 @@ import policy
 
 import SCons.Script
 
-
+# this is the group to part mapping
+# ie this is the unsorted data
 g_package_groups = {}
 
-_packaging_groups = dict(), dict()
+# this is a tuple of no_pkg,pkg dict of {groupName:Node.File}
+_sorted_groups = dict(), dict()
 
 def PackageGroups():
     return g_package_groups.keys()
@@ -43,8 +45,8 @@ def PackageGroup(name,parts=None):
                 raise RuntimeError("%s does not refer to a defined Part" % (p))
 
         #cache is out of date..  zap it to force rebuild
-        if name in _packaging_groups[0]:
-            map(dict.clear, _packaging_groups)
+        if name in _sorted_groups[0]:
+            _clear_sorted_group()
 
     return tuple(x for x in result)
 
@@ -137,7 +139,7 @@ def GetPackageGroupFiles(name,no_pkg=False):
     This function will try to cache known result to improve speed.
     '''
     # get Cache value
-    groups = _packaging_groups[int(bool(no_pkg))]
+    groups = _sorted_groups[int(bool(no_pkg))]
     try:
         return list(groups[name])
     except KeyError:
@@ -149,73 +151,119 @@ def GetPackageGroupFiles(name,no_pkg=False):
     # return what we got, if not in rebuilt list return empty list
     return list(groups.get(name, set()))
 
+# this get the set of files for a given group
 def get_group_set(name, no_pkg):
-    group = _packaging_groups[bool(no_pkg)]
+    group = _sorted_groups[bool(no_pkg)]
     try:
         return group[name]
     except KeyError:
+        # don't have the group
+        # set both no_pkg and pkg cases
         group[name] = result = set()
-        _packaging_groups[bool(not no_pkg)][name] = set()
+        _sorted_groups[bool(not no_pkg)][name] = set()
         return result
 
+def _clear_sorted_group():
+    _sorted_groups[0].clear()
+    _sorted_groups[1].clear()
+
+def _set_file_info(curr_group,f,map_objs):
+    # ATTENTION: for performance reasons we inline
+    # metatag.MetaTag() function in this code.                
+    try:
+        # get the package object
+        package = f.attributes.package
+    except AttributeError:
+        # if it does not exist set the value for group and no_pkg default values
+        _no_pkg, group_val = False, set()
+        f.attributes.package = package = common.namespace(no_package=_no_pkg, group=group_val)
+    else:
+        # we have it.. get values that are set
+        _no_pkg, group_val = package.get('no_package', False), package.get('group', set())
+
+    # Add file to group
+                
+    # the file has a string tag saying what group it should be in
+    # this has to be set manually with a metatag call forcing it 
+    # to a given group, cannot be filter after this
+    if util.isString(group_val): 
+        get_group_set(group_val, _no_pkg).add(f)
+    # group value is not set yet
+    # so we will add the current group to it
+    elif not group_val:
+        # Set default meta-tag value
+        #package.update(group=name)
+
+        for group, tests in map_objs.viewitems():
+            # test if there is a filter to move this to a different group
+            for test in tests:
+                if test(f):
+                    group_val.add(group)
+                    get_group_set(group, _no_pkg).add(f)
+                    break
+        # if the filter did not set this to a new value
+        # set this to a default value of the current group
+        if not group_val:
+            group_val = set([curr_group])
+            get_group_set(curr_group, _no_pkg).add(f)
+        #apply meta tag to file
+        # we make it a tuple to save space as this will not change during this run
+        package.update(group=tuple(group_val))
+    else:
+        # group_val is asserted to be a tuple or a set
+        # Map the value in to the different groups it has been mapped to
+        for group in group_val:
+            get_group_set(group, _no_pkg).add(f)
+    api.output.verbose_msgf(["packaging-mapping"],"{0} add to group(s)={1}, no_pkg={2}",f.ID,group_val,_no_pkg)
+
+# make this a util function ( been copied and pasted around a little)
+def _get_file_entries(node):
+    # walk the Dir node to see what nodes it contains
+    # return a flat list of file node
+    ret=[]
+    for k,v in node.entries.viewitems():
+        if isinstance(v,SCons.Node.FS.Dir) and k != ".." and k != ".":
+            ret.extend(_get_file_entries(v))
+        else: # this is a File node
+            ret.append(v)
+    return ret
+
 def SortPackageGroups():
-    grps = PackageGroups() # get the groups
+    # get the set of groups currently defined
+    grps = PackageGroups() 
 
     # reset the cache
-    for group in _packaging_groups:
-        group.clear()
-
-    for name in grps:
-        #get the component that are part of the group
-        obj_lst = PackageGroup(name)
+    _clear_sorted_group()
+    
+    for name,obj_lst in g_package_groups.viewitems():
+        #get the Part Objects        
         api.output.verbose_msg('packaging','Sorting Group:',name)
-
         for obj in obj_lst:
-            if isinstance(obj,SCons.Node.FS.File):
+            if util.isFile(obj):
                 files = [obj]
                 map_objs = glb.engine.def_env.get('PACKAGE_GROUP_FILTER',[])
-            else: # assume this is a part
+            #elif util.isDir(obj): fill in when we can
+            #    files = [obj]
+            #    map_objs = glb.engine.def_env.get('PACKAGE_GROUP_FILTER',[])                
+            else: 
+                #else we assume this is a string for a part alias/ID
                 pobj = glb.engine._part_manager._from_alias(obj)
                 map_objs = pobj.Env.get('PACKAGE_GROUP_FILTER',[])
-                # this needs to be updated with we add teh new format ( and
-                # lots of different section types)
+                # this needs to be updated with we add the new format 
+                # as we will have different section other than build
+                # at moment we assume utest sectiond don't package
+                # this will be come a look to go over all defined sections
                 files = pobj.Section('build').InstalledFiles
             
             for f in files:
-                # ATTENTION: for performance reasons we inline
-                # metatag.MetaTag() function in this code.
-                try:
-                    package = f.attributes.package
-                except AttributeError:
-                    _no_pkg, group_val = False, set()
-                    f.attributes.package = package = common.namespace(no_package=_no_pkg, group=group_val)
-                else:
-                    _no_pkg, group_val = package.get('no_package', False), package.get('group', set())
-
-                # Add file to group
-                if util.isString(group_val): # Check most common case first
-                    get_group_set(group_val, _no_pkg).add(f)
-                elif not group_val:
-
-                    # Set default meta-tag value
-                    package.update(group=name)
-
-                    for group, tests in map_objs.iteritems():
-                        for test in tests:
-                            if test(f):
-                                group_val.add(group)
-                                get_group_set(group, _no_pkg).add(f)
-                                break
-                    if not group_val:
-                        group_val = set([name])
-                        get_group_set(name, _no_pkg).add(f)
-                    #apply meta tag to file
-                    package.update(group=list(group_val))
-                else:
-                    # group_val is asserted to be a list or a set
-                    for group in group_val:
-                        get_group_set(group, _no_pkg).add(f)
-                api.output.verbose_msgf(["packaging-mapping"],"{0} add to group(s)={1}, no_pkg={2}",f.ID,group_val,_no_pkg)
+                 _set_file_info(name,f,map_objs)
+                # this needs to be called in a scanner for this to work
+                #if util.isFile(obj):
+                #    _set_file_info(name,f,map_objs)
+                #elif util.isDir(obj):
+                #    # get all items in the directory and apply
+                #    for i in _get_file_entries(f):
+                #        _set_file_info(name,i,map_objs)
 
 def GetPackageGroupFiles_env(env,name,no_pkg=False):
     return GetPackageGroupFiles(name,no_pkg)
