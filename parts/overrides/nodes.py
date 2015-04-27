@@ -40,6 +40,11 @@ def wrap_MkdirFunc(function):
     def MkdirFunc(target, source, env):
         global BuildError, errno
         target = target[0]
+        # there is a case in SCons in which a directory depends on a directory
+        # that is many levels deep. For some reason the parent directory is not
+        # created correctly. This tests and catches the case by making the parent
+        if not target.dir.exists():
+            SCons.Node.FS.MkdirFunc([target.dir], source, env)
         if not target.exists():
             try:
                 target.fs.mkdir(target.abspath)
