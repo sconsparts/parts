@@ -106,6 +106,9 @@ def export_file_path(env,targets,pobj,prop,use_src):
 def ExportCPPPATH(env,values,create_sdk=True):
     values=env.arg2nodes(values, env.fs.Dir)
     return ExportItem(env,'CPPPATH',values,create_sdk)
+def ExportLIBPATH(env,values,create_sdk=True):
+    values=env.arg2nodes(values, env.fs.Dir)
+    return ExportItem(env,'LIBPATH',values,create_sdk)    
 def ExportCPPDEFINES(env,values,create_sdk=True):
     return ExportItem(env,'CPPDEFINES',values,create_sdk)
 def ExportCFLAGS(env,values,create_sdk=True):
@@ -179,6 +182,7 @@ from SCons.Script.SConscript import SConsEnvironment
 # adding logic to Scons Enviroment object
 
 SConsEnvironment.ExportCPPPATH=ExportCPPPATH
+SConsEnvironment.ExportLIBPATH=ExportLIBPATH
 SConsEnvironment.ExportCPPDEFINES=ExportCPPDEFINES
 SConsEnvironment.ExportCFLAGS=ExportCFLAGS
 SConsEnvironment.ExportCCFLAGS=ExportCCFLAGS

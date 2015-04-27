@@ -58,7 +58,8 @@ def parts_node_errors(builder, env, tlist, slist):
                 error=True
 
         if error:
-            api.output.error_msg('Build issue found with two different Environments\n One environment was defined in Part "%s"\n The other was defined in Part "%s"'%(t.env.get('PART_ALIAS',"<unknown>"),env.get('PART_ALIAS',"<unknown>")),show_stack=False,exit=False)
+            tenv = {} if t.env is None else t.env
+            api.output.error_msg('{0} is ambiguous because it is defined with two different Environments\n One environment was defined in Part "{1}"\n The other was defined in Part "{2}"'.format(t,tenv.get('PART_ALIAS',"<unknown>"),env.get('PART_ALIAS',"<unknown>")),show_stack=False,exit=False)
         elif warn:
             api.output.warning_msg('Build issue found with two different Environments\n One environment was defined in Part "%s"\n The other was defined in Part "%s"'%(t.env.get('PART_ALIAS',"<unknown>"),env.get('PART_ALIAS',"<unknown>")),show_stack=False)
 
