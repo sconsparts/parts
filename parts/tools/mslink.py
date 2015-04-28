@@ -328,85 +328,86 @@ def generate(env):
     # Set-up ms tools paths for default version
     msvc.MergeShellEnv(env)
 
-    env['SHLINK'] = parts.tools.Common.toolvar('link', ('link',), env = env)
-    env['SHLINKFLAGS'] = SCons.Util.CLVar('$LINKFLAGS /dll')
-    env['_SHLINK_TARGETS'] = windowsShlinkTargets
-    env['_SHLINK_SOURCES'] = windowsShlinkSources
-    env['SHLINKCOM'] = compositeShLinkAction
+    env.SetDefault(SHLINK=parts.tools.Common.toolvar('link', ('link',), env = env))
+    env.SetDefault(SHLINKFLAGS =SCons.Util.CLVar('$LINKFLAGS /dll'))
+    env.SetDefault(_SHLINK_TARGETS =windowsShlinkTargets)
+    env.SetDefault(_SHLINK_SOURCES =windowsShlinkSources)
+    env.SetDefault(SHLINKCOM =compositeShLinkAction)
     env.Append(SHLIBEMITTER = [windowsLibEmitter])
-    env['LINK'] = parts.tools.Common.toolvar('link', ('link',), env = env)
-    env['LINKFLAGS'] = SCons.Util.CLVar()
-    env['_PDB'] = pdbGenerator
-    env['LINKCOM'] = compositelinkcomAction
+    env.SetDefault(LINK =parts.tools.Common.toolvar('link', ('link',), env = env))
+    env.SetDefault(LINKFLAGS =SCons.Util.CLVar())
+    env.SetDefault(_PDB =pdbGenerator)
+    env.SetDefault(LINKCOM =compositelinkcomAction)
     env.Append(PROGEMITTER = [prog_emitter])
-    env['LIBDIRPREFIX'] = '/LIBPATH:'
-    env['LIBDIRSUFFIX'] = ''
-    env['LIBLINKPREFIX'] = ''
-    env['LIBLINKSUFFIX'] = '$LIBSUFFIX'
+    env.SetDefault(LIBDIRPREFIX ='/LIBPATH:')
+    env.SetDefault(LIBDIRSUFFIX ='')
+    env.SetDefault(LIBLINKPREFIX ='')
+    env.SetDefault(LIBLINKSUFFIX ='$LIBSUFFIX')
 
-    env['WIN32DEFPREFIX'] = ''
-    env['WIN32DEFSUFFIX'] = '.def'
-    env['WIN32_INSERT_DEF'] = 0
-    env['WINDOWSDEFPREFIX'] = '${WIN32DEFPREFIX}'
-    env['WINDOWSDEFSUFFIX'] = '${WIN32DEFSUFFIX}'
-    env['WINDOWS_INSERT_DEF'] = '${WIN32_INSERT_DEF}'
+    env.SetDefault(WIN32DEFPREFIX ='')
+    env.SetDefault(WIN32DEFSUFFIX ='.def')
+    env.SetDefault(WIN32_INSERT_DEF =0)
+    env.SetDefault(WINDOWSDEFPREFIX ='${WIN32DEFPREFIX}')
+    env.SetDefault(WINDOWSDEFSUFFIX ='${WIN32DEFSUFFIX}')
+    env.SetDefault(WINDOWS_INSERT_DEF ='${WIN32_INSERT_DEF}')
 
-    env['WIN32EXPPREFIX'] = ''
-    env['WIN32EXPSUFFIX'] = '.exp'
-    env['WINDOWSEXPPREFIX'] = '${WIN32EXPPREFIX}'
-    env['WINDOWSEXPSUFFIX'] = '${WIN32EXPSUFFIX}'
+    env.SetDefault(WIN32EXPPREFIX ='')
+    env.SetDefault(WIN32EXPSUFFIX ='.exp')
+    env.SetDefault(WINDOWSEXPPREFIX ='${WIN32EXPPREFIX}')
+    env.SetDefault(WINDOWSEXPSUFFIX ='${WIN32EXPSUFFIX}')
 
-    env['WINDOWSSHLIBMANIFESTPREFIX'] = ''
-    env['WINDOWSSHLIBMANIFESTSUFFIX'] = '${SHLIBSUFFIX}.manifest'
-    env['WINDOWSPROGMANIFESTPREFIX'] = ''
-    env['WINDOWSPROGMANIFESTSUFFIX'] = '${PROGSUFFIX}.manifest'
+    env.SetDefault(WINDOWSSHLIBMANIFESTPREFIX ='')
+    env.SetDefault(WINDOWSSHLIBMANIFESTSUFFIX ='${SHLIBSUFFIX}.manifest')
+    env.SetDefault(WINDOWSPROGMANIFESTPREFIX ='')
+    env.SetDefault(WINDOWSPROGMANIFESTSUFFIX ='${PROGSUFFIX}.manifest')
 
-    env['REGSVRACTION'] = regServerCheck
-    env['REGSVR'] = os.path.join(SCons.Platform.win32.get_system_root(), 'System32', 'regsvr32')
-    env['REGSVRFLAGS'] = '/s '
-    env['REGSVRCOM'] = '$REGSVR $REGSVRFLAGS ${TARGET.windows}'
-    env['REGISTEREXECOM'] = '${TARGET.windows} /regserver'
+    env.SetDefault(REGSVRACTION =regServerCheck)
+    env.SetDefault(REGSVR =os.path.join(SCons.Platform.win32.get_system_root(), 'System32', 'regsvr32'))
+    env.SetDefault(REGSVRFLAGS ='/s ')
+    env.SetDefault(REGSVRCOM ='$REGSVR $REGSVRFLAGS ${TARGET.windows}')
+    env.SetDefault(REGISTEREXECOM ='${TARGET.windows} /regserver')
 
-    env['MT'] = parts.tools.Common.toolvar('mt', ('mt',), env = env)
-    env['MTFLAGS'] = ''
-    env['EMBEDMANIFESTDLLCOM'] = '$MT $MTFLAGS -outputresource:${TARGET};2 -manifest ${TARGET}.manifest'
-    env['EMBEDMANIFESTPROGCOM'] = '$MT $MTFLAGS -outputresource:${TARGET};1 -manifest ${TARGET}.manifest'
+    env.SetDefault(MT =parts.tools.Common.toolvar('mt', ('mt',), env = env))
+    env.SetDefault(MTFLAGS ='')
+    env.SetDefault(EMBEDMANIFESTDLLCOM ='$MT $MTFLAGS -outputresource:${TARGET};2 -manifest ${TARGET}.manifest')
+    env.SetDefault(EMBEDMANIFESTPROGCOM ='$MT $MTFLAGS -outputresource:${TARGET};1 -manifest ${TARGET}.manifest')
 
-    env['MAKECERT'] = 'makecert'
-    env['MAKECERTFLAGS'] = '-sk "$SIGNING.STORAGE.PRIVATE" -ss "$SIGNING.STORAGE.PUBLIC" -n "$SIGNING.NAME"'
-    env['MAKECERTCOM'] = '$MAKECERT $MAKECERTFLAGS'
+    #env.SetDefault(MAKECERT ='makecert')
+    #env.SetDefault(MAKECERTFLAGS ='-sk "$SIGNING.STORAGE.PRIVATE" -ss "$SIGNING.STORAGE.PUBLIC" -n "$SIGNING.NAME"')
+    #env.SetDefault(MAKECERTCOM ='$MAKECERT $MAKECERTFLAGS')
 
-    env['SIGNTOOL'] = parts.tools.Common.toolvar('signtool', ('signtool',), env = env)
-    env['SIGNTOOLFLAGS'] = ''
+    #env.SetDefault(SIGNTOOL =parts.tools.Common.toolvar('signtool', ('signtool',), env = env))
+    #env.SetDefault(SIGNTOOLFLAGS ='')
 
-    env['SIGN'] = '$SIGNTOOL sign'
-    env['SIGNFLAGS'] = '/q /a /s "$SIGNING.STORAGE.PUBLIC" /csp "$SIGNING.STORAGE.PROVIDER" /kc "$SIGNING.STORAGE.PRIVATE"'
-    env['SIGNCOM'] = '$SIGN $SIGNFLAGS "$TARGET"'
+    #env.SetDefault(SIGN ='$SIGNTOOL sign')
+    #env.SetDefault(SIGNFLAGS ='/q /a /s "$SIGNING.STORAGE.PUBLIC" /csp "$SIGNING.STORAGE.PROVIDER" /kc "$SIGNING.STORAGE.PRIVATE"')
+    #env.SetDefault(SIGNCOM ='$SIGN $SIGNFLAGS "$TARGET"')
 
-    env['SIGNING'] = common.namespace(USERNAME = os.getenv('USERNAME', 'unknown'),
-                                      STORAGE = common.namespace(PRIVATE = 'codesign',
-                                                                 PUBLIC = 'codesign',
-                                                                 PROVIDER = 'Microsoft Strong Cryptographic Provider'),
-                                      NAME = 'CN=$SIGNING.USERNAME,OU=$SIGNING.ORGNAME,O=$SIGNING.COMPANY,E=$SIGNING.EMAIL',
-                                      ORGNAME = 'unknown',
-                                      COMPANY = 'unknown',
-                                      EMAIL = 'unknown',
-                                      ENABLED = False,
-                                      GENCERT = True)
+    #env.SetDefault(SIGNING =common.namespace(USERNAME = os.getenv('USERNAME', 'unknown'),
+    #                                  STORAGE = common.namespace(PRIVATE = 'codesign',
+    #                                                             PUBLIC = 'codesign',
+    #                                                             PROVIDER = 'Microsoft Strong Cryptographic Provider'),
+    #                                  NAME = 'CN=$SIGNING.USERNAME,OU=$SIGNING.ORGNAME,O=$SIGNING.COMPANY,E=$SIGNING.EMAIL',
+    #                                  ORGNAME = 'unknown',
+    #                                  COMPANY = 'unknown',
+    #                                  EMAIL = 'unknown',
+    #                                  ENABLED = False,
+    #                                  GENCERT = True)
+    #               )
 
     # Loadable modules are on Windows the same as shared libraries, but they
     # are subject to different build parameters (LDMODULE* variables).
     # Therefore LDMODULE* variables correspond as much as possible to
     # SHLINK*/SHLIB* ones.
     SCons.Tool.createLoadableModuleBuilder(env)
-    env['LDMODULE'] = '$SHLINK'
-    env['LDMODULEPREFIX'] = '$SHLIBPREFIX'
-    env['LDMODULESUFFIX'] = '$SHLIBSUFFIX'
-    env['LDMODULEFLAGS'] = '$SHLINKFLAGS'
-    env['_LDMODULE_TARGETS'] = _windowsLdmodTargets
-    env['_LDMODULE_SOURCES'] = _windowsLdmodSources
-    env['LDMODULEEMITTER'] = [ldmodEmitter]
-    env['LDMODULECOM'] = compositeLdmodAction
+    env.SetDefault(LDMODULE ='$SHLINK')
+    env.SetDefault(LDMODULEPREFIX ='$SHLIBPREFIX')
+    env.SetDefault(LDMODULESUFFIX ='$SHLIBSUFFIX')
+    env.SetDefault(LDMODULEFLAGS ='$SHLINKFLAGS')
+    env.SetDefault(_LDMODULE_TARGETS =_windowsLdmodTargets)
+    env.SetDefault(_LDMODULE_SOURCES =_windowsLdmodSources)
+    env.SetDefault(LDMODULEEMITTER =[ldmodEmitter])
+    env.SetDefault(LDMODULECOM =compositeLdmodAction)
     
     #api.output.print_msg("Configured Tool %s\t for version <%s> target <%s>"%('mslink',env['MSVC']['VERSION'],env['TARGET_PLATFORM']))
 
