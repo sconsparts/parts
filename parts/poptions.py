@@ -257,6 +257,12 @@ SCons.Script.AddOption("--disable-global-parts-site",
             action="store_false",
             help='Disable Parts from using the part-site location in the system or user areas.')
 
+SCons.Script.AddOption("--use-env",
+            dest='use_env',
+            default=False,
+            action="store_true",
+            help='Force use of shell environment. Overrides normal tools path setup')
+
 SCons.Script.AddOption("--verbose",
             dest='verbose',
             default=[],
