@@ -505,8 +505,8 @@ class Settings(object):
             self.__env_cache[cache_key]=env
 
         ## See if the user want to whack the default environment with the shell value.
-        #if  SCons.Script.GetOption('use_env') == True or self.UseSystemEnvironment:
-        #    env['ENV']=os.environ
+        if  SCons.Script.GetOption('use_env') == True:# or self.UseSystemEnvironment:
+            env['ENV']=os.environ
         return env
 
 

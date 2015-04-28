@@ -191,12 +191,13 @@ class parts_addon(object):
         # we had something to build
         # check to see that we even have targets to process, and that there are no error conditions
         if SCons.Script.BUILD_TARGETS:# and SCons.Script.Main.exit_status == 0 and self.HadError==False and self.__use_cache == True:
-            # current changed logic to say teh build is good if we loaded all the information we had to load.
-            # given this we don't realy care if there was a bad "build" as the state we care about should be OK
-            self.store_db_data(self._loaded_data,self.__build_mode)
+            # current changed logic to say the build is good if we loaded all the information we had to load.
+            # given this we don't really care if there was a bad "build" as the state we care about should be OK
+            #self.store_db_data(self._loaded_data,self.__build_mode)
+			pass
         #else:
         #    self.store_db_data(False)
-        datacache.SaveCache()
+        #datacache.SaveCache()
         #get what went wrong if anything
         bf_lst=SCons.Script.GetBuildFailures()
 
@@ -227,7 +228,7 @@ class parts_addon(object):
         # do a exit because everything is up-to-date
         self._exit_up_to_date=True
         # the question is what kind of exit to do.. hard or soft
-        # Scons would preffer the soft.. however it looks like
+        # Scons would prefer the soft.. however it looks like
         # state can get messed up here, so the hard case maybe better
         exit(0) # hard exit
         #self.def_env.Exit(0) # soft exit()
