@@ -23,7 +23,7 @@ def signEmit(target, source, env):
     build_dir = env.Dir("$BUILD_DIR").abspath
     if len(target) == len(source) and len(source)==1:
         t = [env.Dir("signed").File(env.Dir(build_dir).rel_path(target[0]))]
-    if len(target) == len(source):
+    elif len(target) == len(source):
         t=target 
     else:
         for c,s in enumerate(source):                           
@@ -31,7 +31,8 @@ def signEmit(target, source, env):
                 s = env.Dir("signed").File(env.Dir(build_dir).rel_path(s))
             elif s.abspath.startswith(src_dir):                
                 s = env.Dir("signed").File(env.Dir(build_dir).rel_path(s))
-            t.append(s)            
+            t.append(s)      
+    print t[0]      
     return (t,source)
 
 def CertFunc(env):

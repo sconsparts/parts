@@ -344,6 +344,9 @@
     <Compile Include="tools\MSCommon\vc11.py" />
     <Compile Include="tools\MSCommon\vc12.py" />
     <Compile Include="tools\MSCommon\wix.py" />
+    <Compile Include="tools\signfile.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="tools\wix.py" />
     <Compile Include="vcs\git.py" />
     <Compile Include="vcs\smart_svn.py" />
