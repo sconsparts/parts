@@ -32,7 +32,6 @@ def signEmit(target, source, env):
             elif s.abspath.startswith(src_dir):                
                 s = env.Dir("signed").File(env.Dir(build_dir).rel_path(s))
             t.append(s)      
-    print t[0]      
     return (t,source)
 
 def CertFunc(env):
