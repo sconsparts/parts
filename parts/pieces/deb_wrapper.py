@@ -11,23 +11,34 @@ def deb_wrapper_mapper(env, target, sources, **kw):
         #############################################
         # getting all the sources
         new_sources, _ = env.Override(kw).GetFilesFromPackageGroups(target, sources)
-        
+
         #############################################
         ## Sort files in to source group and to control group
         def filter_func(node):
             if env.MetaTagValue(node, 'category', 'package')=='PKGDATA':
-                if 'dpkg' in env.MetaTagValue(node, 'types', 'package', ['dpkg']):
-                    env.CCopy('${{BUILD_DIR}}/_dpkg/{0}/DEBIAN'.format(target), node)
+                if 'dpkg' in env.MetaTagValue(node, 'types', 'package', ['dpkg','deb','DEB']):
+                    env.CCopy('${{BUILD_DIR}}/_dpkg/{0}/debian'.format(target.name[:-4]), node)
                 return False
             return True
 
-        new_sources=filter(filter_func,new_sources)
-        
+        src=filter(filter_func,new_sources)
+
+        pkg_nodes = []
+        for n in src:
+            pk_type=env.MetaTagValue(n, 'category','package')
+            pkg_dir="${{PACKAGE_{0}}}".format(pk_type)
+            pkg_nodes.append(env.Entry('${{BUILD_DIR}}/_dpkg/{0}/{1}/{2}/{3}'.format(target.name[:-4],target.name[:-4],pkg_dir,env.Dir(n.env['INSTALL_{0}'.format(pk_type)]).rel_path(n))))
+
         #############################################
         ##create the source gz file
-        env.TarGzFile('${{BUILD_DIR}}/_dpkg/{0}/source.tar.gz'.format(target), new_sources, SRC_DIR="$INSTALL_ROOT")
+        ret = env.CCopyAs(pkg_nodes, src, CCOPY_LOGIC='hard-copy')
+        Tar_Filename = target.name
+        Tar_Filename=Tar_Filename.replace('-', '_')
+        #############################################
+        ##create the source gz file
+        env.TarGzFile('${{BUILD_DIR}}/_dpkg/{0}.orig.tar.gz'.format(Tar_Filename[:-4]), src, SRC_DIR="$INSTALL_ROOT")
 
-        env._dpkg(target, '${{BUILD_DIR}}/_dpkg/{0}'.format(target.name))
+        env._dpkg(target, '${{BUILD_DIR}}/_dpkg/{0}'.format(target.name[:-4]))
     return deb_wrapper
      
 
