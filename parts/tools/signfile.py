@@ -22,7 +22,7 @@ def signEmit(target, source, env):
     src_dir = env.Dir("$SRC_DIR").abspath
     build_dir = env.Dir("$BUILD_DIR").abspath
     if len(target) == len(source) and len(source)==1:
-        t = [env.Dir("signed").File(env.Dir(build_dir).rel_path(target[0]))]
+        t = [env.Dir("signed").File(env.Dir(build_dir).rel_path(source[0]))]        
     elif len(target) == len(source):
         t=target 
     else:
