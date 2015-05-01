@@ -23,6 +23,8 @@ def deb_wrapper_mapper(env, target, sources, **kw):
 
         src=filter(filter_func,new_sources)
 
+        ###############################################
+        ### Copy all the source files to folder named: filename-{version},example: Foo-1.0
         pkg_nodes = []
         for n in src:
             pk_type=env.MetaTagValue(n, 'category','package')
@@ -32,15 +34,15 @@ def deb_wrapper_mapper(env, target, sources, **kw):
         #############################################
         ##create the source gz file
         ret = env.CCopyAs(pkg_nodes, src, CCOPY_LOGIC='hard-copy')
-        Tar_Filename = target.name
-        Tar_Filename=Tar_Filename.replace('-', '_')
+        #############################################
+        ##format of tarfilename: filename_{version}.orig.tzr.gz, example: Foo_1.0.orig.tar.gz.
+        Tar_Filename=(target.name).replace('-', '_')[:-4]
         #############################################
         ##create the source gz file
-        env.TarGzFile('${{BUILD_DIR}}/_dpkg/{0}.orig.tar.gz'.format(Tar_Filename[:-4]), src, SRC_DIR="$INSTALL_ROOT")
-
+        env.TarGzFile('${{BUILD_DIR}}/_dpkg/{0}.orig.tar.gz'.format(Tar_Filename), src, SRC_DIR="$INSTALL_ROOT")
         env._dpkg(target, '${{BUILD_DIR}}/_dpkg/{0}'.format(target.name[:-4]))
     return deb_wrapper
-     
+
 
 def dpkg_wrapper(env, target, sources, **kw):
     # currently we assume all sources are Group values
