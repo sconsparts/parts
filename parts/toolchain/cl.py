@@ -16,5 +16,6 @@ def resolve(env,version):
                 ('mslink',func),
                 ('masm',func),
                 ('mslib',func),
-                ('midl',func)
+                ('midl',func),
+                ('signfile',None)
             ]
