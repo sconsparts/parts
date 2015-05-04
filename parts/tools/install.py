@@ -16,6 +16,8 @@ from SCons.Util import make_path_relative
 import SCons.Tool.install
 
 from parts.common import make_list
+import parts.core.util as util
+
 import parts.overrides.symlinks as symlinks
 
 def copyFunction(target, source, env):
@@ -162,7 +164,10 @@ def InstallBuilderWrapper(env, target=None, source=None, targetDir=None, **kw):
             # Prepend './' so the lookup doesn't interpret an initial
             # '#' on the file name portion as meaning the Node should
             # be relative to the top-level SConstruct directory.
-            target = env.fs.Entry(os.sep.join(['.', src.name]), dnode)
+            if util.isDir(src):
+                target = env.fs.Dir(os.sep.join(['.', src.name]), dnode)
+            else:
+                target = env.fs.Entry(os.sep.join(['.', src.name]), dnode)
             if isinstance(src, symlinks.FileSymbolicLink):
                 symlinks.ensure_node_is_symlink(target)
             tgt.extend(BaseInstallBuilder(env, target, src, **kw))
