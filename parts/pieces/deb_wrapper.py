@@ -3,7 +3,9 @@ import parts.api as api
 import parts.errors
 import parts.common as common
 import parts.glb as glb
-import shutil, os
+import shutil, os,re
+
+deb_reg="(\w+)\_([\d.]+)\-([\w.]+)\_(\w+)\.deb"
 
 def deb_wrapper_mapper(env, target, sources, **kw):
     def deb_wrapper():
@@ -12,37 +14,42 @@ def deb_wrapper_mapper(env, target, sources, **kw):
         # getting all the sources
         new_sources, _ = env.Override(kw).GetFilesFromPackageGroups(target, sources)
 
+        grps=re.match(deb_reg,target.name,re.IGNORECASE)
+
+        target_name= grps.group(1)
+        target_version= grps.group(2)
+        target_release= grps.group(3)
+        target_arch= grps.group(4)
+
+        src_folder_name = target_name+'-'+target_version
+
         #############################################
         ## Sort files in to source group and to control group
         def filter_func(node):
             if env.MetaTagValue(node, 'category', 'package')=='PKGDATA':
-                if 'dpkg' in env.MetaTagValue(node, 'types', 'package', ['dpkg','deb','DEB']):
-                    env.CCopy('${{BUILD_DIR}}/_dpkg/{0}/debian'.format(target.name[:-4]), node)
+                if 'dpkg' in env.MetaTagValue(node, 'types', 'package', ['dpkg','deb','DEB']):                    
+                    env.CCopy('${{BUILD_DIR}}/_dpkg/{0}/debian'.format(src_folder_name), node)
                 return False
             return True
 
         src=filter(filter_func,new_sources)
-
-        ###############################################
-        ### Copy all the source files to folder named: filename-{version},example: Foo-1.0
+        
         pkg_nodes = []
         for n in src:
             pk_type=env.MetaTagValue(n, 'category','package')
             pkg_dir="${{PACKAGE_{0}}}".format(pk_type)
-            pkg_nodes.append(env.Entry('${{BUILD_DIR}}/_dpkg/{0}/{1}/{2}/{3}'.format(target.name[:-4],target.name[:-4],pkg_dir,env.Dir(n.env['INSTALL_{0}'.format(pk_type)]).rel_path(n))))
+            pkg_nodes.append(env.Entry('${{BUILD_DIR}}/_dpkg/{0}/{1}/{2}/{3}'.format(src_folder_name,src_folder_name,pkg_dir,env.Dir(n.env['INSTALL_{0}'.format(pk_type)]).rel_path(n))))
 
         #############################################
         ##create the source gz file
         ret = env.CCopyAs(pkg_nodes, src, CCOPY_LOGIC='hard-copy')
-        #############################################
-        ##format of tarfilename: filename_{version}.orig.tzr.gz, example: Foo_1.0.orig.tar.gz.
-        Tar_Filename=(target.name).replace('-', '_')[:-4]
+        Tar_Filename = target_name+'_'+target_version
+
         #############################################
         ##create the source gz file
         env.TarGzFile('${{BUILD_DIR}}/_dpkg/{0}.orig.tar.gz'.format(Tar_Filename), src, SRC_DIR="$INSTALL_ROOT")
-        env._dpkg(target, '${{BUILD_DIR}}/_dpkg/{0}'.format(target.name[:-4]))
+        env._dpkg(target,'${{BUILD_DIR}}/_dpkg/{0}'.format(src_folder_name))
     return deb_wrapper
-
 
 def dpkg_wrapper(env, target, sources, **kw):
     # currently we assume all sources are Group values
@@ -50,15 +57,16 @@ def dpkg_wrapper(env, target, sources, **kw):
 
     target = common.make_list(target)
     sources= common.make_list(sources)
-
+    
     if len(target) > 1:
         raise SCons.Errors.UserError('Only one target is allowed.')
 
     if str(target[0]).endswith('.deb'):
-        target=[env.Dir(".").File(target[0])]
+        target=[env.Dir("_dpkg").File(target[0])]
     else:
-        target=[env.Dir(".").File(target[0]+".deb")]
+        target=[env.Dir("_dpkg").File(target[0]+".deb")]
 
+    
     # subst all source values to get finial package group names
     sources=[env.subst(s) for s in sources]
 
