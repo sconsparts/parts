@@ -226,6 +226,8 @@ def CCopyFuncWrapper(env, dest, source, copyfunc=None):
 
 def CCopyStringFunc(target, source, env):
     target = str(target[0])
+    if not source[0].exists():
+       source = [source[0].srcnode()]
     source = str(source[0])
     targetType = 'directory' if os.path.isdir(source) else 'file'
     targetDir, targetBasename = os.path.split(target)

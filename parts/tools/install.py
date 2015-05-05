@@ -170,7 +170,11 @@ def InstallBuilderWrapper(env, target=None, source=None, targetDir=None, **kw):
                 target = env.fs.Entry(os.sep.join(['.', src.name]), dnode)
             if isinstance(src, symlinks.FileSymbolicLink):
                 symlinks.ensure_node_is_symlink(target)
-            tgt.extend(BaseInstallBuilder(env, target, src, **kw))
+            #call emiter
+            nenv=env.Override(kw)
+            t,s=add_targets_to_INSTALLED_FILES([target],[src],nenv)
+            tgt.extend(env.CCopyAs(t,s,CCOPY_LOGIC='copy'))
+            #tgt.extend(BaseInstallBuilder(env, target, src, **kw))
 
     return tgt
 
@@ -192,12 +196,6 @@ def generate(env):
     env['BUILDERS']['_InternalInstall'] = InstallBuilderWrapper
     env['BUILDERS']['_InternalInstallAs'] = InstallAsBuilderWrapper
 
-    # We'd like to initialize this doing something like the following,
-    # but there isn't yet support for a ${SOURCE.type} expansion that
-    # will print "file" or "directory" depending on what's being
-    # installed.  For now we punt by not initializing it, and letting
-    # the stringFunc() that we put in the action fall back to the
-    # hand-crafted default string if it's not set.
 
     try:
         env['INSTALL']
