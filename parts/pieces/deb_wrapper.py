@@ -14,6 +14,7 @@ def deb_wrapper_mapper(env, target, sources, **kw):
         # getting all the sources
         new_sources, _ = env.Override(kw).GetFilesFromPackageGroups(target, sources)
 
+        #File information required to build source folders and tar files.
         grps=re.match(deb_reg,target.name,re.IGNORECASE)
 
         target_name= grps.group(1)
@@ -27,13 +28,13 @@ def deb_wrapper_mapper(env, target, sources, **kw):
         ## Sort files in to source group and to control group
         def filter_func(node):
             if env.MetaTagValue(node, 'category', 'package')=='PKGDATA':
-                if 'dpkg' in env.MetaTagValue(node, 'types', 'package', ['dpkg','deb','DEB']):                    
+                if 'dpkg' in env.MetaTagValue(node, 'types', 'package', ['dpkg','deb','DEB']):
                     env.CCopy('${{BUILD_DIR}}/_dpkg/{0}/debian'.format(src_folder_name), node)
                 return False
             return True
 
         src=filter(filter_func,new_sources)
-        
+
         pkg_nodes = []
         for n in src:
             pk_type=env.MetaTagValue(n, 'category','package')
