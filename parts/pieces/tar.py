@@ -39,9 +39,12 @@ def tar(target, source, env, type):
     #tar.close()
 
 
-TarAction = SCons.Action.Action(lambda target, source, env : tar(target, source, env,'w'), varlist=['BUILD_DIR', 'SRC_DIR'])
-GzAction = SCons.Action.Action(lambda target, source, env : tar(target, source, env,'w|gz'), varlist=['BUILD_DIR', 'SRC_DIR'])
-bz2Action = SCons.Action.Action(lambda target, source, env : tar(target, source, env,'w|bz2'), varlist=['BUILD_DIR', 'SRC_DIR'])
+def CCopyStringFunc(target, source, env):
+    return "Creating Achieve file: {} containing {} files ".format(target[0],len(source))
+
+TarAction = SCons.Action.Action(lambda target, source, env : tar(target, source, env,'w'),CCopyStringFunc, varlist=['BUILD_DIR', 'SRC_DIR'])
+GzAction = SCons.Action.Action(lambda target, source, env : tar(target, source, env,'w|gz'),CCopyStringFunc, varlist=['BUILD_DIR', 'SRC_DIR'])
+bz2Action = SCons.Action.Action(lambda target, source, env : tar(target, source, env,'w|bz2'),CCopyStringFunc, varlist=['BUILD_DIR', 'SRC_DIR'])
 
 api.register.add_builder('TarFile',SCons.Builder.Builder(action = TarAction,
                                    source_factory = SCons.Node.FS.Entry,

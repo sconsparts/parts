@@ -38,10 +38,9 @@ def process_Sdk_Copy(env, target_dir, sources, create_sdk=True, do_clean=False):
                 out += env.CCopyAs(target=t, source=sr)
 
             #print "Pattern type"
-        elif isinstance(s, SCons.Node.FS.Dir):
+        elif util.isDir(s):
             #get all file in the directory
             #... add code...
-
             t = s.srcnode().abspath
             if t not in src_dir:
                 src_dir.append(t)
@@ -49,9 +48,9 @@ def process_Sdk_Copy(env, target_dir, sources, create_sdk=True, do_clean=False):
             if create_sdk == False:
                 out.append(s)
             else:
-                out.extend(env.CCopy(target=target_dir, source=s))
+                out.extend(env.CCopy(target=target_dir, source=s))                
             #print "Dir type"
-        elif isinstance(s, SCons.Node.FS.File):
+        elif util.isFile(s):
             #print s.abspath
             t = s.srcnode().dir.abspath
             if t not in src_dir:
@@ -65,6 +64,7 @@ def process_Sdk_Copy(env, target_dir, sources, create_sdk=True, do_clean=False):
                 out.extend(env.CCopy(target=target_dir, source=s))
             #src.append(s)
             #print "File type"
+        # need to clean up this case
         elif isinstance(s, SCons.Node.Node) or util.isString(s):
             t = os.path.split(str(s))[0]
             if t not in src_dir:
