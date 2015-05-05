@@ -51,8 +51,10 @@ def zip(target, source, env):
             write_file(s)            
     zf.close()
 
+def CCopyStringFunc(target, source, env):
+    return "Creating Zip file: {} containing {} files ".format(target[0],len(source))
 
-ZipAction = SCons.Action.Action(zip, varlist=['BUILD_DIR', 'SRC_DIR', 'src_dir'])
+ZipAction = SCons.Action.Action(zip, CCopyStringFunc, varlist=['BUILD_DIR', 'SRC_DIR', 'src_dir'])
 
 api.register.add_builder('ZipFile',SCons.Builder.Builder(action = ZipAction,
                                    source_factory = SCons.Node.FS.Entry,

@@ -380,7 +380,7 @@ def CCopyFunc(target, source, env, copy_logic):
     # tell it we are starting a task
     taskId = output.TaskStart(CCopyStringFunc(target, source, env) + "\n")
 
-    assert len(target) == len(source), "\ntarget: %s\nsource: %s" %(map(str, target),
+    assert len(target) == len(source), "\ntarget: %s\nsource: %s" % (map(str, target),
                                                                     map(str, source))
 
     for targetEntry, sourceEntry in zip(target, source):
@@ -395,6 +395,12 @@ def CCopyFunc(target, source, env, copy_logic):
                 targetEntry.linkto = sourceEntry.linkto
             symlinks.make_link_bf([targetEntry], [targetEntry.Entry(targetEntry.linkto)], env)
         else:
+            # there is a small issue in that variant directory and behave differently from
+            # the File variant case. The main differnce is that the default points the variant
+            # while the file case points to the source. This check makes sure we get the correct one
+            if not sourceEntry.exists():
+                sourceEntry = sourceEntry.srcnode()            
+
             #Do normal copy stuff
             CCopyFuncWrapper(env, targetEntry.get_path(), sourceEntry.get_path(), copy_logic)
     #tell logger the task has end correctly.
@@ -418,13 +424,13 @@ def generateCopyBuilder(description):
             dest = unicode("\\\\?\\" + os.path.abspath(dest))
         if len(source) >= 200 and not source.startswith("\\\\?\\") and sys.platform == 'win32':
             source = unicode("\\\\?\\" + os.path.abspath(source))
-        if copy_hard in description.copyFunctions:
-            # Check if dest is a hardlink of source - to save time; also on Windows
-            # hardlinks have a quirk - if a file is opened without # SHARED_DELETE via some
-            # hardlink it's impossible to delete _any_ hardlink.
-            # So we're just checking if the file we're trying to remove prior copying is
-            # actually a hardlink to the one we're trying to create, and if so we just stop
-            # the copy process
+        if copy_hard in description.copyFunctions and not os.path.isdir(dest):
+            # Check if dest is a hardlink of source - to save time; also on
+            # Windows hardlinks have a quirk - if a file is opened without
+            # SHARED_DELETE via some hardlink it's impossible to delete _any_
+            # hardlink.  So we're just checking if the file we're trying to
+            # remove prior copying is actually a hardlink to the one we're
+            # trying to create, and if so we just stop the copy process
             if _areFilesHardlinked(source, dest):
                 api.output.verbose_msgf("ccopy", "{0}: {1} and {2} are hardlinked, " + \
                                                  "no copying needed",
@@ -443,7 +449,7 @@ def generateCopyBuilder(description):
             return copy_copy(dest, source)
         except CCopyException as err:
             raise err.exc
-    def doAction(target, source, env):
+    def doAction(target, source, env):     
         return CCopyFunc(target, source, env, doCopy)
 
     api.register.add_builder(description.builderName,
