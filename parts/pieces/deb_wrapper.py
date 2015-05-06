@@ -52,10 +52,10 @@ def deb_wrapper_mapper(env, target, sources, **kw):
         env._dpkg(target,'${{BUILD_DIR}}/_dpkg/{0}'.format(src_folder_name))
     return deb_wrapper
 
-def dpkg_wrapper(env, target, sources, **kw):
+def dpkg_wrapper(_env, target, sources, **kw):
     # currently we assume all sources are Group values
     # will probally change this once we understand better
-
+    env= _env.Override(kw)
     target = common.make_list(target)
     sources= common.make_list(sources)
     
