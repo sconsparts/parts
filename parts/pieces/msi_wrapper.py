@@ -48,7 +48,7 @@ def map_msi_builder(env, target, sources, stackframe, **kw):
 def MsiPackage_wrapper(_env,target,sources,**kw):
     # currently we assume all sources are Group values
     # will probally change this once we understand better
-    env= _env.Override(kw)
+    env= _env.Clone(**kw)
     target = common.make_list(target)
     sources = common.make_list(sources)
     #print sources,23

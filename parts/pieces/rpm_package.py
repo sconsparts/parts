@@ -132,7 +132,7 @@ def RpmPackage_wrapper(_env, target, sources, **kw):
     # will probally change this once we understand better
     # clone the KWS to the env to change the filename
 
-    env= _env.Override(kw)
+    env= _env.Clone(**kw)
     
     # map arch to value the RPM will want to use
     env['TARGET_ARCH'] = rpmarch(env,env['TARGET_ARCH'])
