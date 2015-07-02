@@ -5,10 +5,11 @@ import tester
 import gtest.host as host
 
 class GoldFile(tester.Tester):
-    def __init__(self,goldfile,test_value=None,kill_on_failure=False):
+    def __init__(self,goldfile,test_value=None,kill_on_failure=False,normalize_eol=True):
         super(GoldFile,self).__init__(test_value=test_value,kill_on_failure=kill_on_failure)
         self.Description="Checking that {0} matches {1}".format(test_value,goldfile)
         self._goldfile=goldfile
+        self._normalize_eol=normalize_eol
 
     def test(self,eventinfo,**kw):
         #if not self._test_attibute(eventinfo,self.test_value):
@@ -35,6 +36,9 @@ class GoldFile(tester.Tester):
         except:
             host.WriteError("Can't open file {0}".format(tmp))
         
+        if self._normalize_eol:
+            val_content=val_content.replace("\r\n","\n")
+            gf_content=gf_content.replace("\r\n","\n")
         
 
         # make seqerncer differ
@@ -80,8 +84,8 @@ class GoldFile(tester.Tester):
         # this makes a nice string value.. 
         diff=difflib.Differ()
         self.Result=tester.ResultType.Failed
-        tmp_result="\n".join(diff.compare(val_content.splitlines(),
-                                              newtext.splitlines()
+        tmp_result="".join(diff.compare(val_content.splitlines(True),
+                                              newtext.splitlines(True)
                                               )
                                  )
         

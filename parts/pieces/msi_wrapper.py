@@ -35,7 +35,8 @@ def map_msi_builder(env, target, sources, stackframe, **kw):
                 pk_type=env.MetaTagValue(n, 'category','package')
                 pkg_dir="${{PACKAGE_{0}}}".format(pk_type)
                 # generate file for group once
-                pkg_nodes.append(env.Entry('${{BUILD_DIR}}/_msi/{0}/{1}/{2}'.format(g,pkg_dir,env.Dir(n.env['INSTALL_{0}'.format(pk_type)]).rel_path(n))))
+                pkg_nodes.append(env.Entry('${{BUILD_DIR}}/_msi/{0}/{1}/{2}'.format(g,pkg_dir,n.env.Dir(n.env['INSTALL_{0}'.format(pk_type)]).rel_path(n))))
+                
             # copy filea with hard links to save space
             grp_sources = env.CCopyAs(pkg_nodes, src, CCOPY_LOGIC='hard-copy')
             # run Heat on directory to make file list

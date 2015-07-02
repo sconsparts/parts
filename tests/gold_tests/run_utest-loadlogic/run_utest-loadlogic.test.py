@@ -14,6 +14,7 @@ def skipIfOldMac():
 
 Test.SkipUnless(Condition.Condition(function=skipIfOldMac, reason='MacOSX < 10.6 not supported',
                                     pass_value=True))
+Test.SkipIf(Condition.True("Test turned off until load logic is re-enabled"))
 
 Test.Summary='''
 Testing load-logic algorithms. When we run "scons run_utest::" command two times in a row

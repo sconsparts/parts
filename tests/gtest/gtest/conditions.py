@@ -83,6 +83,13 @@ class ConditionFactory(object):
                        False
                        )
 
+    def True(self,msg):
+        return self.Condition(
+                       lambda : True,
+                       msg,
+                       True
+                       )
+
 
 
 class Conditions(object):

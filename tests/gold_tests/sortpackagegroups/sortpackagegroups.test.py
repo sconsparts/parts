@@ -36,15 +36,15 @@ run1 = Test.AddBuildRun(
 run1.ReturnCode = 0
 
 alllog = run1.Disk.File('logs/all.log')
-
-def pack0LogContent(data):
-    if not "Verbose: [loading] reduced sections to process= [(['build::pack0'], None)]" in data:
-        return "Section 'build::pack0' is not in reduced sections list:\n{0}".format(data)
-alllog.Exists = True
-alllog.Content = Testers.FileContentCallback(
-        callback=pack0LogContent,
-        description='Checking verbose stream content'
-        )
+# comment out as the "cache logic" is being redone
+#def pack0LogContent(data):
+    #if not "Verbose: [loading] reduced sections to process= [(['build::pack0'], None)]" in data:
+        #return "Section 'build::pack0' is not in reduced sections list:\n{0}".format(data)
+#alllog.Exists = True
+#alllog.Content = Testers.FileContentCallback(
+        #callback=pack0LogContent,
+        #description='Checking verbose stream content'
+        #)
 
 pack1txt = run1.Disk.File('pack0.txt')
 def content1Check(data):
