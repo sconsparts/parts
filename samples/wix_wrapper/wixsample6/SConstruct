@@ -1,42 +1,7 @@
-import os
-import sys
-sys.path = [os.path.realpath(os.path.normpath('../..'))] + sys.path
-#os.environ['APPDATA'] = os.path.realpath(os.path.normpath('../../'))
-
 from parts import *
-
-SetOptionDefault('LOGGER', '$TEXT_LOGGER')
-
-# if 32-bit do x86_64 as cross arch build
-NativePlatform=DefaultEnvironment()['TARGET_PLATFORM']
-if NativePlatform.ARCH=='x86':
-    CrossPlatform=SystemPlatform(arch='x86_64')
-    CrossBitness=64
-    NativeBitness=32
-else: # assume here this is some 64-bit build x86_64 or ia64 so cross is 32-bit
-    CrossPlatform=SystemPlatform(arch='x86')
-    CrossBitness=32
-    NativeBitness=64
-
-SetOptionDefault('OSBITNESS', NativeBitness)
-SetOptionDefault('INSTALL_BIN', '${INSTALL_ROOT}/bin${OSBITNESS}')
-SetOptionDefault('INSTALL_LIB', '${INSTALL_ROOT}/lib${OSBITNESS}')
-SetOptionDefault('INSTALL_PYTHON', '${INSTALL_ROOT}/lib${OSBITNESS}/python')
-SetOptionDefault('INSTALL_SCRIPT', '${INSTALL_ROOT}')
-
-SetOptionDefault('SDK_ROOT','#sdks/${TARGET_PLATFORM}-${CONFIG}')
-
-SetOptionDefault('INSTALL_ROOT', '#install')
-SetOptionDefault('INSTALL_DOC', '${INSTALL_ROOT}/documentation')
-SetOptionDefault('INSTALL_HELP', '${INSTALL_DOC}/vshelp')
-SetOptionDefault('INSTALL_SAMPLE', '${INSTALL_ROOT}/samples')
-SetOptionDefault('INSTALL_API', '${INSTALL_ROOT}/sdk')
 
 Part ('control','control.parts', package_group='pkg_control')
 Part ('msi','msi.parts', package_group='pkg6')
 Part(
     'wixsample6','wixsample6.parts',toolchain = 'wix'
     )
-
-# vim: set et ts=4 sw=4 ft=python :
-

@@ -4,9 +4,11 @@ env.PartName('wixsample6')
 env.PartVersion('1.0.0')
 
 # This sample tests plain installation: all sources are static and resides in src_dir
-
-result=env.MSIPackage('install',sources = ['pkg6','pkg_control'])
-env.Alias("${PART_SECTION}::alias::${PART_ALIAS}::dist",env.CCopy("#dist",result))[0]
+arch="x64" if env["TARGET_ARCH"] == "x86_64" else env["TARGET_ARCH"]
+env.Append(WIXLINKEXTENSIONS = ['WixUIExtension'],
+        WIXCLFLAGS=["-arch",arch])
+result=env.MSIPackage('install',sources = ['pkg6','pkg_control'],PACKAGE_ROOT="")
+env.Alias("dist",env.CCopy("#dist",result))[0]
 
 # vim: set et ts=4 sw=4 ft=python :
 

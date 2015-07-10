@@ -8,20 +8,22 @@
 
         <Media Id='1' Cabinet='wixsample1.cab' EmbedCab='yes' />
 
-        <Directory Id='TARGETDIR' Name='SourceDir'>
-            <Directory Id='ProgramFilesFolder' Name='PFiles'>
-                <Directory Id='MyDir' Name='Test Program' FileSource='$(sys.SOURCEFILEDIR)'>                    
-			<Directory Id='Src' Name='bin64'>
-                        <Component Id='MyComponent' Guid='696fe198-eb26-47d1-9ed5-759c5d6a5f8b' >
-                            <File Id='Test' Name='test.exe' DiskId='1' Source='bin64/test6.exe'/>
-                        </Component> 
-  			</Directory>
-                </Directory>
-            </Directory>
-        </Directory>
-        <Feature Id='MyFeature' Title='My 1st Feature' Level='1'>
-            <ComponentRef Id='MyComponent' />
-        </Feature>
+     <Feature Id="ProductFeature" Title="CoreFiles" Level="1">
+      <ComponentRef Id="addpath" />
+      <ComponentGroupRef Id="pkg6Group" />
+    </Feature>
     </Product>
+    
+      <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+			    <Directory Id="INSTALLFOLDER" Name="MyTest App" />		    
+        <Component Id="addpath" Guid="{1781A625-8ACB-45E7-A8BA-219D81760B2E}">
+            <CreateFolder />
+            <Environment Id="PATH" Name="PATH" Value="[INSTALLFOLDER]bin" Permanent="no" Part="last" Action="set" System="yes" />
+        </Component>
+      </Directory>      
+   </Directory>
+  </Fragment>
+    
 </Wix>
-
