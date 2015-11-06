@@ -343,6 +343,7 @@
     <Compile Include="tools\MSCommon\MsiFinder.py" />
     <Compile Include="tools\MSCommon\vc11.py" />
     <Compile Include="tools\MSCommon\vc12.py" />
+    <Compile Include="tools\MSCommon\vc14.py" />
     <Compile Include="tools\MSCommon\wix.py" />
     <Compile Include="tools\signfile.py">
       <SubType>Code</SubType>
