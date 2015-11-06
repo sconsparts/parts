@@ -8,7 +8,7 @@ try:
 except:
 
     def NeedConfigHBuilder():
-        if len(_ac_config_hs) == 0:
+        if len(SCons.SConf._ac_config_hs) == 0:
            return False
         else:
            return True
