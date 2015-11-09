@@ -8,10 +8,8 @@ try:
     SCons.SConf.NeedConfigHBuilder
 except:
 
-    def NeedConfigHBuilder():
-        if len(SCons.SConf._ac_config_hs) == 0:
-           return False
-        else:
-           return True
+    def NeedConfigBuilder():
+        return len(SCons.SConf._ac_config_hs) != 0
+    
 
     SCons.SConf.NeedConfigHBuilder=NeedConfigHBuilder
