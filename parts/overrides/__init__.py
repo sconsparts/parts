@@ -1,4 +1,4 @@
-# this area defines code in Parts thart overides code in SCons because of feature enhancement or bug fixes
+﻿# this area defines code in Parts thart overides code in SCons because of feature enhancement or bug fixes
 
 import debug
 import scons_util
@@ -19,3 +19,4 @@ import executor
 import buildtask_debugtime
 import stubprocess
 import script_main_debugtime
+import sconf
