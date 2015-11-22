@@ -1,4 +1,4 @@
-
+﻿
 # this implements My first attempt at the IAPAT object
 # i caling it Settings as this in the end is what this does
 # it deal with the logic of different ways to setup/configure/defines
@@ -597,6 +597,7 @@ class Settings(object):
 
         # some general values we need to setup on any given system
         env['PART_USER']=common.GetUserName(env)
+        env['PART_HOSTNAME']= os.getenv('HOSTNAME',os.getenv('COMPUTERNAME',"unknown")) 
         env['RPATH']=[] # double check this case, linker tools may have this covered now.
 
         # some setup we want in the "shell" Environment

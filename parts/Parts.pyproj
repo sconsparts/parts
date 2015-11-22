@@ -6,7 +6,7 @@
     <ProjectGuid>{8f62fc3b-b6cf-46be-a8da-7c9c423a9db5}</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>C:\Python27\Scripts\scons-2.3.4.py</StartupFile>
-    <SearchPath>C:\Python27\scons-2.3.4\</SearchPath>
+    <SearchPath>..\..\..\..\..\Python27\scons-2.3.4\;..\..\..\..\..\Python27\scons-2.4.0\</SearchPath>
     <WorkingDirectory>
     </WorkingDirectory>
     <AssemblyName>Parts</AssemblyName>
@@ -311,6 +311,9 @@
     <Compile Include="loadlogic\target.py" />
     <Compile Include="loadlogic\__init__.py" />
     <Compile Include="overrides\executor.py" />
+    <Compile Include="overrides\sconf.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="overrides\symlinks.py" />
     <Compile Include="overrides\tool.py" />
     <Compile Include="picklehelpers.py" />
