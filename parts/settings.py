@@ -1,4 +1,4 @@
-
+﻿
 # this implements My first attempt at the IAPAT object
 # i caling it Settings as this in the end is what this does
 # it deal with the logic of different ways to setup/configure/defines
