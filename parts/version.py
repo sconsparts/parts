@@ -305,11 +305,10 @@ class version(object):
         '''
         if rhs == None:
             rhs = "*"
-
-        ret = version_range()
-        ret.start = version(self)
-        ret.end = version(rhs)
-
+        if self < rhs:
+            ret = version_range("{0}-{1}".format(self,rhs))
+        else:
+            ret = version_range("{0}-{1}".format(rhs,self))
         return ret
 
     def __rsub__(self, lhs):
@@ -317,10 +316,10 @@ class version(object):
         Subtraction operator that produces a version range with this as the
         end.
         '''
-        ret = version_range()
-        ret.start = version(lhs)
-        ret.end = version(self)
-
+        if self < lhs:
+            ret = version_range("{0}-{1}".format(self,lhs))
+        else:
+            ret = version_range("{0}-{1}".format(lhs,self))     
         return ret
 
     def __getitem__(self, key):
