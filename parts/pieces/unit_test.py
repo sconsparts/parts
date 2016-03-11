@@ -102,7 +102,6 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
         skip_run_test = True
 
 
-
     ## get Part object of Part defining the utest call
     parent_obj = glb.engine._part_manager._from_env(env)
     #Create a section object ( should get existing section if it already exists
@@ -128,13 +127,65 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
         else:
             src_dir = curr_path
 
+        src_dir=os.path.abspath(os.path.join(curr_path,rel_src_dir))
+        
+        scons_dir_node = env.Dir('#')
         build_dir_leaf = sec.Env['UNIT_TEST_TARGET']
         build_dir = sec.Env.subst("{0}/{1}".format('$BUILD_DIR', build_dir_leaf))
-        orig_build_dir = env.Dir('$BUILD_DIR').path
-        build_dir_node = sec.Env.Dir(build_dir)
+        orig_build_node = env.Dir('$BUILD_DIR')
+        orig_build_dir = orig_build_node.path
+        rel_build_dir = orig_build_node.Dir(rel_src_dir).path
+        
         ## change the build dir
         sec.Env.VariantDir(variant_dir=build_dir, src_dir=src_dir, duplicate=env['duplicate_build'])
         build_dir_node = sec.Env.Dir(build_dir)
+
+        # this is the items outside the src_dir area
+        oot_build_dir = sec.Env.subst("{0}/{1}".format(build_dir,'oot'))
+        sec.Env.VariantDir(variant_dir=oot_build_dir, src_dir="#", duplicate=env['duplicate_build'])
+        oot_build_dir_node = sec.Env.Dir(oot_build_dir)
+        
+        def make_node(fstr,node=None):
+            # path is to relative to the src directory
+            if fstr.startswith(rel_src_dir):
+                fstr = fstr[len(rel_src_dir)+1:]
+            # abs path to current location of part file calling unit test
+            elif fstr.startswith(curr_path):
+                fstr = fstr[len(curr_path)+1:]
+            # variant form for orginal build section of node
+            elif fstr.startswith(orig_build_dir):
+                print node.srcnode().path , node.path
+                if node and (node.srcnode().path == node.path or node.has_builder()):
+                    # this is node that is in the build dir
+                    # need to return the orginal object
+                    return node
+                # this is not best test, but exists allow "legacy" cases
+                # to work, however those cases should probally be changed 
+                # it allows use to refer to node in a test directory 
+                # as if it was in the directory defining the test
+                elif node and node.exists():
+                    # this is not, need to make this a node we
+                    # can use in the unit test build directory
+                    return make_node("#"+node.srcnode().path)                    
+                else:
+                    fstr = fstr[len(orig_build_dir)+1:]
+            elif fstr.startswith(rel_build_dir):
+                fstr = fstr[len(rel_build_dir)+1:]
+            # start with # 
+            elif fstr.startswith("#"):
+                fnode=sec.Env.File(fstr)
+                # is this under the current part directory
+                if fnode.is_under(curr_path):
+                    fstr=curr_path.rel_path(fnode)
+                # is this under the new src directory
+                elif fnode.is_under(src_dir):
+                    fstr=src_dir.rel_path(fnode)
+                # is this under the Scons root
+                elif fnode.is_under(scons_dir_node):
+                    fstr=scons_dir_node.rel_path(fnode)
+                    return oot_build_dir_node.File(fstr)            
+            return build_dir_node.File(fstr)
+
         ## map autodepends stuff
         if depends is None:
             sec.Env.DependsOn([sec.Env.Component(env.PartName(), env.PartVersion(), section='build')])
@@ -151,59 +202,30 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
             if isinstance(f, pattern.Pattern):
                 flst = f.files()
                 for i in flst:
-                    if i.startswith(rel_src_dir):
-                        i = i[len(rel_src_dir)+1:]
-                    elif i.startswith(curr_path):
-                        i = i[len(curr_path)+1:]
-                    elif i.startswith(orig_build_dir):
-                        i = i[len(orig_build_dir)+1:]
-                    src_files.append(build_dir_node.File(i))
-
+                    fn=make_node(i)
+                    src_files.append(fn)
             elif isinstance(f, SCons.Node.FS.Dir):
-                pass
+                output.warning_msgf("Cannot build directories in unittest()\n Node={0}\n Skipping...",f.ID)
             elif isinstance(f, SCons.Node.FS.File):
                 # File node will start with the orginal build directory
                 # or the start with current path ( ie full path to src)
                 # or it might be equal to some messed up value based on the build directory
-                # caused by the mix of ../ paths
-                relpath = common.relpath(f.dir.ID, orig_build_dir)
-                if f.path.startswith(curr_path):
-                    f = f.path[len(curr_path)+1:]
-                elif f.path.startswith(orig_build_dir):
-                    fs = f.path[len(orig_build_dir)+1:]
-                    if src_dir == curr_path:
-                        src_files.append(f)
-                    else:
-                        src_files.append(build_dir_node.File(fs))
-                elif f.ID.startswith(f.Dir(relpath).ID):
-                    fs = f.ID[len(f.Dir(relpath).ID)+1:]
-                    src_files.append(build_dir_node.File(fs))
+                # caused by the mix of ../ paths                
+                fn=make_node(f.path,f)
+                src_files.append(fn)
             elif isinstance(f, SCons.Node.FS.Entry):
                 # Entry (like File) node will start with the orginal build directory
                 # or the start with current path ( ie full path to src)
                 # or it might be equal to some messed up value based on the build directory
-                # caused by the mix of ../ paths
-                relpath = common.relpath(f.dir.ID, orig_build_dir)
-                if f.path.startswith(curr_path):
-                    f = f.path[len(curr_path)+1:]
-                elif f.path.startswith(orig_build_dir):
-                    fs = f.path[len(orig_build_dir)+1:]
-                    if src_dir == curr_path:
-                        src_files.append(f)
-                    else:
-                        src_files.append(build_dir_node.Entry(fs))
-                elif f.ID.startswith(f.Dir(relpath).ID):
-                    fs = f.ID[len(f.Dir(relpath).ID)+1:]
-                    src_files.append(build_dir_node.Entry(fs))
+                # caused by the mix of ../ paths                
+                fn=make_node(f.path,f)
+                src_files.append(fn)
 
             elif util.isString(f):
                 # normalize the path so we get matches on windows and posix based systems
                 f = os.path.normpath(f)
-                if f.startswith(rel_src_dir):
-                    f = f[len(rel_src_dir)+1:]
-                elif f.startswith(curr_path):
-                    f = f[len(curr_path)+1:]
-                src_files.append(build_dir_node.File(f))
+                fn=make_node(f)
+                src_files.append(fn)
             else:
                 api.output.warning_msg("Unknown type in unit_test() in unit_test.py in Part", env.subst('$PART_NAME'))
 

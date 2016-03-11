@@ -1,0 +1,17 @@
+Import('*')
+
+testenv=env.Clone()
+
+utest_files = Pattern(src_dir='.',
+                      includes=['*-test.cc',
+                                '*-testhelper.cc',
+                      ],
+                      excludes=[],
+                      recursive=True).files()
+
+f=env.AbsFileNode('#/myprog/test/unit/main-testhelper.cc') 
+env.InstallBin(env.Object(f))
+
+utest_main = ['#/myprog/test/unit/main-testhelper.cc']
+testenv.UnitTest("utest",
+                 utest_files+utest_main)
