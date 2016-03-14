@@ -1021,6 +1021,12 @@ class part(pnode.pnode):
             bk_path=sys.path[:]
             sys.path=[sdir.abspath]+bk_path
 
+            # variant dir for file out of parts tree but under Sconstruct
+            env.VariantDir(env.Dir(env.subst('$OUTOFTREE_BUILD_DIR')),".",self.__env['duplicate_build'])
+            # variant dir for file out of Sconstruct tree but under the root
+            # this does not cover windows drives that are different from the current drive c:\            
+            env.VariantDir(env.Dir(env.subst('$ROOT_BUILD_DIR')),"/",self.__env['duplicate_build'])
+
             if (glb.engine._build_mode=='build') or (os.path.exists(self.__file.srcnode().abspath)==True):
                 if os.path.exists(self.__file.srcnode().abspath)==False:
                     api.output.error_msg('Parts file '+self.__file.srcnode().abspath+" was not found.")

@@ -79,7 +79,10 @@ api.register.add_variable('PART_NAME_CONCEPT','name${ALIAS_SEPARATOR}','Namespac
 api.register.add_variable('BUILD_DIR_ROOT','#_build', 'Root directory for building a given build configuration/variant')
 api.register.add_variable('BUILD_DIR','$BUILD_DIR_ROOT/${PART_SECTION}_${CONFIG}_${TARGET_PLATFORM}${"_"+TOOLCHAIN.replace(",","_") if TOOLCHAIN!="default" else ""}/$ALIAS', 'Full path used to for building a given build configuration/variant')
 #api.register.add_variable('BUILD_DIR','$BUILD_DIR_ROOT/${CONFIG}_${TARGET_PLATFORM}/$ALIAS', 'Full path used to for building a given build configuration/variant')
-
+api.register.add_variable('OUTOFTREE_BUILD_DIR','$BUILD_DIR/_oot',
+                          'Full path used to for building a given build configuration/variant for files outside the part directory tree')
+api.register.add_variable('ROOT_BUILD_DIR','$BUILD_DIR/_rt',
+                          'Full path used to for building a given build configuration/variant for files outside the part directory tree')
 
 api.register.add_global_object('Part',Part_factory)
 api.register.add_global_object('part',Part_factory)
