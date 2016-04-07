@@ -15,7 +15,7 @@ if sys.platform == 'win32':
     t.Disk.File('myprog/test2/unit/main-testhelper2.obj',id='objectfile2')
 else:
     t.Disk.File('myprog/test/unit/main-testhelper.o',id='objectfile')
-    t.Disk.File('myprog/test2/unit/main-testhelper2.obj',id='objectfile2')
+    t.Disk.File('myprog/test2/unit/main-testhelper2.o',id='objectfile2')
 t.Disk.objectfile.exist=False
-t.Disk..objectfile2.exist=False
+t.Disk.objectfile2.exist=False
 
