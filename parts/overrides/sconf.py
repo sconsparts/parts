@@ -12,4 +12,4 @@ except:
         return len(SCons.SConf._ac_config_hs) != 0
     
 
-    SCons.SConf.NeedConfigHBuilder=NeedConfigHBuilder
+    SCons.SConf.NeedConfigHBuilder=NeedConfigBuilder
