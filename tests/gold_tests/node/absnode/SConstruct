@@ -1,0 +1,4 @@
+from parts import *
+
+Part("myprog/common/common.parts")
+Part("myprog/common2/common.parts")

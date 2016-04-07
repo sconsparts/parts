@@ -1,0 +1,16 @@
+Import('*')
+
+
+testenv=env.Clone()
+
+utest_files = Pattern(src_dir='.',
+                      includes=['*-test.cc',
+                                '*-testhelper.cc',
+                      ],
+                      excludes=[],
+                      recursive=True).files()
+
+utest_main = ['#/myprog/test/unit/main-testhelper.cc']
+
+testenv.UnitTest("utest",
+                 utest_main + utest_files,)
