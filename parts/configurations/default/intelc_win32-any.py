@@ -22,10 +22,9 @@ def post_process_func(env):
         ver=float(env['MSVC_VERSION'])
     except:
         raise RuntimeError("You need to define mstools or compatible tool chain with Intel tool chain")
-    for msvc_ver in sorted((12, 11, 10, 9, 8, 7.1, 6), reverse=True):
-        if ver >= msvc_ver:
-            env.AppendUnique(CCFLAGS=['/Qvc{0}'.format(msvc_ver)])
-            break
+    
+    env.AppendUnique(CCFLAGS=['/Qvc{0}'.format(msvc_ver)])
+    
 
     ## code coverage feature additions
     if make_bool(env.get('codecov',False)) == True:
