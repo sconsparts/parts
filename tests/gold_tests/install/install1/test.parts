@@ -1,0 +1,10 @@
+Import('*')
+
+nodes=[
+    env.File("lib.so"),
+    env.File("foo.exe")
+    ]
+
+env.InstallTarget(
+	nodes+["lib1.so","foo1.exe"]
+)
