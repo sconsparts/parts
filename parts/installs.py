@@ -240,7 +240,7 @@ def InstallTarget(env, src_files, sub_dir='',no_pkg=False,create_sdk=True,**kw):
     sdk_mapping_set=set([])
     for i in src_files:
         # We have an individual item
-        if isinstance(i,SCons.Node.FS.File) or isinstance(i,SCons.Node.FS.Dir) or isinstance(i,SCons.Node.Node) or common.isString(i):
+        if isinstance(i,SCons.Node.FS.File) or isinstance(i,SCons.Node.FS.Dir) or isinstance(i,SCons.Node.Node) or util.isString(i):
 
             if i not in sdk.g_sdked_files:
                 ret= env.SdkTarget([i],sub_dir)
