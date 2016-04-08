@@ -19,11 +19,11 @@ def post_process_func(env):
     # does not care if Intel Compiler version can or cannot
     # support given version. Compiler will complain if it can't
     try:
-        ver=float(env['MSVC_VERSION'])
+        ms_ver=float(env['MSVC_VERSION'])
     except:
         raise RuntimeError("You need to define mstools or compatible tool chain with Intel tool chain")
     
-    env.AppendUnique(CCFLAGS=['/Qvc{0}'.format(msvc_ver)])
+    env.AppendUnique(CCFLAGS=['/Qvc{0}'.format(ms_ver)])
     
 
     ## code coverage feature additions
