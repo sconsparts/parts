@@ -55,17 +55,22 @@ def deb_wrapper_mapper(env, target, sources, **kw):
 def dpkg_wrapper(_env, target, sources, **kw):
     # currently we assume all sources are Group values
     # will probally change this once we understand better
+    
     env= _env.Clone(**kw)
-    target = common.make_list(target)
+    target = env.arg2nodes(target,env.fs.File)
     sources= common.make_list(sources)
     
     if len(target) > 1:
         raise SCons.Errors.UserError('Only one target is allowed.')
 
-    if str(target[0]).endswith('.deb'):
+    if target[0].name.endswith('.deb'):
         target=[env.Dir("_dpkg").File(target[0])]
     else:
-        target=[env.Dir("_dpkg").File(target[0]+".deb")]
+        target=[env.Dir("_dpkg").File(target[0].name+".deb")]
+
+    grps=re.match(deb_reg,target[0].name,re.IGNORECASE)
+    if grps is None:
+        api.output.error_msg("DEB target files must be in format of <name>_<version>-<release>_<arch>.deb\n current format of value of target file is '{0}'".format(target[0].name))
 
     
     # subst all source values to get finial package group names

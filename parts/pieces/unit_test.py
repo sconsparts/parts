@@ -154,7 +154,6 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
                 fstr = fstr[len(curr_path)+1:]
             # variant form for orginal build section of node
             elif fstr.startswith(orig_build_dir):
-                print node.srcnode().path , node.path
                 if node and (node.srcnode().path == node.path or node.has_builder()):
                     # this is node that is in the build dir
                     # need to return the orginal object
@@ -163,8 +162,10 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
                 # to work, however those cases should probally be changed 
                 # it allows use to refer to node in a test directory 
                 # as if it was in the directory defining the test
-                elif node and node.exists():
-                    # this is not, need to make this a node we
+                # however this also deal with source files that are formed
+                # with AbsFileNode
+                elif node and node.srcnode().exists():
+                    # need to make this a node we
                     # can use in the unit test build directory
                     return make_node("#"+node.srcnode().path)                    
                 else:
