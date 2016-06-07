@@ -1,2 +1,4 @@
 Import('*')
 env.InstallPkgData('control')
+env.InstallPkgData('changelog')
+env.InstallPkgData('rules')

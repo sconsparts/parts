@@ -7,5 +7,5 @@ Part ('dpkg_package1','dpkg_package1.parts', package_group='pkg1')
 Part('packaging','packaging.parts')
 PrintMessage(PackageGroups())
 
-DefaultEnvironment().DPKGPackage('cpil', PackageGroups())
+DefaultEnvironment().DPKGPackage('cpil_1.0-dev_${TARGET_ARCH}', PackageGroups())
 

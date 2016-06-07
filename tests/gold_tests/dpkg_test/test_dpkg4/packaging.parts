@@ -2,7 +2,7 @@ Import('*')
 
 env.PartName("packaging")
 env.DependsOn([Component('dpkg_package4')])
-out = env.DPKGPackage('test4', sources = ['pkg4','pkg_control'])
+out = env.DPKGPackage('cpil_1.0_all', sources = ['pkg4','pkg_control'])
 env.Alias("${PART_SECTION}::alias::${PART_ALIAS}::dist",env.CCopy("#dist",out))[0]
 
 

@@ -5,7 +5,7 @@ import parts.common as common
 import parts.glb as glb
 import shutil, os,re
 
-deb_reg="(\w+)\_([\d.]+)\-([\w.]+)\_(\w+)\.deb"
+deb_reg="(\w+)\_([\d.]+)(\-([\w.]+))?\_(\w+)\.deb"
 
 def deb_wrapper_mapper(env, target, sources, **kw):
     def deb_wrapper():
@@ -70,7 +70,7 @@ def dpkg_wrapper(_env, target, sources, **kw):
 
     grps=re.match(deb_reg,target[0].name,re.IGNORECASE)
     if grps is None:
-        api.output.error_msg("DEB target files must be in format of <name>_<version>-<release>_<arch>.deb\n current format of value of target file is '{0}'".format(target[0].name))
+        api.output.error_msg("DEB target files must be in format of <name>_<version>-<release>_<arch>.deb or <name>_<version>_<arch>.deb\n current format of value of target file is '{0}'".format(target[0].name))
 
     
     # subst all source values to get finial package group names
