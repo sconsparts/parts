@@ -1,4 +1,4 @@
 cpil (1.0) unstable; urgency=low
     * debian/control
         - Introduced the control file
- -- Eugene Leskinen <karbazol@gmail.com>  Tue, 7 Jun 2016 09:55:00 +0300
+ -- A B <a@b.c>  Tue, 7 Jun 2016 09:55:00 +0300
