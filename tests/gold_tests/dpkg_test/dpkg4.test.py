@@ -24,7 +24,7 @@ extension = '.exe' if sys.platform=='win32' else ''
 contains = ['bin/test1'+extension, 'bin/test2' + extension]
 
 t.ReturnCode = 0
-t.Disk.File("dist/test4.deb", exists=True)
+t.Disk.File("dist/cpil_1.0_all.deb", exists=True)
 
 
 

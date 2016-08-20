@@ -1,5 +1,8 @@
-Package:sourceveverv
-Version:1.2
-Maintainer:XXYYZZ
+Source: cpil
+Maintainer: a@b.c
+
+Package: cpil
+Version: 1.2
 Architecture: all
-Description: 'helloworld'
+Maintainer: a@b.c
+Description: 'cpil package'
