@@ -59,13 +59,13 @@ class Product(object):
         # Determine buffer size for data
         buffSize = ctypes.c_int(0)
         if windll.msi.MsiGetProductInfoW(self.__productGuid, name, None, ctypes.byref(buffSize)):
-            raise AttributeError("Product '%s' has no '%s' attribute" % (str(self.productGuid, name)))
+            raise AttributeError("Product '%s' has no '%s' attribute" % (str(self.__productGuid), name))
 
         # Allocate buffer for result
         buffSize = ctypes.c_int(buffSize.value + 1)
         resultBuffer = ctypes.create_unicode_buffer(buffSize.value)
         if windll.msi.MsiGetProductInfoW(self.__productGuid, name, resultBuffer, ctypes.byref(buffSize)):
-            raise AttributeError("Product '%s' has no '%s' attribute" % (str(self.productGuid, name)))
+            raise AttributeError("Product '%s' has no '%s' attribute" % (str(self.__productGuid), name))
 
         return resultBuffer.value
 
@@ -80,6 +80,10 @@ class Product(object):
         ret == windll.msi.MsiGetComponentPathW(self.__productGuid, component, buff, ctypes.byref(buffSize))
 
         return ret, buff.value
+        
+    @property
+    def ProductGuid(self):
+        return self.__productGuid
 
 class MsiHandle(object):
     def __init__(self, handle = None):
@@ -192,6 +196,9 @@ def allProducts():
 if __name__ == '__main__':
     import re
     for product in allProducts():
-        print product.ProductName.encode('mbcs', errors='ignore'), product.VersionString.encode('mbcs', errors='ignore')
+        print ('\t'.join(((product.ProductName or
+                            product.ProductGuid).encode('mbcs', errors='ignore'),
+                getattr(product, 'VersionString',
+                    'No version info').encode('mbcs', errors='ignore'))))
 # vim: set et ts=4 sw=4 ft=python :
 
