@@ -119,7 +119,7 @@ class section(object):
             class mybase(object):
                 def __init__(self,env):
                     if __debug__: logInstanceCreation(self)
-                    self.passed=False # this allow us to skip tests if we have stacked declorators
+                    self.passed=False # this allow us to skip tests if we have stacked decorators
                     self.env=env
                     for p in self._phases:
                         setattr(self,"func_"+p[0],[])
