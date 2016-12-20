@@ -1,0 +1,8 @@
+Import('*')
+
+env.PartVersion('1.0.0')
+
+env.CCopy('#', env.TarGzFile('lorem.tar.gz', ['lorem.txt', 'lorem2.txt', 'lorem3/lorem.txt']))
+
+# vim: set et ts=4 sw=4 ai ft=python :
+
