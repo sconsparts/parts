@@ -1,0 +1,3 @@
+Import('*')
+ret=env.Program("hello","hello.c")
+env.InstallTarget(ret)
