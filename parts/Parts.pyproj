@@ -292,7 +292,7 @@
     <Compile Include="configurations\release\gcc_any-any_android-x86.py" />
     <Compile Include="configurations\release\wdk_win32-any_win32-x86.py" />
     <Compile Include="configurations\release\wdk_win32-any_win32-x86_64.py" />
-    <Compile Include="core\util\declorators.py">
+    <Compile Include="core\util\decorators.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="core\util\is_a.py">
