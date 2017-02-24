@@ -266,6 +266,16 @@ class FileSymbolicLink(SCons.Node.FS.File):
     The property represents a value a call to os.readlink would return for the C{self.path}
     specified as its argument.
     """
+    __slots__ = []
+    """
+    slots to be compatible with scons newer than 2.3.0
+    """
+    __linktos__ = {}
+    """
+    This global dictionary will hold _linkto values for each FileSymbolicLink instance:
+    __linktos__[node.abspath] = _linkto. See the linkto property getter for reference
+    """
+
     def __init__(self, name, directory, fs):
         if __debug__:
             logInstanceCreation(self, 'parts.overrides.symlinks.FileSymbolicLink')
@@ -277,11 +287,11 @@ class FileSymbolicLink(SCons.Node.FS.File):
         C{FileSymbolicLink.linkto} property getter function.
         """
         try:
-            return self._linkto
-        except AttributeError:
+            return self.__linktos__[self.abspath]
+        except KeyError:
             try:
-                self._linkto = os_readlink(self.abspath)
-                return self._linkto
+                self.__linktos__[self.abspath] = value = os_readlink(self.abspath)
+                return value
             except (OSError, IOError):
                 return None
 
@@ -291,10 +301,12 @@ class FileSymbolicLink(SCons.Node.FS.File):
         C{FileSymbolicLink.linkto} property setter function.
         """
         if value is None:
-            if hasattr(self, '_linkto'):
-                del self._linkto
+            try:
+                del self.__linktos__[self.abspath]
+            except KeyError:
+                pass
             return
-        self._linkto = value
+        self.__linktos__[self.abspath] = value
 
     def stat(self):
         """
