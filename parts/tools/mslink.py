@@ -294,7 +294,7 @@ embedManifestDLLCheck = SCons.Action.Action(EmbedManifestDLLFunc, None)
 regServerAction = SCons.Action.Action("$REGSVRCOM", "$REGSVRCOMSTR")
 regServerCheck = SCons.Action.Action(RegServerFunc, None)
 
-shlibLinkAction = SCons.Action.Action('${TEMPFILE("$SHLINK $SHLINKFLAGS $_SHLINK_TARGETS $_LIBDIRFLAGS $_LIBFLAGS $_PDB $_SHLINK_SOURCES")}')
+shlibLinkAction = SCons.Action.Action('${TEMPFILE("$SHLINK $SHLINKFLAGS $_SHLINK_TARGETS $_LIBDIRFLAGS $_LIBFLAGS $_PDB $_SHLINK_SOURCES $SHLINKEXFLAGS $_LIBEXFLAGS")}')
 compositeShLinkAction = shlibLinkAction + embedManifestDLLCheck + signCheck + regServerCheck
 ldmodLinkAction = SCons.Action.Action('${TEMPFILE("$LDMODULE $LDMODULEFLAGS $_LDMODULE_TARGETS $_LIBDIRFLAGS $_LIBFLAGS $_PDB $_LDMODULE_SOURCES")}')
 compositeLdmodAction = ldmodLinkAction + embedManifestDLLCheck + signCheck + regServerCheck
@@ -305,7 +305,7 @@ registerServerCheck = SCons.Action.Action (RegServerFunc, None)
 embedManifestProgAction = SCons.Action.Action ("$EMBEDMANIFESTPROGCOM", "$EMBEDMANIFESTPROGCOMSTR")
 embedManifestProgCheck = SCons.Action.Action (EmbedManifestProgFunc, None)
 
-linkcomAction = SCons.Action.Action('${TEMPFILE("$LINK $LINKFLAGS /OUT:$TARGET.windows $_LIBDIRFLAGS $_LIBFLAGS $_PDB $SOURCES.windows")}')
+linkcomAction = SCons.Action.Action('${TEMPFILE("$LINK $LINKFLAGS /OUT:$TARGET.windows $_LIBDIRFLAGS $_LIBFLAGS $_PDB $SOURCES.windows $LINKEXFLAGS $_LIBEXFLAGS")}')
 compositelinkcomAction = linkcomAction + embedManifestProgCheck + signCheck + registerServerCheck
 
 def smart_link(source, target, env, for_signature):
@@ -328,8 +328,11 @@ def generate(env):
     # Set-up ms tools paths for default version
     msvc.MergeShellEnv(env)
 
+    env.SetDefault(_LIBEXFLAGS='${_concat(LIBLINKPREFIX, LIBEXS, LIBLINKSUFFIX, __env__)}')
+
     env.SetDefault(SHLINK=parts.tools.Common.toolvar('link', ('link',), env = env))
     env.SetDefault(SHLINKFLAGS =SCons.Util.CLVar('$LINKFLAGS /dll'))
+    env.SetDefault(SHLINKEXFLAGS=SCons.Util.CLVar('$LINKEXFLAGS'))
     env.SetDefault(_SHLINK_TARGETS =windowsShlinkTargets)
     env.SetDefault(_SHLINK_SOURCES =windowsShlinkSources)
     env.SetDefault(SHLINKCOM =compositeShLinkAction)

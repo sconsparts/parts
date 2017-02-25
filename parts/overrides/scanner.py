@@ -28,17 +28,30 @@ except:
         #_scan.__globals__.update(_subst_libs = SCons.Scanner.Prog._subst_libs)
         def scan(node, env, libpath = ()):
             global _scan
-            prop_lst = env.get('LIBS')
+            prop_lst = env.get('LIBS', []) + env.get('LIBEXS', [])
             if prop_lst:
                 mappers.sub_lst(env, prop_lst, thread.get_ident(), recurse = False)
-            return _scan(node, env, libpath)
+            return _scan(node, env.Override(dict(LIBS=prop_lst)), libpath)
         func.__code__ = scan.__code__
         func.__globals__.update(
                 _scan = _scan,
                 mappers = mappers,
                 thread = thread,
                 )
-    wrap_Prog_scan(SCons.Scanner.Prog.scan)
+else:
+    def wrap_Prog_scan(func):
+        def _scan(node, env, libpath = ()):
+            pass
+        _scan.__code__ = func.__code__
+        _scan.__globals__.update(**func.__globals__)
+        def scan(node, env, libpath = ()):
+            global _scan
+            if not 'LIBS' in env and not 'LIBEXS' in env:
+                return []
+            return _scan(node, env.Override(dict(LIBS=env.get('LIBS', []) + env.get('LIBEXS', []))), libpath)
+        func.__code__ = scan.__code__
+        func.__globals__.update(_scan=_scan)
+wrap_Prog_scan(SCons.Scanner.Prog.scan)
 
 def wrap_FindPathDirs(klass):
     def _call(self, env, dir, target = None, source = None, argument = None):

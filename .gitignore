@@ -3,3 +3,4 @@ build/
 parts.egg-info/
 *.dblite
 *.pyc
+.*.swp
