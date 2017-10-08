@@ -61,7 +61,7 @@ class GnuInfo(ToolInfo):
                                  stderr=subprocess.STDOUT,
                                  stdout = subprocess.PIPE)
 
-            pipe.wait()  
+            pipe.wait()
             line = pipe.stdout.readline()# first line has version in??
 
             try:
@@ -74,7 +74,7 @@ class GnuInfo(ToolInfo):
                 line = match.group(1)
                 return line
 
-        return None         
+        return None
 
     def resolve_version(self,version):
         if self.found is None:
@@ -85,11 +85,11 @@ class GnuInfo(ToolInfo):
             if MatchVersionNumbers(version,i):
                 return i
         return None
-        
-    
+
+
     def version_set(self):
         return self.version
-    
+
     def get_root(self,version):
         if self.found is None:
             root=ToolInfo.get_root(self,None)
@@ -104,17 +104,17 @@ class GnuInfo(ToolInfo):
                         return self.found[i][0]
             except KeyError:
                 pass
-    
-        # no root was found 
+
+        # no root was found
         # this is probally an error
         return None
-    
-    
+
+
     def get_shell_env(self,env,namespace,version,install_root,script,tool=None):
         # call base logic for exists
         ret=ToolInfo.get_shell_env(self,env,namespace,version,install_root,script,tool)
         if ret is not None and self.found is not None:
-            #get correct tool value in namespace 
+            #get correct tool value in namespace
             k=self.found.keys()
             k.sort()
             k.reverse()
@@ -126,15 +126,15 @@ class GnuInfo(ToolInfo):
             env[namespace].TOOL=tool
             env[namespace].VERSION=version
         return ret
-    
+
     def query(self,env,namespace,root_path,use_script):
         # this logic is different as we have a built in scanner
-        
+
         # If we have a root path passed in use it
         if root_path is not None:
             found=self.scan_query(root_path,False)
         elif SCons.Util.is_String(use_script):
-            found={'0.0.0':(None,None)}    
+            found={'0.0.0':(None,None)}
         else:
             # use our build in lookup logic
             root=ToolInfo.get_root(self,None)
@@ -149,12 +149,12 @@ class GnuInfo(ToolInfo):
             tmp=self.exists(env,namespace,v,p[0],use_script,p[1])
             if tmp is not None:
                 ret.update(self.make_ver_shell_env_set(v,tmp))
-        
+
         return ret
-    
+
     def scan_query(self,install_root,opt_scan=True):
         if self.found is None:
-            ret={}         
+            ret={}
             reg=re.compile(self.test_file.replace('+',r'\+')+r'\-?([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)', re.I)
             if opt_scan==True:
                 if self.opt_pattern is not None:
@@ -182,7 +182,7 @@ class GnuInfo(ToolInfo):
                                         if tmp is not None:
                                             ret[tmp]=(fullpath,pathwtool)
 
-            if install_root is not None:                               
+            if install_root is not None:
                 # see if in this area we have any possible matches of different versions
                 # using a convension of tool-ver ( ie gcc-3.4 or gcc-3 )
                 # overrides anything in /opt/...
@@ -192,21 +192,21 @@ class GnuInfo(ToolInfo):
                         fullpath=os.path.join(install_root,item)
                         tmp=self.get_default_ver(fullpath)
                         if tmp is not None:
-                            ret[tmp]=(install_root,fullpath)                    
-                                
+                            ret[tmp]=(install_root,fullpath)
+
                 #see if we can find a default version in the directories provided
                 # overrides any previous finds of same version
 
                 tmp=self.get_default_ver(os.path.join(install_root,self.test_file))
                 if tmp is not None:
-                    ret[tmp]=(install_root,os.path.join(install_root,self.test_file)) 
-                    
+                    ret[tmp]=(install_root,os.path.join(install_root,self.test_file))
+
                 self.found=ret
-        
+
         if self.found == {}:
             return None
         return self.found
-    
+
 
 
 gxx=ToolSetting('gxx')

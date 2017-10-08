@@ -15,6 +15,20 @@ def generate(env):
 
     # set up shell env for running compiler
     parts.tools.GnuCommon.gcc.MergeShellEnv(env)
+    # does the tool define tweaks to the bnutils.. if so set these "gloally"
+    try:
+        env['OBJCOPY'] = env['GXX']['OBJCOPY']
+    except KeyError:
+        pass
+    try:
+        env['AR'] = env['GXX']['AR']
+    except KeyError:
+        pass
+    try:
+        env['LD'] = env['GXX']['LD']
+    except KeyError:
+        pass
+
     env['CC'] = parts.tools.Common.toolvar(env['GCC']['TOOL'],('gcc','gnu'), env = env)
 
    # this setting is what SCons has.. It seem odd, I thought cygwin handled -fpic fine

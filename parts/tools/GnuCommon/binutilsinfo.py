@@ -45,7 +45,7 @@ class BinutilsSetupWrapper(object):
             env['OBJCOPY'] = '${HOST_ARCH}-${TARGET_ARCH}-linux-objcopy'
         if env.has_key('BINUTILS_VERSION') or env.has_key('BINUTILS_INSTALL_ROOT') or env.get('HOST_OS') != env.get('TARGET_OS'):
             # We call it MergeShellEnv but don't be confused by its name because binutils ToolSetting objects do not
-            # modify sehll environment but only initialize BINUTILS namespace
+            # modify shell environment but only initialize BINUTILS namespace
             self.__binutils.MergeShellEnv(env)
             return True
         return False
@@ -805,4 +805,3 @@ binutils.Register(
 )
 
 #vim: set et ts=4 sw=4 ai :
-

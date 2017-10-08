@@ -30,6 +30,20 @@ def generate(env):
     # set up shell env for running compiler
     parts.tools.GnuCommon.gxx.MergeShellEnv(env)
 
+    # does the tool define tweaks to the bnutils.. if so set these "gloally"
+    try:
+        env['OBJCOPY'] = env['GXX']['OBJCOPY']
+    except KeyError:
+        pass
+    try:
+        env['AR'] = env['GXX']['AR']
+    except KeyError:
+        pass
+    try:
+        env['LD'] = env['GXX']['LD']
+    except KeyError:
+        pass
+
     env['CXX'] = parts.tools.Common.toolvar(env['GXX']['TOOL'],('g++','gxx','gnu'), env = env)
 
     # platform specific settings
@@ -65,11 +79,11 @@ def generate(env):
         env['RCINCSUFFIX'] = ''
         env['RCCOM'] = '$RC $_CPPDEFFLAGS $RCINCFLAGS ${RCINCPREFIX} ${SOURCE.dir} $RCFLAGS -i $SOURCE -o $TARGET'
         env['BUILDERS']['RES'] = mingw.res_builder
-    
 
-    
+
+
     #Backward compatiblity
-    env['CXXVERSION']=env['GXX']['VERSION']  
+    env['CXXVERSION']=env['GXX']['VERSION']
 
     env.Append(**env['GXX'].get('APPENDS', {}))
 

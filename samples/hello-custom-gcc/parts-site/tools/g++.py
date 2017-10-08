@@ -7,6 +7,8 @@
 from parts.platform_info import SystemPlatform
 from parts.tools.Common.Finders import PathFinder
 import parts.tools.GnuCommon.common
+import parts.tools.GnuCommon.binutilsinfo as binutilsinfo
+
 
 parts.tools.GnuCommon.common.gxx.Register(
     # we assume that the system has the correct libraies installed to do
@@ -21,7 +23,9 @@ parts.tools.GnuCommon.common.gxx.Register(
             install_scanner=[PathFinder(['/usr/bin'])],
             opt_dirs=['/opt/'],
             script=None,
-            subst_vars={},
+            subst_vars={
+                'OBJCOPY':'${GXX.INSTALL_ROOT}/arm-linux-gnueabi-objcopy',
+            },
             shell_vars={'PATH': '${GXX.INSTALL_ROOT}'},
             test_file='arm-linux-gnueabi-g++')
     ]
@@ -29,6 +33,6 @@ parts.tools.GnuCommon.common.gxx.Register(
 
 # import g++ tool from parts ( we only need to add configurations to be loaded)
 import importlib
-gxx_module = importlib.import_module('parts.tools.g++')    
+gxx_module = importlib.import_module('parts.tools.g++')
 globals().update(gxx_module.__dict__)
 

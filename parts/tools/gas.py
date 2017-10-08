@@ -2,11 +2,11 @@
 
 #import SCons.Tool.as as AS
 AS = getattr(__import__('SCons.Tool.as', globals(), locals(), []).Tool, 'as')
-import parts.tools.GnuCommon.binutils
+import parts.tools.GnuCommon.common
 import parts.tools.Common
 
 def generate(env):
-    parts.tools.GnuCommon.binutils.setup(env)
+    parts.tools.GnuCommon.common.binutils.setup(env)
     ASPPSuffixes, ASSuffixes = list(AS.ASPPSuffixes), list(AS.ASSuffixes)
     if env['TARGET_OS'] in ('posix', 'android'):
         try:
@@ -21,7 +21,7 @@ def generate(env):
     env['AS'] = parts.tools.Common.toolvar(env['AS'],('as',), env = env)
 
 def exists(env):
-    parts.tools.GnuCommon.binutils.setup(env)
+    parts.tools.GnuCommon.common.binutils.setup(env)
 
     return AS.exists(env)
 

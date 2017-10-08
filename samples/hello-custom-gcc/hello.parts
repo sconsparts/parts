@@ -1,3 +1,4 @@
 Import('*')
+env['PDB']='hello.pdb'
 ret=env.Program("hello","hello.c")
 env.InstallTarget(ret)
