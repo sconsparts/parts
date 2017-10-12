@@ -3,35 +3,36 @@
 import parts.logger as logger
 import os
 
+
 class text(logger.Logger):
 
-    def __init__(self,dir,file):
+    def __init__(self, dir, file):
         if os.path.exists(dir) == False:
             os.makedirs(dir)
-        self.m_file=open(os.path.join(dir,file),"w")
-        super(text, self).__init__(dir,file)
+        self.m_file = open(os.path.join(dir, file), "w")
+        super(text, self).__init__(dir, file)
 
-    def logout(self,msg):
+    def logout(self, msg):
         with self._lock:
             self.m_file.write(msg)
 
-    def logerr(self,msg):
+    def logerr(self, msg):
         with self._lock:
             self.m_file.write(msg)
 
-    def logwrn(self,msg):
+    def logwrn(self, msg):
         with self._lock:
             self.m_file.write(msg)
 
-    def logmsg(self,msg):
+    def logmsg(self, msg):
         with self._lock:
             self.m_file.write(msg)
 
-    def logtrace(self,msg):
+    def logtrace(self, msg):
         with self._lock:
             self.m_file.write(msg)
 
-    def logverbose(self,msg):
+    def logverbose(self, msg):
         with self._lock:
             self.m_file.write(msg)
 

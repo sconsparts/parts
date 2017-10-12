@@ -1,6 +1,7 @@
-#pylint: disable=missing-docstring, unused-import
+# pylint: disable=missing-docstring, unused-import
 import glob
 import os.path
+
 
 def loadAllPieces():
     import parts.load_module as load_module

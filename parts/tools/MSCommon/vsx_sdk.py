@@ -1,17 +1,19 @@
 from common import vssdk
 from parts.tools.Common.ToolInfo import ToolInfo
-from parts.tools.Common.Finders import RegFinder,EnvFinder,PathFinder,ScriptFinder
+from parts.tools.Common.Finders import RegFinder, EnvFinder, PathFinder, ScriptFinder
 from parts.platform_info import SystemPlatform
 import os
 
+
 class MapLib(object):
+
     def __call__(self, target, source, env, for_signature):
         return env.isConfigBasedOn('debug') and 'debug' or 'retail'
-        
+
 
 vssdk.Register(
-    hosts=[SystemPlatform('win32','any')],
-    targets=[SystemPlatform('win32','x86')],
+    hosts=[SystemPlatform('win32', 'any')],
+    targets=[SystemPlatform('win32', 'x86')],
     info=[
         ToolInfo(
             version='8.0.60728',
@@ -27,24 +29,21 @@ vssdk.Register(
             ],
             script=None,
             subst_vars={
-            'MAPCONFIG':MapLib
+                'MAPCONFIG': MapLib
             },
             shell_vars={
-                        'PATH':
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Tools/Bin'                                                       
-                            ,
-                        'INCLUDE':
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/Inc'+os.pathsep+
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/IDL'+os.pathsep+
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/Inc/office10'
-                            
-                        ,
-                        'LIB':
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/lib/${VSSDK.MAPCONFIG()}'
-                            
-                        },
+                'PATH':
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Tools/Bin',
+                'INCLUDE':
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/Inc' + os.pathsep +
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/IDL' + os.pathsep +
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/Inc/office10',
+                'LIB':
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/lib/${VSSDK.MAPCONFIG()}'
+
+            },
             test_file='ctc.exe'
-            ),
+        ),
 
 
         ToolInfo(
@@ -61,24 +60,21 @@ vssdk.Register(
             ],
             script=None,
             subst_vars={
-            'MAPCONFIG':MapLib
+                'MAPCONFIG': MapLib
             },
             shell_vars={
-                        'PATH':
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Tools/Bin'                                                       
-                            ,
-                        'INCLUDE':
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/Inc'+os.pathsep+
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/IDL'+os.pathsep+
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/Inc/office10'
-                            
-                        ,
-                        'LIB':
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/lib/${VSSDK.MAPCONFIG()}'
-                            
-                        },
+                'PATH':
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Tools/Bin',
+                'INCLUDE':
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/Inc' + os.pathsep +
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/IDL' + os.pathsep +
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/Inc/office10',
+                'LIB':
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/lib/${VSSDK.MAPCONFIG()}'
+
+            },
             test_file='ctc.exe'
-            ),
+        ),
         ToolInfo(
             version='8.0.61205.56',
             install_scanner=[
@@ -93,24 +89,21 @@ vssdk.Register(
             ],
             script=None,
             subst_vars={
-            'MAPCONFIG':MapLib
+                'MAPCONFIG': MapLib
             },
             shell_vars={
-                        'PATH':
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Tools/Bin'                                                       
-                            ,
-                        'INCLUDE':
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/Inc'+os.pathsep+
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/IDL'+os.pathsep+
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/Inc/office10'
-                            
-                        ,
-                        'LIB':
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/lib/${VSSDK.MAPCONFIG()}'
-                            
-                        },
+                'PATH':
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Tools/Bin',
+                'INCLUDE':
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/Inc' + os.pathsep +
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/IDL' + os.pathsep +
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/Inc/office10',
+                'LIB':
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/lib/${VSSDK.MAPCONFIG()}'
+
+            },
             test_file='ctc.exe'
-            ),
+        ),
         ToolInfo(
             version='9.0',
             install_scanner=[
@@ -124,23 +117,20 @@ vssdk.Register(
                 ])
             ],
             script=None,
-            subst_vars={'MAPCONFIG':MapLib
-            },
-            shell_vars={
-                        'PATH':
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Tools/Bin'                                                       
-                            ,
-                        'INCLUDE':
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/Inc'+os.pathsep+
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/IDL'+os.pathsep+
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/Inc/office10'
-                            
-                        ,
-                        'LIB':
-                            '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/lib/${VSSDK.MAPCONFIG()}'
-                            
+            subst_vars={'MAPCONFIG': MapLib
                         },
+            shell_vars={
+                'PATH':
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Tools/Bin',
+                'INCLUDE':
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/Inc' + os.pathsep +
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/IDL' + os.pathsep +
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/Inc/office10',
+                'LIB':
+                '${VSSDK.INSTALL_ROOT}/VisualStudioIntegration/Common/lib/${VSSDK.MAPCONFIG()}'
+
+            },
             test_file='ctc.exe'
-            )
-        ]
-    )
+        )
+    ]
+)

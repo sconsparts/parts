@@ -1,17 +1,17 @@
-﻿from common import msvc,framework_root,framework_root64,get_current_sdk
+﻿from common import msvc, framework_root, framework_root64, get_current_sdk
 from parts.tools.Common.ToolInfo import ToolInfo
-from parts.tools.Common.Finders import RegFinder,EnvFinder,PathFinder,ScriptFinder
+from parts.tools.Common.Finders import RegFinder, EnvFinder, PathFinder, ScriptFinder
 from parts.platform_info import SystemPlatform
 import os
 import SCons.Platform
 
-## Need to verify the paths, but this seems to work well enough.
+# Need to verify the paths, but this seems to work well enough.
 
-## version 14 .. 2015
+# version 14 .. 2015
 # 32-bit
 msvc.Register(
-    hosts=[SystemPlatform('win32','any')],
-    targets=[SystemPlatform('win32','x86')],
+    hosts=[SystemPlatform('win32', 'any')],
+    targets=[SystemPlatform('win32', 'x86')],
     info=[
         ToolInfo(
             version='14.0',
@@ -24,7 +24,7 @@ msvc.Register(
                 ]),
                 EnvFinder([
                     'VS140COMNTOOLS'
-                ],'../../VC'),
+                ], '../../VC'),
                 PathFinder([
                     r'C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC',
                     r'C:\Program Files\Microsoft Visual Studio 14.0\VC'
@@ -32,20 +32,20 @@ msvc.Register(
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/vcvarsall.bat'),
             subst_vars={
-            'VCINSTALL':'${MSVC.INSTALL_ROOT}',
-            'VSINSTALL':'${MSVC.INSTALL_ROOT}/..',
-            'FRAMEWORK_ROOT':framework_root(),
-            'FRAMEWORK_ROOT64':framework_root64()
+                'VCINSTALL': '${MSVC.INSTALL_ROOT}',
+                'VSINSTALL': '${MSVC.INSTALL_ROOT}/..',
+                'FRAMEWORK_ROOT': framework_root(),
+                'FRAMEWORK_ROOT64': framework_root64()
             },
-            shell_vars={ },
+            shell_vars={},
             test_file='cl.exe'
-            )
-        ]
-    )
+        )
+    ]
+)
 
 msvc.Register(
-    hosts=[SystemPlatform('win32','x86'),SystemPlatform('win32','x86_64')],
-    targets=[SystemPlatform('win32','arm')],
+    hosts=[SystemPlatform('win32', 'x86'), SystemPlatform('win32', 'x86_64')],
+    targets=[SystemPlatform('win32', 'arm')],
     info=[
         ToolInfo(
             version='14.0',
@@ -58,7 +58,7 @@ msvc.Register(
                 ]),
                 EnvFinder([
                     'VS140COMNTOOLS'
-                ],'../../VC'),
+                ], '../../VC'),
                 PathFinder([
                     r'C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC',
                     r'C:\Program Files\Microsoft Visual Studio 14.0\VC'
@@ -66,22 +66,22 @@ msvc.Register(
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/bin/x86_arm/vcvarsx86_arm.bat'),
             subst_vars={
-            'VCINSTALL':'${MSVC.INSTALL_ROOT}',
-            'VSINSTALL':'${MSVC.INSTALL_ROOT}/..',
-            'FRAMEWORK_ROOT':framework_root(),
-            'FRAMEWORK_ROOT64':framework_root64()
+                'VCINSTALL': '${MSVC.INSTALL_ROOT}',
+                'VSINSTALL': '${MSVC.INSTALL_ROOT}/..',
+                'FRAMEWORK_ROOT': framework_root(),
+                'FRAMEWORK_ROOT64': framework_root64()
             },
-            shell_vars={ },
+            shell_vars={},
             test_file='cl.exe'
-            )
-        ]
-    )
+        )
+    ]
+)
 
 
 # 64-bit native
 msvc.Register(
-    hosts=[SystemPlatform('win32','x86_64')],
-    targets=[SystemPlatform('win32','x86_64')],
+    hosts=[SystemPlatform('win32', 'x86_64')],
+    targets=[SystemPlatform('win32', 'x86_64')],
     info=[
         ToolInfo(
             version='14.0',
@@ -92,28 +92,28 @@ msvc.Register(
                 ]),
                 EnvFinder([
                     'VS140COMNTOOLS'
-                ],'../../VC'),
+                ], '../../VC'),
                 PathFinder([
                     r'C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC'
                 ])
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/bin/AMD64/vcvars64.bat'),
             subst_vars={
-            'VCINSTALL':'${MSVC.INSTALL_ROOT}',
-            'VSINSTALL':'${MSVC.INSTALL_ROOT}/..',
-            'FRAMEWORK_ROOT':framework_root(),
-            'FRAMEWORK_ROOT64':framework_root64()
+                'VCINSTALL': '${MSVC.INSTALL_ROOT}',
+                'VSINSTALL': '${MSVC.INSTALL_ROOT}/..',
+                'FRAMEWORK_ROOT': framework_root(),
+                'FRAMEWORK_ROOT64': framework_root64()
             },
             shell_vars={},
             test_file='cl.exe'
-            )
-        ]
-    )
+        )
+    ]
+)
 
-#cross - 64-bit. 
+# cross - 64-bit.
 msvc.Register(
-    hosts=[SystemPlatform('win32','any')],# say 'any' as the code will preffer this less than a native version
-    targets=[SystemPlatform('win32','x86_64')],
+    hosts=[SystemPlatform('win32', 'any')],  # say 'any' as the code will preffer this less than a native version
+    targets=[SystemPlatform('win32', 'x86_64')],
     info=[
         ToolInfo(
             version='14.0',
@@ -126,7 +126,7 @@ msvc.Register(
                 ]),
                 EnvFinder([
                     'VS140COMNTOOLS'
-                ],'../../VC'),
+                ], '../../VC'),
                 PathFinder([
                     r'C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC'
                     r'C:\Program Files\Microsoft Visual Studio 14.0\VC'
@@ -134,18 +134,16 @@ msvc.Register(
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/bin/x86_amd64/vcvarsx86_amd64.bat'),
             subst_vars={
-            'VCINSTALL':'${MSVC.INSTALL_ROOT}',
-            'VSINSTALL':'${MSVC.INSTALL_ROOT}/..',
-            'FRAMEWORK_ROOT':framework_root(),
-            'FRAMEWORK_ROOT64':framework_root64()
+                'VCINSTALL': '${MSVC.INSTALL_ROOT}',
+                'VSINSTALL': '${MSVC.INSTALL_ROOT}/..',
+                'FRAMEWORK_ROOT': framework_root(),
+                'FRAMEWORK_ROOT64': framework_root64()
             },
             shell_vars={
-                        },
+            },
             test_file='cl.exe'
-            )
-        ]
-    )  
+        )
+    ]
+)
 
 # ia64.. support gone..
-    
-    

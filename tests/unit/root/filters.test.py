@@ -3,6 +3,7 @@ from parts.filters import *
 import SCons.Node
 import os
 
+
 class TestFilters(unittest.TestCase):
 
     def __createFile(self, fName, fDir):
@@ -11,7 +12,7 @@ class TestFilters(unittest.TestCase):
         return SCons.Node.FS.File(fName, _dir, fs)
 
     def setUp(self):
-        self.env=SCons.Script.Environment(tools=[])
+        self.env = SCons.Script.Environment(tools=[])
 
     def test_hasFileExtension(self):
         """Test hasFileExtension: create 2 nodes (files) with different extensions"""
@@ -39,7 +40,7 @@ class TestFilters(unittest.TestCase):
         myFile2 = self.__createFile(filename2, dirname2)
 
         myCat = "my category"
-        self.env.MetaTag(myFile1, 'package', category = myCat)
+        self.env.MetaTag(myFile1, 'package', category=myCat)
 
         hpc = HasPackageCatagory(myCat)
         self.assertEqual(True, hpc(myFile1))

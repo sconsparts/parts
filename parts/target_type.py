@@ -8,17 +8,20 @@ import SCons.Node.FS
 from SCons.Debug import logInstanceCreation
 
 # move to glb once we have new formats working
-__known_concepts={
-'utest':'utest',
-'run_utest':'utest',
-'build':'build'
+__known_concepts = {
+    'utest': 'utest',
+    'run_utest': 'utest',
+    'build': 'build'
 }
+
 
 def is_concepts(val):
     return val in __known_concepts
 
+
 def map_concept(val):
     return __known_concepts[val]
+
 
 def get_concept(tlst):
     # see if the concept is defined
@@ -35,13 +38,14 @@ def get_concept(tlst):
         return {'_section': 'build'}, ['']
     # some concept would have to be xxx:: else we assume it is a name
     elif is_concepts(tlst[0]) and len(tlst) > 1:
-        #we have a concept defined
+        # we have a concept defined
         section = map_concept(tlst[0])
         return {'_concept': tlst[0], '_section': section}, tlst[1:]
 
     # set default concept
     # value is hard coded at the moment
     return {'_section': 'build'}, tlst
+
 
 def get_partrefdata(tok):
 
@@ -53,13 +57,13 @@ def get_partrefdata(tok):
     # alias
     elif tok[0] == 'alias' and len(tok) == 1:
         return get_name(tok)
-    #alias::??
+    # alias::??
     elif tok[0] == 'alias':
         return get_alias(tok[1:])
     # name or name@k,v...
     elif tok[0].startswith('name') and len(tok) == 1:
         return get_name(tok)
-    #name::xxx
+    # name::xxx
     elif tok[0] == 'name':
         return get_name(tok[1:])
     # xxx which we assume to be a name..
@@ -69,7 +73,7 @@ def get_partrefdata(tok):
     elif tok[0] == '':
         return {}, tok[1:]
     else:
-        1/0 # not sure if we can get here...
+        1 / 0  # not sure if we can get here...
 
 
 def get_alias(tok):
@@ -82,7 +86,8 @@ def get_alias(tok):
         return {}, tok[1:]
     #<concept>::alias::<alias>
     else:
-        return {'_alias':tok[0]}, tok[1:]
+        return {'_alias': tok[0]}, tok[1:]
+
 
 def get_name(tok):
 
@@ -92,37 +97,39 @@ def get_name(tok):
     #<concept>::name::::<group>
     elif tok[0] == '':
         return {}, tok[1:]
-    #name::@k,v
+    # name::@k,v
     elif tok[0].startswith('@'):
-        tlst=tok[0].split("@")
-        prop=get_properties(tlst[0])
-        return {'_properties':prop}, tok[1:]
-    #name::XXX@k,v
+        tlst = tok[0].split("@")
+        prop = get_properties(tlst[0])
+        return {'_properties': prop}, tok[1:]
+    # name::XXX@k,v
     else:
-        tlst=tok[0].split("@")
-        prop=get_properties(tlst[1:])
-        return {'_name':tlst[0], '_properties':prop}, tok[1:]
+        tlst = tok[0].split("@")
+        prop = get_properties(tlst[1:])
+        return {'_name': tlst[0], '_properties': prop}, tok[1:]
+
 
 def get_properties(tlst):
-    properties={}
+    properties = {}
     for p in tlst:
         try:
             # get key value
-            k, v=p.split(":")
+            k, v = p.split(":")
             # break up value into list
-            vtmp=v.split(',')
+            vtmp = v.split(',')
             # remove exta junk at end if it exists
-            if vtmp[-1]=='':
-                vtmp=vtmp[:-1]
+            if vtmp[-1] == '':
+                vtmp = vtmp[:-1]
             # set if we have a list as a list
             if len(vtmp) > 1:
-                properties[k]=vtmp
+                properties[k] = vtmp
             else:
                 # else this is a simple value ( non list)
-                properties[k]=v
+                properties[k] = v
         except ValueError:
-            api.output.error_msg('target value "%s" is bad, @property "%s" not splitable by ":"'%(target, p))
+            api.output.error_msg('target value "%s" is bad, @property "%s" not splitable by ":"' % (target, p))
     return properties
+
 
 def get_groups(tlst):
     # end of the line
@@ -135,7 +142,7 @@ def get_groups(tlst):
     elif tlst[0] == '' and len(tlst) == 1:
         return {}, tlst
     else:
-        return {'_groups':tlst[0].split(',')}, tlst[1:]
+        return {'_groups': tlst[0].split(',')}, tlst[1:]
 
 
 def _parse_target(target):
@@ -155,33 +162,32 @@ def _parse_target(target):
     \endverbatim
     '''
 
-
-    seperator='::'
+    seperator = '::'
     # split in to major catagories
-    t=target.split(seperator)
-    ret={}
+    t = target.split(seperator)
+    ret = {}
     # does this have to many breaks... This is the max given values such a
     # build::name::foo::group::
     # however a case of build:::::::: is also to many as no name is provided
     if len(t) > 5:
         api.output.error_msg('target value "{0}" is bad, too many :: breaks'.format(target))
     # get the concept
-    r, t=get_concept(t)
+    r, t = get_concept(t)
     ret.update(r)
     if not t:
         return ret
     # process reference data
     # returns a dict with values of all, alias, name, properties set
-    r, t=get_partrefdata(t)
+    r, t = get_partrefdata(t)
     ret.update(r)
-    #process any groups
-    r, t=get_groups(t)
+    # process any groups
+    r, t = get_groups(t)
     ret.update(r)
-    #process the recurse
-    if not t or t[0]!='':
-        ret['_recursive']=False
+    # process the recurse
+    if not t or t[0] != '':
+        ret['_recursive'] = False
     else:
-        ret['_recursive']=True
+        ret['_recursive'] = True
 
     if len(t) > 1:
         api.output.error_msg('target value "{0}" is bad, too many :: breaks'.format(target))
@@ -192,9 +198,13 @@ target_type is a class that allow a quick parsing to allow one to figureout if
 the target string part alias or Scons alias. it allow in the case of parts for
 one to see what concept, part object, and section/concept we want to process
 '''
+
+
 class target_type(object):
+
     def __init__(self, target):
-        if __debug__: logInstanceCreation(self)
+        if __debug__:
+            logInstanceCreation(self)
 
         if isinstance(target, SCons.Node.FS.Base):
             target = SCons.Node.FS.get_default_fs().Dir('#').rel_path(target)
@@ -282,7 +292,7 @@ class target_type(object):
             except AttributeError:
                 pass
         else:
-           self._name = value
+            self._name = value
 
     @property
     def hasName(self):
@@ -341,13 +351,13 @@ class target_type(object):
             return False
 
     @property
-    def isAmbiguous (self):
+    def isAmbiguous(self):
         try:
             return self._ambiguous
         except AttributeError:
             return False
 
-    def setUnambiguous (self, value):
+    def setUnambiguous(self, value):
         try:
             del self._ambiguous
         except AttributeError:

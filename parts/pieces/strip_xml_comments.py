@@ -11,6 +11,7 @@ commentEnd = re.compile(r'(-->)')
 keepCommentIfString = '<!--@NOSTRIP'
 commentStartString = '<!--'
 
+
 def scanFile(env, infile, outfile):
     incompleteLine = ""
     with open(outfile.abspath, 'w') as outputf:
@@ -33,17 +34,19 @@ def scanFile(env, infile, outfile):
 
                 line_o = stripRecursive(env, line).rstrip()
                 if line_o != "":
-                    outputf.writelines(line_o+'\n')
+                    outputf.writelines(line_o + '\n')
 
-#strip multiple comment lines
-def stripRecursive(env, line ):
+# strip multiple comment lines
+
+
+def stripRecursive(env, line):
     match = xmlComment.match(line)
     if match:
         comment = match.group(1)
-        if re.search('<!--', comment): # careful, multiple comments
+        if re.search('<!--', comment):  # careful, multiple comments
 
             # remove nested comment(s) for now
-            newLine =  stripRecursive(env, match.group(1)) + match.group(match.lastindex)
+            newLine = stripRecursive(env, match.group(1)) + match.group(match.lastindex)
             line = line.replace(line, newLine)
             return line
         else:
@@ -51,18 +54,18 @@ def stripRecursive(env, line ):
                 # remove "comment keep string" and keep the comment
                 line = line.replace(keepCommentIfString, commentStartString)
             else:
-                newLine =  match.group(1) + match.group(match.lastindex)
+                newLine = match.group(1) + match.group(match.lastindex)
                 line = line.replace(line, newLine)
             return line
     else:
         return line
 
 
-
 def stripXmlComments(target, source, env):
     for i, tfile in enumerate(target):
         scanFile(env, source[i], tfile)
     return 0
+
 
 def stripXmlComments_emitter(target, source, env):
     output = []
@@ -71,26 +74,28 @@ def stripXmlComments_emitter(target, source, env):
     try:
         dnode = env.arg2nodes(target, env.fs.Dir)[0]
     except TypeError:
-        api.output.error_msg("Target `%s' is a file, but should be a directory.  Perhaps you have the arguments backwards?" % str(dir))
+        api.output.error_msg(
+            "Target `%s' is a file, but should be a directory.  Perhaps you have the arguments backwards?" % str(dir))
     for s in source:
         output.append(env.File(s.name, dnode))
 
     return (output, source)
 
 api.register.add_builder('__StripXMLComments__', SCons.Script.Builder(
-        action = SCons.Script.Action(stripXmlComments),
-        emitter = stripXmlComments_emitter,
-        target_factory = SCons.Node.FS.Entry
-        ))
+    action=SCons.Script.Action(stripXmlComments),
+    emitter=stripXmlComments_emitter,
+    target_factory=SCons.Node.FS.Entry
+))
 
 
-def StripXMLComments(env, target, source, sub_dir = '.', **kw):
+def StripXMLComments(env, target, source, sub_dir='.', **kw):
     if sub_dir is not '.':
         tmp_target = os.path.join(target, sub_dir)
     else:
         tmp_target = target
 
     return env.__StripXMLComments__(tmp_target, source, **kw)
+
 
 def StripXMLCommentsAs(env, target, source, **kw):
 
@@ -108,4 +113,3 @@ SConsEnvironment.StripXMLComments = StripXMLComments
 SConsEnvironment.StripXMLCommentsAs = StripXMLCommentsAs
 
 # vim: set et ts=4 sw=4 ai :
-

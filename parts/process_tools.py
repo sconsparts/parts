@@ -10,10 +10,12 @@ try:
 except ImportError:
     UserError = Exception
 
+
 class ProcessAction:
-    SUSPEND =   'suspend'
+    SUSPEND = 'suspend'
     TERMINATE = 'terminate'
-    RESUME =    'resume'
+    RESUME = 'resume'
+
 
 def _callWithCheck(message, *call_args, **call_kw):
     call_kw['stdout'] = subprocess.PIPE
@@ -33,9 +35,9 @@ if os.name == 'nt':
     # constants taken from MSDN
     TH32CS_SNAPPROCESS = 0x2    # snapshot all the processes on the system
     TH32CS_SNAPTHREAD = 0x4     # snapshot all the threads on the system
-    THREAD_SUSPEND_RESUME = 0x2 # suspend or resume a thread
+    THREAD_SUSPEND_RESUME = 0x2  # suspend or resume a thread
     PROCESS_TERMINATE = 0x1     # terminate a process
-    PROCESS_QUERY_INFORMATION = 0x400 # required to get process times
+    PROCESS_QUERY_INFORMATION = 0x400  # required to get process times
 
     MAX_PATH = 260
 
@@ -160,14 +162,15 @@ if os.name == 'nt':
         try:
             created, exited, kernel, user = FILETIME(), FILETIME(), FILETIME(), FILETIME()
             if not GetProcessTimes(handle, ctypes.byref(created), ctypes.byref(exited),
-                    ctypes.byref(kernel), ctypes.byref(user)):
+                                   ctypes.byref(kernel), ctypes.byref(user)):
                 return None
             return ctypes.cast(ctypes.pointer(created), LPLARGE_INTEGER).contents.value
         finally:
             CloseHandle(handle)
+
     def _listAllProcesses():
         for name, pid, ppid in _traverseWinStructures(TH32CS_SNAPPROCESS, ProcessEntry32,
-                                            Process32First, Process32Next):
+                                                      Process32First, Process32Next):
             # Windows does not set process parent id to 0 when the parent dies
             # we need to detect such sitation. We use the fact that parent
             # is always older then a child.
@@ -176,7 +179,7 @@ if os.name == 'nt':
                 # if we cannot read from the process we don't care about it
                 # because it is not in our sub-tree or it may be dead.
                 continue
-            parentCreated  = __getProcessCreationTime(ppid)
+            parentCreated = __getProcessCreationTime(ppid)
             if (parentCreated is None) or (parentCreated >= processCreated):
                 # Parent is not accessible -> pid is orphan
                 # Parent is younger than pid -> pid is orphan
@@ -215,10 +218,10 @@ if os.name == 'nt':
         finally:
             CloseHandle(procHandle)
 
-
     PROCESS_ACTIONS = {ProcessAction.SUSPEND: suspendProcess,
                        ProcessAction.TERMINATE: terminateProcess,
                        ProcessAction.RESUME: DebugActiveProcessStop}
+
     def _performAction(pid, action):
         try:
             PROCESS_ACTIONS[action](pid)
@@ -258,6 +261,7 @@ elif os.name == 'posix':
     ACTION_SIGNALS = {ProcessAction.SUSPEND: [signal.SIGSTOP],
                       ProcessAction.TERMINATE: [signal.SIGTERM, signal.SIGKILL],
                       ProcessAction.RESUME: [signal.SIGCONT]}
+
     def _performAction(pid, action):
         for sigNumber in ACTION_SIGNALS[action]:
             try:
@@ -271,6 +275,7 @@ elif os.name == 'posix':
 else:
     raise ImportError('Unsupported OS: %s' % os.name)
 
+
 def _getRunningProcesses():
     ''' returns a dict mapping parent pid to a list of children pids '''
     result = collections.defaultdict(list)
@@ -278,8 +283,10 @@ def _getRunningProcesses():
         result[ppid].append(pid)
     return result
 
+
 def killProcessTree(proc):
     killQueue = list()
+
     def fillQueue(pid):
         _performAction(pid, ProcessAction.SUSPEND)
         killQueue.append(pid)
@@ -290,6 +297,7 @@ def killProcessTree(proc):
     for pid in fillQueue(proc.pid):
         _performAction(pid, ProcessAction.TERMINATE)
         _performAction(pid, ProcessAction.RESUME)
+
 
 def waitForProcess(process, timeout=None):
     if timeout is None:
@@ -303,6 +311,7 @@ def waitForProcess(process, timeout=None):
 
 import unittest
 
+
 class TestKillProcessTree(unittest.TestCase):
     if os.name == 'nt':
         pause = 'pause'
@@ -314,18 +323,19 @@ class TestKillProcessTree(unittest.TestCase):
         pwd = 'pwd'
         null = '/dev/null'
         sep = ';'
+
     def test_nozombie(self):
         zombie = subprocess.Popen('{pause} > {null} 2>&1 {sep} {pwd} > {null} 2>&1'.format(
-                    pause = self.pause, pwd = self.pwd, null = self.null, sep = self.sep),
-                stdin = subprocess.PIPE,
-                shell = True)
+            pause=self.pause, pwd=self.pwd, null=self.null, sep=self.sep),
+            stdin=subprocess.PIPE,
+            shell=True)
         pid = zombie.pid
-        time.sleep(0.1) # Give zombie time to start
+        time.sleep(0.1)  # Give zombie time to start
         proclist1 = _getRunningProcesses()[os.getpid()]
         zombie.stdin.write('\n')
-        time.sleep(0.5) # Give zombie time to die
+        time.sleep(0.5)  # Give zombie time to die
         proclist2 = _getRunningProcesses()[os.getpid()]
-        zombie.wait() # Shoot it!
+        zombie.wait()  # Shoot it!
         self.assertTrue(pid in proclist1)
         self.assertFalse(pid in proclist2)
 

@@ -10,6 +10,5 @@ except:
 
     def NeedConfigBuilder():
         return len(SCons.SConf._ac_config_hs) != 0
-    
 
-    SCons.SConf.NeedConfigHBuilder=NeedConfigBuilder
+    SCons.SConf.NeedConfigHBuilder = NeedConfigBuilder

@@ -8,18 +8,19 @@ from .. import glb
 
 scons_build_targets = SCons.Script.Main._build_targets
 
+
 def _build_targets(fs, options, targets, target_top):
 
         # call engine
     if glb.engine.Process(fs, options, targets, target_top) == False:
-        ret= None
+        ret = None
     else:
         # if we have Parts that called the configure stuff
         if SCons.SConf.NeedConfigHBuilder():
             SCons.SConf.CreateConfigHBuilder(SCons.Defaults.DefaultEnvironment())
         # call Scons function if there is nothing wrong
         # with the engine/addin Process call
-        ret= scons_build_targets(fs, options, targets, target_top)
+        ret = scons_build_targets(fs, options, targets, target_top)
 
     return ret
 

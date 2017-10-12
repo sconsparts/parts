@@ -3,6 +3,7 @@
 import functools
 import atexit
 
+
 def overrideFunction(parent, functionName, returnOriginal=False):
     '''
     The decorator to ease overriding functions in a module or methods in a class.
@@ -40,10 +41,10 @@ def overrideFunction(parent, functionName, returnOriginal=False):
         return replacement
     return wrapper
 
+
 def onPythonExit(func):
     '''
     Execute the func at interpreter exit
     '''
     atexit.register(func)
     return func
-

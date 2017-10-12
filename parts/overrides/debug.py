@@ -6,6 +6,7 @@ import weakref
 import SCons.Debug
 import SCons.Script
 
+
 def wrap_logInstanceCreation(func):
     '''
     Setup SCons.Debug.logInstanceCreation function overriding.
@@ -59,8 +60,8 @@ def wrap_logInstanceCreation(func):
         the_set.update(wref(ref(), remover(the_set)) for ref in refs if ref() is not None)
 
     func.__globals__.update(
-        wref = wref,
-        remover = remover
+        wref=wref,
+        remover=remover
     )
 
     def logInstanceCreation(instance, name=None):
@@ -80,4 +81,3 @@ def wrap_logInstanceCreation(func):
 wrap_logInstanceCreation(SCons.Debug.logInstanceCreation)
 
 # vim: set et ts=4 sw=4 ai :
-

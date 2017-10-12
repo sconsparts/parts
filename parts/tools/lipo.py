@@ -33,21 +33,21 @@ import SCons.Builder
 import parts.tools.Common
 
 lipoObjectBuilder = SCons.Builder.Builder(
-        action = 'lipo $SOURCES -create -output $TARGET',
-        suffix = "$OBJSUFFIX",
-        src_suffix = "$OBJSUFFIX",
-        src_builder = "Object"
-        )
+    action='lipo $SOURCES -create -output $TARGET',
+    suffix="$OBJSUFFIX",
+    src_suffix="$OBJSUFFIX",
+    src_builder="Object"
+)
 lipoProgramBuilder = SCons.Builder.Builder(
-        action = 'lipo $SOURCES -create -output $TARGET',
-        src_builder = "Program"
-        )
+    action='lipo $SOURCES -create -output $TARGET',
+    src_builder="Program"
+)
 lipoDylibBuilder = SCons.Builder.Builder(
-        action = 'lipo $SOURCES -create -output $TARGET',
-        suffix = "$SHLIBSUFFIX",
-        src_suffix = "$SHLIBPREFIX",
-        src_builder = "SharedLibrary"
-        )
+    action='lipo $SOURCES -create -output $TARGET',
+    suffix="$SHLIBSUFFIX",
+    src_suffix="$SHLIBPREFIX",
+    src_builder="SharedLibrary"
+)
 
 
 def generate(env):
@@ -70,6 +70,7 @@ def generate(env):
     env['BUILDERS']['UniversalSharedLibrary'] = bld
 
     return
+
 
 def exists(env):
     return env.Detect('lipo')

@@ -11,8 +11,7 @@ cplusplus = __import__('c++', globals(), locals(), [])
 import parts.api.output as output
 
 
-
-## this are builders for making resources for mingw based builds on windows
+# this are builders for making resources for mingw based builds on windows
 res_action = SCons.Action.Action('$RCCOM', '$RCCOMSTR')
 
 res_builder = SCons.Builder.Builder(action=res_action, suffix='.o',
@@ -44,7 +43,7 @@ def generate(env):
     except KeyError:
         pass
 
-    env['CXX'] = parts.tools.Common.toolvar(env['GXX']['TOOL'],('g++','gxx','gnu'), env = env)
+    env['CXX'] = parts.tools.Common.toolvar(env['GXX']['TOOL'], ('g++', 'gxx', 'gnu'), env=env)
 
     # platform specific settings
     # don't mess with these
@@ -56,18 +55,18 @@ def generate(env):
         env['SHOBJSUFFIX'] = '.pic.o'
         env['OBJSUFFIX'] = '.o'
 
-    if env['TARGET_PLATFORM']=='android':
+    if env['TARGET_PLATFORM'] == 'android':
         env.SetDefault(ANDROID_API=GetLatestNDKAPI(env['GXX'].INSTALL_ROOT))
         env.SetDefault(ANDROID_STL='gnustl_shared')
-    elif  env['TARGET_PLATFORM']=='win32':
+    elif env['TARGET_PLATFORM'] == 'win32':
         # set some value for the mingw build
         # note on this side we have export libs
 
-        ## resource builder
-        env['WIN32DEFPREFIX']        = ''
-        env['WIN32DEFSUFFIX']        = '.def'
-        env['WINDOWSDEFPREFIX']      = '${WIN32DEFPREFIX}'
-        env['WINDOWSDEFSUFFIX']      = '${WIN32DEFSUFFIX}'
+        # resource builder
+        env['WIN32DEFPREFIX'] = ''
+        env['WIN32DEFSUFFIX'] = '.def'
+        env['WINDOWSDEFPREFIX'] = '${WIN32DEFPREFIX}'
+        env['WINDOWSDEFSUFFIX'] = '${WIN32DEFSUFFIX}'
 
         env['SHOBJSUFFIX'] = '.o'
         env['STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME'] = 1
@@ -80,10 +79,8 @@ def generate(env):
         env['RCCOM'] = '$RC $_CPPDEFFLAGS $RCINCFLAGS ${RCINCPREFIX} ${SOURCE.dir} $RCFLAGS -i $SOURCE -o $TARGET'
         env['BUILDERS']['RES'] = mingw.res_builder
 
-
-
-    #Backward compatiblity
-    env['CXXVERSION']=env['GXX']['VERSION']
+    # Backward compatiblity
+    env['CXXVERSION'] = env['GXX']['VERSION']
 
     env.Append(**env['GXX'].get('APPENDS', {}))
 

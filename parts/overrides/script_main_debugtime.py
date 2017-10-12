@@ -13,9 +13,11 @@ import SCons.Script
 import SCons.Script.Main as Main
 import SCons.Debug
 
+
 def wrapFunction(targetObj, targetAttrName):
     def wrapped(func):
         original = getattr(targetObj, targetAttrName)
+
         def wrapper(*args, **kw):
             return func(original, *args, **kw)
         setattr(targetObj, targetAttrName, wrapper)
@@ -24,6 +26,7 @@ def wrapFunction(targetObj, targetAttrName):
 
 SCONS_EXITED_NORMALLY = False
 pre_parts_cache_storing = None
+
 
 def printTimingStatistics():
     if not (SCONS_EXITED_NORMALLY or not Main.print_time):
@@ -46,6 +49,7 @@ def printTimingStatistics():
         print "Total SConscript file execution time: %f seconds" % Main.sconscript_time
         print "Total SCons execution time: %f seconds" % scons_time
         print "Total command execution time: %f seconds" % ct
+
 
 @wrapFunction(SCons.Debug, 'dump_caller_counts')
 def patched_dump_caller_counts(original, *args, **kw):

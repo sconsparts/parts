@@ -1,13 +1,13 @@
 import sys
 
-Test.Summary=='''
+Test.Summary == '''
 This test checks that the RPM builder adds files to RPM package from SConstruct.
 without extension .rpm in packaging parts
 '''
 
 Test.SkipUnless(
     Condition.HasProgram(
-        program= 'rpmbuild',
+        program='rpmbuild',
         msg='Need to have rpmbuild tool on system to build the package',
     )
 )

@@ -1,6 +1,6 @@
 import os
 
-Test.Summary='''
+Test.Summary = '''
 This test checks that extract is OK from repository created on the fly
 '''
 
@@ -15,7 +15,7 @@ Test.SkipUnless(
 # Setup
 Test.Setup.Copy.FromDirectory('checkout1')
 Test.Setup.Svn.CreateRepository('repo_checkout1')
-Test.Setup.Svn.ImportDirectory('repo_checkout1','checkout1/repo')
+Test.Setup.Svn.ImportDirectory('repo_checkout1', 'checkout1/repo')
 
 
 # Configuration of test run(s)

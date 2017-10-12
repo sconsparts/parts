@@ -43,6 +43,7 @@ import parts.api.output as output
 from parts.tools.MSCommon import msvc
 import parts.tools.Common
 
+
 def generate(env):
     """Add Builders and construction variables for lib to an Environment."""
     SCons.Tool.createStaticLibBuilder(env)
@@ -50,15 +51,16 @@ def generate(env):
     # Set-up ms tools paths for default version
     msvc.MergeShellEnv(env)
 
-    env['AR']          = parts.tools.Common.toolvar('lib', ('lib',), env = env)
-    env['ARFLAGS']     = SCons.Util.CLVar('/nologo')
-    env['ARCOM']       = "${TEMPFILE('$AR $ARFLAGS /OUT:$TARGET $SOURCES')}"
-    env['LIBPREFIX']   = ''
-    env['LIBSUFFIX']   = '.lib'
+    env['AR'] = parts.tools.Common.toolvar('lib', ('lib',), env=env)
+    env['ARFLAGS'] = SCons.Util.CLVar('/nologo')
+    env['ARCOM'] = "${TEMPFILE('$AR $ARFLAGS /OUT:$TARGET $SOURCES')}"
+    env['LIBPREFIX'] = ''
+    env['LIBSUFFIX'] = '.lib'
     #api.output.print_msg("Configured Tool %s\t for version <%s> target <%s>"%('mslib',env['MSVC']['VERSION'],env['TARGET_PLATFORM']))
 
+
 def exists(env):
-    return msvc.Exists(env,'lib')
+    return msvc.Exists(env, 'lib')
 
 # Local Variables:
 # tab-width:4

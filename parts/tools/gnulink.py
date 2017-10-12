@@ -24,6 +24,7 @@ import parts.api.output
 import parts.tools.GnuCommon
 import parts.tools.Common
 
+
 def _pdbEmitter(target, source, env):
     """
     Emitter to generate pdb File node.
@@ -38,7 +39,7 @@ def _pdbEmitter(target, source, env):
     environment variable.
     """
     # The following three lines are copy/pasted from SCons/Tool/mslink.py
-    if env.has_key('PDB') and env['PDB'] and not env.get('IGNORE_PDB',False):
+    if env.has_key('PDB') and env['PDB'] and not env.get('IGNORE_PDB', False):
         pdb = env.arg2nodes('$PDB', target=target, source=source)[0]
         target[0].attributes.pdb = pdb
 
@@ -48,6 +49,7 @@ def _pdbEmitter(target, source, env):
         pdb.attributes.FilterAs = target[0]
         target.append(pdb)
     return target, source
+
 
 def _pdbResolveString(targets, template):
     """
@@ -64,6 +66,7 @@ def _pdbResolveString(targets, template):
             return template
     except (AttributeError, IndexError):
         return ""
+
 
 def _stripResolveString(env, target, template):
     """
@@ -90,6 +93,7 @@ def _stripResolveString(env, target, template):
         pass
     return ""
 
+
 def _setUpPdbActions(env):
     """
     The function modifies the environment by adding PDB/stripping specific actions.
@@ -97,14 +101,13 @@ def _setUpPdbActions(env):
     if not env.Detect('$OBJCOPY'):
         # If there are no objcopy utility on the system we cannot create pdbs.
         parts.api.output.warning_msg(
-            "objcopy tool is not found on your system. " \
+            "objcopy tool is not found on your system. "
             "Separate debug files will not be created"
         )
         return env
 
     env['_pdbResolveString'] = _pdbResolveString
     env['_stripResolveString'] = _stripResolveString
-
 
     env['_pdbAction'] = "$OBJCOPY --only-keep-debug $PDBFLAGS ${TARGET} ${TARGET.attributes.pdb}"
     env['_pdbActionString'] = 'Creating PDB for ${TARGET}'
@@ -115,10 +118,10 @@ def _setUpPdbActions(env):
         else:
             env['_pdbChmodAction'] = ""
             if env['TARGET_PLATFORM'] != 'win32':
-             parts.api.output.warning_msg(
-                "chmod tool is not found on your system. " \
-                "Separate debug files created may have wrong permission bits"
-            )
+                parts.api.output.warning_msg(
+                    "chmod tool is not found on your system. "
+                    "Separate debug files created may have wrong permission bits"
+                )
     env['_pdbChmodActionString'] = 'Changing ${TARGET.attributes.pdb} flags to $CHMODVALUE'
 
     env['_pdbStripAction'] = "$OBJCOPY --strip-unneeded ${TARGET}"
@@ -129,20 +132,20 @@ def _setUpPdbActions(env):
 
     env['PDB_CREATE_ACTION'] = SCons.Action.CommandAction(
         '${_pdbResolveString(TARGETS, _pdbAction)}',
-        cmdstr = '${_pdbResolveString(TARGETS, _pdbActionString)}'
-        )
+        cmdstr='${_pdbResolveString(TARGETS, _pdbActionString)}'
+    )
     env['PDB_CHMOD_ACTION'] = SCons.Action.CommandAction(
         '${_pdbResolveString(TARGETS, _pdbChmodAction)}',
-        cmdstr = '${_pdbResolveString(TARGETS, _pdbChmodActionString)}'
-        )
+        cmdstr='${_pdbResolveString(TARGETS, _pdbChmodActionString)}'
+    )
     env['STRIP_ACTION'] = SCons.Action.CommandAction(
         '${_stripResolveString(__env__, TARGETS, _pdbStripAction)}',
-        cmdstr = '${_stripResolveString(__env__, TARGETS, _pdbStripActionString)}'
-        )
+        cmdstr='${_stripResolveString(__env__, TARGETS, _pdbStripActionString)}'
+    )
     env['PDB_GNU_DEBUGLINK_ACTION'] = SCons.Action.CommandAction(
         '${_pdbResolveString(TARGETS, _pdbGnuDebugLinkAction)}',
-        cmdstr = '${_pdbResolveString(TARGETS, _pdbGnuDebugLinkActionString)}'
-        )
+        cmdstr='${_pdbResolveString(TARGETS, _pdbGnuDebugLinkActionString)}'
+    )
 
     # Actions to be appended to Program and SharedLibrary builders
     env['PDB_ACTION'] = SCons.Action.ListAction([
@@ -154,13 +157,12 @@ def _setUpPdbActions(env):
 
     env['PDB_EMITTER'] = _pdbEmitter
 
-    env.Append(LINKCOM = ['$PDB_ACTION'])
-    env.Append(PROGEMITTER = [_pdbEmitter])
-    env.Append(SHLINKCOM = ['$PDB_ACTION'])
-    env.Append(SHLIBEMITTER = [_pdbEmitter])
+    env.Append(LINKCOM=['$PDB_ACTION'])
+    env.Append(PROGEMITTER=[_pdbEmitter])
+    env.Append(SHLINKCOM=['$PDB_ACTION'])
+    env.Append(SHLIBEMITTER=[_pdbEmitter])
 
     return env
-
 
 
 def generate(env):
@@ -171,18 +173,19 @@ def generate(env):
     actions to the environment
     """
 
-    env['LIBPREFIX']      = 'lib'
-    env['LIBSUFFIX']      = '.a'
-    env['SHLIBPREFIX']    = 'lib'
-    env['SHLIBSUFFIX']    = '.so'
-    env['CHMODVALUE']     = '644'
+    env['LIBPREFIX'] = 'lib'
+    env['LIBSUFFIX'] = '.a'
+    env['SHLIBPREFIX'] = 'lib'
+    env['SHLIBSUFFIX'] = '.so'
+    env['CHMODVALUE'] = '644'
 
     # this is a hard set.. normally handled by scons platform logic
     # but for win32 hosts it gets the values wrong ( it assumes .a only)
-    env['LIBSUFFIXES']    = [ '$LIBSUFFIX', '$SHLIBSUFFIX' ]
+    env['LIBSUFFIXES'] = ['$LIBSUFFIX', '$SHLIBSUFFIX']
 
     parts.tools.GnuCommon.binutils.setup(env)
-    env['OBJCOPY'] = parts.tools.Common.toolvar(env.get('BINUTILS', {}).get('OBJCOPY', env.get('OBJCOPY', 'objcopy')), ('objcopy',), env = env)
+    env['OBJCOPY'] = parts.tools.Common.toolvar(env.get('BINUTILS', {}).get(
+        'OBJCOPY', env.get('OBJCOPY', 'objcopy')), ('objcopy',), env=env)
     SCons.Tool.gnulink.generate(env)
 
     # Sometimes we have to use specific tools and command lines.
@@ -197,14 +200,15 @@ def generate(env):
     except KeyError:
         pass
 
-    if env['TARGET_OS']=='win32':
+    if env['TARGET_OS'] == 'win32':
         # this is a mingw based build.
-        env['SHLINKCOM']   = SCons.Tool.mingw.shlib_action
+        env['SHLINKCOM'] = SCons.Tool.mingw.shlib_action
         env['LDMODULECOM'] = SCons.Tool.mingw.shlib_action
-        env.Append(SHLIBEMITTER = [SCons.Tool.mingw.shlib_emitter])
-        env['SHLIBSUFFIX']    = '.dll'
+        env.Append(SHLIBEMITTER=[SCons.Tool.mingw.shlib_emitter])
+        env['SHLIBSUFFIX'] = '.dll'
 
     _setUpPdbActions(env)
+
 
 def exists(env):
     """
@@ -216,4 +220,3 @@ def exists(env):
     return SCons.Tool.gnulink.exists(env)
 
 # vim: set et ts=4 sw=4 ai ft=python :
-

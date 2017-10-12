@@ -21,30 +21,32 @@ except:
         '''
         this deal with issue with the program scanner for stuff that has .a/.lib./dylib/.so files
         '''
-        def _scan(node, env, libpath = ()):
+        def _scan(node, env, libpath=()):
             pass
         _scan.__code__ = func.__code__
-        _scan.__globals__.update(print_find_libs = SCons.Scanner.Prog.print_find_libs)
+        _scan.__globals__.update(print_find_libs=SCons.Scanner.Prog.print_find_libs)
         #_scan.__globals__.update(_subst_libs = SCons.Scanner.Prog._subst_libs)
-        def scan(node, env, libpath = ()):
+
+        def scan(node, env, libpath=()):
             global _scan
             prop_lst = env.get('LIBS', []) + env.get('LIBEXS', [])
             if prop_lst:
-                mappers.sub_lst(env, prop_lst, thread.get_ident(), recurse = False)
+                mappers.sub_lst(env, prop_lst, thread.get_ident(), recurse=False)
             return _scan(node, env.Override(dict(LIBS=prop_lst)), libpath)
         func.__code__ = scan.__code__
         func.__globals__.update(
-                _scan = _scan,
-                mappers = mappers,
-                thread = thread,
-                )
+            _scan=_scan,
+            mappers=mappers,
+            thread=thread,
+        )
 else:
     def wrap_Prog_scan(func):
-        def _scan(node, env, libpath = ()):
+        def _scan(node, env, libpath=()):
             pass
         _scan.__code__ = func.__code__
         _scan.__globals__.update(**func.__globals__)
-        def scan(node, env, libpath = ()):
+
+        def scan(node, env, libpath=()):
             global _scan
             if not 'LIBS' in env and not 'LIBEXS' in env:
                 return []
@@ -53,27 +55,27 @@ else:
         func.__globals__.update(_scan=_scan)
 wrap_Prog_scan(SCons.Scanner.Prog.scan)
 
+
 def wrap_FindPathDirs(klass):
-    def _call(self, env, dir, target = None, source = None, argument = None):
+    def _call(self, env, dir, target=None, source=None, argument=None):
         pass
 
     func = klass.__call__.__func__
     _call.__code__ = func.__code__
 
-    def call(self, env, dir, target = None, source = None, argument = None):
+    def call(self, env, dir, target=None, source=None, argument=None):
         global _call
         prop_lst = env.get(self.variable)
         if prop_lst:
-            mappers.sub_lst(env, prop_lst, thread.get_ident(), recurse = False)
+            mappers.sub_lst(env, prop_lst, thread.get_ident(), recurse=False)
         return _call(self, env, dir, target, source, argument)
 
     func.__code__ = call.__code__
     func.__globals__.update(
-             _call = _call,
-             mappers = mappers,
-             thread = thread,
-             )
+        _call=_call,
+        mappers=mappers,
+        thread=thread,
+    )
 wrap_FindPathDirs(SCons.Scanner.FindPathDirs)
 
 # vim: set et ts=4 sw=4 ai :
-

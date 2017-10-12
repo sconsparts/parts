@@ -1,13 +1,13 @@
 import sys
 
-Test.Summary='''
+Test.Summary = '''
 This test checks that ZipPackage does not add files if package name is None or empty string
 '''
 Setup.Copy.FromDirectory('zip_package3')
 
-t=Test.AddBuildRun('all', '.')
+t = Test.AddBuildRun('all', '.')
 
-extension = '.exe' if sys.platform=='win32' else ''
+extension = '.exe' if sys.platform == 'win32' else ''
 contains = ['bin/test1' + extension]
 notContains = ['bin/test2' + extension, 'bin/test3' + extension, 'bin/test4' + extension]
 

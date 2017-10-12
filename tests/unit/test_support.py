@@ -4,11 +4,12 @@ import traceback
 import sys
 import unittest
 
+
 def find_tests():
     addCleanupSupport()
     found, errors = [], []
     for root, dirs, files in os.walk('.'):
-        #print 'Searching for tests in:', root
+        # print 'Searching for tests in:', root
         if '.svn' in dirs:
             dirs.remove('.svn')
         for f in files:
@@ -26,6 +27,7 @@ def find_tests():
                     print >> sys.stderr, "Stack Dump - End %s" % ('-' * 40)
     return found, errors
 
+
 def my_load(path, name):
     fp, pathname, description = imp.find_module(name, [path])
     try:
@@ -34,6 +36,7 @@ def my_load(path, name):
         # Since we may exit via an exception, close fp explicitly.
         if fp:
             fp.close()
+
 
 def addCleanupSupport():
     if sys.version_info[:2] >= (2, 7):
@@ -45,6 +48,7 @@ def addCleanupSupport():
 
     # injecting this function to store _resultForDoCleanups in self
     oldInit = unittest.TestCase.__init__
+
     def patchedInit(self, methodName='runTest'):
         oldInit(self, methodName)
         self._resultForDoCleanups = None
@@ -112,6 +116,7 @@ def addCleanupSupport():
     unittest.TestCase.doCleanups = doCleanups
 
     _MAX_LENGTH = 80
+
     def safe_repr(obj, short=False):
         try:
             result = repr(obj)
@@ -120,7 +125,7 @@ def addCleanupSupport():
         if not short or len(result) < _MAX_LENGTH:
             return result
         return result[:_MAX_LENGTH] + ' [truncated]...'
-            
+
     def assertIsInstance(self, obj, cls, msg=None):
         if not isinstance(obj, cls):
             standardMsg = '%s is not an instance of %r' % (safe_repr(obj), cls)

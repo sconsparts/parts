@@ -5,15 +5,14 @@ import sys
 #sys.path = ['../']+sys.path
 ##############
 
-win32=sys.platform == 'win32'
+win32 = sys.platform == 'win32'
 import unittest
 from parts.tools.Common.Finders import *
 
 
+# tests for Finder objects
 
-#### tests for Finder objects
-
-## Path
+# Path
 
 class TestPathFinder(unittest.TestCase):
 
@@ -21,65 +20,64 @@ class TestPathFinder(unittest.TestCase):
         pass
 
     def test_find(self):
-        p=PathFinder([
-                '../../fakepath',
-                '../../samples'
-            ])
-        self.assertEqual(p(),'../../samples')
-        
+        p = PathFinder([
+            '../../fakepath',
+            '../../samples'
+        ])
+        self.assertEqual(p(), '../../samples')
 
     def test_no_find(self):
-        p=PathFinder([
-                '../../fakepath',
-                '../fakepath4'
-            ])
-        self.assertEqual(p(),None)
+        p = PathFinder([
+            '../../fakepath',
+            '../fakepath4'
+        ])
+        self.assertEqual(p(), None)
 
 
-## Enviroment
+# Enviroment
 
 
 class TestEnvFinder(unittest.TestCase):
 
     def setUp(self):
-        os.environ['PARTS_TEST_VALUE']='/fakepath/subpath/a/b/c/'
+        os.environ['PARTS_TEST_VALUE'] = '/fakepath/subpath/a/b/c/'
 
     def tearDown(self):
         del os.environ['PARTS_TEST_VALUE']
 
     def test_find(self):
-        p=EnvFinder([
-                'fakepath',
-                'PARTS_TEST_VALUE'
-            ])
+        p = EnvFinder([
+            'fakepath',
+            'PARTS_TEST_VALUE'
+        ])
 
-        self.assertEqual(p(),'/fakepath/subpath/a/b/c/')
+        self.assertEqual(p(), '/fakepath/subpath/a/b/c/')
 
     def test_no_find(self):
-        p=EnvFinder([
-                '../fakepath',
-                '../fakepath4'
-            ])
+        p = EnvFinder([
+            '../fakepath',
+            '../fakepath4'
+        ])
 
         self.assertEqual(p(), None)
 
     def test_find_relpath(self):
-        p=EnvFinder([
-                'fakepath',
-                'PARTS_TEST_VALUE'
-            ],
+        p = EnvFinder([
+            'fakepath',
+            'PARTS_TEST_VALUE'
+        ],
             '../../../'
-            )
-        self.assertEqual(p(),os.path.normpath('/fakepath/subpath'))
+        )
+        self.assertEqual(p(), os.path.normpath('/fakepath/subpath'))
 
     def test_no_find_relpath(self):
-        p=EnvFinder([
-                'fakepath',
-                'fakepath4'
-            ],
+        p = EnvFinder([
+            'fakepath',
+            'fakepath4'
+        ],
             '../../../'
-            )
-        self.assertEqual(p(),None)
+        )
+        self.assertEqual(p(), None)
 
 # registry .. window only test
 if win32:
@@ -89,59 +87,57 @@ if win32:
             pass
 
         def test_find(self):
-            p=RegFinder([
-                    'Software\\fakepath',
-                    'Software\\Microsoft\\Windows\\CurrentVersion\\ProgramFilesDir'
-                ])
-            r=p()
+            p = RegFinder([
+                'Software\\fakepath',
+                'Software\\Microsoft\\Windows\\CurrentVersion\\ProgramFilesDir'
+            ])
+            r = p()
             self.assertTrue(r == 'C:\\Program Files (x86)' or r == 'C:\\Program Files')
 
         def test_no_find(self):
-            p=RegFinder([
-                    'Software\\fakepath',
-                    'Software\\fakepath4'
-                ])
+            p = RegFinder([
+                'Software\\fakepath',
+                'Software\\fakepath4'
+            ])
 
-            self.assertEqual(p(),None)
+            self.assertEqual(p(), None)
 
         def test_find_relpath(self):
-            p=RegFinder([
-                    'Software\\fakepath',
-                    'Software\\Microsoft\\Windows\\CurrentVersion\\ProgramFilesDir'
-                ],
+            p = RegFinder([
+                'Software\\fakepath',
+                'Software\\Microsoft\\Windows\\CurrentVersion\\ProgramFilesDir'
+            ],
                 '../'
-                )
+            )
 
-            self.assertEqual(p(),'C:\\')
+            self.assertEqual(p(), 'C:\\')
 
         def test_no_find_relpath(self):
-            p=RegFinder([
-                    'Software\\fakepath',
-                    'Software\\fakepath4',
-                ],
+            p = RegFinder([
+                'Software\\fakepath',
+                'Software\\fakepath4',
+            ],
                 '../'
-                )
-            self.assertEqual(p(),None)
+            )
+            self.assertEqual(p(), None)
 else:
-     class TestRegFinder(unittest.TestCase):
+    class TestRegFinder(unittest.TestCase):
+
         def setUp(self):
             pass
-    
 
-#### tests for ScriptFincder object
+
+# tests for ScriptFincder object
 
 class TestScriptFinder(unittest.TestCase):
 
     def setUp(self):
-        self.env=SCons.Script.Environment(INSTALL_ROOT='./testdata/',tools=[])
+        self.env = SCons.Script.Environment(INSTALL_ROOT='./testdata/', tools=[])
 
     def test_exists(self):
-        p=ScriptFinder('${INSTALL_ROOT}testvars.cmd')
-        self.assertEqual( p(self.env), os.path.normpath('./testdata/testvars.cmd'))
+        p = ScriptFinder('${INSTALL_ROOT}testvars.cmd')
+        self.assertEqual(p(self.env), os.path.normpath('./testdata/testvars.cmd'))
 
     def test_no_exists(self):
-        p=ScriptFinder('${INSTALL_ROOT}fakevars.cmd')
-        self.assertEqual( p(self.env), None)
-
-
-
+        p = ScriptFinder('${INSTALL_ROOT}fakevars.cmd')
+        self.assertEqual(p(self.env), None)

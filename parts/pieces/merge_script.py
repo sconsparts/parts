@@ -5,6 +5,7 @@ import copy
 import re
 import sys
 
+
 def normalize_env(shellenv=None, keys=None):
     """Given a dictionary representing a shell environment, add the variables
     from os.environ needed for the processing of .bat files; the keys are
@@ -17,7 +18,7 @@ def normalize_env(shellenv=None, keys=None):
     # copy the shell env
     if shellenv:
         normenv.update(shellenv)
-    
+
     # copy over any key from shell environment
     if keys:
         for k in keys:
@@ -26,14 +27,14 @@ def normalize_env(shellenv=None, keys=None):
 
     # on windows we need to convert unicode text to mbcs
     # because of odd bug with subprocess
-    if sys.platform=='win32':
+    if sys.platform == 'win32':
         for k in normenv.keys():
             normenv[k] = copy.deepcopy(normenv[k]).encode('mbcs')
 
     return normenv
 
 
-def get_output(script, args = None, shellenv = None):
+def get_output(script, args=None, shellenv=None):
     """Parse the output of given bat file, with given args."""
     if sys.platform == 'win32':
         cmdLine = '"%s" %s & set' % (script, (args if args else ''))
@@ -58,56 +59,54 @@ def get_output(script, args = None, shellenv = None):
     return output
 
 
+def parse_output(output, keep=None):
 
-def parse_output(output, keep = None):
+    ret = {}  # this is the data we will return
 
-    ret={} #this is the data we will return
-
-    ## parse everything
-    reg=re.compile('(\\w*)=(.*)', re.I)
+    # parse everything
+    reg = re.compile('(\\w*)=(.*)', re.I)
     for line in output.splitlines():
-        m=reg.match(line)
+        m = reg.match(line)
         if m:
             if keep is not None:
-                #see if we need to filter out data
-                k=m.group(1)
+                # see if we need to filter out data
+                k = m.group(1)
                 if k in keep:
-                    ret[k]=m.group(2)#.split(os.pathsep)
+                    ret[k] = m.group(2)  # .split(os.pathsep)
             else:
                 # take everything
-                ret[m.group(1)]=m.group(2)#.split(os.pathsep)
+                ret[m.group(1)] = m.group(2)  # .split(os.pathsep)
 
-    #see if we need to filter out data
+    # see if we need to filter out data
     if keep is not None:
         pass
 
     return ret
 
 
-def get_script_env(env,script,args=None,vars=None):
+def get_script_env(env, script, args=None, vars=None):
     '''
     this function returns a dictionary of all the data we want to merge
     or process in some other way.
     '''
-    if env['PLATFORM']=='win32':
+    if env['PLATFORM'] == 'win32':
         nenv = normalize_env(env['ENV'], ['COMSPEC'])
     else:
         nenv = normalize_env(env['ENV'], [])
-    output = get_output(script,args,nenv)
+    output = get_output(script, args, nenv)
     vars = parse_output(output, vars)
 
     return vars
 
 
-
-def merge_script_vars(env,script,args=None,vars=None):
+def merge_script_vars(env, script, args=None, vars=None):
     '''
     This merges the data retieved from the script in to the Enviroment
     by prepending it.
     script is the name of the script, args is optional arguments to pass
     vars are var we want to retrieve, if None it will retieve everything found
     '''
-    shell_env=get_script_env(env,script,args,vars)
+    shell_env = get_script_env(env, script, args, vars)
     for k, v in shell_env.iteritems():
         env.PrependENVPath(k, v, delete_existing=1)
 
@@ -115,5 +114,5 @@ def merge_script_vars(env,script,args=None,vars=None):
 from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
-SConsEnvironment.MergeScriptVariables=merge_script_vars
-SConsEnvironment.GetScriptVariables=get_script_env
+SConsEnvironment.MergeScriptVariables = merge_script_vars
+SConsEnvironment.GetScriptVariables = get_script_env

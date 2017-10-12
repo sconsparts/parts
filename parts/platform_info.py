@@ -21,6 +21,7 @@ import core.util
 
 from SCons.Debug import logInstanceCreation
 
+
 def UpdatePlatformRegEx():
 
     arch_str = ''
@@ -37,21 +38,22 @@ def UpdatePlatformRegEx():
         else:
             os_str = os_str + '|' + os
 
-    glb.valid_platform_re = re.compile('(?P<os>' + os_str + ')?(?P<sep1>-)?(?P<arch>' + arch_str + ')?$',re.IGNORECASE)
+    glb.valid_platform_re = re.compile('(?P<os>' + os_str + ')?(?P<sep1>-)?(?P<arch>' + arch_str + ')?$', re.IGNORECASE)
 
 
 def UpdateValidArchList():
-    for k,v in glb.arch_map.iteritems():
+    for k, v in glb.arch_map.iteritems():
         if k not in glb.valid_arch:
             glb.valid_arch.append(k)
-    glb.valid_arch.sort(lambda a,b: cmp(len(b),len(a)))
+    glb.valid_arch.sort(lambda a, b: cmp(len(b), len(a)))
     UpdatePlatformRegEx()
 
+
 def UpdateValidOSList():
-    for k,v in glb.os_map.iteritems():
+    for k, v in glb.os_map.iteritems():
         if k not in glb.valid_os:
             glb.valid_os.append(k)
-    glb.valid_os.sort(lambda a,b: cmp(len(b),len(a)))
+    glb.valid_os.sort(lambda a, b: cmp(len(b), len(a)))
     UpdatePlatformRegEx()
 
 if glb.valid_arch is None or glb.valid_os is None:
@@ -59,6 +61,7 @@ if glb.valid_arch is None or glb.valid_os is None:
     glb.valid_os = []
     UpdateValidArchList()
     UpdateValidOSList()
+
 
 def MapArchitecture(val):
     '''
@@ -72,7 +75,8 @@ def MapArchitecture(val):
 
         # to add other system here
     '''
-    return glb.arch_map.get(val,None)
+    return glb.arch_map.get(val, None)
+
 
 def MapOS(val):
     '''
@@ -87,7 +91,7 @@ def MapOS(val):
 
         # to add other system here
     '''
-    return glb.os_map.get(val,None)
+    return glb.os_map.get(val, None)
 
 
 def ValidatePlatform(platform_str):
@@ -98,14 +102,15 @@ def ValidatePlatform(platform_str):
             return False
         else:
             if dict.get('sep1') == '-':
-                tmp = MapOS(dict.get('os')),MapArchitecture(dict.get('arch'))
+                tmp = MapOS(dict.get('os')), MapArchitecture(dict.get('arch'))
             elif dict.get('arch'):
-                tmp = None,MapArchitecture(dict.get('arch'))
+                tmp = None, MapArchitecture(dict.get('arch'))
             elif dict.get('os'):
-                tmp = MapOS(dict.get('os')),None
+                tmp = MapOS(dict.get('os')), None
             return tmp
     else:
         return False
+
 
 def OSBit():
     '''
@@ -131,11 +136,11 @@ def OSBit():
             ret = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE, value)
         except:
             pass
-        if ret is None and os.environ.get('PROCESSOR_ARCHITEW6432',None) is None:
+        if ret is None and os.environ.get('PROCESSOR_ARCHITEW6432', None) is None:
             return 32
         else:
             return 64
-    #assume is is correct.  ## test later the getconf LONG_BIT command
+    # assume is is correct.  ## test later the getconf LONG_BIT command
     val = platform.architecture()[0]
     if val[-3:] == 'bit':
         val = val[:-3]
@@ -153,16 +158,16 @@ def ChipArchitecture():
         than know if it is an P3 or P4
 
     '''
-    #if win32
+    # if win32
     import sys
     if sys.platform == 'win32':
         import os
-        val = os.environ.get('PROCESSOR_ARCHITEW6432','')
+        val = os.environ.get('PROCESSOR_ARCHITEW6432', '')
         if val == '':
             val = os.environ['PROCESSOR_ARCHITECTURE']
         return MapArchitecture(val)
     elif sys.platform.startswith("sunos") and platform.machine() == 'i86pc':
-        pipe = subprocess.Popen(['isainfo','-k'],stdout = subprocess.PIPE)
+        pipe = subprocess.Popen(['isainfo', '-k'], stdout=subprocess.PIPE)
         pipe.wait()
         if pipe.stdout.readline().startswith('i386'):
             return MapArchitecture('i386')
@@ -173,14 +178,16 @@ def ChipArchitecture():
         # binaries
         is_64bits = sys.maxsize > 2 ** 32
         return MapArchitecture('x86_64' if is_64bits else 'i386')
-    #else we just assume the python code will work at this time
+    # else we just assume the python code will work at this time
     else:
         return MapArchitecture(platform.machine())
 
 
 class SystemPlatform(common.bindable):
-    def __init__(self,os=None,arch=ChipArchitecture()):
-        if __debug__: logInstanceCreation(self)
+
+    def __init__(self, os=None, arch=ChipArchitecture()):
+        if __debug__:
+            logInstanceCreation(self)
         if not os:
             if 'freebsd' in sys.platform.lower():
                 os = 'freebsd'
@@ -192,8 +199,8 @@ class SystemPlatform(common.bindable):
         else:
             platform_str = os + '-' + arch
         lst = ValidatePlatform(str(platform_str))
-        #if not lst:
-            #lst = ValidatePlatform(os)
+        # if not lst:
+        #lst = ValidatePlatform(os)
         if not lst:
             api.output.error_msg(" " + platform_str + " is not a valid target_system value\n")
 
@@ -203,13 +210,14 @@ class SystemPlatform(common.bindable):
             arch = lst[1]
         self.key = "_parts_"
         self._env = {
-                self.key + "_OS":os,
-                self.key + "_ARCH":arch
-            }
+            self.key + "_OS": os,
+            self.key + "_ARCH": arch
+        }
 
     @property
     def OS(self):
         return self._env[self.key + "_OS"]
+
     @OS.setter
     def OS(self, x):
         self._env[self.key + "_OS"] = x
@@ -217,48 +225,50 @@ class SystemPlatform(common.bindable):
     @property
     def ARCH(self):
         return self._env[self.key + "_ARCH"]
+
     @ARCH.setter
     def ARCH(self, x):
         self._env[self.key + "_ARCH"] = x
 
-
-    def _bind(self,env,key):
+    def _bind(self, env, key):
         # this is a bit of a hack to forward stuff in SCons as it should be in
         # 1.3
         if key == "TARGET_PLATFORM" or key == "HOST_PLATFORM":
-            tkey = key.rsplit("_PLATFORM",1)[0]
-            
-            env[tkey + "_ARCH"] = self.ARCH if self.ARCH != 'any' and self.ARCH else env[tkey + "_ARCH"] if env.has_key(tkey + "_ARCH") else ChipArchitecture() # getArch
-            env[tkey + "_OS"] = self.OS if self.OS != 'any' and self.OS else env[tkey + "_OS"] if env.has_key(tkey + "_OS") else SCons.Platform.platform_default()# getPlatform
+            tkey = key.rsplit("_PLATFORM", 1)[0]
+
+            env[tkey + "_ARCH"] = self.ARCH if self.ARCH != 'any' and self.ARCH else env[tkey +
+                                                                                         "_ARCH"] if env.has_key(tkey + "_ARCH") else ChipArchitecture()  # getArch
+            env[tkey + "_OS"] = self.OS if self.OS != 'any' and self.OS else env[tkey +
+                                                                                 "_OS"] if env.has_key(tkey + "_OS") else SCons.Platform.platform_default()  # getPlatform
 
             self.key = tkey
             self._env = env
 
-    def _rebind(self,env,key):
-        
+    def _rebind(self, env, key):
+
         # only want to do this for Target as host in "inmutable"
         # this allows us to clone TARGET_ARCH or TARGET_OS correctly
         # we DON"T want HOST to be changed, it should be inmutable.
         if key == "TARGET_PLATFORM":
-            tmp = SystemPlatform(os=env["TARGET_OS"] if env.has_key("TARGET_OS") else self.OS ,
-                arch=env["TARGET_ARCH"] if env.has_key("TARGET_ARCH") else self.ARCH)
+            tmp = SystemPlatform(os=env["TARGET_OS"] if env.has_key("TARGET_OS") else self.OS,
+                                 arch=env["TARGET_ARCH"] if env.has_key("TARGET_ARCH") else self.ARCH)
         else:
-            tmp = SystemPlatform(os=self.OS,arch=self.ARCH)
-        tmp._bind(env,key)
+            tmp = SystemPlatform(os=self.OS, arch=self.ARCH)
+        tmp._bind(env, key)
         return tmp
 
-    def __eq__(self,rhs):
+    def __eq__(self, rhs):
         if core.util.isString(rhs):
-            rhs = target_convert(rhs,base=self)
+            rhs = target_convert(rhs, base=self)
 
-        return (self.OS == rhs.OS or \
-                'any' == rhs.OS or \
+        return (self.OS == rhs.OS or
+                'any' == rhs.OS or
                 'any' == self.OS) and \
-            (self.ARCH == rhs.ARCH or \
-                'any' == rhs.ARCH or \
+            (self.ARCH == rhs.ARCH or
+                'any' == rhs.ARCH or
                 'any' == self.ARCH)
 
-    def __ne__(self,rhs):
+    def __ne__(self, rhs):
         return (not self.__eq__(rhs))
 
     def __str__(self):
@@ -272,28 +282,30 @@ class SystemPlatform(common.bindable):
     def _is_native(self):
         return 'any' != self.OS and 'any' != self.ARCH
 
-    #because of the mapping to ENV we have to do our own copy
+    # because of the mapping to ENV we have to do our own copy
     def __copy__(self):
-        return SystemPlatform(self.OS,self.ARCH)
+        return SystemPlatform(self.OS, self.ARCH)
 
-    def __deepcopy__(self,memo=None):
-        return SystemPlatform(self.OS,self.ARCH)
+    def __deepcopy__(self, memo=None):
+        return SystemPlatform(self.OS, self.ARCH)
 
     def __getitem__(self, key):
         return self.__class__.__dict__[key.upper()].fget(self)
 
-    def __setitem__(self, key,val):
+    def __setitem__(self, key, val):
         if self.__class__.__dict__.has_key(key.upper()) == False:
             raise KeyError('SystemPlatform has no member ' + key.upper())
-        self.__class__.__dict__[key.upper()].fset(self,val)
+        self.__class__.__dict__[key.upper()].fset(self, val)
 
 if glb._host_platform is None:
     glb._host_sys = SystemPlatform()
 
+
 def HostSystem():
     return glb._host_sys
 
-def target_convert(str_val, raw_val=None,base=None,error=True):
+
+def target_convert(str_val, raw_val=None, base=None, error=True):
     host_sys = base is None and glb._host_sys or base
     lst = ValidatePlatform(str_val)
     if not lst:
@@ -303,26 +315,24 @@ def target_convert(str_val, raw_val=None,base=None,error=True):
     else:
         p = lst[0]
         a = lst[1]
-        if p == None :
+        if p == None:
             p = host_sys.OS
-        if a == None :
+        if a == None:
             a = host_sys.ARCH
-        ret = SystemPlatform(p,a)
+        ret = SystemPlatform(p, a)
     return ret
 
 # add configuartion varaible
 #api.register.add_variable('OSBITNESS',str(OSBit()),'to be removed??')
-api.register.add_variable(['TARGET_PLATFORM','target_platform','target'],SystemPlatform(glb._host_sys.OS,glb._host_sys.ARCH),
-        'Value of what to type of system to target build for, used to control cross builds',
-        converter=target_convert)
+api.register.add_variable(['TARGET_PLATFORM', 'target_platform', 'target'], SystemPlatform(glb._host_sys.OS, glb._host_sys.ARCH),
+                          'Value of what to type of system to target build for, used to control cross builds',
+                          converter=target_convert)
 
-api.register.add_global_parts_object('ChipArchitecture',ChipArchitecture) #obsolete
-api.register.add_global_parts_object('OSBit',OSBit) #obsolete
-#api.register.add_global_parts_object('Host_Platform',HostSystem)
-api.register.add_global_object('ChipArchitecture',ChipArchitecture) #obsolete
-api.register.add_global_object('OSBit',OSBit) #obsolete
-api.register.add_global_object('HostPlatform',HostSystem)
-api.register.add_global_object('SystemPlatform',SystemPlatform)
-#api.register.add_global_object('ValidatePlatform',ValidatePlatform)
-
-
+api.register.add_global_parts_object('ChipArchitecture', ChipArchitecture)  # obsolete
+api.register.add_global_parts_object('OSBit', OSBit)  # obsolete
+# api.register.add_global_parts_object('Host_Platform',HostSystem)
+api.register.add_global_object('ChipArchitecture', ChipArchitecture)  # obsolete
+api.register.add_global_object('OSBit', OSBit)  # obsolete
+api.register.add_global_object('HostPlatform', HostSystem)
+api.register.add_global_object('SystemPlatform', SystemPlatform)
+# api.register.add_global_object('ValidatePlatform',ValidatePlatform)

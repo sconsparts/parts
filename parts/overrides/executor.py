@@ -1,5 +1,6 @@
 from SCons.Executor import TSList
 
+
 def def_TSList___iter__(klass):
     def __iter__(self):
         return self.func().__iter__()
@@ -8,4 +9,3 @@ def def_TSList___iter__(klass):
 def_TSList___iter__(TSList)
 
 # vim: set et ts=4 sw=4 ai ft=python :
-

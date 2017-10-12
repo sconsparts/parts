@@ -44,6 +44,7 @@ def dep_target_scanner(node, env, _):
     node.attributes.files_to_pack = tar_gz_entries
     return tar_gz_entries + debian_entries + [tar_gz]
 
+
 def dep_emitter(target, source, env):
     '''
     Dpkg builder emitter function
@@ -67,6 +68,7 @@ def dep_emitter(target, source, env):
     ResetPartStackFrameInfo()
 
     return target, source
+
 
 def dep_create_install_file(target, source, env):
     '''
@@ -92,7 +94,7 @@ api.register.add_builder(
             SCons.Action.Action(dep_create_install_file),
             'cd ${TARGET.attributes.pack_dir}; debuild -us -uc -d -b; cd -',
             SCons.Defaults. Copy('$TARGET', '${TARGET.attributes.pack_dir}/../${TARGET.name}')
-            ], cmdstr='Packing into ${TARGET}'),
+        ], cmdstr='Packing into ${TARGET}'),
         emitter=dep_emitter,
         suffix='.deb',
         ensure_suffix=True,
@@ -103,4 +105,3 @@ api.register.add_builder(
 )
 
 # vim: set et ts=4 sw=4 ai :
-

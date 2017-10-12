@@ -7,20 +7,23 @@ import SCons.Util
 
 from SCons.Debug import logInstanceCreation
 
+
 class PathFinder(object):
     '''
     Provides information
     '''
-    def __init__(self,paths):
-        if __debug__: logInstanceCreation(self)
-        self.paths=paths
+
+    def __init__(self, paths):
+        if __debug__:
+            logInstanceCreation(self)
+        self.paths = paths
 
     def __call__(self):
-        ret=None
+        ret = None
         for pattern in self.paths:
             for p in glob.glob(pattern):
                 if os.path.isdir(p):
-                    ret=p
+                    ret = p
                     #print('Found default path [%s]' % (p))
                     return ret
                 else:
@@ -28,17 +31,20 @@ class PathFinder(object):
                     pass
         return ret
 
+
 class EnvFinder(object):
-    def __init__(self,keys,rel_path=None):
-        if __debug__: logInstanceCreation(self)
-        self.keys=keys
-        self.rel_path=rel_path
+
+    def __init__(self, keys, rel_path=None):
+        if __debug__:
+            logInstanceCreation(self)
+        self.keys = keys
+        self.rel_path = rel_path
 
     def __call__(self):
 
         for key in self.keys:
             ret = os.environ.get(key, None)
-            if ret==None:
+            if ret == None:
                 #print('Shell value %s not found' % (key))
                 pass
             elif os.path.isdir(ret):
@@ -48,24 +54,27 @@ class EnvFinder(object):
                 #print('Path value of %s for varible of %s does not exists' % (ret,key))
                 pass
         if self.rel_path != None and ret != None:
-            ret = os.path.normpath(os.path.join(ret,self.rel_path))
+            ret = os.path.normpath(os.path.join(ret, self.rel_path))
         return ret
 
+
 class RegFinder(object):
-    def __init__(self,keys,rel_path=None):
-        if __debug__: logInstanceCreation(self)
-        self.keys=keys
-        self.rel_path=rel_path
+
+    def __init__(self, keys, rel_path=None):
+        if __debug__:
+            logInstanceCreation(self)
+        self.keys = keys
+        self.rel_path = rel_path
 
         if self.keys is None or self.keys == []:
             print "RegFinder was given not passed any values to find"
 
-    def read_reg(self,value):
-        ret=SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE, value)
+    def read_reg(self, value):
+        ret = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE, value)
         return ret[0]
 
     def __call__(self):
-        ret=None
+        ret = None
         for key in self.keys:
             try:
                 ret = self.read_reg(key)
@@ -73,16 +82,17 @@ class RegFinder(object):
                 break
             except WindowsError, e:
                 #print('Did not find key %s in registry' % (ret))
-                ret=None
+                ret = None
         if self.rel_path != None and ret != None:
-            ret = os.path.normpath(os.path.join(ret,self.rel_path))
+            ret = os.path.normpath(os.path.join(ret, self.rel_path))
         return ret
 
-# special windows only finder that looks up data based on how MSI files 
+# special windows only finder that looks up data based on how MSI files
 # store information in the registry hive. On non windows system this is
 # an empty object that does nothing
 if sys.platform == 'win32':
     import parts.platformspecific.win32.msi as msi
+
     class MsiFinder(object):
         """
         This class uses MSI API to find tools installed on the system.
@@ -92,7 +102,8 @@ if sys.platform == 'win32':
         the specified executable is realy on the system and returns
         path to directory where it is installed.
         """
-        def __init__(self, productNamePattern, component, upDirs = None, subDir = None):
+
+        def __init__(self, productNamePattern, component, upDirs=None, subDir=None):
             """
             @type  productNamePattern: string
             @param productNamePattern: Python RegExp compatilble pattern to match against product name
@@ -154,23 +165,26 @@ if sys.platform == 'win32':
 
 else:
     class MsiFinder(object):
-        def __init__(self,*lst,**kw):
+
+        def __init__(self, *lst, **kw):
             pass
+
         def __call__(self):
             return None
 
-class ScriptFinder(object):
-    def __init__(self,name,args=None):
-        if __debug__: logInstanceCreation(self)
-        self.name=name
-        self.args=args
 
-    def __call__(self,env):
-        #get the full path
-        p=env.subst(self.name)
-        p=os.path.normpath(p)
+class ScriptFinder(object):
+
+    def __init__(self, name, args=None):
+        if __debug__:
+            logInstanceCreation(self)
+        self.name = name
+        self.args = args
+
+    def __call__(self, env):
+        # get the full path
+        p = env.subst(self.name)
+        p = os.path.normpath(p)
         if os.path.isfile(p):
             return p
         return None
-
-

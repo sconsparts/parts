@@ -22,11 +22,10 @@ Test.SkipUnless(
             r'SOFTWARE\Wow6432Node\Microsoft\Windows Installer XML\3.11',
         ],
         'WiX not installed on the system')
-    )
+)
 
 Setup.Copy.FromSample('wix_wrapper/wixsample1')
 
 Test.AddBuildRun()
 
-#vim: set et ts=4 sw=4 ai :
-
+# vim: set et ts=4 sw=4 ai :

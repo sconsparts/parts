@@ -1,4 +1,4 @@
-# 
+#
 # $Id: doxygen.py 23243 2008-05-30 15:15:40Z eleskine $
 
 import SCons.Builder
@@ -14,25 +14,30 @@ from SCons.Debug import Trace
 
 t = 0
 
+
 def DetectDot(env):
     res = env.Detect('dot')
-    if t: Trace('Dot env.detected as "%s"\n' % (res))
+    if t:
+        Trace('Dot env.detected as "%s"\n' % (res))
     if res is None and SCons.Util.can_read_reg:
         # Look for it in:
         # HKLM\\Software\\ATT\\Graphviz
         try:
-            (res, tmp) = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE, 
-                    r'SOFTWARE\\ATT\\Graphviz\\InstallPath')
+            (res, tmp) = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE,
+                                                r'SOFTWARE\\ATT\\Graphviz\\InstallPath')
             res = os.path.join(res, 'bin', 'dot.exe')
             if os.path.exists(res):
-                if t: Trace('Dot detected as "%s"\n' % res)
+                if t:
+                    Trace('Dot detected as "%s"\n' % res)
                 env.PrependENVPath('PATH', os.path.split(res)[0])
             else:
                 res = None
         except:
-            if t: Trace('An error occured during reading DOT from the registry\n')
+            if t:
+                Trace('An error occured during reading DOT from the registry\n')
             res = None
-    return res;
+    return res
+
 
 def DetectDoxygen(env):
     res = env.Detect('doxygen')
@@ -41,24 +46,28 @@ def DetectDoxygen(env):
     # HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\doxygen_is1
     # 'Inno Setup: App Path'
 
-    if t: Trace('Doxygen env.detected as "%s"\n' % res)
+    if t:
+        Trace('Doxygen env.detected as "%s"\n' % res)
     if res is None and SCons.Util.can_read_reg:
         try:
             (res, tmp) = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE,
-                    r'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\doxygen_is1\\InstallLocation'
-                    )
+                                                r'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\doxygen_is1\\InstallLocation'
+                                                )
             res = os.path.join(res, 'bin', 'doxygen.exe')
             if os.path.exists(res):
-                if t: Trace('Doxygen detected as "%s"\n' % res)
+                if t:
+                    Trace('Doxygen detected as "%s"\n' % res)
                 env.PrependENVPath('PATH', os.path.split(res)[0])
                 res = 'doxygen'
             else:
                 res = None
         except:
-            if t: Trace('An error occured during reading DOXYGEN from the registry\n')
+            if t:
+                Trace('An error occured during reading DOXYGEN from the registry\n')
             res = None
 
     return res
+
 
 def parseDoxyFile(f):
     res = {}
@@ -66,7 +75,7 @@ def parseDoxyFile(f):
     ss = f.readlines()
     if ss is None:
         return res
-    
+
     for s in ss:
         s = string.lstrip(s)
         if len(s) > 0 and s[0] != '#':
@@ -75,19 +84,23 @@ def parseDoxyFile(f):
                 v = m.group(2)
                 if v == '':
                     v = None
-                res[string.upper(m.group(1))]=v
+                res[string.upper(m.group(1))] = v
     return res
 
+
 class MyDir(SCons.Node.FS.Dir):
+
     def __init__(self, name, directory, fs):
-        if t: Trace("MyDir.__init__\n")
+        if t:
+            Trace("MyDir.__init__\n")
         self.NodeInfo = SCons.Node.FS.FileNodeInfo
         self.BuildInfo = SCons.Node.FS.FileBuildInfo
         SCons.Node.FS.Dir.__init__(self, name, directory, fs)
         self.set_noclean(0)
 
     def get_csig(self):
-        if t: Trace("MyDir.get_csig\n")
+        if t:
+            Trace("MyDir.get_csig\n")
         sigs = [SCons.Util.MD5signature(self.abspath)]
         for root, dirs, files in os.walk(self.abspath):
             for f in files:
@@ -98,7 +111,8 @@ class MyDir(SCons.Node.FS.Dir):
         return csig
 
     def get_stored_info(self):
-        if t: Trace("MyDir.get_stored_info\n")
+        if t:
+            Trace("MyDir.get_stored_info\n")
         try:
             return self._memo['get_stored_info']
         except KeyError:
@@ -127,7 +141,8 @@ class MyDir(SCons.Node.FS.Dir):
         return sconsign_entry
 
     def visited(self):
-        if t: Trace("MyDir.visited\n")
+        if t:
+            Trace("MyDir.visited\n")
         if self.exists():
             self.get_build_env().get_CacheDir().push_if_forced(self)
 
@@ -138,7 +153,7 @@ class MyDir(SCons.Node.FS.Dir):
             ninfo.csig = csig
 
         ninfo.timestamp = self.get_timestamp()
-        ninfo.size      = 0
+        ninfo.size = 0
 
         if not self.has_builder():
             # This is a source file, but it might have been a target file
@@ -151,7 +166,8 @@ class MyDir(SCons.Node.FS.Dir):
         self.store_info()
 
     def is_up_to_date(self):
-        if t: Trace("MyDir.is_up_to_date\n")
+        if t:
+            Trace("MyDir.is_up_to_date\n")
         if not self.exists():
             return 0
         if self.changed():
@@ -164,7 +180,8 @@ class MyDir(SCons.Node.FS.Dir):
         # This accomodates "chained builds" where a file that's a target
         # in one build (SConstruct file) is a source in a different build.
         # See test/chained-build.py for the use case.
-        if t: Trace("MyDir.store_info\n")
+        if t:
+            Trace("MyDir.store_info\n")
         self.dir.sconsign().store_info(self.name, self)
 
     def remove(self):
@@ -182,6 +199,7 @@ class MyDir(SCons.Node.FS.Dir):
 def createFileNode(nodename, directory=None, create=1):
     return SCons.Node.FS.get_default_fs()._lookup(nodename, directory, SCons.Node.FS.File, create)
 
+
 def createDirNode(nodename, directory=None, create=1):
     return SCons.Node.FS.get_default_fs()._lookup(nodename, directory, MyDir, create)
 
@@ -194,6 +212,7 @@ def createDirNode(nodename, directory=None, create=1):
 #   ${OUTPUT_DIRECTORY}\${CHM_FILE}
 #   ${GENERATE_CHI}?${OUTPUT_DIRECTORY}\${CHM_FILE.chi}
 #   ${WARN_LOGFILE}
+
 
 def generateTargets(config, outdir):
     target = []
@@ -223,6 +242,7 @@ def generateTargets(config, outdir):
 
     return target
 
+
 def fileMatch(f, includes, excludes):
     res = 0
     for i in includes:
@@ -239,10 +259,11 @@ def fileMatch(f, includes, excludes):
 
 # sources:
 # Doxyfile
-# *.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx 
+# *.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx
 # *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.py
 # -${EXCLUDE}
 # -${EXCLUDE_PATTERNS}
+
 
 def generateSources(config, env):
 
@@ -272,18 +293,19 @@ def generateSources(config, env):
                     for f in files:
                         if fileMatch(f, include_pattern, exclude_pattern):
                             res.append(os.path.join(root, f))
-            else: # !recursive
+            else:  # !recursive
                 for f in os.listdir(e):
                     if not os.path.isdir(f) and fileMatch(f, include_pattern, exclude_pattern):
                         res.append(os.path.join(e, f))
-        else: # !os.path.isdir(e)
+        else:  # !os.path.isdir(e)
             res.append(e)
 
-    if t: Trace('Generated sources: %s\n' % str(res))
+    if t:
+        Trace('Generated sources: %s\n' % str(res))
     return res
 
 
-def doxyEmitter(target,source,env):
+def doxyEmitter(target, source, env):
     doxyfile = env.get('DOXYFILE') or 'Doxyfile'
     source = [doxyfile]
     with file(doxyfile, 'r') as doxyfile:
@@ -295,24 +317,26 @@ def doxyEmitter(target,source,env):
 
     return (target, source)
 
+
 def createDoxygenBuilder(env):
     try:
         doxygen = env['BUILDERS']['Doxygen']
     except:
         doxygen = SCons.Builder.Builder(
-                action = "$DOXYGEN $DOXYFILE",
-                emitter = doxyEmitter,
-                target_factory=createDirNode)
+            action="$DOXYGEN $DOXYFILE",
+            emitter=doxyEmitter,
+            target_factory=createDirNode)
         env['BUILDERS']['Doxygen'] = doxygen
     return doxygen
+
 
 def generate(env):
     env['DOXYGEN'] = DetectDoxygen(env)
     DetectDot(env)
     createDoxygenBuilder(env)
 
+
 def exists(env):
     return DetectDoxygen(env)
 
 # vim: set et ts=4 sw=4 ai ft=python :
-

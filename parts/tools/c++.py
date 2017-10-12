@@ -7,6 +7,7 @@ for name in ('compilers', 'CXXSuffixes', 'iscplusplus', 'exists'):
 
 import parts.tools.Common
 
+
 def generate(env):
     """
     Add Builders and construction variables for Visual Age C++ compilers
@@ -28,25 +29,25 @@ def generate(env):
 
     SCons.Tool.cc.add_common_cc_variables(env)
 
-    env['CXX'] = parts.tools.Common.toolvar('c++', ('c++',), env = env)
+    env['CXX'] = parts.tools.Common.toolvar('c++', ('c++',), env=env)
 
-    env.SetDefault(CXXFLAGS   = SCons.Util.CLVar(''))
+    env.SetDefault(CXXFLAGS=SCons.Util.CLVar(''))
     #env['CXXCOM']     = '$CXX -o $TARGET -c $CXXFLAGS $CCFLAGS $_CCCOMCOM $SOURCES'
-    env.SetDefault(CXXCOM   = '${TEMPFILE("$CXX -o $TARGET -c $CXXFLAGS $CCFLAGS $_CCCOMCOM $SOURCES $CCARCHFLAGS")}')
-    env.SetDefault(SHCXX      = '$CXX')
-    env.SetDefault(SHCXXFLAGS = SCons.Util.CLVar('$CXXFLAGS'))
+    env.SetDefault(CXXCOM='${TEMPFILE("$CXX -o $TARGET -c $CXXFLAGS $CCFLAGS $_CCCOMCOM $SOURCES $CCARCHFLAGS")}')
+    env.SetDefault(SHCXX='$CXX')
+    env.SetDefault(SHCXXFLAGS=SCons.Util.CLVar('$CXXFLAGS'))
     #env['SHCXXCOM']   = '$SHCXX -o $TARGET -c $SHCXXFLAGS $SHCCFLAGS $_CCCOMCOM $SOURCES'
-    env.SetDefault(SHCXXCOM   = '${TEMPFILE("$SHCXX -o $TARGET -c $SHCXXFLAGS $SHCCFLAGS $_CCCOMCOM $SOURCES $CCARCHFLAGS")}')
+    env.SetDefault(SHCXXCOM='${TEMPFILE("$SHCXX -o $TARGET -c $SHCXXFLAGS $SHCCFLAGS $_CCCOMCOM $SOURCES $CCARCHFLAGS")}')
 
-    env.SetDefault(CPPDEFPREFIX  = '-D')
-    env.SetDefault(CPPDEFSUFFIX  = '')
-    env.SetDefault(INCPREFIX  = '-I')
-    env.SetDefault(INCSUFFIX  = '')
-    env.SetDefault(SHOBJSUFFIX = '.os')
-    env.SetDefault(OBJSUFFIX = '.o')
-    env.SetDefault(STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME = 0)
+    env.SetDefault(CPPDEFPREFIX='-D')
+    env.SetDefault(CPPDEFSUFFIX='')
+    env.SetDefault(INCPREFIX='-I')
+    env.SetDefault(INCSUFFIX='')
+    env.SetDefault(SHOBJSUFFIX='.os')
+    env.SetDefault(OBJSUFFIX='.o')
+    env.SetDefault(STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME=0)
 
-    env.SetDefault(CXXFILESUFFIX = '.cc')
+    env.SetDefault(CXXFILESUFFIX='.cc')
 
 # Local Variables:
 # tab-width:4

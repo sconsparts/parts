@@ -9,10 +9,13 @@ from .. import api
 from SCons.Debug import logInstanceCreation
 from collections import defaultdict
 
+
 class Parts_Tool(object):
     _cache = defaultdict(dict)
+
     def __init__(self, name, toolpath=[], **kw):
-        if __debug__: logInstanceCreation(self)
+        if __debug__:
+            logInstanceCreation(self)
         self.name = name
         self.toolpath = toolpath + SCons.Tool.DefaultToolpath
         # remember these so we can merge them into the call
@@ -38,7 +41,7 @@ class Parts_Tool(object):
             try:
                 try:
                     file, path, desc = imp.find_module(self.name, self.toolpath)
-                    full_name="{0}<{1}>".format(self.name,str(path.__hash__()))
+                    full_name = "{0}<{1}>".format(self.name, str(path.__hash__()))
                     try:
                         Parts_Tool._cache[path_key][self.name] = result = sys.modules[full_name]
                     except KeyError:
@@ -52,9 +55,9 @@ class Parts_Tool(object):
                             file.close()
                     return result
                 except ImportError, e:
-                    api.output.verbose_msg("tools","Failed to load module!")
-                    api.output.verbose_msg(["tools_failure","load_module"],"Stack:\n%s"%(traceback.format_exc()))
-                    if str(e)!="No module named %s"%self.name:
+                    api.output.verbose_msg("tools", "Failed to load module!")
+                    api.output.verbose_msg(["tools_failure", "load_module"], "Stack:\n%s" % (traceback.format_exc()))
+                    if str(e) != "No module named %s" % self.name:
                         raise SCons.Errors.EnvironmentError, e
                     try:
                         import zipimport
@@ -86,25 +89,25 @@ class Parts_Tool(object):
                             file.close()
                         return module
                     except ImportError, e:
-                        if str(e)!="No module named %s"%self.name:
-                            api.output.verbose_msg("tools","Failed to load module!")
-                            api.output.verbose_msg(["tools_failure","load_module"],"Stack:\n%s"%(traceback.format_exc()))
+                        if str(e) != "No module named %s" % self.name:
+                            api.output.verbose_msg("tools", "Failed to load module!")
+                            api.output.verbose_msg(["tools_failure", "load_module"], "Stack:\n%s" % (traceback.format_exc()))
                             raise SCons.Errors.EnvironmentError, e
                         try:
                             import zipimport
-                            importer = zipimport.zipimporter( sys.modules['SCons.Tool'].__path__[0] )
+                            importer = zipimport.zipimporter(sys.modules['SCons.Tool'].__path__[0])
                             Parts_Tool._cache[path_key][self.name] = module = importer.load_module(full_name)
                             setattr(SCons.Tool, self.name, module)
                             return module
                         except ImportError, e:
                             m = "No tool named '%s': %s" % (self.name, e)
-                            api.output.verbose_msg("tools","Failed to load module!")
-                            api.output.verbose_msg(["tools_failure","load_module"],"Stack:\n%s"%(traceback.format_exc()))
+                            api.output.verbose_msg("tools", "Failed to load module!")
+                            api.output.verbose_msg(["tools_failure", "load_module"], "Stack:\n%s" % (traceback.format_exc()))
                             raise SCons.Errors.EnvironmentError, m
                 except ImportError, e:
                     m = "No tool named '%s': %s" % (self.name, e)
-                    api.output.verbose_msg("tools","Failed to load module!")
-                    api.output.verbose_msg(["tools_failure","load_module"],"Stack:\n%s"%(traceback.format_exc()))
+                    api.output.verbose_msg("tools", "Failed to load module!")
+                    api.output.verbose_msg(["tools_failure", "load_module"], "Stack:\n%s" % (traceback.format_exc()))
                     raise SCons.Errors.EnvironmentError, m
             else:
                 return result
@@ -119,13 +122,13 @@ class Parts_Tool(object):
                 kw.update(call_kw)
             else:
                 kw = self.init_kw
-        env.Append(TOOLS = [ self.name ])
+        env.Append(TOOLS=[self.name])
         if hasattr(self, 'options'):
             import SCons.Variables
             if not env.has_key('options'):
                 from SCons.Script import ARGUMENTS
-                env['options']=SCons.Variables.Variables(args=ARGUMENTS)
-            opts=env['options']
+                env['options'] = SCons.Variables.Variables(args=ARGUMENTS)
+            opts = env['options']
 
             self.options(opts)
             opts.Update(env)
@@ -135,8 +138,8 @@ class Parts_Tool(object):
     def __str__(self):
         return self.name
 
-    def Exists(self,env, *args, **kw):
-        return self.exists( env, *args, **kw)
+    def Exists(self, env, *args, **kw):
+        return self.exists(env, *args, **kw)
 
 
-SCons.Tool.Tool=Parts_Tool
+SCons.Tool.Tool = Parts_Tool

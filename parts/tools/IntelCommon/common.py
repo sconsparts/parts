@@ -13,23 +13,24 @@ intel_11_inner = r'(\d\d\d)'
 intel_12_posix = r'composerxe-(2011)\.(\d+.\d+)'
 intel_12_1_posix = r'composer_xe_(2011)_sp1\.(\d+.\d+)'
 
-# hopefully a stable base 
+# hopefully a stable base
 intel_13_plus_posix = r'composer_xe_(20\d\d(_sp\d+)?)\.(\d+.\d+)'
 
-#different layout in registry
+# different layout in registry
 intel_11_1 = r'\d\d\d'
+
 
 def MatchVersionNumbers(verStr1, verStr2):
 
-    major1, minor1, rev1, junk = (verStr1+'.-1.-1.-1').split('.',3)
-    major1=int(major1)
-    minor1=int(minor1)
-    rev1=int(rev1)
+    major1, minor1, rev1, junk = (verStr1 + '.-1.-1.-1').split('.', 3)
+    major1 = int(major1)
+    minor1 = int(minor1)
+    rev1 = int(rev1)
 
-    major2, minor2, rev2, junk = (verStr2+'.-1.-1.-1').split('.',3)
-    major2=int(major2)
-    minor2=int(minor2)
-    rev2=int(rev2)
+    major2, minor2, rev2, junk = (verStr2 + '.-1.-1.-1').split('.', 3)
+    major2 = int(major2)
+    minor2 = int(minor2)
+    rev2 = int(rev2)
 
     if major1 != major2:
         return False
@@ -46,16 +47,16 @@ def MatchVersionNumbers(verStr1, verStr2):
 
 
 class IntelcInfo(ToolInfo):
-    def __init__(self,version,install_scanner,script,subst_vars,shell_vars,test_file):
-        ToolInfo.__init__(self,version,install_scanner,script,subst_vars,shell_vars,test_file)
-        self.version=version_range(version)
-    
+
+    def __init__(self, version, install_scanner, script, subst_vars, shell_vars, test_file):
+        ToolInfo.__init__(self, version, install_scanner, script, subst_vars, shell_vars, test_file)
+        self.version = version_range(version)
+
     def version_set(self):
         return self.version
-    
-    def resolve_version(self,version):
+
+    def resolve_version(self, version):
         return self.install_root.resolve_version(version)
 
 
-Intelc=ToolSetting('INTELC')
-
+Intelc = ToolSetting('INTELC')

@@ -3,15 +3,17 @@ from parts.settings import *
 import unittest
 
 
-is_win32=False
-is_linux=False
+is_win32 = False
+is_linux = False
 if sys.platform == 'win32':
-    is_win32=True
+    is_win32 = True
 elif sys.platform.startswith('linux'):
-    is_linux=True
+    is_linux = True
+
 
 def _tester(item):
     return isinstance(item, str)
+
 
 class Test_settings(unittest.TestCase):
 
@@ -23,11 +25,11 @@ class Test_settings(unittest.TestCase):
         defEnv = DefaultSettings().DefaultEnvironment()
         self.assertEqual(defEnv.has_key('INSTALL'), True)
         self.assertEqual(defEnv.has_key('ZIP'), True)
-        #TODO: Test for more default env vars
+        # TODO: Test for more default env vars
 
     def test_DefaultSettings_Environment(self):
         """Test that environment with additional custom env varaibles is properly created"""
-        env = DefaultSettings().Environment(name1 = 'val1', name2 = 'val2')
+        env = DefaultSettings().Environment(name1='val1', name2='val2')
         self.assertEqual(env['name1'], 'val1')
         self.assertEqual(env['name2'], 'val2')
 

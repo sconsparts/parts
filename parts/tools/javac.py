@@ -11,6 +11,7 @@ import parts.tools.Common
 # monkey patch emit_java_classes to do the Right Thing
 # otherwise generated classes have no package name and get rebuilt always
 
+
 def emit_java_classes(target, source, env):
     """
     Set correct path for .class files from generated java source files
@@ -43,15 +44,16 @@ def emit_java_classes(target, source, env):
         elif isinstance(entry, SCons.Node.FS.Dir):
             result = SCons.Util.OrderedDict()
             dirnode = entry.rdir()
+
             def find_java_files(arg, dirpath, filenames):
                 java_files = sorted([n for n in filenames
-                                       if _my_normcase(n).endswith(js)])
+                                     if _my_normcase(n).endswith(js)])
                 mydir = dirnode.Dir(dirpath)
                 java_paths = [mydir.File(f) for f in java_files]
                 for jp in java_paths:
-                     arg[jp] = True
+                    arg[jp] = True
             for dirpath, dirnames, filenames in os.walk(dirnode.get_abspath()):
-               find_java_files(result, dirpath, filenames)
+                find_java_files(result, dirpath, filenames)
             entry.walk(find_java_files, result)
 
             slist.extend(list(result.keys()))
@@ -100,16 +102,17 @@ def emit_java_classes(target, source, env):
 
 javac.emit_java_classes = emit_java_classes
 
+
 def generate(env, *args, **kw):
 
     java.MergeShellEnv(env)
 
     javac.generate(env, *args, **kw)
 
-    env['JAVAC'] = parts.tools.Common.toolvar('javac', env = env)
+    env['JAVAC'] = parts.tools.Common.toolvar('javac', env=env)
+
 
 def exists(env):
     return javac.exists(env)
 
 # vim: set et ts=4 sw=4 ai :
-

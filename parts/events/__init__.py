@@ -1,14 +1,14 @@
 from SCons.Debug import logInstanceCreation
 # simple event class
-# need to look at extending this or 
+# need to look at extending this or
 # finding a usable existing solution
 
 
-
 class Event(object):
-    
+
     def __init__(self):
-        if __debug__: logInstanceCreation(self)
+        if __debug__:
+            logInstanceCreation(self)
         self.__callbacks = list()
 
     def Connect(self, callback):
@@ -26,9 +26,9 @@ class Event(object):
         return self
 
     def __isub__(self, callback):
-        return self.Disconnect(callback)    
+        return self.Disconnect(callback)
 
-    def __call__(self, *args, **kargs):   
+    def __call__(self, *args, **kargs):
         for callback in self.__callbacks:
             callback(*args, **kargs)
 

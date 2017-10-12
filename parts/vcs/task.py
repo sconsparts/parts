@@ -4,6 +4,7 @@ from ..reporter import PartRuntimeError as PartRuntimeError
 
 import SCons.Errors
 
+
 class task(object):
     '''
     This is a simple class that does nothing more than have the Vcs object update
@@ -11,10 +12,11 @@ class task(object):
     Someday SCons will formalize this code, that day we will have something to subclass form.
     Till then this is very dependent on SCons.. the names of the function have to be called this
     '''
-    def __init__(self,vcs,taskmaster):
+
+    def __init__(self, vcs, taskmaster):
         self.__vcs = vcs
-        self.__failed=False
-        self.__taskmaster=taskmaster
+        self.__failed = False
+        self.__taskmaster = taskmaster
 
     @property
     def Vcs(self):
@@ -45,17 +47,18 @@ class task(object):
                 #buildError.exc_info = sys.exc_info()
                 #raise buildError
         except:
-            import traceback,StringIO
-            #ec_str=StringIO.StringIO()
-            traceback.print_exc()#file=ec_str)
+            import traceback
+            import StringIO
+            # ec_str=StringIO.StringIO()
+            traceback.print_exc()  # file=ec_str)
             raise
 
-    def exception_set(self,exception=None):
-        self.__failed=True
+    def exception_set(self, exception=None):
+        self.__failed = True
 
     def failed(self):
-        #if self.__failed:
-        api.output.error_msg("Vcs task failed for Part %s"%self.__vcs._env.get('ALIAS'),show_stack=False,exit=False)
+        # if self.__failed:
+        api.output.error_msg("Vcs task failed for Part %s" % self.__vcs._env.get('ALIAS'), show_stack=False, exit=False)
         self.__taskmaster.stop()
 
     def executed(self):
@@ -66,4 +69,3 @@ class task(object):
         ''' this always gets called after the task ran, failed or not'''
         self.__vcs.ProcessResult(not self.__failed)
         pass
-

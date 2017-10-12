@@ -6,7 +6,7 @@ changed source. The test itself models being a compiler that blocks the source u
 compilation while Parts are trying to hardlink the same source to SDK which already has this
 file hardlinked.
 '''
-#disable test for the moment as I want to relook at this "issue"
+# disable test for the moment as I want to relook at this "issue"
 '''
 def no_autoremove_sdk_files(data):
     match = re.search("dup: removing existing target .*sdks.*hello.c", data)

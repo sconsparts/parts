@@ -20,6 +20,7 @@ import parts.core.util as util
 
 import parts.overrides.symlinks as symlinks
 
+
 def copyFunction(target, source, env):
     # We cannot use symlinks in this copyFunction because some installer-generating programs
     # have issues with symlinks - they pack them wrong.
@@ -30,6 +31,8 @@ def copyFunction(target, source, env):
 #
 # Functions doing the actual work of the Install Builder.
 #
+
+
 def installFunc(target, source, env):
     """
     Install a source file into a target using the function specified
@@ -42,8 +45,8 @@ def installFunc(target, source, env):
         raise SCons.Errors.UserError('Missing INSTALL construction variable.')
 
     assert len(target) == len(source), \
-            ("Installing source %s into target %s: target and source lists must have same "
-             "length.") % (map(str, source), map(str, target))
+        ("Installing source %s into target %s: target and source lists must have same "
+         "length.") % (map(str, source), map(str, target))
 
     # get the logger for a given Part if it exists
     output = env._get_part_log_mapper()
@@ -67,11 +70,12 @@ def installFunc(target, source, env):
 
         if install(targetEntry.get_path(), sourceEntry.get_path(), env):
             output.TaskEnd(taskId, 1)
-            #report error to logger
+            # report error to logger
             return 1
-    #tell logger the task has end correctly.
+    # tell logger the task has end correctly.
     output.TaskEnd(taskId, 0)
     return 0
+
 
 def stringFunc(target, source, env):
     installstr = env.get('INSTALLSTR')
@@ -83,6 +87,8 @@ def stringFunc(target, source, env):
     return 'Install %s: "%s" as "%s"' % (targetType, source, target)
 
 # auto tagging
+
+
 def auto_tag(env, node):
     if env.get("AUTO_TAG_ON_INSTALL", True):
         for patterns, tags in env.get("AUTO_TAG_INSTALL", []):
@@ -94,6 +100,8 @@ def auto_tag(env, node):
 #
 # Emitter functions
 #
+
+
 def add_targets_to_INSTALLED_FILES(target, source, env):
     """
     an emitter that adds all target files to the list stored in the
@@ -101,7 +109,7 @@ def add_targets_to_INSTALLED_FILES(target, source, env):
     scons call will be collected.
     """
     tags = env.get('tags', {})
-    ##add to global list of install files
+    # add to global list of install files
     for targetEntry in target:
         # add meta tags
         if tags:
@@ -116,12 +124,15 @@ def add_targets_to_INSTALLED_FILES(target, source, env):
 
     return target, source
 
+
 class DESTDIR_factory(object):
     """
     a node factory, where all files will be relative to the dir supplied in the constructor.
     """
+
     def __init__(self, env, destDir):
-        if __debug__: logInstanceCreation(self)
+        if __debug__:
+            logInstanceCreation(self)
         self.env = env
         self.dir = env.arg2nodes(destDir, env.fs.Dir)[0]
 
@@ -140,6 +151,7 @@ install_action = SCons.Action.Action(installFunc, stringFunc)
 installas_action = SCons.Action.Action(installFunc, stringFunc)
 
 BaseInstallBuilder = None
+
 
 def InstallBuilderWrapper(env, target=None, source=None, targetDir=None, **kw):
     if target and targetDir:
@@ -170,13 +182,14 @@ def InstallBuilderWrapper(env, target=None, source=None, targetDir=None, **kw):
                 target = env.fs.Entry(os.sep.join(['.', src.name]), dnode)
             if isinstance(src, symlinks.FileSymbolicLink):
                 symlinks.ensure_node_is_symlink(target)
-            #call emiter
-            nenv=env.Override(kw)
-            t,s=add_targets_to_INSTALLED_FILES([target],[src],nenv)
-            tgt.extend(env.CCopyAs(t,s,CCOPY_LOGIC='copy'))
+            # call emiter
+            nenv = env.Override(kw)
+            t, s = add_targets_to_INSTALLED_FILES([target], [src], nenv)
+            tgt.extend(env.CCopyAs(t, s, CCOPY_LOGIC='copy'))
             #tgt.extend(BaseInstallBuilder(env, target, src, **kw))
 
     return tgt
+
 
 def InstallAsBuilderWrapper(env, target=None, source=None, **kw):
     result = []
@@ -184,23 +197,24 @@ def InstallAsBuilderWrapper(env, target=None, source=None, **kw):
         result.extend(BaseInstallBuilder(env, targetEntry, sourceEntry, **kw))
     return result
 
+
 def generate(env):
     global BaseInstallBuilder
     if BaseInstallBuilder is None:
         target_factory = env.fs
 
         BaseInstallBuilder = SCons.Builder.Builder(action=install_action,
-                target_factory=target_factory.Entry, source_factory=env.fs.Entry, multi=1,
-                emitter=[add_targets_to_INSTALLED_FILES,], name='InstallBuilder')
+                                                   target_factory=target_factory.Entry, source_factory=env.fs.Entry, multi=1,
+                                                   emitter=[add_targets_to_INSTALLED_FILES, ], name='InstallBuilder')
 
     env['BUILDERS']['_InternalInstall'] = InstallBuilderWrapper
     env['BUILDERS']['_InternalInstallAs'] = InstallAsBuilderWrapper
-
 
     try:
         env['INSTALL']
     except KeyError:
         env['INSTALL'] = copyFunction
+
 
 def exists(env):
     return True

@@ -8,12 +8,13 @@ import parts.common as common
 import parts.api as api
 import SCons.Action
 
+
 def _encode_bd(target, source, env):
     src_encode = env['ENCODE_SOURCE']
     target_encode = env['ENCODE_TARGET']
-    #Foreach target we match it to a single source
+    # Foreach target we match it to a single source
     for t, s in zip(target, source):
-        #open source
+        # open source
         with codecs.open(str(s), "r", src_encode) as sf:
             content = sf.read()
         with codecs.open(str(t), "w", target_encode) as tf:
@@ -21,23 +22,24 @@ def _encode_bd(target, source, env):
 
     return None
 
+
 def _encode_sf(target, source, env):
     return "Encoding %s from %s to %s in file %s" % (
-            source, env['ENCODE_SOURCE'][0], env['ENCODE_TARGET'][0], target)
+        source, env['ENCODE_SOURCE'][0], env['ENCODE_TARGET'][0], target)
 
 
 def _EncodeFile(env, target, source, target_encoding, source_encoding='utf-8'):
     target = common.make_list(target)
     source = common.make_list(source)
     assert len(target) == len(source), \
-       ("Installing source %s into target %s: "
-        "target and source lists must have same length.")%(
+        ("Installing source %s into target %s: "
+         "target and source lists must have same length.") % (
             map(str, source), map(str, target))
     return env.__EncodeFile(target=target,
-                        source=source,
-                        ENCODE_SOURCE=source_encoding,
-                        ENCODE_TARGET=target_encoding
-                        )
+                            source=source,
+                            ENCODE_SOURCE=source_encoding,
+                            ENCODE_TARGET=target_encoding
+                            )
 
 
 # This is what we want to be setup in parts
@@ -48,7 +50,7 @@ SConsEnvironment.EncodeFile = _EncodeFile
 
 
 encodeAction = SCons.Action.Action(_encode_bd, _encode_sf,
-        varlist=['ENCODE_SOURCE', 'ENCODE_TARGET'])
-api.register.add_builder('__EncodeFile', SCons.Builder.Builder(action = encodeAction,
-                    source_factory = SCons.Node.FS.File,
-                    target_factory = SCons.Node.FS.File))
+                                   varlist=['ENCODE_SOURCE', 'ENCODE_TARGET'])
+api.register.add_builder('__EncodeFile', SCons.Builder.Builder(action=encodeAction,
+                                                               source_factory=SCons.Node.FS.File,
+                                                               target_factory=SCons.Node.FS.File))

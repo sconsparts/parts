@@ -19,7 +19,7 @@ from .. import common
 from ..core import util
 from .. import api
 
-## Begin OS level support for symbolic links
+# Begin OS level support for symbolic links
 try:
     from os import symlink as _os_symlink
     os_symlink = lambda linkto, linkname, isdir: _os_symlink(linkto, linkname)
@@ -29,11 +29,11 @@ except ImportError:
     IO_REPARSE_TAG_SYMLINK = 0xA000000C
     REPARSE_DATA_BUFFER_HEADER_SIZE = 8
     GENERIC_WRITE = 0x40000000
-    CREATE_NEW    = 1
+    CREATE_NEW = 1
     CREATE_ALWAYS = 2
     OPEN_EXISTING = 3
     FILE_FLAG_OPEN_REPARSE_POINT = 0x00200000
-    FILE_FLAG_BACKUP_SEMANTICS   = 0x02000000
+    FILE_FLAG_BACKUP_SEMANTICS = 0x02000000
     FORMAT_MESSAGE_ALLOCATE_BUFFER = 0x00000100
     FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000
     FORMAT_MESSAGE_IGNORE_INSERTS = 0x00000200
@@ -44,10 +44,12 @@ except ImportError:
     class LUID(ctypes.Structure):
         _fields_ = [('LowPart', ctypes.c_ulong),
                     ('HighPart', ctypes.c_long)]
+
     class LUID_AND_ATTRIBUTES(ctypes.Structure):
         _pack_ = 4
         _fields_ = [('Luid', LUID),
                     ('Attributes', ctypes.c_ulong)]
+
     class TOKEN_PRIVILEGES(ctypes.Structure):
         _fields_ = [('PrivilegeCount', ctypes.c_ulong),
                     ('Privileges', LUID_AND_ATTRIBUTES * 1)]
@@ -56,6 +58,7 @@ except ImportError:
         """
         Context class to temporary elevate privilege.
         """
+
         def __init__(self, privilegeName):
             if __debug__:
                 logInstanceCreation(self, 'parts.overrides.symlinks.Privilege')
@@ -71,7 +74,7 @@ except ImportError:
             token = ctypes.c_void_p()
             if ctypes.windll.advapi32.OpenProcessToken(
                     ctypes.c_void_p(ctypes.windll.kernel32.GetCurrentProcess()),
-                    TOKEN_ADJUST_PRIVILEGES|TOKEN_QUERY,
+                    TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
                     ctypes.byref(token)):
                 self.token = token
                 self.savedState = None
@@ -83,8 +86,8 @@ except ImportError:
                 savedState = TOKEN_PRIVILEGES()
                 dwReturned = ctypes.c_ulong(ctypes.sizeof(savedState))
                 if ctypes.windll.advapi32.AdjustTokenPrivileges(self.token, 0,
-                            ctypes.byref(privileges), ctypes.sizeof(privileges),
-                            ctypes.byref(savedState), ctypes.byref(dwReturned)) and \
+                                                                ctypes.byref(privileges), ctypes.sizeof(privileges),
+                                                                ctypes.byref(savedState), ctypes.byref(dwReturned)) and \
                         ctypes.GetLastError() == 0:
                     self.savedState = savedState
             else:
@@ -96,8 +99,8 @@ except ImportError:
             if self.token:
                 if self.savedState:
                     ctypes.windll.advapi32.AdjustTokenPrivileges(self.token, ctypes.c_long(),
-                            ctypes.byref(self.savedState), ctypes.sizeof(self.savedState),
-                            ctypes.c_void_p(), ctypes.c_void_p())
+                                                                 ctypes.byref(self.savedState), ctypes.sizeof(self.savedState),
+                                                                 ctypes.c_void_p(), ctypes.c_void_p())
                 ctypes.windll.kernel32.CloseHandle(self.token)
 
     def createWindowsError(path=None):
@@ -135,6 +138,7 @@ except ImportError:
     SYMLINK_PRIVILEGE_NAME = 'SeCreateSymbolicLinkPrivilege'
     try:
         CreateSymbolicLink = ctypes.windll.kernel32.CreateSymbolicLinkW
+
         def os_symlink(linkto, linkname, isdir):
             with Privilege(SYMLINK_PRIVILEGE_NAME):
                 if not CreateSymbolicLink(unicode(linkname), unicode(linkto),
@@ -155,9 +159,8 @@ except ImportError:
             printName = unicode(target)
             sysName = unicode(target if not os.path.isabs(target) else r'\\??\\' + target)
 
-
             buffsize = ctypes.sizeof(SymbolicLinkReparseBuffer) + (
-                    len(printName) + len(sysName))*2
+                len(printName) + len(sysName)) * 2
 
             result = ctypes.create_string_buffer(buffsize)
             pBuffer = ctypes.cast(ctypes.pointer(result), PSymbolicLinkReparseBuffer).contents
@@ -203,9 +206,9 @@ except ImportError:
                 else:
                     handleFlag = CREATE_NEW
                 handle = ctypes.windll.kernel32.CreateFileA(linkname, GENERIC_WRITE, 0,
-                                ctypes.c_void_p(), handleFlag,
-                                FILE_FLAG_OPEN_REPARSE_POINT|FILE_FLAG_BACKUP_SEMANTICS,
-                                ctypes.c_void_p())
+                                                            ctypes.c_void_p(), handleFlag,
+                                                            FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
+                                                            ctypes.c_void_p())
                 if handle < 0:
                     raise createWindowsError(path=linkname)
                 try:
@@ -227,6 +230,7 @@ except ImportError:
     INVALID_FILE_ATTRIBUTES = -1
     INVALID_HANDLE_VALUE = -1
     GENERIC_READ = 0x80000000
+
     def os_readlink(name):
         """
         C{os.readlink} implementation for Microsoft Windows
@@ -237,8 +241,8 @@ except ImportError:
         if attrs == INVALID_FILE_ATTRIBUTES or (attrs & FILE_ATTRIBUTE_REPARSE_POINT == 0):
             raise createWindowsError(path=name)
         h = ctypes.windll.kernel32.CreateFileA(name, GENERIC_READ, 0, ctypes.c_void_p(),
-                OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT|FILE_FLAG_BACKUP_SEMANTICS,
-                ctypes.c_void_p())
+                                               OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
+                                               ctypes.c_void_p())
         if h == INVALID_HANDLE_VALUE:
             raise createWindowsError(path=name)
         try:
@@ -258,7 +262,8 @@ except ImportError:
                                              ctypes.c_void_p).value + content.PrintNameOffset,
                                  content.PrintNameLength / 2)
 
-## End of OS level support for symbolic links
+# End of OS level support for symbolic links
+
 
 class FileSymbolicLink(SCons.Node.FS.File):
     """
@@ -346,11 +351,13 @@ class FileSymbolicLink(SCons.Node.FS.File):
         return SCons.Node.FS.File.must_be_same(self, klass)
 SCons.Node.FS.FileSymbolicLink = FileSymbolicLink
 
+
 def _def_SCons_Node_FS_FS_FileSymbolicLink(klass):
-    def FileSymbolicLink(self, name, directory = None, create = 1):
+    def FileSymbolicLink(self, name, directory=None, create=1):
         return self._lookup(name, directory, SCons.Node.FS.FileSymbolicLink, create)
     klass.FileSymbolicLink = FileSymbolicLink
 _def_SCons_Node_FS_FS_FileSymbolicLink(SCons.Node.FS.FS)
+
 
 def _def_SCons_Node_FS_Dir_FileSymbolicLink(klass):
     def FileSymbolicLink(self, name):
@@ -358,11 +365,13 @@ def _def_SCons_Node_FS_Dir_FileSymbolicLink(klass):
     klass.FileSymbolicLink = FileSymbolicLink
 _def_SCons_Node_FS_Dir_FileSymbolicLink(SCons.Node.FS.Dir)
 
+
 def _def_SCons_Node_FS_File_FileSymbolicLink(klass):
     def FileSymbolicLink(self, name):
         return self.dir.FileSymbolicLink(name)
     klass.FileSymbolicLink = FileSymbolicLink
 _def_SCons_Node_FS_File_FileSymbolicLink(SCons.Node.FS.File)
+
 
 def _def_SConsEnvironment_FileSymbolicLink(klass):
     def FileSymbolicLink(self, name, *args, **kw):
@@ -376,7 +385,8 @@ def _def_SConsEnvironment_FileSymbolicLink(klass):
     klass.FileSymbolicLink = FileSymbolicLink
 _def_SConsEnvironment_FileSymbolicLink(SConsEnvironment)
 
-def ensure_node_is_symlink(node, template = None):
+
+def ensure_node_is_symlink(node, template=None):
     """
     Checks if the node is a symilnk, converts it to a symlink based on the template.
     """
@@ -388,12 +398,12 @@ def ensure_node_is_symlink(node, template = None):
                 node.linkto = template.linkto
     return node
 
+
 def _wrap_MetaTag(MetaTag):
     def call(MetaTag, nodes, ns, **kw):
         def _warning(k):
             #api.output.warning_msg('{0} meta-tag usage is deprecated. Consider using SymLink() function'.format(k))
-            api.output.verbose_msg(['warning'],'{0} meta-tag usage is deprecated. Consider using SymLink() function'.format(k))
-
+            api.output.verbose_msg(['warning'], '{0} meta-tag usage is deprecated. Consider using SymLink() function'.format(k))
 
         def _convert_nodes(nodes, linkto):
             """
@@ -405,8 +415,8 @@ def _wrap_MetaTag(MetaTag):
                 ensure_node_is_symlink(node)
 
                 api.output.verbose_msg('symlinks',
-                        "Updating SymLink node {node} pointing to {linkto} to point to {linktonew}".format(
-                            node=node, linkto=node.linkto, linktonew=linkto))
+                                       "Updating SymLink node {node} pointing to {linkto} to point to {linktonew}".format(
+                                           node=node, linkto=node.linkto, linktonew=linkto))
                 node.linkto = linkto
 
                 # This node can be copied only as a FileSymbolicLink.
@@ -438,8 +448,9 @@ def _wrap_MetaTag(MetaTag):
 
 metatag.MetaTag = _wrap_MetaTag(metatag.MetaTag)
 
+
 def _wrap_SCons_Node_FS_Entry_disambiguate(disambiguate):
-    def call(self, must_exist = None):
+    def call(self, must_exist=None):
         if self.islink():
             self.__class__ = FileSymbolicLink
             self._morph()
@@ -450,6 +461,7 @@ def _wrap_SCons_Node_FS_Entry_disambiguate(disambiguate):
     return call
 SCons.Node.FS.Entry.disambiguate = _wrap_SCons_Node_FS_Entry_disambiguate(SCons.Node.FS.Entry.disambiguate)
 
+
 def _source_scanner():
     '''
     Creates a scanner object to be used for C{FileSymbolicLink} nodes  dependences resolution.
@@ -459,9 +471,9 @@ def _source_scanner():
     def find_closest_linkto(node, targets):
         node_abspath = node.abspath
 
-        return max(targets, key = lambda x: len(os.path.commonprefix([node_abspath, x.abspath])))
+        return max(targets, key=lambda x: len(os.path.commonprefix([node_abspath, x.abspath])))
 
-    def function(node, env, path = ()):
+    def function(node, env, path=()):
         '''
         Scanner main function.
 
@@ -496,7 +508,7 @@ def _source_scanner():
                 # the closest one to 'target'. The best match would be a file located
                 # in the same dir as the FileSymbolicLink to be created.
                 result = find_closest_linkto(target,
-                        node.Entry(node.linkto).attributes.copiedas)
+                                             node.Entry(node.linkto).attributes.copiedas)
                 target.linkto = target.rel_path(result)
                 return [result] if not result in target.children(scan=0) else []
             except (AttributeError, IndexError):
@@ -504,16 +516,17 @@ def _source_scanner():
 
         return []
 
-    def path_function(env, scons_dir, target, source, arg = None):
+    def path_function(env, scons_dir, target, source, arg=None):
         '''
         Scanner path_function. We don't make a real path_function here we use
         it as the way to pass target into Scanner function.
         '''
         return tuple(node for node in target if isinstance(node, FileSymbolicLink))
 
-    return Scanner(function, path_function = path_function)
+    return Scanner(function, path_function=path_function)
 
 source_scanner = _source_scanner()
+
 
 def SymLinkEnv(env, name, linkto, **kw):
     """
@@ -540,10 +553,11 @@ def SymLinkEnv(env, name, linkto, **kw):
     else:
         source = []
 
-    tmp=env.__make_link__(target = target, source = source, linkto  = linkto, **kw)
+    tmp = env.__make_link__(target=target, source=source, linkto=linkto, **kw)
     if len(tmp) > 1:
         raise SCons.Errors.UserError("Symlink can only have one Target")
     return tmp
+
 
 def make_link_Emit(target, source, env):
     """
@@ -563,6 +577,7 @@ def make_link_Emit(target, source, env):
 
     return ([target], source)
 
+
 def make_link_bf(target, source, env):
     assert len(target) == 1
     target = target[0]
@@ -576,13 +591,14 @@ def make_link_bf(target, source, env):
 
     return None
 
-api.register.add_builder('__make_link__',SCons.Builder.Builder(
-        action         = SCons.Action.Action(make_link_bf, cmdstr="Symbolic link $TARGET -> ${TARGET.linkto}"),
-        target_factory = SCons.Node.FS.FileSymbolicLink,
-        source_factory = SCons.Node.FS.Entry,
-        single_source  = 1,
-        emitter        = make_link_Emit,
-        ))
+api.register.add_builder('__make_link__', SCons.Builder.Builder(
+    action=SCons.Action.Action(make_link_bf, cmdstr="Symbolic link $TARGET -> ${TARGET.linkto}"),
+    target_factory=SCons.Node.FS.FileSymbolicLink,
+    source_factory=SCons.Node.FS.Entry,
+    single_source=1,
+    emitter=make_link_Emit,
+))
+
 
 def ResolveSymLinkChain(env, link):
     """
@@ -615,4 +631,3 @@ SConsEnvironment.SymLink = SymLinkEnv
 SConsEnvironment.ResolveSymLinkChain = ResolveSymLinkChain
 
 # vim: set et ts=4 sw=4 ai ft=python :
-

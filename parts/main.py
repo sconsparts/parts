@@ -1,20 +1,20 @@
 
 
 #########################################################
-### This is the init code that make every start correctly.
+# This is the init code that make every start correctly.
 ###
 # import main code
 import sys
 import glb
 import reporter
 # start up reporter
-glb.rpter=reporter.reporter()
+glb.rpter = reporter.reporter()
 
-import overrides # init all Scons overides
-import engine # get engine
+import overrides  # init all Scons overides
+import engine  # get engine
 
 # create the engine
-glb.engine=engine.parts_addon()
+glb.engine = engine.parts_addon()
 
 # load rest of the code
 import config
@@ -23,21 +23,21 @@ import pattern
 import version
 import filters
 import version_info
-import poptions,installs
+import poptions
+import installs
 import vcs
 import build_section
 import parts
 
 
-
-### import the pieces
+# import the pieces
 import pieces
 
 # start up logic ... runs during import of the code
-glb.engine.Start() # sets up everything
+glb.engine.Start()  # sets up everything
 
 # import extra funcion
-## this will be viewed as global function to the user in the Sconstruct file
+# this will be viewed as global function to the user in the Sconstruct file
 globals().update(glb.globals)
 
 import SCons.Script

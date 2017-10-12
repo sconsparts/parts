@@ -7,6 +7,6 @@ import sys
 fname = sys._getframe(1).f_code.co_filename
 if fname.endswith("pkg_resources.py") or fname.endswith('pkg_resources/__init__.py'):
     pass
-    #print sys._getframe(1).f_code.co_filename
+    # print sys._getframe(1).f_code.co_filename
 else:
-  from main import *
+    from main import *

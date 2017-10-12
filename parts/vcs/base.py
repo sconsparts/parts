@@ -19,11 +19,13 @@ from .. import part_ref
 from .. import target_type
 from ..reporter import PartRuntimeError as PartRuntimeError
 
+
 def normalize_url(url):
     # Combine and normalize the URL
     schema, netloc, path, query, fragment = urlparse.urlsplit(url)
     return urlparse.urlunsplit((schema, netloc, re.sub(r'/+', '/', path),
-            query, fragment)).rstrip('/')
+                                query, fragment)).rstrip('/')
+
 
 def removeall(path):
     '''
@@ -45,9 +47,8 @@ def removeall(path):
         os.chmod(p, stat.S_IMODE(st[stat.ST_MODE]) | stat.S_IWRITE)
         os.remove(p)
 
-
     def rm_dir(p):
-        removeall(p) # remove all files in directory first
+        removeall(p)  # remove all files in directory first
         st = os.stat(p)
         os.chmod(p, stat.S_IMODE(st[stat.ST_MODE]) | stat.S_IWRITE)
         os.rmdir(p)
@@ -56,17 +57,17 @@ def removeall(path):
         rm_file(path)
         return
 
-
-    files=os.listdir(path)
+    files = os.listdir(path)
 
     for x in files:
-        fullpath=os.path.join(path, x)
+        fullpath = os.path.join(path, x)
         if os.path.islink(fullpath):
             rm_link(fullpath)
         elif os.path.isfile(fullpath):
             rm_file(fullpath)
         elif os.path.isdir(fullpath):
             rm_dir(fullpath)
+
 
 class base(object):
     '''
@@ -77,27 +78,27 @@ class base(object):
     for building not the checking of sources. Check in, push or other maintainance
     logic should be done outside SCons and Parts.
     '''
-    __slots__=[
-               '_repository',
-               '_server',
-               '_allow_parallel', # Default value is True
-               '_pobj', # Default value is None
-               '_env', # Default value is None
-               '_full_path',
-               ]
+    __slots__ = [
+        '_repository',
+        '_server',
+        '_allow_parallel',  # Default value is True
+        '_pobj',  # Default value is None
+        '_env',  # Default value is None
+        '_full_path',
+    ]
 
-    def __init__(self,repository,server=None):
+    def __init__(self, repository, server=None):
         '''Constructor for the vcs object
         @param self The object pointer
         @param repository The location under in the server to find get the data files
         @param server The vcs server to access. If not provided the full value of the repository value is used
         '''
 
-        self._repository=repository
-        self._server=server
-        self._allow_parallel=True
-        self._pobj=None
-        self._env=None
+        self._repository = repository
+        self._server = server
+        self._allow_parallel = True
+        self._pobj = None
+        self._env = None
 
     @property
     def Server(self):
@@ -108,6 +109,7 @@ class base(object):
         server is not set
         '''
         return self._server
+
     @property
     def Repository(self):
         '''returns the value of the server
@@ -115,6 +117,7 @@ class base(object):
         Subclasses may add to this logic as they might want to define other values based on custom logic.
         '''
         return self._repository
+
     @property
     def CheckOutDir(self):
         '''returns the path in which we want to checkout to'''
@@ -124,6 +127,7 @@ class base(object):
     def PartFileName(self):
         '''returns the modifed path of the Parts file based on the check out directory'''
         return self._env.Dir(self.CheckOutDir).File(self._pobj.File).abspath
+
     @property
     def PartFileExists(self):
         return os.path.exists(self.PartFileName)
@@ -136,7 +140,7 @@ class base(object):
         except AttributeError:
             # Combine and normalize the URL
             self._full_path = result = normalize_url(
-                    '/'.join((self.Server.rstrip('\\/'), self.Repository)))
+                '/'.join((self.Server.rstrip('\\/'), self.Repository)))
             return result
 
     def AllowParallelAction(self):
@@ -144,14 +148,14 @@ class base(object):
         # some policy/variable value
         return True
 
-    def _setup_(self,partobj):
+    def _setup_(self, partobj):
         ''' This sets up the vcs object data for real use
         @param partobj The part object that we will want to reference for certain data items
         '''
 
         # the set the part object
-        self._pobj=partobj
-        self._env=partobj.Env
+        self._pobj = partobj
+        self._env = partobj.Env
 
         # set up the server and repository data
         if self._server and not self._server.endswith('/'):
@@ -163,132 +167,142 @@ class base(object):
         '''
         Update the with information about the current VCS object
         '''
-        self._env['VCS']=common.namespace(
-                TYPE='unknown',
-                CHECKOUT_DIR=''
-            )
+        self._env['VCS'] = common.namespace(
+            TYPE='unknown',
+            CHECKOUT_DIR=''
+        )
 
-    def _has_target_match(self,update_option):
+    def _has_target_match(self, update_option):
 
         if util.isList(update_option):
             for i in update_option:
-                target=target_type.target_type(i)
-                tmp=part_ref.part_ref(target)
+                target = target_type.target_type(i)
+                tmp = part_ref.part_ref(target)
                 if tmp.hasStoredMatch or tmp.hasMatch:
                     if self._pobj in tmp.StoredMatches or self._pobj in tmp.Matches:
                         return True
                 else:
                     # this is a little bit of a hack.. will want to refactor this later
                     if datacache.GetCache("part_map") is None:
-                        api.output.warning_msgf("Skipping the update of {0} because there is no part cache for mapping the value '{0}' to the Part",i,print_once=True,show_stack=False)
+                        api.output.warning_msgf(
+                            "Skipping the update of {0} because there is no part cache for mapping the value '{0}' to the Part", i, print_once=True, show_stack=False)
                     else:
-                        api.output.warning_msgf("Skipping the update of {0} as it is not a known part to update. Is this a type-o?",i,print_once=True,show_stack=False)
+                        api.output.warning_msgf(
+                            "Skipping the update of {0} as it is not a known part to update. Is this a type-o?", i, print_once=True, show_stack=False)
 
         return False
 
     def NeedsToUpdate(self):
         '''Tell us if this Vcs object believe it need to be updated'''
-        ret_val=False
-        update=self._env.GetOption('update')
-        api.output.verbose_msg('vcs_update','Vcs update check for part: "%s"'%self._pobj.Alias)
+        ret_val = False
+        update = self._env.GetOption('update')
+        api.output.verbose_msg('vcs_update', 'Vcs update check for part: "%s"' % self._pobj.Alias)
         # do custom check
         if self.do_update_check():
-                api.output.verbose_msg('vcs_update',' do_update_check (custom checks) requires updating')
-                ret_val = True
+            api.output.verbose_msg('vcs_update', ' do_update_check (custom checks) requires updating')
+            ret_val = True
         elif update == 'auto':
             # do smart logic stuff
             # get the vcs-logic value
 
-            logic_type=self._env.GetOption('vcs_logic')
-            api.output.verbose_msg('vcs_update',' doing smart logic of "%s"'%logic_type)
-            if logic_type=='exists':
-                ret=self.do_exist_logic()
-            elif logic_type=='check':
-                ret=self.do_check_logic()
-            elif logic_type=='force':
-                ret=self.do_force_logic()
-            elif logic_type=='none':
-                ret=False
+            logic_type = self._env.GetOption('vcs_logic')
+            api.output.verbose_msg('vcs_update', ' doing smart logic of "%s"' % logic_type)
+            if logic_type == 'exists':
+                ret = self.do_exist_logic()
+            elif logic_type == 'check':
+                ret = self.do_check_logic()
+            elif logic_type == 'force':
+                ret = self.do_force_logic()
+            elif logic_type == 'none':
+                ret = False
                 return ret
-            mod_msg='Local modification detected in "{0}".\n Add --update to force update for merge and potential loss of local changes'.format(self.CheckOutDir)
+            mod_msg = 'Local modification detected in "{0}".\n Add --update to force update for merge and potential loss of local changes'.format(
+                self.CheckOutDir)
             if ret:
                 # get policy for how to handle a positive reponse
-                pol=self._env.GetOption('vcs_policy')
+                pol = self._env.GetOption('vcs_policy')
                 if pol == 'warning':
                     ret_val = False
                     # report the warning
-                    api.output.warning_msg(ret,show_stack=False)
+                    api.output.warning_msg(ret, show_stack=False)
                 elif pol == 'error':
                     ret_val = False
                     # report the error
-                    api.output.error_msg(ret,show_stack=False)
-                elif pol =='checkout-warning':
+                    api.output.error_msg(ret, show_stack=False)
+                elif pol == 'checkout-warning':
                     ret_val = False
                     if self.do_exist_logic():
-                        api.output.verbose_msg('vcs_update',ret)
+                        api.output.verbose_msg('vcs_update', ret)
                     else:
                         # report the warning
-                        api.output.warning_msg(ret,show_stack=False)
-                        api.output.warning_msg("Add --update to force update for merge and potential loss of local changes",show_stack=False)
-                elif pol =='checkout-error':
+                        api.output.warning_msg(ret, show_stack=False)
+                        api.output.warning_msg(
+                            "Add --update to force update for merge and potential loss of local changes", show_stack=False)
+                elif pol == 'checkout-error':
                     ret_val = False
                     if self.do_exist_logic():
-                        api.output.verbose_msg('vcs_update',ret)
+                        api.output.verbose_msg('vcs_update', ret)
                     else:
                         # report the warning
-                        api.output.error_msg(ret,show_stack=False,exit=False)
-                        api.output.error_msg("Add --update to force update for merge and potential loss of local changes",show_stack=False)
-                elif pol =='message-update':
+                        api.output.error_msg(ret, show_stack=False, exit=False)
+                        api.output.error_msg(
+                            "Add --update to force update for merge and potential loss of local changes", show_stack=False)
+                elif pol == 'message-update':
                     ret_val = True
                     api.output.print_msg(ret)
                     if self.is_modified():
-                        api.output.error_msg(mod_msg,show_stack=False)
+                        api.output.error_msg(mod_msg, show_stack=False)
                     elif os.path.exists(self.CheckOutDir):
                         api.output.print_msg('No local modification detected in "{0}", updating...'.format(self.CheckOutDir))
-                elif pol =='warning-update':
+                elif pol == 'warning-update':
                     ret_val = True
-                    api.output.warning_msg(ret,show_stack=False)
+                    api.output.warning_msg(ret, show_stack=False)
                     if self.is_modified():
-                        api.output.error_msg(mod_msg,show_stack=False)
+                        api.output.error_msg(mod_msg, show_stack=False)
                     elif os.path.exists(self.CheckOutDir):
-                        api.output.warning_msg('No local modification detected in "{0}", updating...'.format(self.CheckOutDir),show_stack=False)
-                elif pol =='update':
+                        api.output.warning_msg('No local modification detected in "{0}", updating...'.format(
+                            self.CheckOutDir), show_stack=False)
+                elif pol == 'update':
                     ret_val = True
-                    api.output.verbose_msg('vcs_update',ret)
+                    api.output.verbose_msg('vcs_update', ret)
                     if self.is_modified():
-                        api.output.error_msg(mod_msg,show_stack=False)
+                        api.output.error_msg(mod_msg, show_stack=False)
                     elif os.path.exists(self.CheckOutDir):
-                        api.output.verbose_msg('vcs_update','No local modification detected in "{0}", updating...'.format(self.CheckOutDir))
+                        api.output.verbose_msg(
+                            'vcs_update', 'No local modification detected in "{0}", updating...'.format(self.CheckOutDir))
                 else:
                     ret_val = False
             else:
-                    ret_val = False
-            api.output.verbose_msg('vcs_update',' smart logic returns value of %s%s'%(ret_val , ret_val== True and ',update needed' or ''))
+                ret_val = False
+            api.output.verbose_msg('vcs_update', ' smart logic returns value of %s%s' %
+                                   (ret_val, ret_val == True and ',update needed' or ''))
 
-        elif self._has_target_match(update) or update == True :
-            api.output.verbose_msg('vcs_update',' --update switch matched, update needed')
+        elif self._has_target_match(update) or update == True:
+            api.output.verbose_msg('vcs_update', ' --update switch matched, update needed')
             ret_val = True
 
         # this check the backwards compatible way.. to be removed
-        ## @todo remove this case in 0.10+1.0 version
-        elif self._env.get('UPDATE_'+self._env['PART_ALIAS'].upper(),None) is not None or self._pobj.Env['UPDATE_ALL']==True:
-            api.output.verbose_msg('vcs_update',' Backward compatibility check requres updating')
-            ret_val =True
+        # @todo remove this case in 0.10+1.0 version
+        elif self._env.get('UPDATE_' + self._env['PART_ALIAS'].upper(), None) is not None or self._pobj.Env['UPDATE_ALL'] == True:
+            api.output.verbose_msg('vcs_update', ' Backward compatibility check requres updating')
+            ret_val = True
 
         # check to see that the last operation was complete
-        cache=datacache.GetCache(name=self._env['ALIAS'],key='vcs')
+        cache = datacache.GetCache(name=self._env['ALIAS'], key='vcs')
         if cache:
             # we only care to check if there is a cache item
             # else we assume everythign is OK
             # this prevent un wanted forced check outs cause the cache was
             # being ignored or rebuilt
 
-            #see if it passed last time
-            if cache.get('completed',True) != True:
-                api.output.verbose_msg('vcs_update',' Last action was recorded as failing to complete, update needed')
-                ret_val= True
-        if ret_val: api.output.verbose_msg(['vcs_update'],' %s will \033[31mupdate!\033[0m'%(self._pobj.Alias))
-        else: api.output.verbose_msg(['vcs_update'],' %s will \033[32mnot update!\033[0m'%(self._pobj.Alias))
+            # see if it passed last time
+            if cache.get('completed', True) != True:
+                api.output.verbose_msg('vcs_update', ' Last action was recorded as failing to complete, update needed')
+                ret_val = True
+        if ret_val:
+            api.output.verbose_msg(['vcs_update'], ' %s will \033[31mupdate!\033[0m' % (self._pobj.Alias))
+        else:
+            api.output.verbose_msg(['vcs_update'], ' %s will \033[32mnot update!\033[0m' % (self._pobj.Alias))
         return ret_val
 
     def is_modified(self):
@@ -321,49 +335,49 @@ class base(object):
         '''
         return None
 
-
     def UpdateOnDisk(self):
         ''' This function does the update logic on the disk'''
 
         if self.PartFileExists:
             try:
                 try:
-                    ret=self.Update()
+                    ret = self.Update()
                 except PartRuntimeError, e:
-                    ret=True
+                    ret = True
             except:
-                api.output.error_msg("Unexpected exception when doing Update actions for {0}. Stopping build!".format(self._pobj.Alias),show_stack=False,exit=False)
+                api.output.error_msg("Unexpected exception when doing Update actions for {0}. Stopping build!".format(
+                    self._pobj.Alias), show_stack=False, exit=False)
                 traceback.print_exc()
                 raise
             if ret and self._env.GetOption('vcs_retry') == True:
-                astr="Update"
+                astr = "Update"
         else:
             try:
-                ret=self.CheckOut()
+                ret = self.CheckOut()
             except:
-                api.output.error_msg("Unexpected exception when Checkout actions for {0}. Stopping build!".format(self._pobj.Alias),show_stack=False,exit=False)
+                api.output.error_msg("Unexpected exception when Checkout actions for {0}. Stopping build!".format(
+                    self._pobj.Alias), show_stack=False, exit=False)
                 traceback.print_exc()
                 raise
             if ret and self._env.GetOption('vcs_retry') == True:
-                astr="Checkout"
+                astr = "Checkout"
 
         if ret and self._env.GetOption('vcs_retry') == True:
-            api.output.print_msg("{0} action failed, restoring clean state for {1}.".format(astr,self._pobj.Alias))
-            api.output.print_msg('Deleting directory: %s'%self.CheckOutDir)
+            api.output.print_msg("{0} action failed, restoring clean state for {1}.".format(astr, self._pobj.Alias))
+            api.output.print_msg('Deleting directory: %s' % self.CheckOutDir)
             try:
                 removeall(self.CheckOutDir)
             except OSError, e:
-                api.output.error_msg("Failed to remove directory: {0}".format(e),show_stack=False,exit=False)
+                api.output.error_msg("Failed to remove directory: {0}".format(e), show_stack=False, exit=False)
                 raise
             api.output.print_msg("Doing full checkout of {0}.".format(self._pobj.Alias))
-            ret=self.CheckOut()
+            ret = self.CheckOut()
             if ret:
-                api.output.error_msg("Checkout action failed again for {0}. Stopping build!".format(self._pobj.Alias),show_stack=False,exit=False)
+                api.output.error_msg("Checkout action failed again for {0}. Stopping build!".format(
+                    self._pobj.Alias), show_stack=False, exit=False)
         return ret
 
-
-
-    def clean_step(self,out_dir):
+    def clean_step(self, out_dir):
         '''
         Function to allow for any special actions that are needed before we clean.
         @param self object pointer
@@ -376,8 +390,7 @@ class base(object):
         '''
         pass
 
-
-    def UpdateAction(self,out_dir):
+    def UpdateAction(self, out_dir):
         '''
         this is what would be called for any updating of the location
 
@@ -389,7 +402,7 @@ class base(object):
         '''
         return None
 
-    def CheckOutAction(self,out_dir):
+    def CheckOutAction(self, out_dir):
         '''
         this is what would be called when we need to get a fresh checkout copy
 
@@ -407,7 +420,7 @@ class base(object):
         Ideally this does not get overidden as the and tool only needs to provide a command to run
         '''
 
-        action=self.UpdateAction(self.CheckOutDir)
+        action = self.UpdateAction(self.CheckOutDir)
         return self._env.Execute(action)
 
     def CheckOut(self):
@@ -416,10 +429,10 @@ class base(object):
         Ideally this does not get overidden as the and tool only needs to provide a command to run
         '''
 
-        action=self.CheckOutAction(self.CheckOutDir)
+        action = self.CheckOutAction(self.CheckOutDir)
         return self._env.Execute(action)
 
-    def ProcessResult(self,result):
+    def ProcessResult(self, result):
         ''' this function returns the result of the given action call.
 
         @param result True or False based on if the Update logic was able to finish a successfull update
@@ -436,7 +449,7 @@ class base(object):
         pass
 
     @staticmethod
-    def command_output (cmd_str, echo=False):
+    def command_output(cmd_str, echo=False):
         '''
         This internal call is to help with making a system call and printing
         basic error messages
@@ -447,35 +460,35 @@ class base(object):
         '''
 
         if echo:
-            api.output.print_msg("cmd str=%s"%cmd_str)
-        api.output.verbose_msgf('vcs_command',"cmd str={0}",cmd_str)
-        sys.stdout.flush ()
+            api.output.print_msg("cmd str=%s" % cmd_str)
+        api.output.verbose_msgf('vcs_command', "cmd str={0}", cmd_str)
+        sys.stdout.flush()
 
-        #try:
+        # try:
         cmd_output = ""
-        proc = subprocess.Popen (cmd_str, shell=True, stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT,
-                                    universal_newlines=True)
+        proc = subprocess.Popen(cmd_str, shell=True, stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT,
+                                universal_newlines=True)
         # while command runs get output
-        while (proc.poll () == None):
-            tmp = proc.stdout.readline ()
+        while (proc.poll() == None):
+            tmp = proc.stdout.readline()
             if echo:
-                sys.stdout.write (tmp)
+                sys.stdout.write(tmp)
             cmd_output += tmp
         # when command is done get the rest of the output
-        for last_output in proc.stdout.readlines ():
+        for last_output in proc.stdout.readlines():
             if echo:
-                sys.stdout.write (last_output )
+                sys.stdout.write(last_output)
             cmd_output += last_output
-        if echo: # print out a new line
+        if echo:  # print out a new line
             print
         # get return codes
         ret = proc.returncode
-        api.output.verbose_msgf('vcs_command',"output={0}",cmd_output)
-        return (ret,cmd_output)
-        #except KeyError:
+        api.output.verbose_msgf('vcs_command', "output={0}", cmd_output)
+        return (ret, cmd_output)
+        # except KeyError:
         #    raise
-        #except:
+        # except:
         #    return None
 
     # Returns name of cache file with vcs info
@@ -487,12 +500,12 @@ class base(object):
     @property
     def CacheFileExists(self):
         if self._cache_filename:
-            return os.path.exists(os.sep.join([".parts.cache",'vcs',self._cache_filename+".cache"]))
-        return True # there is no cache file.. so it can't not exists
+            return os.path.exists(os.sep.join([".parts.cache", 'vcs', self._cache_filename + ".cache"]))
+        return True  # there is no cache file.. so it can't not exists
 
 # add configuartion varaible needed for part
 
-api.register.add_bool_variable('UPDATE_ALL',False,'Controls if Parts will update source from servers')
-api.register.add_variable('CHECK_OUT_ROOT','#_vcs','Root directory to place checked out data')
-api.register.add_variable('CHECK_OUT_DIR','$VCS_DIR','Full path used for any given checked out item')
-api.register.add_variable('VCS_DIR','$VCS.CHECKOUT_DIR','')
+api.register.add_bool_variable('UPDATE_ALL', False, 'Controls if Parts will update source from servers')
+api.register.add_variable('CHECK_OUT_ROOT', '#_vcs', 'Root directory to place checked out data')
+api.register.add_variable('CHECK_OUT_DIR', '$VCS_DIR', 'Full path used for any given checked out item')
+api.register.add_variable('VCS_DIR', '$VCS.CHECKOUT_DIR', '')
