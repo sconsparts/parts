@@ -1,9 +1,10 @@
 from SCons.Debug import logInstanceCreation
 from .. import glb
 
+
 class dependent_info(object):
     ''' this class defines state we need for the section when we store dependancy information'''
-    __slots__=[
+    __slots__ = [
         '__weakref__',
         '__part_ref_str',
         '__section_name',
@@ -16,17 +17,18 @@ class dependent_info(object):
         '__mapping_sig'
     ]
 
-    def __init__(self,dobj):
-        if __debug__: logInstanceCreation(self)
-        self.__part_ref_str =str(dobj.PartRef.Target)
-        self.__section_name =dobj.SectionName
-        self.__requires     =dobj.Requires
-        self.__rsigs        =dobj.RSigs()
-        self.__esig         =dobj.Section.ESig()
-        self.__sectionID    =dobj.Section.ID
-        self.__partID       =dobj.Part.ID
-        self.__part_name    =dobj.Part.Name
-        self.__mapping_sig  =glb.engine._part_manager.MappingSig(dobj.Part.Name)
+    def __init__(self, dobj):
+        if __debug__:
+            logInstanceCreation(self)
+        self.__part_ref_str = str(dobj.PartRef.Target)
+        self.__section_name = dobj.SectionName
+        self.__requires = dobj.Requires
+        self.__rsigs = dobj.RSigs()
+        self.__esig = dobj.Section.ESig()
+        self.__sectionID = dobj.Section.ID
+        self.__partID = dobj.Part.ID
+        self.__part_name = dobj.Part.Name
+        self.__mapping_sig = glb.engine._part_manager.MappingSig(dobj.Part.Name)
 
     @property
     def PartRefStr(self):
@@ -64,11 +66,7 @@ class dependent_info(object):
     def MappingSig(self):
         return self.__mapping_sig
 
-    def Update(self,newsec):
+    def Update(self, newsec):
         '''Update information about the new section we are mapping to now'''
-        self.__sectionID    =newsec.ID
-        self.__partID       =newsec.Part.ID
-
-
-
-
+        self.__sectionID = newsec.ID
+        self.__partID = newsec.Part.ID

@@ -1,17 +1,17 @@
-﻿from common import msvc,framework_root,framework_root64,get_current_sdk
+﻿from common import msvc, framework_root, framework_root64, get_current_sdk
 from parts.tools.Common.ToolInfo import ToolInfo
-from parts.tools.Common.Finders import RegFinder,EnvFinder,PathFinder,ScriptFinder
+from parts.tools.Common.Finders import RegFinder, EnvFinder, PathFinder, ScriptFinder
 from parts.platform_info import SystemPlatform
 import os
 import SCons.Platform
 
-## Need to verify the paths, but this seems to work well enough.
+# Need to verify the paths, but this seems to work well enough.
 
-## version 15 .. 2017
+# version 15 .. 2017
 # 32-bit
 msvc.Register(
-    hosts=[SystemPlatform('win32','any')],
-    targets=[SystemPlatform('win32','x86')],
+    hosts=[SystemPlatform('win32', 'any')],
+    targets=[SystemPlatform('win32', 'x86')],
     info=[
         ToolInfo(
             version='15.0',
@@ -31,20 +31,20 @@ msvc.Register(
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'x86'),
             subst_vars={
-            'VCINSTALL': '${MSVC.INSTALL_ROOT}/VC',
-            'VSINSTALL': '${MSVC.INSTALL_ROOT}',
-            'FRAMEWORK_ROOT':framework_root(),
-            'FRAMEWORK_ROOT64':framework_root64()
+                'VCINSTALL': '${MSVC.INSTALL_ROOT}/VC',
+                'VSINSTALL': '${MSVC.INSTALL_ROOT}',
+                'FRAMEWORK_ROOT': framework_root(),
+                'FRAMEWORK_ROOT64': framework_root64()
             },
-            shell_vars={ },
+            shell_vars={},
             test_file='cl.exe'
-            )
-        ]
-    )
+        )
+    ]
+)
 
 msvc.Register(
-    hosts=[SystemPlatform('win32','x86_64')],
-    targets=[SystemPlatform('win32','arm')],
+    hosts=[SystemPlatform('win32', 'x86_64')],
+    targets=[SystemPlatform('win32', 'arm')],
     info=[
         ToolInfo(
             version='15.0',
@@ -76,8 +76,8 @@ msvc.Register(
 )
 
 msvc.Register(
-    hosts=[SystemPlatform('win32','any')],
-    targets=[SystemPlatform('win32','arm')],
+    hosts=[SystemPlatform('win32', 'any')],
+    targets=[SystemPlatform('win32', 'arm')],
     info=[
         ToolInfo(
             version='15.0',
@@ -109,8 +109,8 @@ msvc.Register(
 )
 
 msvc.Register(
-    hosts=[SystemPlatform('win32','x86_64')],
-    targets=[SystemPlatform('win32','arm64')],
+    hosts=[SystemPlatform('win32', 'x86_64')],
+    targets=[SystemPlatform('win32', 'arm64')],
     info=[
         ToolInfo(
             version='15.0',
@@ -142,8 +142,8 @@ msvc.Register(
 )
 
 msvc.Register(
-    hosts=[SystemPlatform('win32','any')],
-    targets=[SystemPlatform('win32','arm64')],
+    hosts=[SystemPlatform('win32', 'any')],
+    targets=[SystemPlatform('win32', 'arm64')],
     info=[
         ToolInfo(
             version='15.0',
@@ -176,8 +176,8 @@ msvc.Register(
 
 # 64-bit native
 msvc.Register(
-    hosts=[SystemPlatform('win32','x86_64')],
-    targets=[SystemPlatform('win32','x86_64')],
+    hosts=[SystemPlatform('win32', 'x86_64')],
+    targets=[SystemPlatform('win32', 'x86_64')],
     info=[
         ToolInfo(
             version='15.0',
@@ -206,12 +206,12 @@ msvc.Register(
             test_file='cl.exe'
         )
     ]
-    )
+)
 
-#cross - 64-bit. 
+# cross - 64-bit.
 msvc.Register(
-    hosts=[SystemPlatform('win32','any')],
-    targets=[SystemPlatform('win32','x86_64')],
+    hosts=[SystemPlatform('win32', 'any')],
+    targets=[SystemPlatform('win32', 'x86_64')],
     info=[
         ToolInfo(
             version='15.0',

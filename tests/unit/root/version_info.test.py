@@ -2,6 +2,7 @@ import unittest
 import parts.version_info as version_info
 import SCons.Script
 
+
 class TestVersionInfo(unittest.TestCase):
 
     def setUp(self):

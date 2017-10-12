@@ -1,4 +1,4 @@
-#pylint: disable=missing-docstring
+# pylint: disable=missing-docstring
 
 import sys
 import os
@@ -16,7 +16,9 @@ import parts.api as api
 import parts.overrides.symlinks as symlinks
 import parts.pattern as pattern
 
+
 class CCopyException(Exception):
+
     def __init__(self, exc):
         Exception.__init__(self)
         self.exc = exc
@@ -120,6 +122,7 @@ if sys.platform == 'win32':
 
 else:
     FileIdentifiers = namedtuple('FileIdentifiers', 'device inode')
+
     def _areFilesHardlinked(*names):
         '''
         On POSIX hardlinks to the same file entry all share the same identifiers, that is:
@@ -166,17 +169,19 @@ else:
         except (OSError, IOError) as ex:
             _reportError(ex, "Failed to copy", dest)
 
+
 def clear_dest(dest):
     if os.path.exists(dest):
         api.output.verbose_msgf("ccopy",
-                'File: {0} exists on disk, deleting file so links can be created correctly',
-                dest)
+                                'File: {0} exists on disk, deleting file so links can be created correctly',
+                                dest)
         os.remove(dest)
 
 try:
     WindowsError
 except NameError:
     WindowsError = None
+
 
 def copytree(src, dst):
     '''
@@ -196,7 +201,7 @@ def copytree(src, dst):
             if error.errno == errno.EEXIST:
                 if not os.path.isdir(dst_dir):
                     raise SCons.Errors.UserError("cannot overwrite non-directory "
-                            "'%s' with a directory '%s'" % (dst_dir, src_dir))
+                                                 "'%s' with a directory '%s'" % (dst_dir, src_dir))
             else:
                 raise
 
@@ -218,26 +223,30 @@ def copytree(src, dst):
             else:
                 raise
 
+
 def CCopyFuncWrapper(env, dest, source, copyfunc=None):
     if os.path.isdir(source):
         copytree(source, dest)
     else:
         (copyfunc or copy_copy)(dest, source)
 
+
 def CCopyStringFunc(target, source, env):
     target = str(target[0])
     if not source[0].exists():
-       source = [source[0].srcnode()]
+        source = [source[0].srcnode()]
     source = str(source[0])
     targetType = 'directory' if os.path.isdir(source) else 'file'
     targetDir, targetBasename = os.path.split(target)
     return 'Parts: Copying %s: "%s" to "%s" as: "%s"' % (targetType, source, targetDir,
                                                          targetBasename)
 
+
 def CCopyEmit(target, source, env):
     target, source = target[0], source[0]
     target.must_be_same(type(source))
     return [target], [source]
+
 
 class CCopy(object):
     default = 0
@@ -276,6 +285,7 @@ class CCopy(object):
             description = COPY_BUILDERS[cls.copy]
         return getattr(env, description.builderName)
 
+
 def CCopyWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw):
     target_factory = env.fs
     # test args a little
@@ -308,15 +318,15 @@ def CCopyWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw):
                 # '#' on the file name portion as meaning the Node should
                 # be relative to the top-level SConstruct directory.
                 e = dnode.Entry(os.sep.join(['.', src.name]))
-            elif  isinstance(src, pattern.Pattern):
+            elif isinstance(src, pattern.Pattern):
                 # this case needs some tweaking to deal with symlinks
-                t, sr = src.target_source(dnode.abspath)                
+                t, sr = src.target_source(dnode.abspath)
                 n_targets.extend(env.CCopyAs(target=t, source=sr))
                 continue
             elif isinstance(src, SCons.Node.FS.Dir):
                 e = dnode.Dir(os.sep.join(['.', src.name]))
             elif isinstance(src, symlinks.FileSymbolicLink):
-                #symlinks.ensure_node_is_symlink(e)
+                # symlinks.ensure_node_is_symlink(e)
                 try:
                     e = dnode.FileSymbolicLink(os.sep.join(['.', src.name]))
                 except:
@@ -346,9 +356,10 @@ def CCopyWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw):
                 pass
             n_targets.extend(copyTargets)
 
-    #for target in n_targets:
+    # for target in n_targets:
     #    target.set_precious(True)
     return n_targets
+
 
 def CCopyAsWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw):
     result = []
@@ -376,6 +387,7 @@ def CCopyAsWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw
 
     return result
 
+
 def CCopyFunc(target, source, env, copy_logic):
     # get the logger for the given part
     output = env._get_part_log_mapper()
@@ -383,10 +395,10 @@ def CCopyFunc(target, source, env, copy_logic):
     taskId = output.TaskStart(CCopyStringFunc(target, source, env) + "\n")
 
     assert len(target) == len(source), "\ntarget: %s\nsource: %s" % (map(str, target),
-                                                                    map(str, source))
+                                                                     map(str, source))
 
     for targetEntry, sourceEntry in zip(target, source):
-        #Get info if this should be handled as a symlink
+        # Get info if this should be handled as a symlink
         if isinstance(sourceEntry, symlinks.FileSymbolicLink):
             assert sourceEntry.exists() and sourceEntry.linkto
             # A symbolic link can only be a copy of another symlink.
@@ -401,13 +413,14 @@ def CCopyFunc(target, source, env, copy_logic):
             # the File variant case. The main differnce is that the default points the variant
             # while the file case points to the source. This check makes sure we get the correct one
             if not sourceEntry.exists():
-                sourceEntry = sourceEntry.srcnode()            
+                sourceEntry = sourceEntry.srcnode()
 
-            #Do normal copy stuff
+            # Do normal copy stuff
             CCopyFuncWrapper(env, targetEntry.get_path(), sourceEntry.get_path(), copy_logic)
-    #tell logger the task has end correctly.
+    # tell logger the task has end correctly.
     output.TaskEnd(taskId, 0)
     return
+
 
 def generateCopyBuilder(description):
     '''
@@ -434,7 +447,7 @@ def generateCopyBuilder(description):
             # remove prior copying is actually a hardlink to the one we're
             # trying to create, and if so we just stop the copy process
             if _areFilesHardlinked(source, dest):
-                api.output.verbose_msgf("ccopy", "{0}: {1} and {2} are hardlinked, " + \
+                api.output.verbose_msgf("ccopy", "{0}: {1} and {2} are hardlinked, " +
                                                  "no copying needed",
                                         description.ccopyName, dest, source)
                 return
@@ -451,15 +464,16 @@ def generateCopyBuilder(description):
             return copy_copy(dest, source)
         except CCopyException as err:
             raise err.exc
-    def doAction(target, source, env):     
+
+    def doAction(target, source, env):
         return CCopyFunc(target, source, env, doCopy)
 
     api.register.add_builder(description.builderName,
-            SCons.Builder.Builder(action=SCons.Action.Action(doAction, CCopyStringFunc),
-                                  target_factory=SCons.Node.FS.Entry,
-                                  source_factory=SCons.Node.FS.Entry,
-                                  emitter=CCopyEmit, source_scanner=symlinks.source_scanner,
-                                  name='CCOPY'))
+                             SCons.Builder.Builder(action=SCons.Action.Action(doAction, CCopyStringFunc),
+                                                   target_factory=SCons.Node.FS.Entry,
+                                                   source_factory=SCons.Node.FS.Entry,
+                                                   emitter=CCopyEmit, source_scanner=symlinks.source_scanner,
+                                                   name='CCOPY'))
 
 COPY_BUILDERS = {
     CCopy.hard_soft_copy: CopyBuilderDescription(builderName='__CCopyBuilderHSC__',

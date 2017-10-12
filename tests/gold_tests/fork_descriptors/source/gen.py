@@ -4,6 +4,7 @@ import tarfile
 
 TEST_TARBALL_NAME = 'test2'
 
+
 def generateShell(name):
     with open('%s.sh' % name, 'w') as f:
         f.write('''#!/bin/sh
@@ -17,6 +18,7 @@ exit 0
 
     os.chmod('%s.sh' % name, 0755)
 
+
 def packFile(name):
     tar = tarfile.open(name='%s.tar.gz' % name, mode='w:gz')
     try:
@@ -24,6 +26,7 @@ def packFile(name):
     finally:
         tar.close()
     os.unlink('%s.sh' % name)
+
 
 def generateTarball(name):
     generateShell(name)

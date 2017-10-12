@@ -1,4 +1,4 @@
-Test.Summary='''
+Test.Summary = '''
 Problem:
 Building the sample with Parts 0.10.5 results in pickling errors.
 
@@ -26,4 +26,3 @@ PicklingError: Can't pickle <class 'SCons.Util.UniqueList'>: it's not the same o
 Setup.Copy.FromDirectory('source')
 
 Test.AddBuildRun('all').ReturnCode = 0
-

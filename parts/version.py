@@ -2,13 +2,16 @@
 version and version_range implementation to make life easier when dealing with
 version strings.
 '''
-import re, string
+import re
+import string
 
 __all__ = [
     'version',
     'version_range',
 ]
 from SCons.Debug import logInstanceCreation
+
+
 class VersionPart(object):
     '''
     Gives a part of a version number a way to store the string value and a
@@ -18,12 +21,13 @@ class VersionPart(object):
 
     _matchSet = ['*', 'x', 'X']
 
-    def __init__(self, strVer, weight = None):
+    def __init__(self, strVer, weight=None):
         '''
         Initialize the part and do a little bit of parsing to decern if this is
         a match part.
         '''
-        if __debug__: logInstanceCreation(self)
+        if __debug__:
+            logInstanceCreation(self)
         self.ver = strVer
         self.alwaysMatch = strVer in self._matchSet
         self.weight = weight
@@ -89,6 +93,7 @@ class VersionPart(object):
         '''
         return "%s" % self.ver
 
+
 class version(object):
     '''
     version object for comparing version numbers.  This also enables special
@@ -112,18 +117,19 @@ class version(object):
 
     __re = re.compile("(\d*)(\D*)(.*)")
 
-    def __init__(self, ver = None, *args):
+    def __init__(self, ver=None, *args):
         '''
         Setup a new version object by copying over from another version, passing
         in a series of items that can be converted to strings, or nothing.  If
         the string version is None or empty, the version number will be treated
         as '0.0.0'.
         '''
-        if __debug__: logInstanceCreation(self)
+        if __debug__:
+            logInstanceCreation(self)
         if isinstance(ver, version):
             self.ver = ver.ver
             self.parts = ver.parts[:]
-            return;
+            return
 
         self.ver = ver
         self.parts = []
@@ -146,7 +152,7 @@ class version(object):
             try:
                 self.parts.append(int(sub))
             except ValueError:
-                ret = self._parseSub(sub);
+                ret = self._parseSub(sub)
                 if len(ret) == 1:
                     self.parts.extend(ret)
                 else:
@@ -306,9 +312,9 @@ class version(object):
         if rhs == None:
             rhs = "*"
         if self < rhs:
-            ret = version_range("{0}-{1}".format(self,rhs))
+            ret = version_range("{0}-{1}".format(self, rhs))
         else:
-            ret = version_range("{0}-{1}".format(rhs,self))
+            ret = version_range("{0}-{1}".format(rhs, self))
         return ret
 
     def __rsub__(self, lhs):
@@ -317,17 +323,17 @@ class version(object):
         end.
         '''
         if self < lhs:
-            ret = version_range("{0}-{1}".format(self,lhs))
+            ret = version_range("{0}-{1}".format(self, lhs))
         else:
-            ret = version_range("{0}-{1}".format(lhs,self))     
+            ret = version_range("{0}-{1}".format(lhs, self))
         return ret
 
     def __getitem__(self, key):
-        if isinstance(key,slice):
-            return ".".join(map(lambda x: isinstance(x, tuple) and "".join(map(str,x)) or str(x),self.parts[key]))
+        if isinstance(key, slice):
+            return ".".join(map(lambda x: isinstance(x, tuple) and "".join(map(str, x)) or str(x), self.parts[key]))
         else:
-            tmp=self.parts[key]
-            return isinstance(tmp, tuple) and "".join(map(str,tmp))or str(tmp)
+            tmp = self.parts[key]
+            return isinstance(tmp, tuple) and "".join(map(str, tmp))or str(tmp)
 
     def __len__(self):
         ''' Returns the length, or number of "dot" number that are contained in this version'''
@@ -359,19 +365,20 @@ class version(object):
         return self[2]
 
 
-
 class version_range(object):
     '''
     Specifies either a start and end value or a set of version ranges to include
     or exclude.  This can then be used with versions to check if they are in a
     particular range.
     '''
-    def __init__(self, range = None):
+
+    def __init__(self, range=None):
         '''
         Initialize the internal include and exclude arrays and parse the given
         range.
         '''
-        if __debug__: logInstanceCreation(self)
+        if __debug__:
+            logInstanceCreation(self)
         self.range = range
         self.incRight = False
         self.incLeft = True
@@ -535,7 +542,7 @@ import api
 SConsEnvironment.Version = version
 SConsEnvironment.VersionRange = version_range
 
-api.register.add_global_parts_object('Version',version)
-api.register.add_global_parts_object('VersionRange',version_range)
-api.register.add_global_object('Version',version)
-api.register.add_global_object('VersionRange',version_range)
+api.register.add_global_parts_object('Version', version)
+api.register.add_global_parts_object('VersionRange', version_range)
+api.register.add_global_object('Version', version)
+api.register.add_global_object('VersionRange', version_range)

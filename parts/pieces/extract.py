@@ -31,6 +31,7 @@ __namesCache contains info of form:
 }
 """
 
+
 def _getNameForKey(fileNode):
     '''
     Value returned by this function will be used as an ID for fileNode.
@@ -41,19 +42,20 @@ def _getNameForKey(fileNode):
         return fileNode.srcnode().abspath
     return str(fileNode)
 
+
 def getNodesFromCache(fileNode, generator, env):
     try:
         nodeNames = __namesCache[_getNameForKey(fileNode)]
     except KeyError:
         __namesCache[_getNameForKey(fileNode)] = nodeNames = \
-                dict((str(item), (item.index, item.isdir(), item.issym())) \
-                        for item in generator(fileNode))
+            dict((str(item), (item.index, item.isdir(), item.issym()))
+                 for item in generator(fileNode))
 
     nodes = []
     includes = [str(x) for x in env.Flatten(env.subst_list('$EXTRACT_INCLUDES',
-                source=[fileNode.get_subst_proxy()], target=[])) if x]
+                                                           source=[fileNode.get_subst_proxy()], target=[])) if x]
     excludes = [str(x) for x in env.Flatten(env.subst_list('$EXTRACT_EXCLUDES',
-                source=[fileNode.get_subst_proxy()], target=[])) if x]
+                                                           source=[fileNode.get_subst_proxy()], target=[])) if x]
 
     if not includes:
         includes = ['*']
@@ -71,13 +73,14 @@ def getNodesFromCache(fileNode, generator, env):
 
     return nodes
 
+
 class _ArcInfoProxy(object):
     __slots__ = ['_index', '_item', '_arc', '__init__', '__str__', 'open',
-        '_extract_file', '_extract_dir', '_extract_symlink', 'index',
-        'isdir', 'islnk', 'issym', 'linkname', 'extract']
+                 '_extract_file', '_extract_dir', '_extract_symlink', 'index',
+                 'isdir', 'islnk', 'issym', 'linkname', 'extract']
 
     def __init__(self, archive, archiveItem, index):
-        self._arc  = archive
+        self._arc = archive
         self._item = archiveItem
         self._index = index
 
@@ -158,6 +161,7 @@ class _ArcInfoProxy(object):
         else:
             self._extract_file(nodes)
 
+
 class _TarInfoProxy(_ArcInfoProxy):
     __slots__ = ['__init__', '__str__', 'open', 'isdir', 'issym', 'extract', 'linkname']
 
@@ -193,6 +197,7 @@ class _TarInfoProxy(_ArcInfoProxy):
             for action in actions:
                 action(self._item, node.abspath)
 
+
 class _ZipInfoProxy(_ArcInfoProxy):
     __slots__ = ['__init__', '__str__', 'open', 'isdir']
 
@@ -208,6 +213,7 @@ class _ZipInfoProxy(_ArcInfoProxy):
     def isdir(self):
         return self._item.filename[-1] == '/'
 
+
 def zipGenerator(source):
     with contextlib.closing(zipfile.ZipFile(str(source))) as zfile:
         index = -1
@@ -215,10 +221,12 @@ def zipGenerator(source):
             index += 1
             yield _ZipInfoProxy(zfile, zinfo, index)
 
-def emitterUnzip(target,source,env):
+
+def emitterUnzip(target, source, env):
     target = getNodesFromCache(source[0], zipGenerator, env)
 
     return target, source
+
 
 def tarGenerator(source):
     with contextlib.closing(tarfile.open(str(source))) as tfile:
@@ -227,16 +235,18 @@ def tarGenerator(source):
             index += 1
             yield _TarInfoProxy(tfile, info, index)
 
-def emitterUntar(target,source,env):
+
+def emitterUntar(target, source, env):
     target = getNodesFromCache(source[0], tarGenerator, env)
 
     return target, source
+
 
 def actionUnpack(generator, target, source, env):
     output = env._get_part_log_mapper()
     id = output.TaskStart("Extracting from {0}".format(source[0].path))
     try:
-        target.sort(key = lambda x: x.attributes.archive_index)
+        target.sort(key=lambda x: x.attributes.archive_index)
         tgtIter = iter(target)
         arcIter = generator(source[0])
         try:
@@ -270,6 +280,7 @@ def actionUnpack(generator, target, source, env):
     finally:
         output.TaskEnd(id, 0)
 
+
 def batch_key(action, env, target, source):
     return _getNameForKey(source[0])
 
@@ -277,22 +288,22 @@ actionUntar = lambda target, source, env: actionUnpack(tarGenerator, target, sou
 actionUnzip = lambda target, source, env: actionUnpack(zipGenerator, target, source, env)
 
 api.register.add_builder('Extract',
-    SCons.Builder.Builder(
-        action = {
-            '.zip': SCons.Action.Action(actionUnzip, cmdstr = "Extracting from $SOURCE", batch_key = batch_key),
-            '.gz' : SCons.Action.Action(actionUntar, cmdstr = "Extracting from $SOURCE", batch_key = batch_key),
-            '.bz2': SCons.Action.Action(actionUntar, cmdstr = "Extracting from $SOURCE", batch_key = batch_key)
-        },
-        emitter = {
-            '.zip': emitterUnzip,
-            '.gz' : emitterUntar,
-            '.bz2': emitterUntar
-        },
-        prefix = '',
-        suffic = '',
-        src_suffix = ['.zip', '.gz', '.bz2'],
-        target_factory = SCons.Node.FS.Entry,
-    )
-)
+                         SCons.Builder.Builder(
+                             action={
+                                 '.zip': SCons.Action.Action(actionUnzip, cmdstr="Extracting from $SOURCE", batch_key=batch_key),
+                                 '.gz': SCons.Action.Action(actionUntar, cmdstr="Extracting from $SOURCE", batch_key=batch_key),
+                                 '.bz2': SCons.Action.Action(actionUntar, cmdstr="Extracting from $SOURCE", batch_key=batch_key)
+                             },
+                             emitter={
+                                 '.zip': emitterUnzip,
+                                 '.gz': emitterUntar,
+                                 '.bz2': emitterUntar
+                             },
+                             prefix='',
+                             suffic='',
+                             src_suffix=['.zip', '.gz', '.bz2'],
+                             target_factory=SCons.Node.FS.Entry,
+                         )
+                         )
 
 # vim: set et ts=4 ai :

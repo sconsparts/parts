@@ -9,7 +9,7 @@ import sys
 # rtf Simple logger. Probally needs more work.
 
 
-def RtfColorIndex (col):
+def RtfColorIndex(col):
     global _RtfColorIndex
     try:
         return _RtfColorIndex.get(col) or 0
@@ -34,19 +34,20 @@ def RtfColorIndex (col):
         ))
         return _RtfColorIndex.get(col) or 0
 
+
 class rtf(logger.Logger):
 
-    def __init__(self,dir,file):
+    def __init__(self, dir, file):
         if os.path.exists(dir) == False:
             os.makedirs(dir)
-        if file.endswith(".rtf") ==False:
-            file+=".rtf"
-        self.m_file=open(os.path.join(dir,file),"w")
+        if file.endswith(".rtf") == False:
+            file += ".rtf"
+        self.m_file = open(os.path.join(dir, file), "w")
 
-        self.colors=SCons.Script.GetOption('use_color')
-        self.fg_color=0
+        self.colors = SCons.Script.GetOption('use_color')
+        self.fg_color = 0
         self.writeheader()
-        super(rtf, self).__init__(dir,file)
+        super(rtf, self).__init__(dir, file)
 
     def writeheader(self):
         self.m_file.write("{\\rtf1\\fbidis\\ansi\\ansicpg1252")
@@ -56,24 +57,24 @@ class rtf(logger.Logger):
 \\red255\\green0\\blue0;\\red255\\green0\\blue255;\\red255\\green255\\blue0;\\red255\\green255\\blue255;\\red0\\green0\\blue0;}\n''')
         self.m_file.write('\\viewkind4\\pard')
 
-    def out_color(self,col):
-        fg=col.Foreground()
+    def out_color(self, col):
+        fg = col.Foreground()
         if fg == color.Bright:
             if self.fg_color < 8:
-                fg=self.fg_color+8
+                fg = self.fg_color + 8
             else:
-                fg=self.fg_color
+                fg = self.fg_color
         elif fg == color.Dim:
             if self.fg_color > 8:
-                fg=self.fg_color-8
+                fg = self.fg_color - 8
             else:
-                fg=self.fg_color
+                fg = self.fg_color
         else:
-            self.fg_color=fg
+            self.fg_color = fg
 
-        self.m_file.write("\\cf1\\cf%s "%(RtfColorIndex(self.fg_color)))
+        self.m_file.write("\\cf1\\cf%s " % (RtfColorIndex(self.fg_color)))
 
-    def writestr(self,msg):
+    def writestr(self, msg):
         for c in msg:
             if c == '\t':
                 self.m_file.write('\\tab')
@@ -88,27 +89,27 @@ class rtf(logger.Logger):
             else:
                 self.m_file.write(c)
 
-    def logout(self,msg):
+    def logout(self, msg):
         self.out_color(self.colors['stdout'])
         self.writestr(msg)
 
-    def logerr(self,msg):
+    def logerr(self, msg):
         self.out_color(self.colors['stderr'])
         self.writestr(msg)
 
-    def logwrn(self,msg):
+    def logwrn(self, msg):
         self.out_color(self.colors['stdwrn'])
         self.writestr(msg)
 
-    def logmsg(self,msg):
+    def logmsg(self, msg):
         self.out_color(self.colors['stdmsg'])
         self.writestr(msg)
 
-    def logtrace(self,msg):
+    def logtrace(self, msg):
         self.out_color(self.colors['stdtrace'])
         self.writestr(msg)
 
-    def logverbose(self,msg):
+    def logverbose(self, msg):
         self.out_color(self.colors['stdverbose'])
         self.writestr(msg)
 

@@ -9,6 +9,7 @@ import parts.api.output as output
 
 import SCons.Tool.mingw as mingw
 
+
 def generate(env):
     """Add Builders and construction variables for gcc to an Environment."""
     parts.tools.cc.generate(env)
@@ -29,7 +30,7 @@ def generate(env):
     except KeyError:
         pass
 
-    env['CC'] = parts.tools.Common.toolvar(env['GCC']['TOOL'],('gcc','gnu'), env = env)
+    env['CC'] = parts.tools.Common.toolvar(env['GCC']['TOOL'], ('gcc', 'gnu'), env=env)
 
    # this setting is what SCons has.. It seem odd, I thought cygwin handled -fpic fine
     if env['PLATFORM'] in ['cygwin', 'win32']:
@@ -37,17 +38,17 @@ def generate(env):
     else:
         env['SHCCFLAGS'] = SCons.Util.CLVar('$CCFLAGS -fPIC')
 
-    if env['TARGET_PLATFORM']=='android':
+    if env['TARGET_PLATFORM'] == 'android':
         env.SetDefault(ANDROID_API=GetLatestNDKAPI(env['GCC'].INSTALL_ROOT))
-    elif  env['TARGET_PLATFORM']=='win32':
+    elif env['TARGET_PLATFORM'] == 'win32':
         # set some value for the mingw build
         # note on this side we have export libs
 
-        ## resource builder
-        env['WIN32DEFPREFIX']        = ''
-        env['WIN32DEFSUFFIX']        = '.def'
-        env['WINDOWSDEFPREFIX']      = '${WIN32DEFPREFIX}'
-        env['WINDOWSDEFSUFFIX']      = '${WIN32DEFSUFFIX}'
+        # resource builder
+        env['WIN32DEFPREFIX'] = ''
+        env['WIN32DEFSUFFIX'] = '.def'
+        env['WINDOWSDEFPREFIX'] = '${WIN32DEFPREFIX}'
+        env['WINDOWSDEFSUFFIX'] = '${WIN32DEFSUFFIX}'
 
         env['SHOBJSUFFIX'] = '.o'
         env['STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME'] = 1
@@ -60,8 +61,8 @@ def generate(env):
         env['RCCOM'] = '$RC $_CPPDEFFLAGS $RCINCFLAGS ${RCINCPREFIX} ${SOURCE.dir} $RCFLAGS -i $SOURCE -o $TARGET'
         env['BUILDERS']['RES'] = mingw.res_builder
 
-    #Backward compatiblity
-    env['CCVERSION']=env['GCC']['VERSION']
+    # Backward compatiblity
+    env['CCVERSION'] = env['GCC']['VERSION']
 
     env['SHOBJSUFFIX'] = '.pic.o'
     env['OBJSUFFIX'] = '.o'
@@ -72,7 +73,6 @@ def generate(env):
     #api.output.print_msg("Configured Tool %s\t for version <%s> target <%s>"%('gcc',env['GCC']['VERSION'],env['TARGET_PLATFORM']))
 
 
-
 def exists(env):
     return parts.tools.GnuCommon.gcc.Exists(env)
 
@@ -81,5 +81,3 @@ def exists(env):
 # indent-tabs-mode:nil
 # End:
 # vim: set expandtab tabstop=4 shiftwidth=4:
-
-

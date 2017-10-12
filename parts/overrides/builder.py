@@ -6,11 +6,11 @@ import SCons.Builder
 import sys
 from .. import glb
 
-scons_builder=SCons.Builder.Builder
+scons_builder = SCons.Builder.Builder
+
 
 def Part_Builder(**kw):
     glb.build_context_files.add(sys._getframe(1).f_code.co_filename)
     return scons_builder(**kw)
 
-SCons.Builder.Builder=Part_Builder
-
+SCons.Builder.Builder = Part_Builder

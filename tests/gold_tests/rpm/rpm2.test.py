@@ -1,13 +1,13 @@
 import sys
 
-Test.Summary=='''
+Test.Summary == '''
 This test checks that the RPM builder adds files to RPM package from SConstruct.
 To check the error when TARGET_ARCH = 'FakeArch'
 '''
 
 Test.SkipUnless(
     Condition.HasProgram(
-        program= 'rpmbuild',
+        program='rpmbuild',
         msg='Need to have rpmbuild tool on system to build the package',
     )
 )
@@ -15,4 +15,3 @@ Test.SkipUnless(
 Setup.Copy.FromDirectory('rpm_test2')
 
 Test.AddBuildRun('.').ReturnCode = 2
-

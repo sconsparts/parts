@@ -1,10 +1,9 @@
-Test.Summary='''
+Test.Summary = '''
 Test that Scons build the test given the relative node correctly
 '''
 
 Setup.Copy.FromDirectory('test4')
 
 # build test.. should not have any failures
-t=Test.AddBuildRun('utest::')
-t.ReturnCode=0
-
+t = Test.AddBuildRun('utest::')
+t.ReturnCode = 0

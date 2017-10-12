@@ -16,6 +16,8 @@ has64bit = sys.platform != 'darwin'
 toolArch = 'x86_64' if has64bit else 'x86'
 
 # tests for ToolSettings objects
+
+
 class TestToolSettings(unittest.TestCase):
 
     def setUp(self):
@@ -24,7 +26,7 @@ class TestToolSettings(unittest.TestCase):
 
     def test_exists(self):
         """Creates dummy tool 'mycl' and tests that it exists for specified platform"""
-        ts=ToolSetting('mycl')
+        ts = ToolSetting('mycl')
 
         ts.Register(
             hosts=[SystemPlatform(platformStr, toolArch)],
@@ -37,19 +39,19 @@ class TestToolSettings(unittest.TestCase):
                     subst_vars={},
                     shell_vars={'PATH': r'./testdata/vc/bin'},
                     test_file='cl.exe'
-                    )
-                ]
-            )
+                )
+            ]
+        )
 
         self.assertEqual(True, ts.Exists(self.env))
         if has64bit:
             self.assertEqual(False, ts.Exists(self.env,
-                                    TARGET_PLATFORM=SystemPlatform(platformStr, 'x86')))
+                                              TARGET_PLATFORM=SystemPlatform(platformStr, 'x86')))
 
     def test_get_latest_known_version1(self):
         """Creates dummy tool 'mycl' with versions 0.0 and 1.0, query for exact 0.0 version and
         tests that exactly this version is found"""
-        ts=ToolSetting('mycl')
+        ts = ToolSetting('mycl')
 
         ts.Register(
             hosts=[SystemPlatform(platformStr, toolArch)],
@@ -62,7 +64,7 @@ class TestToolSettings(unittest.TestCase):
                     subst_vars={},
                     shell_vars={'PATH': r'./testdata/vc/bin'},
                     test_file='cl.exe'
-                    ),
+                ),
                 ToolInfo(
                     version='1.0',
                     install_scanner=[PathFinder([r'./testdata'])],
@@ -70,9 +72,9 @@ class TestToolSettings(unittest.TestCase):
                     subst_vars={},
                     shell_vars={'PATH': r'./testdata/vc/bin'},
                     test_file='cl.exe'
-                    ),
-                ]
-            )
+                ),
+            ]
+        )
 
         key = ts.get_cache_key(self.env)
         ts.query_for_exact(self.env, key, '0.0')
@@ -81,7 +83,7 @@ class TestToolSettings(unittest.TestCase):
     def test_get_latest_known_version2(self):
         """Creates dummy tool 'mycl' with versions 0.0 and 1.0, query for known version and
         tests that the latest 1.0 version is found"""
-        ts=ToolSetting('mycl')
+        ts = ToolSetting('mycl')
 
         ts.Register(
             hosts=[SystemPlatform(platformStr, toolArch)],
@@ -94,7 +96,7 @@ class TestToolSettings(unittest.TestCase):
                     subst_vars={},
                     shell_vars={'PATH': r'./testdata/vc/bin'},
                     test_file='cl.exe'
-                    ),
+                ),
                 ToolInfo(
                     version='1.0',
                     install_scanner=[PathFinder([r'./testdata'])],
@@ -102,9 +104,9 @@ class TestToolSettings(unittest.TestCase):
                     subst_vars={},
                     shell_vars={'PATH': r'./testdata/vc/bin'},
                     test_file='cl.exe'
-                    ),
-                ]
-            )
+                ),
+            ]
+        )
 
         key = ts.get_cache_key(self.env)
         ts.query_for_known(self.env, key)
@@ -113,7 +115,7 @@ class TestToolSettings(unittest.TestCase):
     def test_get_shell_env1(self):
         """Creates dummy tool 'mycl' and tests that tool environment has proper env variables
         set: 'INSTALL_ROOT', 'TOOL' and 'VERSION'"""
-        ts=ToolSetting('mycl')
+        ts = ToolSetting('mycl')
 
         ts.Register(
             hosts=[SystemPlatform(platformStr, toolArch)],
@@ -126,9 +128,9 @@ class TestToolSettings(unittest.TestCase):
                     subst_vars={},
                     shell_vars={'PATH': r'./testdata/vc/bin'},
                     test_file='cl.exe'
-                    )
-                ]
-            )
+                )
+            ]
+        )
 
         shellEnv, tsEnv = ts.get_shell_env(self.env)
         self.assertEqual(tsEnv['INSTALL_ROOT'], 'testdata')
@@ -153,14 +155,14 @@ class TestToolSettings(unittest.TestCase):
 
         # This code raises the Exception in MatchVersionNumbers. I believe that
         # MatchVersionNumbers should handle the Exception and return True/False
-        #try:
+        # try:
         self.assertEqual(MatchVersionNumbers('1.', '1'), True)
-        #except:
+        # except:
         #    pass
 
         # This code raises the Exception in MatchVersionNumbers. I believe that
         # MatchVersionNumbers should handle the Exception and return True/False
-        #try:
+        # try:
         self.assertEqual(MatchVersionNumbers('1.', '1.1'), True)
-        #except:
+        # except:
         #    pass

@@ -8,12 +8,13 @@ import hashlib
 
 from SCons.Debug import logInstanceCreation
 
+
 class dependent_ref(object):
     """This Class allows us to map a dependancy between two different components
     A dependancy allows certain data items, to be defined by the requirements, to
     be shared between the two environments defining each section
     """
-    __slots__=[
+    __slots__ = [
         '__weakref__',
         '__part_ref',
         '__sectionname',
@@ -25,22 +26,23 @@ class dependent_ref(object):
         '__part',
         '__stored_matches'
     ]
-    def __init__(self,part_ref,section,requires):
-        if __debug__: logInstanceCreation(self)
+
+    def __init__(self, part_ref, section, requires):
+        if __debug__:
+            logInstanceCreation(self)
 
         errors.SetPartStackFrameInfo()
-        self.__part_ref=part_ref
-        self.__sectionname=section
+        self.__part_ref = part_ref
+        self.__sectionname = section
 
-        self.__requires=requirement.REQ()|requires
-        self.__stackframe=errors.GetPartStackFrameInfo()
+        self.__requires = requirement.REQ() | requires
+        self.__stackframe = errors.GetPartStackFrameInfo()
         errors.ResetPartStackFrameInfo()
 
-
-        self.__rsigs=None
-        self.__section=None
-        self.__part=None
-        self.__stored_matches=None
+        self.__rsigs = None
+        self.__section = None
+        self.__part = None
+        self.__stored_matches = None
 
     @property
     def StackFrame(self):
@@ -64,8 +66,8 @@ class dependent_ref(object):
             return self.__part
         else:
             if self.__part_ref.hasUniqueMatch:
-                self.__part=self.__part_ref.UniqueMatch
-            elif self.__part_ref.hasMatch ==False:
+                self.__part = self.__part_ref.UniqueMatch
+            elif self.__part_ref.hasMatch == False:
                 api.output.error_msg(self.NoMatchStr)
             elif self.__part_ref.hasAmbiguousMatch:
                 api.output.error_msg(self.AmbiguousMatchStr)
@@ -75,18 +77,17 @@ class dependent_ref(object):
     def StoredMatchingSections(self):
 
         if self.__stored_matches is None:
-            self.__stored_matches=[]
-            matches=self.__part_ref.StoredMatches
+            self.__stored_matches = []
+            matches = self.__part_ref.StoredMatches
             # try to turn matches in to sections
             for m in matches:
                 stored = m.Stored
                 if stored:
-                    tmp=glb.pnodes.GetPNode(stored.SectionIDs[self.__sectionname])
+                    tmp = glb.pnodes.GetPNode(stored.SectionIDs[self.__sectionname])
                     self.__stored_matches.append(tmp)
                 else:
                     self.__stored_matches.append(m.Section(self.__sectionname))
         return self.__stored_matches
-
 
     @property
     def hasAmbiguousMatch(self):
@@ -126,7 +127,7 @@ class dependent_ref(object):
         if self.__section:
             return self.__section
         else:
-            self.__section=self.Part.Section(self.SectionName)
+            self.__section = self.Part.Section(self.SectionName)
         return self.__section
 
     def NoMatchStr(self):
@@ -141,19 +142,18 @@ class dependent_ref(object):
         return self.__rsigs
 
     def _gen_rsigs(self):
-        md5_rsig=hashlib.md5()
-        rsigs={}
-        esigs=self.Section.ESigs()
+        md5_rsig = hashlib.md5()
+        rsigs = {}
+        esigs = self.Section.ESigs()
         for req in self.__requires:
             try:
-                esig=esigs[req.key]
+                esig = esigs[req.key]
                 md5_rsig.update(esig)
-                rsigs[req.key]=esig
+                rsigs[req.key] = esig
             except KeyError:
                 pass
 
-        #self.__rsig=md5_rsig.hexdigest()
-        self.__rsigs=rsigs
+        # self.__rsig=md5_rsig.hexdigest()
+        self.__rsigs = rsigs
 
 # vim: set et ts=4 sw=4 ai ft=python :
-

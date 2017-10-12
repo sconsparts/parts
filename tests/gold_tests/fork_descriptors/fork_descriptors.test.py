@@ -1,4 +1,4 @@
-Test.Summary='''
+Test.Summary = '''
 This is a test that checks that child processes don't inherit all our open file descriptors,
 otherwise some files are kept open longer that we expected, sometimes leading to mysterious
 failures (like a message from shell "bad interpreter: text file busy" when trying to execute

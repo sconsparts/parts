@@ -47,21 +47,26 @@ import parts.common as common
 from parts.tools.MSCommon import msvc, validate_vars
 import parts.tools.Common
 
+
 def pdbGenerator(env, target, source, for_signature):
     try:
         return ['/PDB:%s' % target[0].attributes.pdb, '/DEBUG']
     except (AttributeError, IndexError):
         return None
 
+
 def _dllTargets(target, source, env, for_signature, paramtp):
     listCmd = []
     dll = env.FindIxes(target, '%sPREFIX' % paramtp, '%sSUFFIX' % paramtp)
-    if dll: listCmd.append("/out:%s" % dll.get_string(for_signature))
+    if dll:
+        listCmd.append("/out:%s" % dll.get_string(for_signature))
 
     implib = env.FindIxes(target, 'LIBPREFIX', 'LIBSUFFIX')
-    if implib: listCmd.append("/implib:%s" % implib.get_string(for_signature))
+    if implib:
+        listCmd.append("/implib:%s" % implib.get_string(for_signature))
 
     return listCmd
+
 
 def _dllSources(target, source, env, for_signature, paramtp):
     listCmd = []
@@ -79,19 +84,24 @@ def _dllSources(target, source, env, for_signature, paramtp):
             listCmd.append(src)
     return listCmd
 
+
 def windowsShlinkTargets(target, source, env, for_signature):
     return _dllTargets(target, source, env, for_signature, 'SHLIB')
 
+
 def windowsShlinkSources(target, source, env, for_signature):
     return _dllSources(target, source, env, for_signature, 'SHLIB')
+
 
 def _windowsLdmodTargets(target, source, env, for_signature):
     """Get targets for loadable modules."""
     return _dllTargets(target, source, env, for_signature, 'LDMODULE')
 
+
 def _windowsLdmodSources(target, source, env, for_signature):
     """Get sources for loadable modules."""
     return _dllSources(target, source, env, for_signature, 'LDMODULE')
+
 
 def _dllEmitter(target, source, env, paramtp):
     """Common implementation of dll emitter."""
@@ -104,7 +114,8 @@ def _dllEmitter(target, source, env, paramtp):
     no_import_lib = env.get('no_import_lib', 0)
 
     if not dll:
-        raise SCons.Errors.UserError, 'A shared library should have exactly one target with the suffix: %s' % env.subst('$%sSUFFIX' % paramtp)
+        raise SCons.Errors.UserError, 'A shared library should have exactly one target with the suffix: %s' % env.subst(
+            '$%sSUFFIX' % paramtp)
 
     insert_def = env.subst("$WINDOWS_INSERT_DEF")
     if not insert_def in ['', '0', 0] and \
@@ -117,10 +128,10 @@ def _dllEmitter(target, source, env, paramtp):
                             "WINDOWSDEFPREFIX", "WINDOWSDEFSUFFIX"))
 
     #tmp = env.get('MSVC_VERSION', '6.0')
-    #if tmp is None:
+    # if tmp is None:
     #    tmp = 6.0
     #version_num = float(tmp)
-    #if version_num >= 8.0 and version_num < 10 and env.get('WINDOWS_INSERT_MANIFEST', 1):
+    # if version_num >= 8.0 and version_num < 10 and env.get('WINDOWS_INSERT_MANIFEST', 1):
     #    # MSVC 8 and 9 automatically generates .manifest files that must be installed
     #    tmp=env.ReplaceIxes(dll,
     #                        '%sPREFIX' % paramtp, '%sSUFFIX' % paramtp,
@@ -129,16 +140,16 @@ def _dllEmitter(target, source, env, paramtp):
     #    tmp.attributes.FilterAs=target[0]
     #    extratargets.append(tmp)
 
-    if env.has_key('PDB') and env['PDB'] and not env.get('IGNORE_PDB',False):
-        pdb = env.arg2nodes('$PDB', target = target, source = source)[0]
+    if env.has_key('PDB') and env['PDB'] and not env.get('IGNORE_PDB', False):
+        pdb = env.arg2nodes('$PDB', target=target, source=source)[0]
         extratargets.append(pdb)
         target[0].attributes.pdb = pdb
-    
+
     # may need some tweaks still
     # if cli code is being used there is no .lib file made
     # this might be true if no .obj files are made.. need to test
     if env.FindIxes(source, "OBJPREFIX", "CLIOBJSUFFIX"):
-        no_import_lib=True
+        no_import_lib = True
 
     if not no_import_lib and \
        not env.FindIxes(target, "LIBPREFIX", "LIBSUFFIX"):
@@ -155,16 +166,19 @@ def _dllEmitter(target, source, env, paramtp):
 
     return (env.Precious(target + extratargets), env.Precious(source + extrasources))
 
+
 def windowsLibEmitter(target, source, env):
     return _dllEmitter(target, source, env, 'SHLIB')
 
+
 def ldmodEmitter(target, source, env):
     """Emitter for loadable modules.
-    
+
     Loadable modules are identical to shared libraries on Windows, but building
     them is subject to different parameters (LDMODULE*).
     """
     return _dllEmitter(target, source, env, 'LDMODULE')
+
 
 def prog_emitter(target, source, env):
     validate_vars(env)
@@ -176,24 +190,25 @@ def prog_emitter(target, source, env):
         raise SCons.Errors.UserError, "An executable should have exactly one target with the suffix: %s" % env.subst("$PROGSUFFIX")
 
     #tmp = env.get('MSVC_VERSION', '6.0')
-    #if tmp is None:
+    # if tmp is None:
     #    tmp = 6.0
     #version_num = float(tmp)
-    #if version_num >= 8.0 and version_num < 10 and env.get('WINDOWS_INSERT_MANIFEST', 1):
+    # if version_num >= 8.0 and version_num < 10 and env.get('WINDOWS_INSERT_MANIFEST', 1):
     #    # MSVC 8 and 9 automatically generates .manifest files that must be installed
     #    tmp=env.ReplaceIxes(exe,
     #                        "PROGPREFIX", "PROGSUFFIX",
     #                        "WINDOWSPROGMANIFESTPREFIX", "WINDOWSPROGMANIFESTSUFFIX")
     #    tmp=env.File(tmp)
     #    tmp.attributes.FilterAs=target[0]
-    #    extratargets.append(tmp)                            
-    #                        
-    if env.has_key('PDB') and env['PDB'] and not env.get('IGNORE_PDB',False):
-        pdb = env.arg2nodes('$PDB', target = target, source = source)[0]
+    #    extratargets.append(tmp)
+    #
+    if env.has_key('PDB') and env['PDB'] and not env.get('IGNORE_PDB', False):
+        pdb = env.arg2nodes('$PDB', target=target, source=source)[0]
         extratargets.append(pdb)
         target[0].attributes.pdb = pdb
 
     return (env.Precious(target + extratargets), env.Precious(source))
+
 
 def RegServerFunc(target, source, env):
     if env.has_key('register') and env['register']:
@@ -205,46 +220,52 @@ def RegServerFunc(target, source, env):
         return ret
     return 0
 
+
 def EmbedManifestDLLFunc(target, source, env):
 
-    if(float(env['MSVC_VERSION']) < 8.0): return 0
+    if(float(env['MSVC_VERSION']) < 8.0):
+        return 0
     insert_manifest = env.get('WINDOWS_INSERT_MANIFEST', True)
     manifestSrc = str(target[0]) + '.manifest'
 
-    if(insert_manifest and os.path.exists (manifestSrc)):
+    if(insert_manifest and os.path.exists(manifestSrc)):
         manifest = manifestSrc
-        ret = (embedManifestDLLAction) ([target[0]], None, env)
+        ret = (embedManifestDLLAction)([target[0]], None, env)
         if ret:
             raise SCons.Errors.UserError, "Unable to embed manifest into %s" % (target[0])
         else:
-            print "Embedded %(target)s.manifest successfully into %(target)s" % {'target':target[0]}
+            print "Embedded %(target)s.manifest successfully into %(target)s" % {'target': target[0]}
         return ret
     return 0
 
 
 def EmbedManifestProgFunc(target, source, env):
-    #test to see if the version of VC is greater than 8.0
+    # test to see if the version of VC is greater than 8.0
     # as this version requires that manifest be used
     # need tests for no manifest cases for 8.0 and above (currently stupid on this)
 
-    if(float(env['MSVC_VERSION']) < 8.0): return 0
+    if(float(env['MSVC_VERSION']) < 8.0):
+        return 0
     insert_manifest = env.get('WINDOWS_INSERT_MANIFEST', True)
     manifestSrc = str(target[0]) + '.manifest'
 
-    if insert_manifest and os.path.exists (manifestSrc):
+    if insert_manifest and os.path.exists(manifestSrc):
         manifest = manifestSrc
-        ret = (embedManifestProgAction) (env.Precious(target[0]), None, env)
+        ret = (embedManifestProgAction)(env.Precious(target[0]), None, env)
         if ret:
             raise SCons.Errors.UserError, "Unable to embed manifest into %s" % (target[0])
         else:
-            print "Embedded %(target)s.manifest successfully into %(target)s" % {'target':target[0]}
+            print "Embedded %(target)s.manifest successfully into %(target)s" % {'target': target[0]}
         return ret
     return 0
 
-def CertFunc(env):
-    if float(env['MSVC_VERSION']) < 7.1: return 0
 
-    if not env['SIGNING'].GENCERT: return 0
+def CertFunc(env):
+    if float(env['MSVC_VERSION']) < 7.1:
+        return 0
+
+    if not env['SIGNING'].GENCERT:
+        return 0
 
     ret = certAction([], [], env)
     if ret:
@@ -254,10 +275,13 @@ def CertFunc(env):
 
     return ret
 
-def SignFunc(target, source, env):
-    if float(env['MSVC_VERSION']) < 7.1: return 0
 
-    if not env['SIGNING'].ENABLED: return 0
+def SignFunc(target, source, env):
+    if float(env['MSVC_VERSION']) < 7.1:
+        return 0
+
+    if not env['SIGNING'].ENABLED:
+        return 0
 
     signed = str(target[0]) + '.signed'
     compositeSign = signAction + SCons.Defaults.Touch(signed)
@@ -287,38 +311,43 @@ certCheck = SCons.Action.Action(CertFunc, None)
 signAction = SCons.Action.Action("$SIGNCOM", "$SIGNCOMSTR")
 signCheck = SCons.Action.Action(SignFunc, None)
 
-#DLL's
+# DLL's
 embedManifestDLLAction = SCons.Action.Action("$EMBEDMANIFESTDLLCOM", "$EMBEDMANIFESTDLLCOMSTR")
 embedManifestDLLCheck = SCons.Action.Action(EmbedManifestDLLFunc, None)
 
 regServerAction = SCons.Action.Action("$REGSVRCOM", "$REGSVRCOMSTR")
 regServerCheck = SCons.Action.Action(RegServerFunc, None)
 
-shlibLinkAction = SCons.Action.Action('${TEMPFILE("$SHLINK $SHLINKFLAGS $_SHLINK_TARGETS $_LIBDIRFLAGS $_LIBFLAGS $_PDB $_SHLINK_SOURCES $SHLINKEXFLAGS $_LIBEXFLAGS")}')
+shlibLinkAction = SCons.Action.Action(
+    '${TEMPFILE("$SHLINK $SHLINKFLAGS $_SHLINK_TARGETS $_LIBDIRFLAGS $_LIBFLAGS $_PDB $_SHLINK_SOURCES $SHLINKEXFLAGS $_LIBEXFLAGS")}')
 compositeShLinkAction = shlibLinkAction + embedManifestDLLCheck + signCheck + regServerCheck
-ldmodLinkAction = SCons.Action.Action('${TEMPFILE("$LDMODULE $LDMODULEFLAGS $_LDMODULE_TARGETS $_LIBDIRFLAGS $_LIBFLAGS $_PDB $_LDMODULE_SOURCES")}')
+ldmodLinkAction = SCons.Action.Action(
+    '${TEMPFILE("$LDMODULE $LDMODULEFLAGS $_LDMODULE_TARGETS $_LIBDIRFLAGS $_LIBFLAGS $_PDB $_LDMODULE_SOURCES")}')
 compositeLdmodAction = ldmodLinkAction + embedManifestDLLCheck + signCheck + regServerCheck
 
-#programs
-registerServerAction = SCons.Action.Action ("REGISTEREXECOM", "$REGISTEREXECOMSTR")
-registerServerCheck = SCons.Action.Action (RegServerFunc, None)
-embedManifestProgAction = SCons.Action.Action ("$EMBEDMANIFESTPROGCOM", "$EMBEDMANIFESTPROGCOMSTR")
-embedManifestProgCheck = SCons.Action.Action (EmbedManifestProgFunc, None)
+# programs
+registerServerAction = SCons.Action.Action("REGISTEREXECOM", "$REGISTEREXECOMSTR")
+registerServerCheck = SCons.Action.Action(RegServerFunc, None)
+embedManifestProgAction = SCons.Action.Action("$EMBEDMANIFESTPROGCOM", "$EMBEDMANIFESTPROGCOMSTR")
+embedManifestProgCheck = SCons.Action.Action(EmbedManifestProgFunc, None)
 
-linkcomAction = SCons.Action.Action('${TEMPFILE("$LINK $LINKFLAGS /OUT:$TARGET.windows $_LIBDIRFLAGS $_LIBFLAGS $_PDB $SOURCES.windows $LINKEXFLAGS $_LIBEXFLAGS")}')
+linkcomAction = SCons.Action.Action(
+    '${TEMPFILE("$LINK $LINKFLAGS /OUT:$TARGET.windows $_LIBDIRFLAGS $_LIBFLAGS $_PDB $SOURCES.windows $LINKEXFLAGS $_LIBEXFLAGS")}')
 compositelinkcomAction = linkcomAction + embedManifestProgCheck + signCheck + registerServerCheck
 
+
 def smart_link(source, target, env, for_signature):
-    
-    has_native= env.FindIxes(source, "OBJPREFIX", "OBJSUFFIX")
+
+    has_native = env.FindIxes(source, "OBJPREFIX", "OBJSUFFIX")
     has_dotnet = env.FindIxes(source, "OBJPREFIX", "CLIOBJSUFFIX")
     #
-    #if has_native and has_dotnet:
+    # if has_native and has_dotnet:
     #    return ???
-    #elif has_dotnet:
+    # elif has_dotnet:
     #    return ??
-    ##else case
-    #return '$CC'
+    # else case
+    # return '$CC'
+
 
 def generate(env):
     """Add Builders and construction variables for ar to an Environment."""
@@ -330,50 +359,50 @@ def generate(env):
 
     env.SetDefault(_LIBEXFLAGS='${_concat(LIBLINKPREFIX, LIBEXS, LIBLINKSUFFIX, __env__)}')
 
-    env.SetDefault(SHLINK=parts.tools.Common.toolvar('link', ('link',), env = env))
-    env.SetDefault(SHLINKFLAGS =SCons.Util.CLVar('$LINKFLAGS /dll'))
+    env.SetDefault(SHLINK=parts.tools.Common.toolvar('link', ('link',), env=env))
+    env.SetDefault(SHLINKFLAGS=SCons.Util.CLVar('$LINKFLAGS /dll'))
     env.SetDefault(SHLINKEXFLAGS=SCons.Util.CLVar('$LINKEXFLAGS'))
-    env.SetDefault(_SHLINK_TARGETS =windowsShlinkTargets)
-    env.SetDefault(_SHLINK_SOURCES =windowsShlinkSources)
-    env.SetDefault(SHLINKCOM =compositeShLinkAction)
-    env.Append(SHLIBEMITTER = [windowsLibEmitter])
-    env.SetDefault(LINK =parts.tools.Common.toolvar('link', ('link',), env = env))
-    env.SetDefault(LINKFLAGS =SCons.Util.CLVar())
-    env.SetDefault(_PDB =pdbGenerator)
-    env.SetDefault(LINKCOM =compositelinkcomAction)
-    env.Append(PROGEMITTER = [prog_emitter])
-    env.SetDefault(LIBDIRPREFIX ='/LIBPATH:')
-    env.SetDefault(LIBDIRSUFFIX ='')
-    env.SetDefault(LIBLINKPREFIX ='')
-    env.SetDefault(LIBLINKSUFFIX ='$LIBSUFFIX')
+    env.SetDefault(_SHLINK_TARGETS=windowsShlinkTargets)
+    env.SetDefault(_SHLINK_SOURCES=windowsShlinkSources)
+    env.SetDefault(SHLINKCOM=compositeShLinkAction)
+    env.Append(SHLIBEMITTER=[windowsLibEmitter])
+    env.SetDefault(LINK=parts.tools.Common.toolvar('link', ('link',), env=env))
+    env.SetDefault(LINKFLAGS=SCons.Util.CLVar())
+    env.SetDefault(_PDB=pdbGenerator)
+    env.SetDefault(LINKCOM=compositelinkcomAction)
+    env.Append(PROGEMITTER=[prog_emitter])
+    env.SetDefault(LIBDIRPREFIX='/LIBPATH:')
+    env.SetDefault(LIBDIRSUFFIX='')
+    env.SetDefault(LIBLINKPREFIX='')
+    env.SetDefault(LIBLINKSUFFIX='$LIBSUFFIX')
 
-    env.SetDefault(WIN32DEFPREFIX ='')
-    env.SetDefault(WIN32DEFSUFFIX ='.def')
-    env.SetDefault(WIN32_INSERT_DEF =0)
-    env.SetDefault(WINDOWSDEFPREFIX ='${WIN32DEFPREFIX}')
-    env.SetDefault(WINDOWSDEFSUFFIX ='${WIN32DEFSUFFIX}')
-    env.SetDefault(WINDOWS_INSERT_DEF ='${WIN32_INSERT_DEF}')
+    env.SetDefault(WIN32DEFPREFIX='')
+    env.SetDefault(WIN32DEFSUFFIX='.def')
+    env.SetDefault(WIN32_INSERT_DEF=0)
+    env.SetDefault(WINDOWSDEFPREFIX='${WIN32DEFPREFIX}')
+    env.SetDefault(WINDOWSDEFSUFFIX='${WIN32DEFSUFFIX}')
+    env.SetDefault(WINDOWS_INSERT_DEF='${WIN32_INSERT_DEF}')
 
-    env.SetDefault(WIN32EXPPREFIX ='')
-    env.SetDefault(WIN32EXPSUFFIX ='.exp')
-    env.SetDefault(WINDOWSEXPPREFIX ='${WIN32EXPPREFIX}')
-    env.SetDefault(WINDOWSEXPSUFFIX ='${WIN32EXPSUFFIX}')
+    env.SetDefault(WIN32EXPPREFIX='')
+    env.SetDefault(WIN32EXPSUFFIX='.exp')
+    env.SetDefault(WINDOWSEXPPREFIX='${WIN32EXPPREFIX}')
+    env.SetDefault(WINDOWSEXPSUFFIX='${WIN32EXPSUFFIX}')
 
-    env.SetDefault(WINDOWSSHLIBMANIFESTPREFIX ='')
-    env.SetDefault(WINDOWSSHLIBMANIFESTSUFFIX ='${SHLIBSUFFIX}.manifest')
-    env.SetDefault(WINDOWSPROGMANIFESTPREFIX ='')
-    env.SetDefault(WINDOWSPROGMANIFESTSUFFIX ='${PROGSUFFIX}.manifest')
+    env.SetDefault(WINDOWSSHLIBMANIFESTPREFIX='')
+    env.SetDefault(WINDOWSSHLIBMANIFESTSUFFIX='${SHLIBSUFFIX}.manifest')
+    env.SetDefault(WINDOWSPROGMANIFESTPREFIX='')
+    env.SetDefault(WINDOWSPROGMANIFESTSUFFIX='${PROGSUFFIX}.manifest')
 
-    env.SetDefault(REGSVRACTION =regServerCheck)
-    env.SetDefault(REGSVR =os.path.join(SCons.Platform.win32.get_system_root(), 'System32', 'regsvr32'))
-    env.SetDefault(REGSVRFLAGS ='/s ')
-    env.SetDefault(REGSVRCOM ='$REGSVR $REGSVRFLAGS ${TARGET.windows}')
-    env.SetDefault(REGISTEREXECOM ='${TARGET.windows} /regserver')
+    env.SetDefault(REGSVRACTION=regServerCheck)
+    env.SetDefault(REGSVR=os.path.join(SCons.Platform.win32.get_system_root(), 'System32', 'regsvr32'))
+    env.SetDefault(REGSVRFLAGS='/s ')
+    env.SetDefault(REGSVRCOM='$REGSVR $REGSVRFLAGS ${TARGET.windows}')
+    env.SetDefault(REGISTEREXECOM='${TARGET.windows} /regserver')
 
-    env.SetDefault(MT =parts.tools.Common.toolvar('mt', ('mt',), env = env))
-    env.SetDefault(MTFLAGS ='')
-    env.SetDefault(EMBEDMANIFESTDLLCOM ='$MT $MTFLAGS -outputresource:${TARGET};2 -manifest ${TARGET}.manifest')
-    env.SetDefault(EMBEDMANIFESTPROGCOM ='$MT $MTFLAGS -outputresource:${TARGET};1 -manifest ${TARGET}.manifest')
+    env.SetDefault(MT=parts.tools.Common.toolvar('mt', ('mt',), env=env))
+    env.SetDefault(MTFLAGS='')
+    env.SetDefault(EMBEDMANIFESTDLLCOM='$MT $MTFLAGS -outputresource:${TARGET};2 -manifest ${TARGET}.manifest')
+    env.SetDefault(EMBEDMANIFESTPROGCOM='$MT $MTFLAGS -outputresource:${TARGET};1 -manifest ${TARGET}.manifest')
 
     #env.SetDefault(MAKECERT ='makecert')
     #env.SetDefault(MAKECERTFLAGS ='-sk "$SIGNING.STORAGE.PRIVATE" -ss "$SIGNING.STORAGE.PUBLIC" -n "$SIGNING.NAME"')
@@ -386,7 +415,7 @@ def generate(env):
     #env.SetDefault(SIGNFLAGS ='/q /a /s "$SIGNING.STORAGE.PUBLIC" /csp "$SIGNING.STORAGE.PROVIDER" /kc "$SIGNING.STORAGE.PRIVATE"')
     #env.SetDefault(SIGNCOM ='$SIGN $SIGNFLAGS "$TARGET"')
 
-    #env.SetDefault(SIGNING =common.namespace(USERNAME = os.getenv('USERNAME', 'unknown'),
+    # env.SetDefault(SIGNING =common.namespace(USERNAME = os.getenv('USERNAME', 'unknown'),
     #                                  STORAGE = common.namespace(PRIVATE = 'codesign',
     #                                                             PUBLIC = 'codesign',
     #                                                             PROVIDER = 'Microsoft Strong Cryptographic Provider'),
@@ -403,16 +432,17 @@ def generate(env):
     # Therefore LDMODULE* variables correspond as much as possible to
     # SHLINK*/SHLIB* ones.
     SCons.Tool.createLoadableModuleBuilder(env)
-    env.SetDefault(LDMODULE ='$SHLINK')
-    env.SetDefault(LDMODULEPREFIX ='$SHLIBPREFIX')
-    env.SetDefault(LDMODULESUFFIX ='$SHLIBSUFFIX')
-    env.SetDefault(LDMODULEFLAGS ='$SHLINKFLAGS')
-    env.SetDefault(_LDMODULE_TARGETS =_windowsLdmodTargets)
-    env.SetDefault(_LDMODULE_SOURCES =_windowsLdmodSources)
-    env.SetDefault(LDMODULEEMITTER =[ldmodEmitter])
-    env.SetDefault(LDMODULECOM =compositeLdmodAction)
-    
+    env.SetDefault(LDMODULE='$SHLINK')
+    env.SetDefault(LDMODULEPREFIX='$SHLIBPREFIX')
+    env.SetDefault(LDMODULESUFFIX='$SHLIBSUFFIX')
+    env.SetDefault(LDMODULEFLAGS='$SHLINKFLAGS')
+    env.SetDefault(_LDMODULE_TARGETS=_windowsLdmodTargets)
+    env.SetDefault(_LDMODULE_SOURCES=_windowsLdmodSources)
+    env.SetDefault(LDMODULEEMITTER=[ldmodEmitter])
+    env.SetDefault(LDMODULECOM=compositeLdmodAction)
+
     #api.output.print_msg("Configured Tool %s\t for version <%s> target <%s>"%('mslink',env['MSVC']['VERSION'],env['TARGET_PLATFORM']))
+
 
 def exists(env):
     return msvc.Exists(env, 'link')

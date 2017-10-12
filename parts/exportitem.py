@@ -10,61 +10,62 @@ import re
 
 
 class EXPORT_TYPES(object):
-    FILE=1
-    PATH=2
-    PATH_FILE=3
+    FILE = 1
+    PATH = 2
+    PATH_FILE = 3
 
 
-def export_path(env, target_dirs, source_dirs, pobj, prop, use_src = False, create_sdk = True):
+def export_path(env, target_dirs, source_dirs, pobj, prop, use_src=False, create_sdk=True):
 
     # We have three case basicaly of type of paths we pass
     # 1) is the SDK/final path for the file
     # 2) is the build path for the file
     # 3) is the source path of the file
-    ret=[]
-    tmp = pobj.DefiningSection.Exports[prop][0] # we assume that this is only used in cases of list
-    if use_src: # ie use Raw Source Directories
+    ret = []
+    tmp = pobj.DefiningSection.Exports[prop][0]  # we assume that this is only used in cases of list
+    if use_src:  # ie use Raw Source Directories
         for s in source_dirs:
             # setting up the libpaths
-            #print s,env.Dir(s).abspath
+            # print s,env.Dir(s).abspath
             if s not in tmp:
-                target_dir=env.Dir(s).srcnode().abspath
+                target_dir = env.Dir(s).srcnode().abspath
                 tmp.append(target_dir)
             # we want to return the SDK directories
             # when we need to create an SDK.
-            if create_sdk==True:
+            if create_sdk == True:
                 for t in target_dirs:
-                # make this a node
+                    # make this a node
                     if util.isString(t):
-                        t=env.Dir(t)
-                    final_path=t.srcnode()
+                        t = env.Dir(t)
+                    final_path = t.srcnode()
                     if final_path not in tmp:
-                        target_dir=final_path
+                        target_dir = final_path
                         ret.append(target_dir)
     else:
         for t in target_dirs:
             # make this a node
             if util.isString(t):
-                t=env.Dir(t)
+                t = env.Dir(t)
 
-            build_path=t
-            final_path=t.srcnode()
+            build_path = t
+            final_path = t.srcnode()
 
-            if create_sdk==False:
+            if create_sdk == False:
                 # use build directory
                 if build_path not in tmp:
-                    target_dir=build_path
+                    target_dir = build_path
                     tmp.append(target_dir)
 
             elif final_path not in tmp:
-                target_dir=final_path
+                target_dir = final_path
                 tmp.append(target_dir)
                 ret.append(target_dir)
     return ret
 
-_reg=re.compile('[\w\-\.]*.so.([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)', re.I)
+_reg = re.compile('[\w\-\.]*.so.([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)', re.I)
 
-def export_file(env,targets,pobj,prop):
+
+def export_file(env, targets, pobj, prop):
     ret = []
     for target in targets:
         if util.isString(target):
@@ -78,51 +79,67 @@ def export_file(env,targets,pobj,prop):
             # if this matches we want to not add this file
             # as doing this would upset the linker
             continue
-        elif getattr(target.attributes,'FilterAs',None):
+        elif getattr(target.attributes, 'FilterAs', None):
             continue
-        pobj.DefiningSection.Exports[prop][0]+=[file]
+        pobj.DefiningSection.Exports[prop][0] += [file]
 
     return ret
 
-def export_file_path(env,targets,pobj,prop,use_src):
-    ret=[]
-    prop_val=[]
+
+def export_file_path(env, targets, pobj, prop, use_src):
+    ret = []
+    prop_val = []
     for t in targets:
         if util.isString(t):
-            t=env.File(t)
-        build_path=t
-        final_path=t.srcnode()
+            t = env.File(t)
+        build_path = t
+        final_path = t.srcnode()
         ret.append(final_path)
-        if use_src==False:
+        if use_src == False:
             # use build directory
             if build_path not in pobj.DefiningSection.Exports[prop]:
                 prop_val.append(build_path)
         elif final_path not in pobj.DefiningSection.Exports[prop]:
-                prop_val.append(final_path)
-    env.ExportItem(prop,prop_val,create_sdk=False,map_as_depenance=True)
+            prop_val.append(final_path)
+    env.ExportItem(prop, prop_val, create_sdk=False, map_as_depenance=True)
     return ret
 
 
-def ExportCPPPATH(env,values,create_sdk=True):
-    values=env.arg2nodes(values, env.fs.Dir)
-    return ExportItem(env,'CPPPATH',values,create_sdk)
-def ExportLIBPATH(env,values,create_sdk=True):
-    values=env.arg2nodes(values, env.fs.Dir)
-    return ExportItem(env,'LIBPATH',values,create_sdk)    
-def ExportCPPDEFINES(env,values,create_sdk=True):
-    return ExportItem(env,'CPPDEFINES',values,create_sdk)
-def ExportCFLAGS(env,values,create_sdk=True):
-    return ExportItem(env,'CFLAGS',values,create_sdk)
-def ExportCCFLAGS(env,values,create_sdk=True):
-    return ExportItem(env,'CCFLAGS',values,create_sdk)
-def ExportCXXFLAGS(env,values,create_sdk=True):
-    return ExportItem(env,'CXXFLAGS',values,create_sdk)
-def ExportLINKFLAGS(env,values,create_sdk=True):
-    return ExportItem(env,'LINKFLAGS',values,create_sdk)
-def ExportLIBS(env,values,create_sdk=True):
-    return ExportItem(env,'LIBS',values,create_sdk)
+def ExportCPPPATH(env, values, create_sdk=True):
+    values = env.arg2nodes(values, env.fs.Dir)
+    return ExportItem(env, 'CPPPATH', values, create_sdk)
 
-def ExportItem(env,variable,values,create_sdk=True,map_as_depenance=False):#, public=False):
+
+def ExportLIBPATH(env, values, create_sdk=True):
+    values = env.arg2nodes(values, env.fs.Dir)
+    return ExportItem(env, 'LIBPATH', values, create_sdk)
+
+
+def ExportCPPDEFINES(env, values, create_sdk=True):
+    return ExportItem(env, 'CPPDEFINES', values, create_sdk)
+
+
+def ExportCFLAGS(env, values, create_sdk=True):
+    return ExportItem(env, 'CFLAGS', values, create_sdk)
+
+
+def ExportCCFLAGS(env, values, create_sdk=True):
+    return ExportItem(env, 'CCFLAGS', values, create_sdk)
+
+
+def ExportCXXFLAGS(env, values, create_sdk=True):
+    return ExportItem(env, 'CXXFLAGS', values, create_sdk)
+
+
+def ExportLINKFLAGS(env, values, create_sdk=True):
+    return ExportItem(env, 'LINKFLAGS', values, create_sdk)
+
+
+def ExportLIBS(env, values, create_sdk=True):
+    return ExportItem(env, 'LIBS', values, create_sdk)
+
+
+def ExportItem(env, variable, values, create_sdk=True, map_as_depenance=False):  # , public=False):
     '''
 
     @param env The current environment
@@ -137,42 +154,42 @@ def ExportItem(env,variable,values,create_sdk=True,map_as_depenance=False):#, pu
     '''
 
     errors.SetPartStackFrameInfo(True)
-    pobj=glb.engine._part_manager._from_env(env)
+    pobj = glb.engine._part_manager._from_env(env)
 
     # test to see if the variable or value should be a list.
     # ie if the variable is a list in the Environment, we want this to be a list here
     if util.isList(values) or util.isList(env.get(variable)):
 
-        values=common.make_list(values)
+        values = common.make_list(values)
         if variable in ('CPPPATH', 'LIBPATH'):
             values = env.arg2nodes(values, env.fs.Dir)
         #map(lambda x:  _map_group(x,variable),values)
-        if pobj.DefiningSection.Exports.has_key(variable)==False:
-            pobj.DefiningSection.Exports[variable]=[[]]
+        if pobj.DefiningSection.Exports.has_key(variable) == False:
+            pobj.DefiningSection.Exports[variable] = [[]]
         # this is not a list already.. make it one
         if util.isList(pobj.DefiningSection.Exports[variable]) == False:
-            pobj.DefiningSection.Exports[variable]=[common.make_list(pobj.DefiningSection.Exports[variable])]
+            pobj.DefiningSection.Exports[variable] = [common.make_list(pobj.DefiningSection.Exports[variable])]
 
         # add our values
-        #common.extend_unique(pobj.DefiningSection.Exports[variable],values)
-        pobj.DefiningSection.Exports[variable][0]+=values
+        # common.extend_unique(pobj.DefiningSection.Exports[variable],values)
+        pobj.DefiningSection.Exports[variable][0] += values
 
     else:
         if pobj.DefiningSection.Exports.has_key(variable):
-            api.output.verbose_msg(['export'],'Part "{0}" already as variable "{1}" in export table, overriding with new value'.format(pobj.Name,variable))
-        pobj.DefiningSection.Exports[variable]=values
+            api.output.verbose_msg(
+                ['export'], 'Part "{0}" already as variable "{1}" in export table, overriding with new value'.format(pobj.Name, variable))
+        pobj.DefiningSection.Exports[variable] = values
 
     if map_as_depenance:
         common.append_unique(pobj.DefiningSection.ExportAsDepends, variable)
-        aa=env.Alias("{0}::alias::{1}::{2}".format(env['PART_SECTION'],env['ALIAS'],variable),values)
-
+        aa = env.Alias("{0}::alias::{1}::{2}".format(env['PART_SECTION'], env['ALIAS'], variable), values)
 
     # set the create SDK value
     if env['CREATE_SDK'] == False and create_sdk == True:
-        create_sdk=False;
+        create_sdk = False
 
     if create_sdk:
-        pobj._create_sdk_data.append(('ExportItem',[variable,values,False,map_as_depenance]))
+        pobj._create_sdk_data.append(('ExportItem', [variable, values, False, map_as_depenance]))
 
     errors.ResetPartStackFrameInfo()
 
@@ -181,14 +198,12 @@ from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
 
-SConsEnvironment.ExportCPPPATH=ExportCPPPATH
-SConsEnvironment.ExportLIBPATH=ExportLIBPATH
-SConsEnvironment.ExportCPPDEFINES=ExportCPPDEFINES
-SConsEnvironment.ExportCFLAGS=ExportCFLAGS
-SConsEnvironment.ExportCCFLAGS=ExportCCFLAGS
-SConsEnvironment.ExportCXXFLAGS=ExportCXXFLAGS
-SConsEnvironment.ExportLINKFLAGS=ExportLINKFLAGS
-SConsEnvironment.ExportLIBS=ExportLIBS
-SConsEnvironment.ExportItem=ExportItem
-
-
+SConsEnvironment.ExportCPPPATH = ExportCPPPATH
+SConsEnvironment.ExportLIBPATH = ExportLIBPATH
+SConsEnvironment.ExportCPPDEFINES = ExportCPPDEFINES
+SConsEnvironment.ExportCFLAGS = ExportCFLAGS
+SConsEnvironment.ExportCCFLAGS = ExportCCFLAGS
+SConsEnvironment.ExportCXXFLAGS = ExportCXXFLAGS
+SConsEnvironment.ExportLINKFLAGS = ExportLINKFLAGS
+SConsEnvironment.ExportLIBS = ExportLIBS
+SConsEnvironment.ExportItem = ExportItem

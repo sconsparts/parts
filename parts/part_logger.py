@@ -10,8 +10,11 @@ import json
 
 import SCons.Script
 
-import subprocess, sys, string
-import thread, threading
+import subprocess
+import sys
+import string
+import thread
+import threading
 import platform
 import traceback
 
@@ -25,7 +28,9 @@ pyver = version.version(platform.python_version())
 # inherit parent file descriptors by default, so nothing to close.
 closeFileDescriptors = sys.platform not in ('win32', 'cygwin')
 
+
 class pipeRedirector(object):
+
     def _readerthread(self):
         line = ' '
         try:
@@ -41,7 +46,8 @@ class pipeRedirector(object):
             self.pipein = None
 
     def __init__(self, pipein, output, taskId, streamId):
-        if __debug__: logInstanceCreation(self, 'parts.part_logger.pipeRedirector')
+        if __debug__:
+            logInstanceCreation(self, 'parts.part_logger.pipeRedirector')
         self.pipein = pipein
         self.output = output
         self.taskId = taskId
@@ -66,16 +72,19 @@ class pipeRedirector(object):
             self.pipein.close()
         self.thread = None
 
+
 class part_spawner(object):
     __slots__ = ['__weakref__', 'env']
-    def __init__(self, env = None):
-        if __debug__: logInstanceCreation(self, 'parts.part_logger.part_spawner')
+
+    def __init__(self, env=None):
+        if __debug__:
+            logInstanceCreation(self, 'parts.part_logger.part_spawner')
         self.env = env
 
     def __call__(self, shell, escape, cmd, args, Env):
         # setup the call
         ENV = {}
-        for k,v in Env.iteritems():
+        for k, v in Env.iteritems():
             ENV[k] = str(v)
         # get the part_logger
         output = self.env._get_part_log_mapper()
@@ -98,19 +107,19 @@ class part_spawner(object):
         except (AttributeError, IndexError):
             command_id = command_line
 
-        ret = -42 # The universal answer we return in case of exception
-        #tell it we are starting a given action/command, get action_id
+        ret = -42  # The universal answer we return in case of exception
+        # tell it we are starting a given action/command, get action_id
         id = output.TaskStart('{0}\nENV = {1}\n'.format(command_id, json.dumps(ENV)))
         try:
             # do the call
             proc = subprocess.Popen(
                 command_line,
-                shell = True,
-                executable = shell,
-                env = ENV,
-                close_fds = closeFileDescriptors,
-                stdout = subprocess.PIPE,
-                stderr = subprocess.PIPE)
+                shell=True,
+                executable=shell,
+                env=ENV,
+                close_fds=closeFileDescriptors,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
 
             timeout = self.env.get('TIME_OUT', None)
             if timeout:
@@ -135,16 +144,20 @@ class part_spawner(object):
             output.TaskEnd(id, ret)
         return ret
 
+
 class part_logger(object):
+
     class StreamChunk(object):
         __slots__ = ['stream', 'msg', 'lock']
+
         def __init__(self, stream, msg):
             self.stream = stream
             self.msg = msg
             self.lock = threading.RLock()
 
-    def __init__(self,env):
-        if __debug__: logInstanceCreation(self, 'parts.part_logger.part_logger')
+    def __init__(self, env):
+        if __debug__:
+            logInstanceCreation(self, 'parts.part_logger.part_logger')
         self.env = env
         self.reporter = glb.rpter
         self.block_text = SCons.Script.GetOption('num_jobs') > 1
@@ -155,7 +168,7 @@ class part_logger(object):
         if util.isString(log):
             if log[0] != '$':
                 log = "$" + log
-            log = env.subst(log, raw = 1, conv = lambda x: x)
+            log = env.subst(log, raw=1, conv=lambda x: x)
             if util.isString(log):
                 log = part_nil_logger
         self.other_out = log(env)
@@ -220,7 +233,7 @@ class part_logger(object):
                 continue
             elif not groupedStr:
                 groupedStr = [line]
-            elif line[0] in (' ', '\t'): # group indented text
+            elif line[0] in (' ', '\t'):  # group indented text
                 groupedStr.append(line)
             else:
                 outLine = '\n'.join(groupedStr) + '\n'
@@ -231,25 +244,35 @@ class part_logger(object):
         self.streamWrite[stream](outLine)
         self.otherOutWrite[stream](taskId, outLine)
 
+
 class part_nil_logger(object):
     ''' the point of this class is to define the base interface for all part logger
     items. The goal is the this object is to be a empty object that can be written to
     in case that no other item is provided, or if logging is turned off'''
+
     def __init__(self, env):
-        if __debug__: logInstanceCreation(self, 'parts.part_logger.part_nil_logger')
+        if __debug__:
+            logInstanceCreation(self, 'parts.part_logger.part_nil_logger')
         pass
-    def Start(self,id,cmd):
+
+    def Start(self, id, cmd):
         pass
-    def End(self,id,exit_code):
+
+    def End(self, id, exit_code):
         pass
-    def Out(self,id,msg):
+
+    def Out(self, id, msg):
         pass
-    def Err(self,id,msg):
+
+    def Err(self, id, msg):
         pass
-    def TaskStart(self,msg):
+
+    def TaskStart(self, msg):
         pass
-    def TaskEnd(self,id,exit_code):
+
+    def TaskEnd(self, id, exit_code):
         pass
+
 
 class log_file_writer(object):
     '''
@@ -263,10 +286,11 @@ class log_file_writer(object):
     '''
     __slots__ = ('nodepath', 'file', 'lock', '__weakref__')
     __lock__ = thread.allocate_lock()
+
     def __new__(cls, name, env):
         with cls.__lock__:
             try:
-                return env.File(name, create = 0).attributes.log_file_writer
+                return env.File(name, create=0).attributes.log_file_writer
             except (UserError, AttributeError), e:
                 # UserError is raised by env.File when the file is unknown to SCons
                 # AttributeError is raised when there is no log_file_writer_ref
@@ -274,13 +298,14 @@ class log_file_writer(object):
                 node = env.File(name)
                 if isinstance(e, UserError):
                     # Scons knows nothing about the node. Need to clean up the file
-                    node.prepare() # Make sure the file path created
+                    node.prepare()  # Make sure the file path created
                     with open(node.abspath, 'w'):
                         pass
                 node.attributes.log_file_writer = result = super(log_file_writer, cls).__new__(cls)
                 result.nodepath = node.abspath
                 result.lock = thread.allocate_lock()
-                if __debug__: logInstanceCreation(result)
+                if __debug__:
+                    logInstanceCreation(result)
                 return result
 
     def __enter__(self):
@@ -299,9 +324,12 @@ if sys.platform == 'win32':
 else:
     time_func = time.time
 
+
 class parts_text_logger(object):
+
     def __init__(self, env):
-        if __debug__: logInstanceCreation(self, 'parts.part_logger.parts_text_logger')
+        if __debug__:
+            logInstanceCreation(self, 'parts.part_logger.parts_text_logger')
         self.writer = log_file_writer('${LOG_PART_DIR}/${LOG_PART_FILE_NAME}', env)
         self.cache = {}
         self.times = {}
@@ -311,14 +339,14 @@ class parts_text_logger(object):
         if not cmd.endswith('\n'):
             cmd += '\n'
         self.cache[id] = [
-            (console.Console.out_stream,'Task:' + cmd),
+            (console.Console.out_stream, 'Task:' + cmd),
             (console.Console.out_stream,
-            "Output begin ----------------------------------------------------------------\n")
-            ]
+             "Output begin ----------------------------------------------------------------\n")
+        ]
 
     def End(self, id, exit_code):
-        s  = "".join(content for (text_type, content) in self.cache.pop(id, [])
-            if text_type in (console.Console.out_stream, console.Console.error_stream))
+        s = "".join(content for (text_type, content) in self.cache.pop(id, [])
+                    if text_type in (console.Console.out_stream, console.Console.error_stream))
         s += "Output end   ----------------------------------------------------------------\n"
         s += "return code = " + str(exit_code) + "\n"
         s += "Elapsed time {0:.6f} seconds\n".format(time_func() - self.times.pop(id))
@@ -326,10 +354,10 @@ class parts_text_logger(object):
             output.write(s)
 
     def Out(self, id, msg):
-        self.cache[id].append((console.Console.out_stream,msg))
+        self.cache[id].append((console.Console.out_stream, msg))
 
     def Err(self, id, msg):
-        self.cache[id].append((console.Console.error_stream,msg))
+        self.cache[id].append((console.Console.error_stream, msg))
 
     def __del__(self):
         try:
@@ -341,11 +369,12 @@ class parts_text_logger(object):
         s = ""
         for id in cache.keys():
             s += "".join(content for (text_type, content) in cache.pop(id)
-                if text_type in (console.Console.out_stream, console.Console.error_stream))
+                         if text_type in (console.Console.out_stream, console.Console.error_stream))
             s += "Build interupted] (return code = 1)\n"
             s += "Elapsed time {0:.6f} seconds\n".format(time_func() - times.pop(id))
         with writer as output:
             output.write(s)
+
 
 def _get_part_log_mapper(env):
     try:
@@ -354,16 +383,16 @@ def _get_part_log_mapper(env):
         result = part_nil_logger(env)
     else:
         if util.isString(result):
-            result = env.subst(result, raw = 1, conv = lambda x: x)
+            result = env.subst(result, raw=1, conv=lambda x: x)
     return result
 from SCons.Environment import SubstitutionEnvironment as SConsEnvironment
 SConsEnvironment._get_part_log_mapper = _get_part_log_mapper
 
-api.register.add_variable('_part_logger',part_logger, '')
-api.register.add_variable('PART_LOG_MAPPER', '${_part_logger(__env__)}','')
-api.register.add_variable('PART_SPAWNER',part_spawner,'')
-api.register.add_variable('PART_LOGGER','PART_NIL_LOGGER','')
-api.register.add_variable('PART_NIL_LOGGER',part_nil_logger,'')
-api.register.add_variable('PART_TEXT_LOGGER',parts_text_logger,'')
-api.register.add_variable('LOG_PART_DIR','${LOG_DIR}','')
-api.register.add_variable('LOG_PART_FILE_NAME','${PART_NAME}_${PART_VERSION}.log','')
+api.register.add_variable('_part_logger', part_logger, '')
+api.register.add_variable('PART_LOG_MAPPER', '${_part_logger(__env__)}', '')
+api.register.add_variable('PART_SPAWNER', part_spawner, '')
+api.register.add_variable('PART_LOGGER', 'PART_NIL_LOGGER', '')
+api.register.add_variable('PART_NIL_LOGGER', part_nil_logger, '')
+api.register.add_variable('PART_TEXT_LOGGER', parts_text_logger, '')
+api.register.add_variable('LOG_PART_DIR', '${LOG_DIR}', '')
+api.register.add_variable('LOG_PART_FILE_NAME', '${PART_NAME}_${PART_VERSION}.log', '')

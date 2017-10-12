@@ -7,77 +7,80 @@ import parts.common as common
 import parts.glb as glb
 from SCons.Debug import logInstanceCreation
 
+
 def map_archive_builder(env, target, sources, archive_type, stackframe, **kw):
     def archive_builder():
         new_sources, _ = env.Override(kw).GetFilesFromPackageGroups(target, sources, stackframe)
-        control_sources=[]
-        #for proper formatting of the package type to be used as archive builder type
+        control_sources = []
+        # for proper formatting of the package type to be used as archive builder type
         # without throwing any error.
 
-        archive_type_proper = archive_type.lower().title().replace('.','')
+        archive_type_proper = archive_type.lower().title().replace('.', '')
 
         # function to filter files depending on the package type associated
 
         def _is_control_file_type(node, pkg_type, ctr_nodes):
-            pkg_type = archive_type.lower().replace('.','')
+            pkg_type = archive_type.lower().replace('.', '')
             if pkg_type in env.MetaTagValue(node, 'types', 'package', [pkg_type]):
-                ctr_nodes+=env.CCopy('${{BUILD_DIR}}/_{1}/{0}/'.format(target, archive_type_proper), node)
+                ctr_nodes += env.CCopy('${{BUILD_DIR}}/_{1}/{0}/'.format(target, archive_type_proper), node)
 
         # function to filter the files installed with PkgData from new_sources,
         # if packagetype mentioned is tar or tar.gz or tar.bz2 or bz2 or zip
 
-        def is_source_file(node,ctr_nodes):
-            if env.MetaTagValue(node, 'category','package')=='PKGDATA':
+        def is_source_file(node, ctr_nodes):
+            if env.MetaTagValue(node, 'category', 'package') == 'PKGDATA':
                 _is_control_file_type(node, archive_type_proper, ctr_nodes)
                 return False
             return True
 
-        new_sources=filter(lambda x: is_source_file(x, control_sources), new_sources)
+        new_sources = filter(lambda x: is_source_file(x, control_sources), new_sources)
 
         # copy source node to build area, have to keep directory structure
         # Following logic will maintain the directory structure, e.g /bin/setup.py
-        # try make a hardlink for the source files else do a full copy        
+        # try make a hardlink for the source files else do a full copy
 
-        pkg_nodes=[]
+        pkg_nodes = []
         for n in new_sources:
-            #get Package directory for node
-            pk_type=env.MetaTagValue(n, 'category','package')
-            pkg_dir="${{PACKAGE_{0}}}".format(pk_type)
-            pkg_nodes.append('${{BUILD_DIR}}/_{0}/{1}/{2}/{3}'.format(archive_type_proper,target.name,pkg_dir,env.Dir('${{INSTALL_{0}}}'.format(pk_type)).rel_path(n)))
+            # get Package directory for node
+            pk_type = env.MetaTagValue(n, 'category', 'package')
+            pkg_dir = "${{PACKAGE_{0}}}".format(pk_type)
+            pkg_nodes.append('${{BUILD_DIR}}/_{0}/{1}/{2}/{3}'.format(archive_type_proper, target.name,
+                                                                      pkg_dir, env.Dir('${{INSTALL_{0}}}'.format(pk_type)).rel_path(n)))
         new_sources = env.CCopyAs(pkg_nodes, new_sources, CCOPY_LOGIC='hard-copy')
 
         # really call the builder so everything is setup correctly
         # new sources are added along with control sources (files installed with PkgData for tar package)
         # to the target
 
-        #function name is the output of correct builder type
+        # function name is the output of correct builder type
         # example: if archive_type is 'tar', builder will be TarFile
 
-        function_name="{0}File".format(archive_type_proper)
-        getattr(env, function_name)(target, new_sources+control_sources,
+        function_name = "{0}File".format(archive_type_proper)
+        getattr(env, function_name)(target, new_sources + control_sources,
                                     src_dir="$BUILD_DIR/_{1}/{0}".format(target.name, archive_type_proper),
                                     **kw)
     return archive_builder
 
-def ArchivePackage_wrapper(env,target,sources,archive_type,**kw):
+
+def ArchivePackage_wrapper(env, target, sources, archive_type, **kw):
     # currently we assume all sources are Group values
     # will probally change this once we understand better
 
     target = common.make_list(target)
-    sources= common.make_list(sources)
+    sources = common.make_list(sources)
 
     if len(target) > 1:
         raise SCons.Errors.UserError('Only one target is allowed.')
 
     if str(target[0]).endswith('.' + archive_type):
-         target=[env.Dir(".").File(target[0])]
+        target = [env.Dir(".").File(target[0])]
     else:
-         target=[env.Dir(".").File(target[0]+('.' + archive_type))]
+        target = [env.Dir(".").File(target[0] + ('.' + archive_type))]
 
-    sources=[env.subst(s) for s in sources]
+    sources = [env.subst(s) for s in sources]
 
     glb.engine.add_preprocess_logic_queue(map_archive_builder(env, target[0], sources, archive_type,
-                parts.errors.GetPartStackFrameInfo(), **kw))
+                                                              parts.errors.GetPartStackFrameInfo(), **kw))
     return target
 
 # This is what we want to be setup in parts'''
@@ -92,4 +95,3 @@ SConsEnvironment.Bz2Package = lambda env, target, sources, **kw: ArchivePackage_
 SConsEnvironment.Tbz2Package = lambda env, target, sources, **kw: ArchivePackage_wrapper(env, target, sources, 'tbz2', **kw)
 
 # vim: set et ts=4 sw=4 ai ft=python :
-

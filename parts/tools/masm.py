@@ -38,7 +38,7 @@ import SCons.Tool
 import SCons.Util
 
 import parts.api.output as output
-from parts.tools.MSCommon import msvc,is_win64
+from parts.tools.MSCommon import msvc, is_win64
 import parts.tools.Common
 
 ASSuffixes = ['.s', '.asm', '.ASM']
@@ -47,6 +47,7 @@ if SCons.Util.case_sensitive_suffixes('.s', '.S'):
     ASPPSuffixes.extend(['.S'])
 else:
     ASSuffixes.extend(['.S'])
+
 
 def generate(env):
     """Add Builders and construction variables for masm to an Environment."""
@@ -63,25 +64,26 @@ def generate(env):
         shared_obj.add_action(suffix, SCons.Defaults.ASPPAction)
         static_obj.add_emitter(suffix, SCons.Defaults.StaticObjectEmitter)
         shared_obj.add_emitter(suffix, SCons.Defaults.SharedObjectEmitter)
-        
+
     msvc.MergeShellEnv(env)
-    if env['TARGET_PLATFORM']=='x86_64':
-        env['AS']        = parts.tools.Common.toolvar('ml64', ('ml64',), env = env)
+    if env['TARGET_PLATFORM'] == 'x86_64':
+        env['AS'] = parts.tools.Common.toolvar('ml64', ('ml64',), env=env)
     else:
-        env['AS']        = parts.tools.Common.toolvar('ml', ('ml',), env = env)
-    env['ASFLAGS']   = SCons.Util.CLVar('/nologo')
+        env['AS'] = parts.tools.Common.toolvar('ml', ('ml',), env=env)
+    env['ASFLAGS'] = SCons.Util.CLVar('/nologo')
     env['ASPPFLAGS'] = '$ASFLAGS'
-    env['ASCOM']     = '$AS $ASFLAGS /c /Fo$TARGET $SOURCES'
-    env['ASPPCOM']   = '$CC $ASPPFLAGS $CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS /c /Fo$TARGET $SOURCES'
+    env['ASCOM'] = '$AS $ASFLAGS /c /Fo$TARGET $SOURCES'
+    env['ASPPCOM'] = '$CC $ASPPFLAGS $CPPFLAGS $_CPPDEFFLAGS $_CPPINCFLAGS /c /Fo$TARGET $SOURCES'
     env['STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME'] = 1
     #api.output.print_msg("Configured Tool %s\t for version <%s> target <%s>"%('masm\ml',env['MSVC']['VERSION'],env['TARGET_PLATFORM']))
 
+
 def exists(env):
-    ret=False
+    ret = False
     if is_win64():
-        ret=msvc.Exists(env,'ml64')
+        ret = msvc.Exists(env, 'ml64')
     else:
-        ret=msvc.Exists(env,'ml')
+        ret = msvc.Exists(env, 'ml')
     return ret
 
 # Local Variables:

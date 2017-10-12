@@ -3,7 +3,6 @@ def resolve(env, version):
         ('javac', None),
         ('javah', None),
         ('jar', None),
-        ]
+    ]
 
 # vim: set et ts=4 sw=4 ai :
-

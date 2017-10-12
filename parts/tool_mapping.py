@@ -8,12 +8,13 @@ import api.output
 
 from SCons.Errors import UserError
 
-def get_tlset_module(tlchain,version):
+
+def get_tlset_module(tlchain, version):
     # first try to load exact match.. then general match
     if version:
-        name_list=[tlchain+"_"+version,tlchain]
+        name_list = [tlchain + "_" + version, tlchain]
     else:
-        name_list=[tlchain]
+        name_list = [tlchain]
 
     # The list of tool-chain site directories will not change during
     # this session. Cache it.
@@ -30,6 +31,7 @@ def get_tlset_module(tlchain,version):
             pass
 
     return None
+
 
 def get_tools(env, tlset):
 
@@ -61,7 +63,7 @@ def get_tools(env, tlset):
         else:
             configured = True
         if configuration is None or util.isString(configuration):
-            #get the list subst for the value
+            # get the list subst for the value
             repeat = True
             mod = get_tlset_module(tool, configuration)
             # check to see if loaded a chain mapping
@@ -72,12 +74,12 @@ def get_tools(env, tlset):
                 try:
                     SCons.Tool.Tool(tool, toolpath=__tools_dirs)
                 except:
-                    api.output.error_msg("Failed to load Unknown ToolChain or Tool:",tool,show_stack=False)
+                    api.output.error_msg("Failed to load Unknown ToolChain or Tool:", tool, show_stack=False)
                     pass
                 else:
                     new_list.extend([(tool, {}, configured)])
         else:
-            #This has been handled
+            # This has been handled
             new_list.append((tool, configuration, configured))
 
     if repeat:
@@ -85,8 +87,9 @@ def get_tools(env, tlset):
     # returns in the end [(tool_str,{of what to apply first} or functor(env)),...]
     return new_list
 
+
 def _ToolChain(env, chainlist):
-    ## resolve tool chain into the list of tools to setup
+    # resolve tool chain into the list of tools to setup
     # normalize for of all tools requested
     tlset = common.process_tool_arg(chainlist)
     # get the list
@@ -111,16 +114,17 @@ def _ToolChain(env, chainlist):
         # not have the MS compiler add its value to the environment
         # when the Configuration() call happens
         if configured:
-        # apply the tool to the enviroment
+            # apply the tool to the enviroment
             configured_tools.append(tool_name)
         tool = SCons.Tool.Tool(tool_name, toolpath=env['toolpath'])
         env['_BUILD_CONTEXT_FILES'].add(tool.generate.func_code.co_filename)
         tool(env)
 
+
 def tool_converter(str_val, raw_val):
     if util.isString(raw_val):
-        tmp=raw_val.split(',')
-        lst=[]
+        tmp = raw_val.split(',')
+        lst = []
         for i in tmp:
             lst.append(i.split('_'))
         return lst
@@ -133,7 +137,7 @@ from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
 
-SConsEnvironment.ToolChain=_ToolChain
+SConsEnvironment.ToolChain = _ToolChain
 
 
-api.register.add_variable('toolchain',['default'],'The tool chain to use by default',converter=tool_converter)
+api.register.add_variable('toolchain', ['default'], 'The tool chain to use by default', converter=tool_converter)

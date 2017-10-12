@@ -4,7 +4,8 @@ import SCons.Errors
 
 
 class EnumVariable(variable.Variable):
-    def __init__(self, name, help, default, allowed_values, map={}, ignorecase=0,value=None,help_group=None):
+
+    def __init__(self, name, help, default, allowed_values, map={}, ignorecase=0, value=None, help_group=None):
         '''
         '''
 
@@ -12,16 +13,16 @@ class EnumVariable(variable.Variable):
             if not val in vals:
                 raise SCons.Errors.UserError(
                     'Invalid value for option %s: %s' % (key, val))
-                
+
         help = '%s (%s)' % (help, '|'.join(allowed_values))
-        
+
         # define validator
         if ignorecase >= 1:
             validator = lambda key, val, env: \
-                        _validator(key, val.lower(), env, allowed_values)
+                _validator(key, val.lower(), env, allowed_values)
         else:
             validator = lambda key, val, env: \
-                        _validator(key, val, env, allowed_values)
+                _validator(key, val, env, allowed_values)
 
         # define converter
         if ignorecase == 2:
@@ -30,16 +31,16 @@ class EnumVariable(variable.Variable):
             converter = lambda val: map.get(val.lower(), val)
         else:
             converter = lambda val: map.get(val, val)
-        
+
         super(EnumVariable, self).__init__(
             name,
             help=help,
             default=default,
-            validator=validator, 
+            validator=validator,
             converter=converter,
             value=value,
             help_group=help_group
-            )
+        )
 
 
 # Local Variables:

@@ -45,6 +45,7 @@ import parts.api.output as output
 from parts.tools.MSCommon import msvc
 import parts.tools.Common
 
+
 def midl_emitter(target, source, env):
     """Produces a list of outputs from the MIDL compiler"""
     base, ext = SCons.Util.splitext(str(target[0]))
@@ -61,31 +62,33 @@ def midl_emitter(target, source, env):
     if string.find(midlcom, '/dlldata') != -1:
         dlldata = base + '_data.c'
         t.append(dlldata)
-    
-    return (t,source)
+
+    return (t, source)
 
 idl_scanner = SCons.Scanner.IDL.IDLScan()
 
 midl_action = SCons.Action.Action('$MIDLCOM', '$MIDLCOMSTR')
 
-midl_builder = SCons.Builder.Builder(action = midl_action,
-                                     src_suffix = '.idl',
+midl_builder = SCons.Builder.Builder(action=midl_action,
+                                     src_suffix='.idl',
                                      suffix='.tlb',
-                                     emitter = midl_emitter,
-                                     source_scanner = idl_scanner)
+                                     emitter=midl_emitter,
+                                     source_scanner=idl_scanner)
+
 
 def generate(env):
     """Add Builders and construction variables for midl to an Environment."""
 
     msvc.MergeShellEnv(env)
-    env['MIDL']          = parts.tools.Common.toolvar('midl', ('mild',), env = env)
-    env['MIDLFLAGS']     = SCons.Util.CLVar('/nologo')
-    env['MIDLCOM']       = '$MIDL $MIDLFLAGS /tlb ${TARGETS[0]} /h ${TARGETS[1]} /iid ${TARGETS[2]} /proxy ${TARGETS[3]} /dlldata ${TARGETS[4]} $SOURCE'
+    env['MIDL'] = parts.tools.Common.toolvar('midl', ('mild',), env=env)
+    env['MIDLFLAGS'] = SCons.Util.CLVar('/nologo')
+    env['MIDLCOM'] = '$MIDL $MIDLFLAGS /tlb ${TARGETS[0]} /h ${TARGETS[1]} /iid ${TARGETS[2]} /proxy ${TARGETS[3]} /dlldata ${TARGETS[4]} $SOURCE'
     env['BUILDERS']['TypeLibrary'] = midl_builder
     #api.output.print_msg("Configured Tool %s\t for version <%s> target <%s>"%('midl',env['MSVC']['VERSION'],env['TARGET_PLATFORM']))
 
+
 def exists(env):
-    return msvc.Exists(env,'midl')
+    return msvc.Exists(env, 'midl')
 
 # Local Variables:
 # tab-width:4

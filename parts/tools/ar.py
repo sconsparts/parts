@@ -1,9 +1,10 @@
-#Stub file to update env for ar tool
+# Stub file to update env for ar tool
 
 import SCons.Tool.ar
 
 import parts.tools.GnuCommon.common
 import parts.tools.Common
+
 
 def generate(env):
     parts.tools.GnuCommon.common.binutils.setup(env)
@@ -22,4 +23,3 @@ def exists(env):
     return SCons.Tool.ar.exists(env)
 
 # vim: set et ts=4 sw=4 ai ft=python :
-

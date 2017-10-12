@@ -8,7 +8,7 @@ Assumes you have SCons and Parts installed/setup on the path
 import subprocess
 import sys
 
-install=False
+install = False
 # check to see if it already exists
 try:
     subprocess.check_call(["autest", "--version"], shell=False)

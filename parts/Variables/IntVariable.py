@@ -2,14 +2,16 @@
 import variable
 import SCons.Errors
 
-__true_strings  = ('y', 'yes', 'true', 't', '1', 'on' , 'all' )
+__true_strings = ('y', 'yes', 'true', 't', '1', 'on', 'all')
 __false_strings = ('n', 'no', 'false', 'f', '0', 'off', 'none')
 
+
 class IntVariable(variable.Variable):
-    def __init__(self,name, help, default, value=None, help_group=None):
+
+    def __init__(self, name, help, default, value=None, help_group=None):
         ''' 
         '''
-        
+
         def _converter(str_val):
             """
             """
@@ -17,16 +19,15 @@ class IntVariable(variable.Variable):
                 return int(str_val)
             except:
                 raise ValueError("Invalid value for Int option: %s" % val)
-                    
+
         super(IntVariable, self).__init__(
             help=help,
             default=default,
-            validator=None, 
+            validator=None,
             converter=_converter,
             value=value,
             help_group=help_group
-            )
-
+        )
 
 
 # Local Variables:

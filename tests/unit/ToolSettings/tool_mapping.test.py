@@ -5,17 +5,18 @@ import parts.settings as settings
 import unittest
 
 
-is_win32=False
-is_linux=False
+is_win32 = False
+is_linux = False
 if sys.platform == 'win32':
-    is_win32=True
+    is_win32 = True
 elif sys.platform.startswith('linux'):
-    is_linux=True
+    is_linux = True
+
 
 class Test_tool_mapping(unittest.TestCase):
 
     def setUp(self):
-        self.env=settings.DefaultSettings().Environment()
+        self.env = settings.DefaultSettings().Environment()
 
     if is_win32:
         def test_ToolChain(self):

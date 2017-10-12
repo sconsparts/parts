@@ -10,8 +10,7 @@ from .. import errors
 from .. import metatag
 import SCons.Builder
 
-scons_node_errors=SCons.Builder._node_errors
-
+scons_node_errors = SCons.Builder._node_errors
 
 
 def parts_node_errors(builder, env, tlist, slist):
@@ -19,11 +18,11 @@ def parts_node_errors(builder, env, tlist, slist):
     This function tries to do the same tests, but report more useful stuff given that we have components
     """
 
-    #print "source:", [str(i) for i in slist]
-    #print "target:", [str(i) for i in tlist]
-    pobj=glb.engine._part_manager._from_env(env)
+    # print "source:", [str(i) for i in slist]
+    # print "target:", [str(i) for i in tlist]
+    pobj = glb.engine._part_manager._from_env(env)
     if pobj:
-        tag_part_info(tlist+slist,pobj)
+        tag_part_info(tlist + slist, pobj)
         pobj.DefiningSection.Targets.extend(tlist)
         pobj.DefiningSection.Sources.extend(slist)
 
@@ -32,50 +31,54 @@ def parts_node_errors(builder, env, tlist, slist):
     if env.get('_found_duplication'):
         raise errors.AllowedDuplication()
 
-    error=False
-    warn=False
+    error = False
+    warn = False
     # use basic SCons template for how it handles these error.. may append on to later
     for t in tlist:
         if t.side_effect:
-            error=True
+            error = True
         if t.has_explicit_builder():
             if not t.env is None and not t.env is env:
                 action = t.builder.action
                 t_contents = action.get_contents(tlist, slist, t.env)
                 contents = action.get_contents(tlist, slist, env)
                 if t_contents == contents:
-                    warn=True
+                    warn = True
                 else:
-                    error=True
+                    error = True
             if builder.multi:
                 try:
-                    if t.builder != builder or t.get_executor().targets != tlist: # scons 1.x version
-                        error=True
+                    if t.builder != builder or t.get_executor().targets != tlist:  # scons 1.x version
+                        error = True
                 except AttributeError:
-                    if t.builder != builder or  t.get_executor().get_all_targets() != tlist:# scons 2.x version
-                        error=True
+                    if t.builder != builder or t.get_executor().get_all_targets() != tlist:  # scons 2.x version
+                        error = True
             elif t.sources != slist:
-                error=True
+                error = True
 
         if error:
             tenv = {} if t.env is None else t.env
-            api.output.error_msg('{0} is ambiguous because it is defined with two different Environments\n One environment was defined in Part "{1}"\n The other was defined in Part "{2}"'.format(t,tenv.get('PART_ALIAS',"<unknown>"),env.get('PART_ALIAS',"<unknown>")),show_stack=False,exit=False)
+            api.output.error_msg('{0} is ambiguous because it is defined with two different Environments\n One environment was defined in Part "{1}"\n The other was defined in Part "{2}"'.format(
+                t, tenv.get('PART_ALIAS', "<unknown>"), env.get('PART_ALIAS', "<unknown>")), show_stack=False, exit=False)
         elif warn:
-            api.output.warning_msg('Build issue found with two different Environments\n One environment was defined in Part "%s"\n The other was defined in Part "%s"'%(t.env.get('PART_ALIAS',"<unknown>"),env.get('PART_ALIAS',"<unknown>")),show_stack=False)
+            api.output.warning_msg('Build issue found with two different Environments\n One environment was defined in Part "%s"\n The other was defined in Part "%s"' % (
+                t.env.get('PART_ALIAS', "<unknown>"), env.get('PART_ALIAS', "<unknown>")), show_stack=False)
 
     # call the SCons code
     scons_node_errors(builder, env, tlist, slist)
 
-SCons.Builder._node_errors=parts_node_errors
+SCons.Builder._node_errors = parts_node_errors
 
 # util function
+
+
 def tag_part_info(node_list, pobj):
     for node in node_list:
         alias = pobj.Alias
         section = pobj.DefiningSection
-        data = metatag.MetaTagValue(node,'components',ns='partinfo',default={})
+        data = metatag.MetaTagValue(node, 'components', ns='partinfo', default={})
 
-        #Tag this node with information about the Parts and Section that would care about it
+        # Tag this node with information about the Parts and Section that would care about it
         data.setdefault(alias, set()).add(section)
 
         metatag.MetaTag(node, 'partinfo', components=data)
@@ -88,7 +91,7 @@ def tag_part_info(node_list, pobj):
                 dnode = node.Dir('.')
             while True:
 
-                data=metatag.MetaTagValue(dnode, 'components', ns='partinfo', default={})
+                data = metatag.MetaTagValue(dnode, 'components', ns='partinfo', default={})
                 # check to see if this directory has this information already
                 # if so we can exit
                 sections = data.setdefault(alias, set())
@@ -101,4 +104,3 @@ def tag_part_info(node_list, pobj):
                 if dnode == dnode.Dir('..'):
                     break
                 dnode = dnode.Dir('..')
-

@@ -11,4 +11,3 @@ if __name__ == '__main__':
     selfTest()
 
 # vim: set et ts=4 sw=4 ft=python :
-

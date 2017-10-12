@@ -13,6 +13,7 @@ UnpicklingError, PicklingError = pickle.UnpicklingError, pickle.PicklingError
 import SCons.Node.FS
 import SCons.Node.Alias
 
+
 def persistent_id(obj):
     global class_names
     while True:
@@ -29,12 +30,14 @@ def persistent_id(obj):
                 SCons.Node.FS.FileSymbolicLink: 'SCons.Node.FS.FileSymbolicLink',
             }
 
+
 def dumps(obj, protocol=0):
     result = StringIO.StringIO()
-    pickler = pickle.Pickler(result, protocol = protocol)
+    pickler = pickle.Pickler(result, protocol=protocol)
     pickler.persistent_id = persistent_id
     pickler.dump(obj)
     return result.getvalue()
+
 
 def persistent_load(obj_id):
     cls_name, path = obj_id.split('\0')
@@ -50,6 +53,7 @@ def persistent_load(obj_id):
                 'SCons.Node.FS.Dir':              SCons.Node.FS.get_default_fs().Dir,
                 'SCons.Node.FS.FileSymbolicLink': SCons.Node.FS.get_default_fs().FileSymbolicLink,
             }
+
 
 def loads(string):
     unpickler = pickle.Unpickler(StringIO.StringIO(string))

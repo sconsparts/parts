@@ -27,14 +27,15 @@ import stat
 # we refer it
 import symlinks
 
-Node=SCons.Node.Node
-File=SCons.Node.FS.File
-Dir=SCons.Node.FS.Dir
-Entry=SCons.Node.FS.Entry
-FileSymbolicLink=SCons.Node.FS.FileSymbolicLink
-FSBase=SCons.Node.FS.Base
-Value=SCons.Node.Python.Value
-Alias=SCons.Node.Alias.Alias
+Node = SCons.Node.Node
+File = SCons.Node.FS.File
+Dir = SCons.Node.FS.Dir
+Entry = SCons.Node.FS.Entry
+FileSymbolicLink = SCons.Node.FS.FileSymbolicLink
+FSBase = SCons.Node.FS.Base
+Value = SCons.Node.Python.Value
+Alias = SCons.Node.Alias.Alias
+
 
 def wrap_MkdirFunc(function):
     def MkdirFunc(target, source, env):
@@ -52,9 +53,9 @@ def wrap_MkdirFunc(function):
                 if error.errno == errno.EEXIST:
                     if not target.fs.isdir(target.abspath):
                         raise BuildError(node=target,
-                                errstr=("Cannot create directory when "
-                                    "there is an existing file with the same name"),
-                                filename=target.path, exc_info=error)
+                                         errstr=("Cannot create directory when "
+                                                 "there is an existing file with the same name"),
+                                         filename=target.path, exc_info=error)
                 else:
                     raise
         return 0
@@ -66,21 +67,25 @@ def wrap_MkdirFunc(function):
 wrap_MkdirFunc(SCons.Node.FS.MkdirFunc)
 
 
-
 class wrapper(object):
-    def __init__(self,binfo,ninfo=None):
-        if __debug__: logInstanceCreation(self)
-        self.binfo=binfo
-        self.ninfo=ninfo
+
+    def __init__(self, binfo, ninfo=None):
+        if __debug__:
+            logInstanceCreation(self)
+        self.binfo = binfo
+        self.ninfo = ninfo
+
 
 class fake_ninfo(object):
-    __slots__=['timestamp','csig','__weakref__']
-    def __init__(self,timestamp,csig):
-        if __debug__: logInstanceCreation(self)
-        self.timestamp=timestamp
-        self.csig=csig
+    __slots__ = ['timestamp', 'csig', '__weakref__']
 
-Node.make_ninfo_from_dict=lambda self,dict:fake_ninfo(dict.get('timestamp',0),dict.get('csig',0))
+    def __init__(self, timestamp, csig):
+        if __debug__:
+            logInstanceCreation(self)
+        self.timestamp = timestamp
+        self.csig = csig
+
+Node.make_ninfo_from_dict = lambda self, dict: fake_ninfo(dict.get('timestamp', 0), dict.get('csig', 0))
 
 
 # as it turns out this testing before Scons maps a Environment to a node is broken
@@ -90,8 +95,7 @@ Node.make_ninfo_from_dict=lambda self,dict:fake_ninfo(dict.get('timestamp',0),di
 #File.changed_since_last_build = File.changed_timestamp_then_content
 
 
-
-#def wrap_FS_store_info(klass):
+# def wrap_FS_store_info(klass):
 #    _store_info = klass.store_info
 #    def store_info(self):
 #        glb.pnodes.StoreNode(self)
@@ -102,19 +106,19 @@ Node.make_ninfo_from_dict=lambda self,dict:fake_ninfo(dict.get('timestamp',0),di
 #        self.isVisited = True
 #        return _store_info(self)
 #    klass.store_info = store_info
-#wrap_FS_store_info(SCons.Node.FS.File)
+# wrap_FS_store_info(SCons.Node.FS.File)
 
-#def wrap_Alias_store_info(klass):
+# def wrap_Alias_store_info(klass):
 #    _store_info = klass.store_info
 #    def store_info(self):
 #        glb.pnodes.StoreAlias(self)
 #        self.isVisited = True
 #        return _store_info(self)
 #    klass.store_info = store_info
-#wrap_Alias_store_info(SCons.Node.Alias.Alias)
+# wrap_Alias_store_info(SCons.Node.Alias.Alias)
 
 #############################################
-## these are pnode addition
+# these are pnode addition
 
 def _get_isVisited(self):
     try:
@@ -122,10 +126,12 @@ def _get_isVisited(self):
     except AttributeError:
         return False
 
-def _set_isVisited(self,value):
-    self.attributes._isVisited=value
 
-SCons.Node.Node.isVisited=property(_get_isVisited,_set_isVisited)
+def _set_isVisited(self, value):
+    self.attributes._isVisited = value
+
+SCons.Node.Node.isVisited = property(_get_isVisited, _set_isVisited)
+
 
 def _get_FSID(self):
     try:
@@ -138,49 +144,59 @@ def _get_FSID(self):
         self.attributes.__FSID = result
         return result
 
+
 def _get_ValueID(self):
     return "{0}".format(self.value)
+
 
 def _get_AliasID(self):
     return self.name
 
-SCons.Node.FS.Base.ID=property(_get_FSID)
-SCons.Node.Python.Value.ID=property(_get_ValueID)
-SCons.Node.Alias.Alias.ID=property(_get_AliasID)
+SCons.Node.FS.Base.ID = property(_get_FSID)
+SCons.Node.Python.Value.ID = property(_get_ValueID)
+SCons.Node.Alias.Alias.ID = property(_get_AliasID)
 
 
-def _my_init(self,name, directory, fs):
+def _my_init(self, name, directory, fs):
     self.orig_init(name, directory, fs)
     # may not be the best way.. but works for the moment
     glb.pnodes.AddNodeToKnown(self)
 
-SCons.Node.FS.Base.orig_init=SCons.Node.FS.Base.__init__
-SCons.Node.FS.Base.__init__=_my_init
+SCons.Node.FS.Base.orig_init = SCons.Node.FS.Base.__init__
+SCons.Node.FS.Base.__init__ = _my_init
+
 
 def def_FS_Entry___init__(klass):
     orig = klass.__init__
+
     def __init__(self, name, directory, fs):
-        if __debug__: logInstanceCreation(self, 'Node.FS.Entry')
+        if __debug__:
+            logInstanceCreation(self, 'Node.FS.Entry')
         orig(self, name, directory, fs)
     klass.__init__ = __init__
 def_FS_Entry___init__(SCons.Node.FS.Entry)
 
+
 def _my_init(self, value, built_value=None):
-    if __debug__: logInstanceCreation(self, 'Node.Python.Value')
-    self.orig_init( value, built_value)
+    if __debug__:
+        logInstanceCreation(self, 'Node.Python.Value')
+    self.orig_init(value, built_value)
     # may not be the best way.. but works for the moment
     glb.pnodes.AddNodeToKnown(self)
 
-SCons.Node.Python.Value.orig_init=SCons.Node.Python.Value.__init__
-SCons.Node.Python.Value.__init__=_my_init
+SCons.Node.Python.Value.orig_init = SCons.Node.Python.Value.__init__
+SCons.Node.Python.Value.__init__ = _my_init
+
 
 def map_alias_stored(obj):
-    binfo=glb.pnodes.GetAliasStoredInfo(obj.ID)
+    binfo = glb.pnodes.GetAliasStoredInfo(obj.ID)
     if binfo:
-        obj._memo['get_stored_info']=wrapper(binfo)
+        obj._memo['get_stored_info'] = wrapper(binfo)
 
-def _my_init(self,name):
-    if __debug__: logInstanceCreation(self, 'Node.Alias.Alias')
+
+def _my_init(self, name):
+    if __debug__:
+        logInstanceCreation(self, 'Node.Alias.Alias')
     self.orig_init(name)
     # may not be the best way.. but works for the moment
     glb.pnodes.AddAlias(self)
@@ -189,12 +205,12 @@ def _my_init(self,name):
     if glb.engine.isSconstructLoaded:
         map_alias_stored(self)
     else:
-        glb.engine.SConstructLoadedEvent+=lambda build_mode : map_alias_stored(self)
+        glb.engine.SConstructLoadedEvent += lambda build_mode: map_alias_stored(self)
 
-SCons.Node.Alias.Alias.orig_init=SCons.Node.Alias.Alias.__init__
-SCons.Node.Alias.Alias.__init__=_my_init
+SCons.Node.Alias.Alias.orig_init = SCons.Node.Alias.Alias.__init__
+SCons.Node.Alias.Alias.__init__ = _my_init
 
-#def override_get_found_includes(klass):
+# def override_get_found_includes(klass):
 #    def get_found_includes(self, env, scanner, path):
 #        """Return the included implicit dependencies in this file.
 #        Cache results so we only scan the file once per path
@@ -224,9 +240,9 @@ SCons.Node.Alias.Alias.__init__=_my_init
 #        return result
 #    klass.get_found_includes = get_found_includes
 
-#override_get_found_includes(SCons.Node.FS.File)
+# override_get_found_includes(SCons.Node.FS.File)
 
-#def override_FileFinder(klass):
+# def override_FileFinder(klass):
 #    def find_file(self, filename, paths, verbose=None):
 #        """
 #        find_file(str, [Dir()]) -> [nodes]
@@ -311,13 +327,14 @@ SCons.Node.Alias.Alias.__init__=_my_init
 #            memo_dict[memo_key] = None
 #            return None
 #    klass.find_file = find_file
-#override_FileFinder(SCons.Node.FS.FileFinder)
+# override_FileFinder(SCons.Node.FS.FileFinder)
 #SCons.Node.FS.find_file = SCons.Node.FS.FileFinder().find_file
 
-#def get_stored_info_alias(self):
+# def get_stored_info_alias(self):
 #    return self._memo.get('get_stored_info')
 
-#SCons.Node.Alias.Alias.get_stored_info=get_stored_info_alias
+# SCons.Node.Alias.Alias.get_stored_info=get_stored_info_alias
+
 
 def Stored(self):
     try:
@@ -326,28 +343,31 @@ def Stored(self):
         return None
 
 
-SCons.Node.Node.Stored=property(Stored)
+SCons.Node.Node.Stored = property(Stored)
+
 
 def LoadStoredInfo(self):
     return glb.pnodes.GetStoredNodeInfo(self)
 
-SCons.Node.Node.LoadStoredInfo=LoadStoredInfo
+SCons.Node.Node.LoadStoredInfo = LoadStoredInfo
+
 
 def StoreStoredInfo(self):
     pass
 
-SCons.Node.Node.StoreStoredInfo=StoreStoredInfo
+SCons.Node.Node.StoreStoredInfo = StoreStoredInfo
+
 
 def GenerateStoredInfo(self):
 
     info = scons_node_info.scons_node_info()
     info.Type = self.__class__
     info.Components = metatag.MetaTagValue(self, 'components', ns='partinfo', default={}).copy()
-    for partid,sections in info.Components.iteritems():
+    for partid, sections in info.Components.iteritems():
         info.Components[partid] = set([sec.ID for sec in sections])
 
     info.AlwaysBuild = bool(self.always_build)
-    if isinstance(self,FSBase):
+    if isinstance(self, FSBase):
         try:
             if self.ID != self.srcnode().ID and not self.exists() and self.srcnode().exists():
                 info.SrcNodeID = self.srcnode().ID
@@ -356,8 +376,8 @@ def GenerateStoredInfo(self):
 
     if self.has_builder() or self.side_effect:
         binfo = self.get_binfo()
-        nodes = zip(getattr(binfo,'bsources',[])+getattr(binfo,'bdepends',[])+getattr(binfo,'bimplicit',[]),
-                            binfo.bsourcesigs+binfo.bdependsigs+binfo.bimplicitsigs)
+        nodes = zip(getattr(binfo, 'bsources', []) + getattr(binfo, 'bdepends', []) + getattr(binfo, 'bimplicit', []),
+                    binfo.bsourcesigs + binfo.bdependsigs + binfo.bimplicitsigs)
     else:
         nodes = []
 
@@ -366,7 +386,7 @@ def GenerateStoredInfo(self):
     for node, ninfo in nodes:
         # some time the node info is a string not a Node object
         try:
-            key=node.ID
+            key = node.ID
         except:
             # for some reason SCons will store the Alias "children" values as strings
             # not Nodes. This mean that the children of File nodes may not be normalized to
@@ -383,51 +403,59 @@ def GenerateStoredInfo(self):
             # We do not want nodes to depend on directories
             # we make them depend on the directories contents
             nodes.extend(
-                    # Don't care about the ninfo. It will be got later.
-                    (entry, None) for name, entry in node.entries.iteritems()
-                    if name not in ('.', '..'))
+                # Don't care about the ninfo. It will be got later.
+                (entry, None) for name, entry in node.entries.iteritems()
+                if name not in ('.', '..'))
             continue
 
         elif isinstance(node, FSBase):
             ninfo = node.get_ninfo()
 
         new_binfo[key] = {
-                        'timestamp':getattr(ninfo,'timestamp',0),
-                        'csig':getattr(ninfo,'csig',0)
-                        }
+            'timestamp': getattr(ninfo, 'timestamp', 0),
+            'csig': getattr(ninfo, 'csig', 0)
+        }
 
     info.SourceInfo = new_binfo
 
     return info
 
-SCons.Node.Node.GenerateStoredInfo=GenerateStoredInfo
+SCons.Node.Node.GenerateStoredInfo = GenerateStoredInfo
 
 # these are "factories" to allow Parts to recreate the Node from cache latter.
 
-def Scons_fsnode_factory(func,ID=None,*lst,**kw):
-    if ID:
-        return func(ID,'#')
-    else:
-        return func(ID,*lst,**kw)
 
-def Scons_node_factory(func,ID=None,*lst,**kw):
+def Scons_fsnode_factory(func, ID=None, *lst, **kw):
+    if ID:
+        return func(ID, '#')
+    else:
+        return func(ID, *lst, **kw)
+
+
+def Scons_node_factory(func, ID=None, *lst, **kw):
     if ID:
         return func(ID)
     else:
-        return func(ID,*lst,**kw)
+        return func(ID, *lst, **kw)
 
-def Scons_alias_node_factory(func,ID=None,*lst,**kw):
+
+def Scons_alias_node_factory(func, ID=None, *lst, **kw):
 
     if ID:
-        tmp=func(ID)[0]
+        tmp = func(ID)[0]
     else:
-        tmp=func(ID,*lst,**kw)[0]
+        tmp = func(ID, *lst, **kw)[0]
     return tmp
 
-pnode_manager.manager.RegisterNodeType(File,         lambda x,*lst,**kw: Scons_fsnode_factory(SCons.Script.DefaultEnvironment().File,*lst,**kw))
-pnode_manager.manager.RegisterNodeType(Dir,          lambda x,*lst,**kw: Scons_fsnode_factory(SCons.Script.DefaultEnvironment().Dir,*lst,**kw))
-pnode_manager.manager.RegisterNodeType(Entry,        lambda x,*lst,**kw: Scons_fsnode_factory(SCons.Script.DefaultEnvironment().Entry,*lst,**kw))
-pnode_manager.manager.RegisterNodeType(FileSymbolicLink,        lambda x,*lst,**kw: Scons_fsnode_factory(SCons.Script.DefaultEnvironment().FileSymbolicLink,*lst,**kw))
-pnode_manager.manager.RegisterNodeType(Value,        lambda x,*lst,**kw: Scons_node_factory(SCons.Script.DefaultEnvironment().Value,*lst,**kw))
-pnode_manager.manager.RegisterNodeType(Alias,        lambda x,*lst,**kw: Scons_alias_node_factory(SCons.Script.DefaultEnvironment().Alias,*lst,**kw))
-
+pnode_manager.manager.RegisterNodeType(
+    File, lambda x, *lst, **kw: Scons_fsnode_factory(SCons.Script.DefaultEnvironment().File, *lst, **kw))
+pnode_manager.manager.RegisterNodeType(
+    Dir, lambda x, *lst, **kw: Scons_fsnode_factory(SCons.Script.DefaultEnvironment().Dir, *lst, **kw))
+pnode_manager.manager.RegisterNodeType(
+    Entry, lambda x, *lst, **kw: Scons_fsnode_factory(SCons.Script.DefaultEnvironment().Entry, *lst, **kw))
+pnode_manager.manager.RegisterNodeType(FileSymbolicLink, lambda x, *lst, **
+                                       kw: Scons_fsnode_factory(SCons.Script.DefaultEnvironment().FileSymbolicLink, *lst, **kw))
+pnode_manager.manager.RegisterNodeType(
+    Value, lambda x, *lst, **kw: Scons_node_factory(SCons.Script.DefaultEnvironment().Value, *lst, **kw))
+pnode_manager.manager.RegisterNodeType(
+    Alias, lambda x, *lst, **kw: Scons_alias_node_factory(SCons.Script.DefaultEnvironment().Alias, *lst, **kw))

@@ -11,7 +11,7 @@ import sys
 # html Simple logger. Probally needs more work.
 
 
-def RtfColorIndex (col):
+def RtfColorIndex(col):
     global _RtfColorIndex
     try:
         return _RtfColorIndex.get(col) or "black"
@@ -37,23 +37,20 @@ def RtfColorIndex (col):
         return _RtfColorIndex.get(col) or "black"
 
 
-
-
 class html(logger.Logger):
 
-    def __init__(self,dir,file):
+    def __init__(self, dir, file):
         if os.path.exists(dir) == False:
             os.makedirs(dir)
-        if file.endswith(".html") ==False:
-            file+=".html"
-        self.m_file=open(os.path.join(dir,file),"w")
-        super(html, self).__init__(dir,file)
+        if file.endswith(".html") == False:
+            file += ".html"
+        self.m_file = open(os.path.join(dir, file), "w")
+        super(html, self).__init__(dir, file)
 
-        self.colors=SCons.Script.GetOption('use_color')
-        self.fg_color=color.White
-        self.default_color=color.White
+        self.colors = SCons.Script.GetOption('use_color')
+        self.fg_color = color.White
+        self.default_color = color.White
         self.writeheader()
-
 
     def writeheader(self):
         self.m_file.write('''<html>
@@ -129,24 +126,24 @@ class html(logger.Logger):
 <body bgcolor="#000000">
         ''')
 
-    def out_color(self,col):
-        fg=col.Foreground()
+    def out_color(self, col):
+        fg = col.Foreground()
         if fg == color.Bright:
             if self.default_color < 8:
-                fg=self.default_color+8
+                fg = self.default_color + 8
             else:
-                fg=self.default_color
+                fg = self.default_color
         elif fg == color.Dim:
             if self.default_color > 8:
-                fg=self.default_color-8
+                fg = self.default_color - 8
             else:
-                fg=self.default_color
+                fg = self.default_color
 
-        self.fg_color=fg
+        self.fg_color = fg
         with self._lock:
-            self.m_file.write("<span class=\"%s\">"%(RtfColorIndex(self.fg_color)))
+            self.m_file.write("<span class=\"%s\">" % (RtfColorIndex(self.fg_color)))
 
-    def writestr(self,msg):
+    def writestr(self, msg):
         with self._lock:
             for c in msg:
                 if c == '>':
@@ -161,27 +158,27 @@ class html(logger.Logger):
                     self.m_file.write(c)
             self.m_file.write("</span>\n")
 
-    def logout(self,msg):
+    def logout(self, msg):
         self.out_color(self.colors['stdout'])
         self.writestr(msg)
 
-    def logerr(self,msg):
+    def logerr(self, msg):
         self.out_color(self.colors['stderr'])
         self.writestr(msg)
 
-    def logwrn(self,msg):
+    def logwrn(self, msg):
         self.out_color(self.colors['stdwrn'])
         self.writestr(msg)
 
-    def logmsg(self,msg):
+    def logmsg(self, msg):
         self.out_color(self.colors['stdmsg'])
         self.writestr(msg)
 
-    def logtrace(self,msg):
+    def logtrace(self, msg):
         self.out_color(self.colors['stdtrace'])
         self.writestr(msg)
 
-    def logverbose(self,msg):
+    def logverbose(self, msg):
         self.out_color(self.colors['stdverbose'])
         self.writestr(msg)
 

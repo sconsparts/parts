@@ -24,16 +24,16 @@ from parts import api
 wix = ToolSetting('WIX')
 
 wix.Register(
-    hosts = [SystemPlatform('win32', 'any')],
-    targets = [SystemPlatform('win32', 'any')],
-    info = [
+    hosts=[SystemPlatform('win32', 'any')],
+    targets=[SystemPlatform('win32', 'any')],
+    info=[
         ToolInfo(
             version='3.5',
             install_scanner=[
                 MsiFinder(
                     r'Windows Installer XML.*',
                     r'CandleBinaries'
-                    ),
+                ),
                 PathFinder([
                     r'c:\Program Files (x86)\Windows Installer XML v3.5\bin'
                 ]),
@@ -45,16 +45,16 @@ wix.Register(
             subst_vars={},
             shell_vars={
                 'PATH': '${WIX.INSTALL_ROOT}'
-                },
+            },
             test_file='candle.exe'
-            ),
+        ),
         ToolInfo(
             version='3.6',
             install_scanner=[
                 MsiFinder(
                     r'WiX Toolset v3\.6 Core.*',
                     r'candle.exe'
-                    ),
+                ),
                 PathFinder([
                     r'C:\Program Files (x86)\WiX Toolset v3.6\bin'
                 ]),
@@ -66,16 +66,16 @@ wix.Register(
             subst_vars={},
             shell_vars={
                 'PATH': '${WIX.INSTALL_ROOT}'
-                },
+            },
             test_file='candle.exe'
-            ),
+        ),
         ToolInfo(
             version='3.7',
             install_scanner=[
                 MsiFinder(
                     r'WiX Toolset v3\.7 Core.*',
                     r'candle.exe'
-                    ),
+                ),
                 PathFinder([
                     r'C:\Program Files (x86)\WiX Toolset v3.7\bin'
                 ]),
@@ -87,16 +87,16 @@ wix.Register(
             subst_vars={},
             shell_vars={
                 'PATH': '${WIX.INSTALL_ROOT}'
-                },
+            },
             test_file='candle.exe'
-            ),
+        ),
         ToolInfo(
             version='3.8',
             install_scanner=[
                 MsiFinder(
                     r'WiX Toolset v3\.8 Core.*',
                     r'candle.exe'
-                    ),
+                ),
                 PathFinder([
                     r'C:\Program Files (x86)\WiX Toolset v3.8\bin'
                 ]),
@@ -108,16 +108,16 @@ wix.Register(
             subst_vars={},
             shell_vars={
                 'PATH': '${WIX.INSTALL_ROOT}'
-                },
+            },
             test_file='candle.exe'
-            ),
+        ),
         ToolInfo(
             version='3.9',
             install_scanner=[
                 MsiFinder(
                     r'WiX Toolset v3\.9 Core.*',
                     r'candle.exe'
-                    ),
+                ),
                 PathFinder([
                     r'C:\Program Files (x86)\WiX Toolset v3.9\bin'
                 ]),
@@ -129,16 +129,16 @@ wix.Register(
             subst_vars={},
             shell_vars={
                 'PATH': '${WIX.INSTALL_ROOT}'
-                },
+            },
             test_file='candle.exe'
-            ),
+        ),
         ToolInfo(
             version='3.10',
             install_scanner=[
                 MsiFinder(
                     r'WiX Toolset v3\.10 Core.*',
                     r'candle.exe'
-                    ),
+                ),
                 PathFinder([
                     r'C:\Program Files (x86)\WiX Toolset v3.10\bin'
                 ]),
@@ -150,16 +150,16 @@ wix.Register(
             subst_vars={},
             shell_vars={
                 'PATH': '${WIX.INSTALL_ROOT}'
-                },
+            },
             test_file='candle.exe'
-            ),
+        ),
         ToolInfo(
             version='3.11',
             install_scanner=[
                 MsiFinder(
                     r'WiX Toolset v3\.11 Core.*',
                     r'candle.exe'
-                    ),
+                ),
                 PathFinder([
                     r'C:\Program Files (x86)\WiX Toolset v3.11\bin'
                 ]),
@@ -171,12 +171,13 @@ wix.Register(
             subst_vars={},
             shell_vars={
                 'PATH': '${WIX.INSTALL_ROOT}'
-                },
+            },
             test_file='candle.exe'
-            )
-        ]
+        )
+    ]
 
-    )
+)
+
 
 class WixPreprocessor(object):
     '''
@@ -214,6 +215,7 @@ class WixPreprocessor(object):
         See WiX docs for more information.
         '''
         __slots__ = ['ENV']
+
         def __init__(self, ENV):
             self.ENV = dict(ENV)
 
@@ -227,12 +229,12 @@ class WixPreprocessor(object):
         '''
         This class emulates $(var.VARNAME) WiX preprocossor variables.
         '''
+
         def __init__(self, vars):
             for var in vars:
                 defs = re.match('^(?P<name>[^=]+)=(?P<value>.*)$', var)
                 if defs:
                     self.__dict__[defs.groupdict()['name']] = defs.groupdict()['value']
-
 
     def __init__(self, env, source, pp_var_name=None, include_path=None, path=None):
         self.__env = env
@@ -257,7 +259,8 @@ class WixPreprocessor(object):
         WiX preprocessor variable.
         '''
         gd = re.match(r'(?P<name>[^=\s]+)(\s*=\s*(?P<value>\S+)?)?', data.strip()).groupdict()
-        name = gd['name']; value = gd['value']
+        name = gd['name']
+        value = gd['value']
         if value is not None:
             if re.match(r'^([\'"]).*\1$', value):
                 value = value[1:-1]
@@ -322,11 +325,13 @@ class WixPreprocessor(object):
                 return ''
         return re.sub(r'\$\((?P<var>var|sys|env)\.(?P<name>[^)]+)\)', replace, strsubst)
 
+
 class WixIncludeHandler(PullDOM):
     '''
     We use pull model xml parser to go through the wxs file tag by tag.
     '''
-    def __init__(self, preprocessor, on_source = lambda file_node: None, on_include = lambda file_node: None):
+
+    def __init__(self, preprocessor, on_source=lambda file_node: None, on_include=lambda file_node: None):
         PullDOM.__init__(self, None)
         self.preprocessor = preprocessor
         self.on_source = on_source
@@ -353,8 +358,10 @@ class WixIncludeHandler(PullDOM):
         else:
             PullDOM.processingInstruction(self, target, data)
 
+
 class WixSourceHandler(WixIncludeHandler):
-    def __init__(self, preprocessor, on_source = lambda file_node: None, on_include = lambda file_node: None):
+
+    def __init__(self, preprocessor, on_source=lambda file_node: None, on_include=lambda file_node: None):
         WixIncludeHandler.__init__(self, preprocessor, on_source, on_include)
         self.__path = []
         '''Contains list of tuples of form (path element string, is it a root)'''
@@ -379,8 +386,8 @@ class WixSourceHandler(WixIncludeHandler):
     TODO: generate the list dynamically from ${WIX.INSTALL_ROOT}/bin/wix.xsd file.
     '''
     nodes_with_SourceFile = set(['Catalog', 'BootstrapperApplication', 'UX', 'Payload',
-        'UpgradeImage', 'TargetImage', 'DigitalCertificate', 'DigitalSignature',
-        'SFPCatalog', 'Merge', 'Binary', 'Icon', 'EmbeddedUI', 'EmbeddedUIResource'])
+                                 'UpgradeImage', 'TargetImage', 'DigitalCertificate', 'DigitalSignature',
+                                 'SFPCatalog', 'Merge', 'Binary', 'Icon', 'EmbeddedUI', 'EmbeddedUIResource'])
 
     def startElement(self, tag, attrs):
         WixIncludeHandler.startElement(self, tag, attrs)
@@ -424,6 +431,7 @@ class WixSourceHandler(WixIncludeHandler):
                 self.__path.pop()
         WixIncludeHandler.endElement(self, tag)
 
+
 def wixSrcScanner(node, env, path):
     """
     Returns list of files changes in those leads to changes in .wixobj's content.
@@ -434,12 +442,13 @@ def wixSrcScanner(node, env, path):
 
     result = []
     parser = xml.sax.make_parser()
-    parser.setContentHandler(WixIncludeHandler(preprocessor, on_include = result.append))
+    parser.setContentHandler(WixIncludeHandler(preprocessor, on_include=result.append))
     try:
         parser.parse(node.rfile().abspath)
     except xml.sax.SAXParseException:
         pass
     return result
+
 
 def wixObjScanner(node, env, path):
     """
@@ -457,14 +466,14 @@ def wixObjScanner(node, env, path):
 
     # Pre-processor path is different from the one we are supplied.
     include_path = SCons.Scanner.FindPathDirs('WIXPPPATH')(
-            node.env or env, target=[node], source=[source])
+        node.env or env, target=[node], source=[source])
 
     preprocessor = WixPreprocessor(node.env or env, source, 'WIXPPDEFINES',
-            include_path=include_path, path=path)
+                                   include_path=include_path, path=path)
     result = []
 
     parser = xml.sax.make_parser()
-    parser.setContentHandler(WixSourceHandler(preprocessor, on_source = result.append))
+    parser.setContentHandler(WixSourceHandler(preprocessor, on_source=result.append))
     try:
         parser.parse(source.abspath)
     except xml.sax.SAXParseException:
@@ -488,12 +497,13 @@ SCons.Tool.SourceFileScanner.add_scanner(
     )
 )
 
+
 def wixEnvScanner(varnames):
     '''
     Creates a callable to be used by env scanner.
     @param[in] varnames: sequence of tuples of form (entries_var, prefs_var, suffs_var)
     '''
-    def scan(node, env, path = ()):
+    def scan(node, env, path=()):
         '''
         This scanner looks through the env for localization, extensions
         '''
@@ -521,13 +531,14 @@ def wixEnvScanner(varnames):
     return scan
 
 wixObjEnvScanner = SCons.Scanner.Scanner(
-    wixEnvScanner([('WIXLINKEXTENSIONS', 'WIXLINKEXTPREFIX', 'WIXLINKEXTSUFFIX'),]),
-    path_function = SCons.Scanner.FindPathDirs('WIX_TOOL_PATHS'))
+    wixEnvScanner([('WIXLINKEXTENSIONS', 'WIXLINKEXTPREFIX', 'WIXLINKEXTSUFFIX'), ]),
+    path_function=SCons.Scanner.FindPathDirs('WIX_TOOL_PATHS'))
 
 wixMsiEnvScanner = SCons.Scanner.Scanner(
     wixEnvScanner([('WIXLINKEXTENSIONS', 'WIXLINKEXTPREFIX', 'WIXLINKEXTSUFFIX'),
-                  ('WIXLOCALIZATION', 'WIXLCLPREFIX', 'WIXLCLSUFFIX')]),
-    path_function = SCons.Scanner.FindPathDirs('WIX_TOOL_PATHS'))
+                   ('WIXLOCALIZATION', 'WIXLCLPREFIX', 'WIXLCLSUFFIX')]),
+    path_function=SCons.Scanner.FindPathDirs('WIX_TOOL_PATHS'))
+
 
 def createWixObjectBuilder(env):
     """
@@ -537,19 +548,20 @@ def createWixObjectBuilder(env):
         result = env['BUILDERS']['WixObject']
     except KeyError:
         result = SCons.Builder.Builder(
-                action = '$WIXCLCOM',
-                prefix = '$WIXOBJPREFIX',
-                suffix = '$WIXOBJSUFFIX',
-                src_suffix = '.wxs',
-                single_source = 1,
-                source_scanner = SCons.Tool.SourceFileScanner,
-                target_scanner = wixObjEnvScanner,
-                target_factory = SCons.Node.FS.File,
-                source_factory = SCons.Node.FS.File
-                )
+            action='$WIXCLCOM',
+            prefix='$WIXOBJPREFIX',
+            suffix='$WIXOBJSUFFIX',
+            src_suffix='.wxs',
+            single_source=1,
+            source_scanner=SCons.Tool.SourceFileScanner,
+            target_scanner=wixObjEnvScanner,
+            target_factory=SCons.Node.FS.File,
+            source_factory=SCons.Node.FS.File
+        )
         env['BUILDERS']['WixObject'] = result
 
     return result
+
 
 def createMsiBuilder(env):
     """
@@ -559,20 +571,19 @@ def createMsiBuilder(env):
         result = env['BUILDERS']['MSI']
     except KeyError:
         result = SCons.Builder.Builder(
-                action = '$WIXLINKCOM',
-                prefix = '$MSIPREFIX',
-                suffix = '$MSISUFFIX',
-                src_suffix = '$WIXOBJSUFFIX',
-                src_builder = 'WixObject',
-                source_scanner = SCons.Tool.SourceFileScanner,
-                target_scanner = wixMsiEnvScanner,
-                target_factory = SCons.Node.FS.File,
-                source_factory = SCons.Node.FS.File
-                )
+            action='$WIXLINKCOM',
+            prefix='$MSIPREFIX',
+            suffix='$MSISUFFIX',
+            src_suffix='$WIXOBJSUFFIX',
+            src_builder='WixObject',
+            source_scanner=SCons.Tool.SourceFileScanner,
+            target_scanner=wixMsiEnvScanner,
+            target_factory=SCons.Node.FS.File,
+            source_factory=SCons.Node.FS.File
+        )
         env['BUILDERS']['MSI'] = result
 
     return result
 
 
 # vim: set et ts=4 sw=4 ft=python :
-

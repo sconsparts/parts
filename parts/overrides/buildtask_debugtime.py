@@ -18,6 +18,7 @@ import datetime
 
 EVENT_START, EVENT_STOP = 'start', 'stop'
 
+
 def logTaskEvent(task, event, timestamp, duration=-1):
     try:
         if not logTaskEvent.storeLogsTo:
@@ -45,10 +46,10 @@ def logTaskEvent(task, event, timestamp, duration=-1):
             sources = executor.get_all_sources()
             env = executor.get_build_env()
             taskLine = '\t'.join(repr(x) for x in (
-                    [str(t) for t in targets],
-                    [str(s) for s in sources],
-                    env.subst(str(executor), target=targets, source=sources))
-                    )
+                [str(t) for t in targets],
+                [str(s) for s in sources],
+                env.subst(str(executor), target=targets, source=sources))
+            )
         except BaseException, substErr:
             taskLine = 'Cannot get task representation: %r' % substErr
     else:
@@ -61,6 +62,7 @@ def logTaskEvent(task, event, timestamp, duration=-1):
     except IOError:
         # cannot log there... raise for now
         raise
+
 
 def patched_execute(self):
     try:

@@ -74,8 +74,8 @@ if sys.platform in ('linux2', 'darwin'):
             os.write(errpipe_write, pickle.dumps(exc_value))
 
         def do_execv(args=None, executable=None, close_fds=None, cwd=None, env=None,
-                shell=None, p2cread=None, p2cwrite=None, c2pread=None, c2pwrite=None,
-                errread=None, errwrite=None, errpipe_read=None, errpipe_write=None):
+                     shell=None, p2cread=None, p2cwrite=None, c2pread=None, c2pwrite=None,
+                     errread=None, errwrite=None, errpipe_read=None, errpipe_write=None):
             '''
             The function redirects IO, prepares command-line, sets up environment and
             executes execve function.
@@ -92,7 +92,7 @@ if sys.platform in ('linux2', 'darwin'):
 
                 # Close parent's pipe ends
                 for parent_end, child_end in ((p2cwrite, p2cread), (c2pread, c2pwrite),
-                        (errread, errwrite)):
+                                              (errread, errwrite)):
                     if parent_end is not None:
                         os.close(parent_end)
                     if child_end is not None:
@@ -121,7 +121,7 @@ if sys.platform in ('linux2', 'darwin'):
 
                 # Close pipe fds.  Make sure we don't close the
                 # same fd more than once, or standard fds.
-                closed = set([ None ])
+                closed = set([None])
                 for fd in [p2cread, c2pwrite, errwrite]:
                     if fd not in closed and fd > 2:
                         os.close(fd)
@@ -158,7 +158,7 @@ if sys.platform in ('linux2', 'darwin'):
         except:
             report_exception(errpipe_write)
 
-    else: # __name__ <> '__main__'
+    else:  # __name__ <> '__main__'
         import ctypes
         import tempfile
 
@@ -190,39 +190,38 @@ if sys.platform in ('linux2', 'darwin'):
         else:
             posix_spawn.restype = ctypes.c_int
             posix_spawn.argtypes = (
-                    ctypes.POINTER(ctypes.c_int), # ppid
-                    ctypes.c_char_p, # executable
-                    ctypes.c_void_p, # file_actions
-                    ctypes.c_void_p, # attrp
-                    ctypes.POINTER(ctypes.c_char_p), #argv
-                    ctypes.POINTER(ctypes.c_char_p), #env
+                ctypes.POINTER(ctypes.c_int),  # ppid
+                ctypes.c_char_p,  # executable
+                ctypes.c_void_p,  # file_actions
+                ctypes.c_void_p,  # attrp
+                ctypes.POINTER(ctypes.c_char_p),  # argv
+                ctypes.POINTER(ctypes.c_char_p),  # env
             )
-
 
             # In Python older than 2.7.6 subprocess.Popen._execute_child accepts 17 arguments.
             # In Python 2.7.6 it accepts 18 args.
             # To workaround the issue we use _unpack_args* functions. Both 27 and 276 return
             # a tuple containing args in order they are passed to Python 2.7.6 _execute_child
-            # function. 
+            # function.
 
             def _unpack_args_27(args):
                 result = (self, argv, executable, preexec_fn, close_fds,
-                                       cwd, env, universal_newlines,
-                                       startupinfo, creationflags, shell, to_close,
-                                       p2cread, p2cwrite,
-                                       c2pread, c2pwrite,
-                                       errread, errwrite) = args[:11] + (set(),) + args[11:]
+                          cwd, env, universal_newlines,
+                          startupinfo, creationflags, shell, to_close,
+                          p2cread, p2cwrite,
+                          c2pread, c2pwrite,
+                          errread, errwrite) = args[:11] + (set(),) + args[11:]
                 to_close.update((p2cread, p2cwrite, c2pread, c2pwrite, errread, errwrite))
                 return result
 
             def _unpack_args_276(args):
                 try:
                     result = (self, argv, executable, preexec_fn, close_fds,
-                                       cwd, env, universal_newlines,
-                                       startupinfo, creationflags, shell, to_close,
-                                       p2cread, p2cwrite,
-                                       c2pread, c2pwrite,
-                                       errread, errwrite) = args
+                              cwd, env, universal_newlines,
+                              startupinfo, creationflags, shell, to_close,
+                              p2cread, p2cwrite,
+                              c2pread, c2pwrite,
+                              errread, errwrite) = args
                 except ValueError:
                     global _unpack_args
                     _unpack_args = _unpack_args_27
@@ -238,21 +237,22 @@ if sys.platform in ('linux2', 'darwin'):
 
             def _wrap_execute_child(klass):
                 wrapped_execute_child = klass._execute_child
+
                 def _execute_child(*argv):
 
                     (self, args, executable, preexec_fn, close_fds,
-                                   cwd, env, universal_newlines,
-                                   startupinfo, creationflags, shell, to_close,
-                                   p2cread, p2cwrite,
-                                   c2pread, c2pwrite,
-                                   errread, errwrite) = _unpack_args(argv)
+                     cwd, env, universal_newlines,
+                     startupinfo, creationflags, shell, to_close,
+                     p2cread, p2cwrite,
+                     c2pread, c2pwrite,
+                     errread, errwrite) = _unpack_args(argv)
 
                     if preexec_fn:
                         return wrapped_execute_child(*argv)
 
                     for fd in (p2cread, p2cwrite,
-                                       c2pread, c2pwrite,
-                                       errread, errwrite):
+                               c2pread, c2pwrite,
+                               errread, errwrite):
                         if fd is not None:
                             _set_cloexec_flag(fd, False)
 
@@ -264,8 +264,8 @@ if sys.platform in ('linux2', 'darwin'):
                         args = [unicode(x) for x in args]
 
                     if env:
-                        env = dict((unicode(key), unicode(value)) 
-                                for (key, value) in env.iteritems())
+                        env = dict((unicode(key), unicode(value))
+                                   for (key, value) in env.iteritems())
                     else:
                         env = None
                     if executable:
@@ -278,15 +278,15 @@ if sys.platform in ('linux2', 'darwin'):
                         cwd = None
 
                     data = base64.encodestring(
-                            pickle.dumps(
-                                dict(
-                                    args=args, executable=executable, close_fds=bool(close_fds),
-                                    cwd=cwd, env=env, shell=bool(shell),
-                                    p2cread=p2cread, p2cwrite=p2cwrite,
-                                    c2pread=c2pread, c2pwrite=c2pwrite,
-                                    errread=errread, errwrite=errwrite,
-                                    errpipe_read=errpipe_read, errpipe_write=errpipe_write,
-                                ), pickle.HIGHEST_PROTOCOL))
+                        pickle.dumps(
+                            dict(
+                                args=args, executable=executable, close_fds=bool(close_fds),
+                                cwd=cwd, env=env, shell=bool(shell),
+                                p2cread=p2cread, p2cwrite=p2cwrite,
+                                c2pread=c2pread, c2pwrite=c2pwrite,
+                                errread=errread, errwrite=errwrite,
+                                errpipe_read=errpipe_read, errpipe_write=errpipe_write,
+                            ), pickle.HIGHEST_PROTOCOL))
 
                     use_file = len(data) >= ARG_MAX
 
@@ -301,14 +301,14 @@ if sys.platform in ('linux2', 'darwin'):
 
                     pid = ctypes.c_int()
 
-                    os_environ = (ctypes.c_char_p * (len(os.environ)+1))(
-                            *(['{0}={1}'.format(*value) for value in os.environ.iteritems()]+[0]))
+                    os_environ = (ctypes.c_char_p * (len(os.environ) + 1))(
+                        *(['{0}={1}'.format(*value) for value in os.environ.iteritems()] + [0]))
 
                     try:
                         ret = posix_spawn(ctypes.byref(pid), ctypes.c_char_p(sys.executable),
-                                ctypes.c_void_p(), ctypes.c_void_p(),
-                                ctypes.cast(argv, ctypes.POINTER(ctypes.c_char_p)),
-                                ctypes.cast(os_environ, ctypes.POINTER(ctypes.c_char_p)))
+                                          ctypes.c_void_p(), ctypes.c_void_p(),
+                                          ctypes.cast(argv, ctypes.POINTER(ctypes.c_char_p)),
+                                          ctypes.cast(os_environ, ctypes.POINTER(ctypes.c_char_p)))
                         err = ctypes.get_errno()
                         os.close(errpipe_write)
                         if ret:
@@ -341,9 +341,7 @@ if sys.platform in ('linux2', 'darwin'):
 
                 klass._execute_child = _execute_child
 
-
             import subprocess
             _wrap_execute_child(subprocess.Popen)
 
 # vim: set et ts=4 sw=4 ai :
-

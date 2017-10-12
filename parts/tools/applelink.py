@@ -4,6 +4,7 @@ import SCons.Action
 from parts.tools.gnulink import _pdbResolveString
 from parts.tools.Common import toolvar
 
+
 def _pdbEmitter(target, source, env):
     # TODO : The following almost cut/pasted from parts/tool/gnulink.py. Consider re-factoring
     if env.get('PDB') and not env.get('IGNORE_PDB', False):
@@ -21,6 +22,7 @@ def _pdbEmitter(target, source, env):
         target.append(pdb)
     return target, source
 
+
 def _setUpPdbActions(env):
     if not env.Detect('$DSYMUTIL'):
         # If there are no dsymutil tool on the system we cannot create .dSYMs.
@@ -34,35 +36,33 @@ def _setUpPdbActions(env):
 
     env['_pdbResolveString'] = _pdbResolveString
 
-
     env['_pdbAction'] = "$DSYMUTIL --out=${TARGET.attributes.pdb} $PDBFLAGS ${TARGET}"
     env['_pdbActionString'] = 'Creating separate debug info file for ${TARGET}'
 
-
     env['PDB_ACTION'] = SCons.Action.CommandAction(
         '${_pdbResolveString(TARGETS, _pdbAction)}',
-        cmdstr = '${_pdbResolveString(TARGETS, _pdbActionString)}'
-        )
+        cmdstr='${_pdbResolveString(TARGETS, _pdbActionString)}'
+    )
 
     env['PDB_EMITTER'] = _pdbEmitter
 
-    env.Append(LINKCOM = ['$PDB_ACTION'])
-    env.Append(PROGEMITTER = [_pdbEmitter])
-    env.Append(SHLINKCOM = ['$PDB_ACTION'])
-    env.Append(SHLIBEMITTER = [_pdbEmitter])
+    env.Append(LINKCOM=['$PDB_ACTION'])
+    env.Append(PROGEMITTER=[_pdbEmitter])
+    env.Append(SHLINKCOM=['$PDB_ACTION'])
+    env.Append(SHLIBEMITTER=[_pdbEmitter])
 
     return env
+
 
 def generate(env):
     applelink.generate(env)
 
     env.SetDefault(
-            DSYMUTIL = toolvar('dsymutil', ('dsymutil',), env=env),
-            )
+        DSYMUTIL=toolvar('dsymutil', ('dsymutil',), env=env),
+    )
 
     _setUpPdbActions(env)
 
 exists = applelink.exists
 
 # vim: set et ts=4 sw=4 ai :
-
