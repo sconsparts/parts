@@ -839,7 +839,7 @@ class TestParseTarget(unittest.TestCase):
         '''Testing parsing of build::name::n::g:::: exception expected'''
         try:
             tmp = target_type._parse_target("build::name::n::g::::")
-        except PartRuntimeError, e:
+        except PartRuntimeError as e:
             self.assertTrue(True)
             return
         self.assertTrue(False)
@@ -848,7 +848,7 @@ class TestParseTarget(unittest.TestCase):
         '''Testing parsing of build:::::::: exception expected'''
         try:
             tmp = target_type._parse_target("build::::::::")
-        except PartRuntimeError, e:
+        except PartRuntimeError as e:
             self.assertTrue(True)
             return
         self.assertTrue(False)

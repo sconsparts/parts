@@ -172,9 +172,9 @@ class mapper(object):
                 replace_list_items(env[prop], rvalue, value)
             else:
                 env[prop] = value
-        except KeyError, e:
+        except KeyError as e:
             api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "KeyError", e)
-        except ValueError, e:
+        except ValueError as e:
             api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "ValueError", e)
         api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "After env value: {0}".format(env[prop]))
 

@@ -34,10 +34,10 @@ def get_site_directories(subdir):
         # add paths for windows
         if host_os == 'win32':
             # if we run as a service (like running in buildbot) we may not have a user directory
-            if os.environ.has_key('APPDATA'):
+            if 'APPDATA' in os.environ:
                 localpath.append(os.path.join(os.environ['APPDATA'], 'parts-site', subdir))
             # global system area. should not be needed.. just being careful
-            if os.environ.has_key('ALLUSERSPROFILE'):
+            if 'ALLUSERSPROFILE' in os.environ:
                 syspath = [os.path.join(os.environ['ALLUSERSPROFILE'], 'parts-site', subdir)]
             else:
                 syspath = []
@@ -101,7 +101,7 @@ def load_module(pathlst, name, type):
             api.output.verbose_msg("load_module", "Failed to load module!")
             api.output.verbose_msg(["load_module_failure", "load_module"],
                                    "Stack:\n%s" % traceback.format_exc())
-            raise SCons.Errors.UserError, "No module named '%s'" % (name)
+            raise SCons.Errors.UserError("No module named '%s'" % (name))
         finally:
             sys.path = oldPath
             if file:

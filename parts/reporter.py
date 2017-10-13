@@ -155,7 +155,7 @@ class reporter(object):
         reset the log data when our logger is a QueueLogger to the new
         logger object by adding data in QueueLogger to new object
         '''
-        if type(self.logger) is logger.QueueLogger and type(obj) is not logger.QueueLogger:
+        if isinstance(self.logger, logger.QueueLogger) and not isinstance(obj, logger.QueueLogger):
             for t, msg in self.logger.queue:
                 if t == console.Console.out_stream:
                     obj.logout(msg)

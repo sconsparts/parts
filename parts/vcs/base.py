@@ -342,7 +342,7 @@ class base(object):
             try:
                 try:
                     ret = self.Update()
-                except PartRuntimeError, e:
+                except PartRuntimeError as e:
                     ret = True
             except:
                 api.output.error_msg("Unexpected exception when doing Update actions for {0}. Stopping build!".format(
@@ -367,7 +367,7 @@ class base(object):
             api.output.print_msg('Deleting directory: %s' % self.CheckOutDir)
             try:
                 removeall(self.CheckOutDir)
-            except OSError, e:
+            except OSError as e:
                 api.output.error_msg("Failed to remove directory: {0}".format(e), show_stack=False, exit=False)
                 raise
             api.output.print_msg("Doing full checkout of {0}.".format(self._pobj.Alias))
@@ -470,7 +470,7 @@ class base(object):
                                 stderr=subprocess.STDOUT,
                                 universal_newlines=True)
         # while command runs get output
-        while (proc.poll() == None):
+        while (proc.poll() is None):
             tmp = proc.stdout.readline()
             if echo:
                 sys.stdout.write(tmp)

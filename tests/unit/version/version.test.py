@@ -236,15 +236,15 @@ class TestVersions(unittest.TestCase):
     def test_version_none(self):
         ''' Test version 0.0.0 is None'''
         ver1 = version('0.0.0')
-        self.assertTrue(ver1 == None)
-        self.assertFalse(ver1 != None)
+        self.assertTrue(ver1 is None)
+        self.assertFalse(ver1 is not None)
         self.assertTrue(ver1 <= None)
         self.assertTrue(ver1 >= None)
         self.assertFalse(ver1 < None)
         self.assertFalse(ver1 > None)
         ver1 = version('0')
-        self.assertTrue(ver1 == None)
-        self.assertFalse(ver1 != None)
+        self.assertTrue(ver1 is None)
+        self.assertFalse(ver1 is not None)
         self.assertTrue(ver1 <= None)
         self.assertTrue(ver1 >= None)
         self.assertFalse(ver1 < None)
@@ -253,8 +253,8 @@ class TestVersions(unittest.TestCase):
     def test_version_none2(self):
         ''' Test version() is None'''
         ver1 = version()
-        self.assertTrue(ver1 == None)
-        self.assertFalse(ver1 != None)
+        self.assertTrue(ver1 is None)
+        self.assertFalse(ver1 is not None)
         self.assertTrue(ver1 <= None)
         self.assertTrue(ver1 >= None)
         self.assertFalse(ver1 < None)

@@ -87,7 +87,7 @@ def object_emitter(target, source, env, parent_emitter):
 
     parent_emitter(target, source, env)
 
-    if env.has_key('PCH') and env['PCH']:
+    if 'PCH' in env and env['PCH']:
         env.Depends(target, env['PCH'])
 
     return (target, source)

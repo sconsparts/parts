@@ -45,7 +45,7 @@ class Pattern(object):
         self.map = None
 
     def sub_dirs(self):
-        if self.map == None:
+        if self.map is None:
             self.generate()
         return self.map.keys()
 

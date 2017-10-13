@@ -81,11 +81,11 @@ class Variables(dict, object):
 
         This function makes sure everything is a Variable class type. It will only truly replace if this value is of a Variable type,
         otherwise it replaces the value of an exist Variable or it will wrap that value in a Generic Varible object'''
-        if self.__dict__.has_key(name):
+        if name in self.__dict__:
             self.__dict__[name] = value
         elif isinstance(value, Variable):
             self[name] = value
-        elif self.has_key(name):
+        elif name in self:
             self[name].value = value
         else:
             self[name] = Variable(name, value=value)
@@ -95,7 +95,7 @@ class Variables(dict, object):
     def __setitem__(self, name, value):
         if isinstance(value, Variable):
             dict.__setitem__(self, name, value)
-        elif self.has_key(name):
+        elif name in self:
             self[name].value = value
         else:
             value = Variable(name, value=value)
@@ -129,7 +129,7 @@ class Variables(dict, object):
                 # classic case
                 self.Add(*o)
 
-    def Add(self, key, help=None, default=None, validator=None, converter=None, help_group=None,  **kw):
+    def Add(self, key, help=None, default=None, validator=None, converter=None, help_group=None, **kw):
         '''This will add a Variable that will the user can overide on the Command like or with a config file
         @param key The name of the varable to add, or is a varaible type, if the latter the other arguments as overides
         @param help The help text for this given item
@@ -162,7 +162,7 @@ class Variables(dict, object):
                            help_group=help_group)
             if SCons.Util.is_List(key) or SCons.Util.is_Tuple(key):
                 key = key[0]
-        if self.has_key(key):
+        if key in self:
             api.output.warning_msg("Variable {0} is already defined.".format(key))
         val._on_change += self._on_change
         self[key] = val

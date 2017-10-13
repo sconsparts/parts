@@ -134,7 +134,7 @@ class part_spawner(object):
                         killProcessTree(proc)
                         raise UserError("Killed by timeout ({0} sec)".format(timeout))
                     ret = proc.returncode
-        except BaseException, e:
+        except BaseException as e:
             msg = str(SCons.Errors.convert_to_BuildError(e, sys.exc_info()))
             output.WriteStream(id, console.Console.error_stream, msg)
             ret = -1
@@ -291,7 +291,7 @@ class log_file_writer(object):
         with cls.__lock__:
             try:
                 return env.File(name, create=0).attributes.log_file_writer
-            except (UserError, AttributeError), e:
+            except (UserError, AttributeError) as e:
                 # UserError is raised by env.File when the file is unknown to SCons
                 # AttributeError is raised when there is no log_file_writer_ref
                 # among the file's attributes

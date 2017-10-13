@@ -22,7 +22,7 @@ def normalize_env(shellenv=None, keys=None):
     # copy over any key from shell environment
     if keys:
         for k in keys:
-            if os.environ.has_key(k):
+            if k in os.environ:
                 normenv[k] = os.environ[k]
 
     # on windows we need to convert unicode text to mbcs

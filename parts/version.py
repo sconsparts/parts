@@ -39,12 +39,12 @@ class VersionPart(object):
         version is used directly.  'comp' is used as the comparison operator.
         '''
         num1 = self.ver
-        if self.weight != None:
+        if self.weight is not None:
             num1 = self.weight
 
         try:
             num2 = rhs.ver
-            if rhs.weight != None:
+            if rhs.weight is not None:
                 num2 = rhs.weight
         except AttributeError:
             num2 = rhs
@@ -176,7 +176,7 @@ class version(object):
         if m.group(2):
             # second will be a possible special string
             part = VersionPart(m.group(2))
-            if self.weights.has_key(m.group(2).lower()):
+            if m.group(2).lower() in self.weights:
                 part.weight = self.weights[m.group(2).lower()]
 
             ret.append(part)
@@ -309,7 +309,7 @@ class version(object):
         Subtraction operator that produces a version range with this as the
         start.
         '''
-        if rhs == None:
+        if rhs is None:
             rhs = "*"
         if self < rhs:
             ret = version_range("{0}-{1}".format(self, rhs))

@@ -40,14 +40,14 @@ def Component(env, name, version_range=None, requires=REQ.DEFAULT, section="buil
     # set the version value
     if version_range:
         t.Properties['version'] = version_range
-    elif t.Properties.has_key('version') == False:
+    elif ('version' in t.Properties) == False:
         t.Properties['version'] = '*'
     # set the target value
-    if t.Properties.has_key('target') == False:  # ['target','target-platform','target_platform']
+    if ('target' in t.Properties) == False:  # ['target','target-platform','target_platform']
         t.Properties['platform_match'] = env['TARGET_PLATFORM']
 
     # Set the configuration to try to match
-    if t.Properties.has_key('config') == False:
+    if ('config' in t.Properties) == False:
         t.Properties['config'] = str(env['CONFIG'])
 
     return dependent_ref.dependent_ref(part_ref.part_ref(t, localspace), section, requires)
@@ -129,7 +129,7 @@ def depends_on_classic(env, depends):
 
             elif r.is_public:
                 api.output.verbose_msg('dependson', "  Global value", r.key, map_val)
-                if env.has_key(r.key):
+                if r.key in env:
                     env[r.key] = [env[r.key], map_val]
                 else:
                     env[r.key] = map_val

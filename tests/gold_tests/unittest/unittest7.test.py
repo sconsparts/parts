@@ -9,8 +9,8 @@ import re
 
 def getSystemName():
     PLATFORM_MAP = {'windows': 'win32',
-                    'linux':   'posix',
-                    'mac':     'darwin'}
+                    'linux': 'posix',
+                    'mac': 'darwin'}
     systemName = platform.system().lower()
     return PLATFORM_MAP.get(systemName, systemName)
 

@@ -631,7 +631,7 @@ class part(pnode.pnode):
 
         if _env is None:
             # if none have been setup, use the default Settings object
-            if self.__settings == None:
+            if self.__settings is None:
                 self.__settings = settings.DefaultSettings()
 
             self.__env = self.__settings.Environment(
@@ -843,7 +843,7 @@ class part(pnode.pnode):
             # self.__env.Alias('${PART_SDK_CONCEPT}${PART_ALIAS_CONCEPT}'+self.__alias,v)
             self.__env.Alias('${PART_BUILD_CONCEPT}${PART_ALIAS_CONCEPT}' + self.__alias, v)
 
-            if self.__parent != None:
+            if self.__parent is not None:
                 sdkname = "%s_%s.sdk.parts" % (self.__name, self.Version)
                 args = {'alias': self.__short_alias, 'parts_file': sdkname,
                         'mode': self.__mode,
@@ -1382,7 +1382,7 @@ def complex_compare(v1, v2):
 
     if id(v1) == id(v2):  # Equal pointer point to equal objects
         return False
-    elif type(v1) != type(v2):
+    elif not isinstance(v1, type(v2)):
         return True
     elif isinstance(v1, SCons.Action.ActionBase):
         return SCons.Action._object_contents(v1) != SCons.Action._object_contents(v2)

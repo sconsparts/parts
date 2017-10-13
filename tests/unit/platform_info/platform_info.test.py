@@ -42,7 +42,7 @@ class TestPlatform(unittest.TestCase):
         try:
             # This should fail to create
             s1 = SystemPlatform('x86', 'win32')
-        except PartRuntimeError, e:
+        except PartRuntimeError as e:
             self.assertTrue(True)
             return
         self.assertTrue(False)
@@ -111,7 +111,7 @@ class TestPlatform(unittest.TestCase):
         try:
             # This should fail to create
             s1 = SystemPlatform('foo', 'bar')
-        except PartRuntimeError, e:
+        except PartRuntimeError as e:
             self.assertTrue(True)
             return
         self.assertTrue(False)
@@ -120,7 +120,7 @@ class TestPlatform(unittest.TestCase):
         try:
             # This should fail to create
             s1 = SystemPlatform('x86-win32')
-        except PartRuntimeError, e:
+        except PartRuntimeError as e:
             self.assertTrue(True)
             return
         self.assertTrue(False)

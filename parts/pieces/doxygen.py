@@ -271,7 +271,7 @@ def generateSources(config, env):
     if string.upper(config.get('HAVE_DOT')) == 'YES':
         DetectDot(env)
 
-    include_pattern = config.get('FILE_PATTERNS') or '''*.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp 
+    include_pattern = config.get('FILE_PATTERNS') or '''*.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp
     *.i++ *.inl *.h *.hh *.hxx *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.py'''
     include_pattern = string.split(include_pattern)
     exclude_pattern = config.get('EXCLUDE_PATTERNS') or ''

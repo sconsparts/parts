@@ -1,14 +1,14 @@
 import variable
 import SCons.Errors
 
-__enable_strings = ('1', 'yes', 'true',  'on', 'enable', 'search')
-__disable_strings = ('0', 'no',  'false', 'off', 'disable')
+__enable_strings = ('1', 'yes', 'true', 'on', 'enable', 'search')
+__disable_strings = ('0', 'no', 'false', 'off', 'disable')
 
 
 class PackageVariable(variable.Variable):
 
     def __init__(self, name, help, default, searchfunc=None, value=None, help_group=None):
-        ''' 
+        '''
         '''
         help = '\n    '.join(
             (help, '( yes | no | /path/to/%s )' % key))

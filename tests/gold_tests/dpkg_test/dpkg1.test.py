@@ -1,7 +1,7 @@
 import sys
 
 Test.Summary = '''
-This test checks that the dpkg adds files to deb from SConstruct 
+This test checks that the dpkg adds files to deb from SConstruct
 DefaultEnvironment is used.
 Works fine without giving the path to dpkg-deb
 '''

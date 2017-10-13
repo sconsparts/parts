@@ -82,16 +82,16 @@ key8 == var8
         self.assertEqual(parsed1['key2'], ' var2 var22')
         self.assertEqual(parsed1['key3'], '')
         self.assertEqual(parsed1['key4'], ' var4')
-        self.assertEqual(parsed1.has_key('key5'), False)
-        self.assertEqual(parsed1.has_key('key6'), False)
-        self.assertEqual(parsed1.has_key('key7'), False)
-        self.assertEqual(parsed1.has_key('key8'), False)
+        self.assertEqual('key5' in parsed1, False)
+        self.assertEqual('key6' in parsed1, False)
+        self.assertEqual('key7' in parsed1, False)
+        self.assertEqual('key8' in parsed1, False)
 
         parsed2 = parse_output(output, ['key1', 'key4', 'key7'])
-        self.assertEqual(parsed2.has_key('key1'), True)
-        self.assertEqual(parsed2.has_key('key2'), False)
-        self.assertEqual(parsed2.has_key('key4'), True)
-        self.assertEqual(parsed2.has_key('key7'), False)
+        self.assertEqual('key1' in parsed2, True)
+        self.assertEqual('key2' in parsed2, False)
+        self.assertEqual('key4' in parsed2, True)
+        self.assertEqual('key7' in parsed2, False)
 
     if is_win32:
         def test_script_env_win(self):
@@ -116,7 +116,7 @@ key8 == var8
             expectedOutput['LIBPATH'] = r'C:\Windows\someplace;'
             for key in expectedOutput.keys():
                 self.assertEqual(r[key], expectedOutput[key])
-            self.assertEqual(r.has_key('DUMMY'), False)
+            self.assertEqual('DUMMY' in r, False)
 
         def test_merge_env_win(self):
             cenv = self.env.Clone()
@@ -143,7 +143,7 @@ key8 == var8
         def test_get_script_env(self):
             r = get_script_env(self.env, 'testdata/testvars.sh', vars=['INCLUDE'])
             self.assertEqual(len(r), 1)
-            self.assertEqual(r.get('INCLUDE', None),  r"'/usr/bin/joe/myinclude/INCLUDE:/opt/foo/INCLUDE:oddvar:::like this'")
+            self.assertEqual(r.get('INCLUDE', None), r"'/usr/bin/joe/myinclude/INCLUDE:/opt/foo/INCLUDE:oddvar:::like this'")
 
             r = get_script_env(self.env, os.path.join('testdata', 'testvars.sh'), vars=['LIB'])
             self.assertEqual(len(r), 1)
@@ -161,7 +161,7 @@ key8 == var8
             expectedOutput['LIBPATH'] = r'/opt/someplace:'
             for key in expectedOutput.keys():
                 self.assertEqual(r[key], expectedOutput[key])
-            self.assertEqual(r.has_key('DUMMY'), False)
+            self.assertEqual('DUMMY' in r, False)
 
         def test_merge_script_vars(self):
             cenv = self.env.Clone()

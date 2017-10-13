@@ -9,7 +9,7 @@ __false_strings = ('n', 'no', 'false', 'f', '0', 'off', 'none')
 class IntVariable(variable.Variable):
 
     def __init__(self, name, help, default, value=None, help_group=None):
-        ''' 
+        '''
         '''
 
         def _converter(str_val):

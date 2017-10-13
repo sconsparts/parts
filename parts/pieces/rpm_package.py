@@ -108,7 +108,7 @@ def rpmarch(env, target_arch):
 
     def explicit_rpm_mapping(target_arch):
         rpm_arch = None
-        if arch_map_rpm.has_key(target_arch):
+        if target_arch in arch_map_rpm:
             rpm_arch = arch_mapper[target_arch]
             arch_map_rpm[target_arch] = rpm_arch
         return rpm_arch
@@ -121,7 +121,7 @@ def rpmarch(env, target_arch):
             if arch_map_rpm.get(target_arch) == arch_mapper.get(target_arch):
                 new_target_arch = target_arch
 
-        elif arch_map_rpm.has_key(target_arch):
+        elif target_arch in arch_map_rpm:
             if arch_mapper.get(target_arch) is not None:
                 arch_map_rpm[target_arch] = explicit_rpm_mapping(target_arch)
                 new_target_arch = arch_map_rpm[target_arch]

@@ -85,27 +85,27 @@ class manager(object):
             node.clear_memoized_values()
 
     def isKnownNode(self, ID):
-        return self.__known_nodes.has_key(ID)
+        return ID in self.__known_nodes
 
     def isKnownPNode(self, ID):
-        return self.__known_pnodes.has_key(ID)
+        return ID in self.__known_pnodes
 
     def isKnownAliasStored(self, ID):
         data = self._get_cache()
         if data:
-            return data.get('aliases', {}).has_key(ID)
+            return ID in data.get('aliases', {})
         return False
 
     def isKnownNodeStored(self, ID):
         data = self._get_cache()
         if data:
-            return data.get('known_nodes', {}).has_key(ID)
+            return ID in data.get('known_nodes', {})
         return False
 
     def isKnownPNodeStored(self, ID):
         data = self._get_cache()
         if data:
-            return data.get('known_pnodes', {}).has_key(ID)
+            return ID in data.get('known_pnodes', {})
         return False
 
     def GetNode(self, ID, create=None):

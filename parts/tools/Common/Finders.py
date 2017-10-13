@@ -44,7 +44,7 @@ class EnvFinder(object):
 
         for key in self.keys:
             ret = os.environ.get(key, None)
-            if ret == None:
+            if ret is None:
                 #print('Shell value %s not found' % (key))
                 pass
             elif os.path.isdir(ret):
@@ -53,7 +53,7 @@ class EnvFinder(object):
             else:
                 #print('Path value of %s for varible of %s does not exists' % (ret,key))
                 pass
-        if self.rel_path != None and ret != None:
+        if self.rel_path is not None and ret is not None:
             ret = os.path.normpath(os.path.join(ret, self.rel_path))
         return ret
 
@@ -80,10 +80,10 @@ class RegFinder(object):
                 ret = self.read_reg(key)
                 #print('Found key in registry: %s' % ret)
                 break
-            except WindowsError, e:
+            except WindowsError as e:
                 #print('Did not find key %s in registry' % (ret))
                 ret = None
-        if self.rel_path != None and ret != None:
+        if self.rel_path is not None and ret is not None:
             ret = os.path.normpath(os.path.join(ret, self.rel_path))
         return ret
 

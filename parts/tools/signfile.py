@@ -45,7 +45,7 @@ def CertFunc(env):
 
     ret = certAction([], [], env)
     if ret:
-        raise SCons.Errors.UserError, "Unable to make code signing certificate"
+        raise SCons.Errors.UserError("Unable to make code signing certificate")
 
     print "Successfully generated code signing certificate"
 
@@ -73,7 +73,7 @@ def SignFunc(target, source, env):
             ret = compositeSign(target[:1], [], env)
 
         if ret:
-            raise SCons.Errors.UserError, "Unable to sign %s" % target[0]
+            raise SCons.Errors.UserError("Unable to sign %s" % target[0])
 
     print "Successfully signed %s" % target[0]
 

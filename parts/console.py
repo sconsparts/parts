@@ -154,7 +154,7 @@ class Console(object):
 
             if SCons.Script.GetOption('show_progress') == False:
                 conio = NullStream()
-        except Exception, ec:
+        except Exception as ec:
             conio = NullStream()
 
         # if color.is_win32==True:

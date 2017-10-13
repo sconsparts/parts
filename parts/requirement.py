@@ -115,10 +115,12 @@ class requirement(object):
         return [self].__iter__()
 
     def __str__(self):
-        return "requirement(key={0} internal={1} public={2} policy={3}, weight={4})".format(self.key, self._internal, self._public, self._policy, self._weight)
+        return "requirement(key={0} internal={1} public={2} policy={3}, weight={4})".format(
+            self.key, self._internal, self._public, self._policy, self._weight)
 
     def __repr__(self):
-        return "requirement(key={0} internal={1} public={2} policy={3}, weight={4})".format(self.key, self._internal, self._public, self._policy, self._weight)
+        return "requirement(key={0} internal={1} public={2} policy={3}, weight={4})".format(
+            self.key, self._internal, self._public, self._policy, self._weight)
 
     def __hash__(self):
         return hash(self.key)
@@ -150,7 +152,7 @@ class requirement_set(object):
         self._weight = weight
         self._values = []
         for i in lst:
-            if type(i) is type(''):
+            if isinstance(i, type('')):
                 if i in _added_types:
                     items = _added_types[i][0]
                     for item in items._values:
@@ -208,7 +210,7 @@ def DefineRequirementSet(name, lst, policy=ReportingPolicy.ignore, weight=-1000)
     for i in lst:
         if isinstance(i, requirement):
             tmplst.append(i)
-        elif type(i) is type(''):
+        elif isinstance(i, type('')):
             try:
                 tmplst.extend(_added_types[i][0]._values)
                 api.output.policy_msg(_added_types[i][1], 'REQ',
@@ -308,24 +310,20 @@ class REQ(object):
                 return True
 
     def __iter__(self):
-        tmp = self.__data.values()
-        tmp.sort()
+        tmp = sorted(self.__data.values())
         return iter(tmp)
 
     def __str__(self):
-        tmp = self.__data.values()
-        tmp.sort()
+        tmp = sorted(self.__data.values())
         return "REQ({0})".format(tmp)
 
     def __repr__(self):
-        tmp = self.__data.values()
-        tmp.sort()
+        tmp = sorted(self.__data.values())
         return "REQ({0})".format(tmp)
 
     def Serialize(self):
         data = []
-        t = self.__data.values()
-        t.sort()  # the sort is more for testing
+        t = sorted(self.__data.values())
         for i in t:
             data.append(i.Serialize())
         return data

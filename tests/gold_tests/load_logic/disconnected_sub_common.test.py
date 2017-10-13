@@ -1,6 +1,6 @@
 Test.Summary = '''
 This test a the different load logic cases with a part that does not depend on its sub-parts
-Each sub-part of A depends on a common headers. This tests some mapping logic with platform_indpendent 
+Each sub-part of A depends on a common headers. This tests some mapping logic with platform_indpendent
 and with not using platform_indpendent (default case). Use of sub-parts to to make example a little more
 complex stressing the logic in better
 '''

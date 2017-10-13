@@ -54,11 +54,11 @@ class Parts_Tool(object):
                         if file:
                             file.close()
                     return result
-                except ImportError, e:
+                except ImportError as e:
                     api.output.verbose_msg("tools", "Failed to load module!")
                     api.output.verbose_msg(["tools_failure", "load_module"], "Stack:\n%s" % (traceback.format_exc()))
                     if str(e) != "No module named %s" % self.name:
-                        raise SCons.Errors.EnvironmentError, e
+                        raise SCons.Errors.EnvironmentError(e)
                     try:
                         import zipimport
                     except ImportError:
@@ -68,7 +68,7 @@ class Parts_Tool(object):
                             try:
                                 importer = zipimport.zipimporter(aPath)
                                 Parts_Tool._cache[path_key][self.name] = result = importer.load_module(self.name)
-                            except ImportError, e:
+                            except ImportError as e:
                                 pass
                             else:
                                 return result
@@ -88,27 +88,27 @@ class Parts_Tool(object):
                         if file:
                             file.close()
                         return module
-                    except ImportError, e:
+                    except ImportError as e:
                         if str(e) != "No module named %s" % self.name:
                             api.output.verbose_msg("tools", "Failed to load module!")
                             api.output.verbose_msg(["tools_failure", "load_module"], "Stack:\n%s" % (traceback.format_exc()))
-                            raise SCons.Errors.EnvironmentError, e
+                            raise SCons.Errors.EnvironmentError(e)
                         try:
                             import zipimport
                             importer = zipimport.zipimporter(sys.modules['SCons.Tool'].__path__[0])
                             Parts_Tool._cache[path_key][self.name] = module = importer.load_module(full_name)
                             setattr(SCons.Tool, self.name, module)
                             return module
-                        except ImportError, e:
+                        except ImportError as e:
                             m = "No tool named '%s': %s" % (self.name, e)
                             api.output.verbose_msg("tools", "Failed to load module!")
                             api.output.verbose_msg(["tools_failure", "load_module"], "Stack:\n%s" % (traceback.format_exc()))
-                            raise SCons.Errors.EnvironmentError, m
-                except ImportError, e:
+                            raise SCons.Errors.EnvironmentError(m)
+                except ImportError as e:
                     m = "No tool named '%s': %s" % (self.name, e)
                     api.output.verbose_msg("tools", "Failed to load module!")
                     api.output.verbose_msg(["tools_failure", "load_module"], "Stack:\n%s" % (traceback.format_exc()))
-                    raise SCons.Errors.EnvironmentError, m
+                    raise SCons.Errors.EnvironmentError(m)
             else:
                 return result
 
@@ -125,7 +125,7 @@ class Parts_Tool(object):
         env.Append(TOOLS=[self.name])
         if hasattr(self, 'options'):
             import SCons.Variables
-            if not env.has_key('options'):
+            if 'options' not in env:
                 from SCons.Script import ARGUMENTS
                 env['options'] = SCons.Variables.Variables(args=ARGUMENTS)
             opts = env['options']

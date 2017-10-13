@@ -40,7 +40,7 @@ class task(object):
             try:
                 if self.__vcs.UpdateOnDisk():
                     self.failed()
-            except PartRuntimeError, e:
+            except PartRuntimeError as e:
                 self.failed()
                 #buildError = SCons.Errors.convert_to_BuildError(e)
                 #buildError.node = self.__vcs.CheckOutDir

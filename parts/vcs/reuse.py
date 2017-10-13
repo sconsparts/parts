@@ -63,7 +63,7 @@ class reuse_part_vcs(base):
         return self._vcs.AllowParallelAction
 
     def UpdateEnv(self):
-        ''' 
+        '''
         fixme
         '''
         # when we setup this object we want
@@ -108,7 +108,7 @@ class reuse_part_vcs(base):
         return self._vcs.do_exist_logic
 
     def do_check_logic(self):
-        ''' call for checking if what we have in the data cache is matching the current checkout request 
+        ''' call for checking if what we have in the data cache is matching the current checkout request
         in the SConstruct match up
 
         returns None if it passes, returns a string to possible print tell why it failed

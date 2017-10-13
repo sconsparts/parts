@@ -1,7 +1,7 @@
 import sys
 
 Test.Summary = '''
-This test checks that the dpkg-deb adds files to deb from Parts file 
+This test checks that the dpkg-deb adds files to deb from Parts file
 In this both zip and dpkg builders are used.
 Works fine without giving the path to dpkg-deb.
 '''

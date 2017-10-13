@@ -2,7 +2,7 @@ import sys
 
 Test.Summary == '''
 This test checks that the archive builder adds files to archive package from SConstruct.
-Test for various archive packages along with dpkg 
+Test for various archive packages along with dpkg
 '''
 
 Test.SkipUnless(

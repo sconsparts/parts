@@ -69,7 +69,7 @@ def ProcessInstall(env, target, sources, sub_dir, create_sdk, sdk_dir='', no_pkg
 
     dest_sdk = sdk_dir
 
-    if kw.has_key('tags'):
+    if 'tags' in kw:
         tags = kw['tags']
         del kw['tags']
     if no_pkg == True:
@@ -239,7 +239,8 @@ def InstallTarget(env, src_files, sub_dir='', no_pkg=False, create_sdk=True, **k
     sdk_mapping_set = set([])
     for i in src_files:
         # We have an individual item
-        if isinstance(i, SCons.Node.FS.File) or isinstance(i, SCons.Node.FS.Dir) or isinstance(i, SCons.Node.Node) or util.isString(i):
+        if isinstance(i, SCons.Node.FS.File) or isinstance(
+                i, SCons.Node.FS.Dir) or isinstance(i, SCons.Node.Node) or util.isString(i):
 
             if i not in sdk.g_sdked_files:
                 ret = env.SdkTarget([i], sub_dir)

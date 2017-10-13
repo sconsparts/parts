@@ -92,7 +92,7 @@ class namespace(dict, bindable):
         if hasattr(tmp, '__eval__'):
             tmp = tmp.__eval__()
             self[name] = tmp
-        if (util.isString(tmp) or tmp is None) and self.__dict__.has_key('env'):
+        if (util.isString(tmp) or tmp is None) and 'env' in self.__dict__:
             return self.env.subst(tmp)
         return tmp
 
@@ -239,7 +239,7 @@ def append_unique(obj, val):
         obj.append(val)
     else:
         try:
-            while 1:
+            while True:
                 obj.remove(val)
         except ValueError:
             pass
@@ -253,7 +253,7 @@ def prepend_unique(obj, val):
         obj[0:0] = [val]
     else:
         try:
-            while 1:
+            while True:
                 obj.remove(val)
         except ValueError:
             pass

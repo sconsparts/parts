@@ -10,7 +10,7 @@ def Part_factory(arg1=None, parts_file=None, mode=[], vcs_type=None, default=Fal
                  append={}, prepend={}, create_sdk=True, package_group=None,
                  alias=None, name=None, *lst, **kw):
     ''' This  function acts a factory to help with Part creation.
-    This way control over making a new Part or getting the existing Part 
+    This way control over making a new Part or getting the existing Part
     can be better controled
     '''
 

@@ -99,8 +99,7 @@ class GnuInfo(ToolInfo):
             self.scan_query(root)
         if self.found is not None:
             try:
-                k = self.found.keys()
-                k.sort()
+                k = sorted(self.found.keys())
                 k.reverse()
                 for i in k:
                     if MatchVersionNumbers(version, i):
@@ -117,8 +116,7 @@ class GnuInfo(ToolInfo):
         ret = ToolInfo.get_shell_env(self, env, namespace, version, install_root, script, tool)
         if ret is not None and self.found is not None:
             # get correct tool value in namespace
-            k = self.found.keys()
-            k.sort()
+            k = sorted(self.found.keys())
             k.reverse()
             for i in k:
                 if MatchVersionNumbers(version, i):

@@ -359,7 +359,7 @@ class Settings(object):
         SCons.Script.GetOption(name)
 
     # Variables are <name>=Value
-    def AddVariable(self, name, help=None,  default=None, validator=None, converter=None, value=None, help_group=None):
+    def AddVariable(self, name, help=None, default=None, validator=None, converter=None, value=None, help_group=None):
         self.vars.Add(Variables.Variable(name, help, default, validator, converter, value, help_group))
 
     def BoolVariable(self, name, help, default, value=None, help_group=None):
@@ -432,7 +432,7 @@ class Settings(object):
     def _env_const_ref(self, **kw):
         """
         This makes a reference to environment with the toolchain and configruation set on it
-        given the user is not setting tools directly. This function would normally be the 
+        given the user is not setting tools directly. This function would normally be the
         Environment() call. But we have a need to get an instance of the environment for diffing
         purposes because of this we want to pass back a instance, not a copy of the of the environment
         object, to reduce memory usage and help on the speed.
@@ -508,7 +508,7 @@ class Settings(object):
             # append any data or prepend any data as needed
             # will probally need better error handling later
             for k, v in append.iteritems():
-                has_hey = env.has_key(k)
+                has_hey = k in env
                 if util.isList(v) and has_hey:
                     env.AppendUnique(**{k: v})
                 elif util.isList(v) and not has_hey:
@@ -517,7 +517,7 @@ class Settings(object):
                     api.output.warning_msg('Ignoring appending value', k, "as it is not a list. It is type", type(v), ".")
 
             for k, v in prepend.iteritems():
-                has_hey = env.has_key(k)
+                has_hey = k in env
                 if util.isList(v) and has_hey:
                     env.PrependUnique(**{k: v})
                 elif util.isList(v) and not has_hey:
@@ -589,7 +589,7 @@ class Settings(object):
         '''
         This creates a base environment with the mininium stuff needed
         Deal with mostly, internal hacks or system tweaks. BasicEnvironment()
-        deals with common general case. 
+        deals with common general case.
         '''
 
         # create a new environment

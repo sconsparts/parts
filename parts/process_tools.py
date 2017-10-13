@@ -45,16 +45,16 @@ if os.name == 'nt':
     SmallThreadInfo = collections.namedtuple('SmallThreadInfo', 'tid pid')
 
     class ProcessEntry32(ctypes.Structure):
-        _fields_ = [('dwSize',              DWORD),
-                    ('cntUsage',            DWORD),
-                    ('th32ProcessID',       DWORD),
-                    ('th32DefaultHeapID',   ctypes.POINTER(ctypes.c_ulong)),
-                    ('th32ModuleID',        DWORD),
-                    ('cntThreads',          DWORD),
+        _fields_ = [('dwSize', DWORD),
+                    ('cntUsage', DWORD),
+                    ('th32ProcessID', DWORD),
+                    ('th32DefaultHeapID', ctypes.POINTER(ctypes.c_ulong)),
+                    ('th32ModuleID', DWORD),
+                    ('cntThreads', DWORD),
                     ('th32ParentProcessID', DWORD),
-                    ('pcPriClassBase',      ctypes.c_long),
-                    ('dwFlags',             DWORD),
-                    ('szExeFile',           ctypes.c_char * MAX_PATH)]
+                    ('pcPriClassBase', ctypes.c_long),
+                    ('dwFlags', DWORD),
+                    ('szExeFile', ctypes.c_char * MAX_PATH)]
 
         def __init__(self):
             ctypes.Structure.__init__(self)
@@ -64,13 +64,13 @@ if os.name == 'nt':
             return SmallProcessInfo(self.szExeFile, self.th32ProcessID, self.th32ParentProcessID)
 
     class ThreadEntry32(ctypes.Structure):
-        _fields_ = [('dwSize',             DWORD),
-                    ('cntUsage',           DWORD),
-                    ('th32ThreadID',       DWORD),
+        _fields_ = [('dwSize', DWORD),
+                    ('cntUsage', DWORD),
+                    ('th32ThreadID', DWORD),
                     ('th32OwnerProcessID', DWORD),
-                    ('tpBasePri',          ctypes.c_long),
-                    ('tpDeltaPri',         ctypes.c_long),
-                    ('dwFlags',            DWORD)]
+                    ('tpBasePri', ctypes.c_long),
+                    ('tpDeltaPri', ctypes.c_long),
+                    ('dwFlags', DWORD)]
 
         def __init__(self):
             ctypes.Structure.__init__(self)
@@ -225,7 +225,7 @@ if os.name == 'nt':
     def _performAction(pid, action):
         try:
             PROCESS_ACTIONS[action](pid)
-        except BaseException, e:
+        except BaseException as e:
             raise UserError('Cannot {2} PID {0}: {1}'.format(pid, e, action))
 
 elif os.name == 'posix':
@@ -266,10 +266,10 @@ elif os.name == 'posix':
         for sigNumber in ACTION_SIGNALS[action]:
             try:
                 os.kill(pid, sigNumber)
-            except OSError, e:
+            except OSError as e:
                 if e.errno != errno.ESRCH:
                     raise UserError('Cannot {2} PID {0}: {1}'.format(pid, e, action))
-            except BaseException, e:
+            except BaseException as e:
                 raise UserError('Cannot {2} PID {0}: {1}'.format(pid, e, action))
 
 else:
@@ -303,7 +303,7 @@ def waitForProcess(process, timeout=None):
     if timeout is None:
         try:
             process.wait()
-        except OSError, e:
+        except OSError as e:
             if e.errno != errno.ECHILD:
                 raise
     else:

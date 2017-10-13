@@ -37,7 +37,7 @@ class text(logger.Logger):
             self.m_file.write(msg)
 
     def shutdown(self):
-        if self.__dict__.has_key('m_file') == False:
+        if ('m_file' in self.__dict__) == False:
             return
         self.m_file.close()
 

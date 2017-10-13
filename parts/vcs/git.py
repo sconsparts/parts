@@ -142,7 +142,7 @@ class git(base):
 
     def clean_step(self, out_dir):
         ''' since git tends to checkout the .git meta data area as readonly
-        it turns out that we can't clean the checked out code correctly as 
+        it turns out that we can't clean the checked out code correctly as
         python will not clean the files that are readonly. This makes it so
         all the data is writable so we can do the delete actions
         '''
@@ -176,7 +176,7 @@ class git(base):
         return "%s needs to be updated on disk" % self._pobj.Alias
 
     def do_check_logic(self):
-        ''' call for checking if what we have in the data cache is matching the current checkout request 
+        ''' call for checking if what we have in the data cache is matching the current checkout request
         in the SConstruct match up
 
         returns None if it passes, returns a string to possible print tell why it failed
@@ -200,7 +200,8 @@ class git(base):
                 if data:
                     if data['url'] != self.FullPath:
                         api.output.verbose_msg(["vcs_update", "vcs_git"], " Disk version does not match")
-                        return 'Server on disk is different than the one requested for Parts "%s\n On disk: %s\n requested: %s"' % (self._pobj.Alias, data['server'], self.FullPath)
+                        return 'Server on disk is different than the one requested for Parts "%s\n On disk: %s\n requested: %s"' % (self._pobj.Alias, data[
+                                                                                                                                    'server'], self.FullPath)
                     else:
                         api.output.verbose_msg(["vcs_update", "vcs_git"], " Disk version matches")
                 else:
@@ -225,12 +226,13 @@ class git(base):
         if data:
             if data['server'] != self.FullPath:
                 api.output.verbose_msg(["vcs_update", "vcs_git"], " Disk checked failed")
-                return 'Server on disk is different than the one requested for Parts "%s\n On disk: %s\n requested: %s"' % (self._pobj.Alias, data['server'], self.FullPath)
+                return 'Server on disk is different than the one requested for Parts "%s\n On disk: %s\n requested: %s"' % (self._pobj.Alias, data[
+                                                                                                                            'server'], self.FullPath)
             else:
                 return None
 
     def UpdateEnv(self):
-        ''' 
+        '''
         Update the with information about the current VCS object
         '''
         if git.gitpath is None:
