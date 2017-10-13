@@ -60,7 +60,7 @@ class file_system(base):
         return self._env.Action(cmdlst, "VcsFileSystem: Copying Files from %s to %s" % (self.FullPath, out_dir))
 
     def UpdateEnv(self):
-        ''' 
+        '''
         Update the with information about the current VCS object
         '''
         self._env['VCS'] = common.namespace(
@@ -78,7 +78,7 @@ class file_system(base):
         return "%s needs to be updated on disk" % self._pobj.Alias
 
     def do_check_logic(self):
-        ''' call for checking if what we have in the data cache is matching the current checkout request 
+        ''' call for checking if what we have in the data cache is matching the current checkout request
         in the SConstruct match up
 
         returns None if it passes, returns a string to possible print tell why it failed

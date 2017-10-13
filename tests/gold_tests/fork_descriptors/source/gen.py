@@ -16,7 +16,7 @@ exit 0
         with open('/dev/urandom', 'r') as rnd:
             f.write(rnd.read(150 * 1024 * 1024))
 
-    os.chmod('%s.sh' % name, 0755)
+    os.chmod('%s.sh' % name, 0o755)
 
 
 def packFile(name):

@@ -35,7 +35,7 @@ def __load_cache_data(datafile):
                 data = inputfile.read()
             return cPickle.loads(data)
 
-    except Exception, ec:
+    except Exception as ec:
         api.output.warning_msg("Failed to load datacache file %s, will rebuild file." % datafile, print_once=True)
         global __bad_cache
         __bad_cache = True

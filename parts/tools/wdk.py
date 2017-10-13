@@ -71,11 +71,11 @@ if SCons.Util.can_read_reg:
         def _plainVersions(self):
             def _walkDict(dictionary):
                 """ return list of tuples of form ('Major.Minor.Build': 'path') """
-                assert type(dictionary) is dict
+                assert isinstance(dictionary, dict)
                 res = []
                 for key in dictionary.keys():
                     value = dictionary[key]
-                    if type(value) is not dict:
+                    if not isinstance(value, dict):
                         res.append((str(key), value))
                     else:
                         for tuple in _walkDict(value):
@@ -117,7 +117,7 @@ if SCons.Util.can_read_reg:
                     version = version.split('.')
                     dictionary = WdkScanner.versions
                     for n in range(len(version) - 1):
-                        if not dictionary.has_key(version[n]):
+                        if version[n] not in dictionary:
                             dictionary[version[n]] = {}
                         dictionary = dictionary[version[n]]
                     dictionary[version[-1]] = dir
@@ -145,7 +145,7 @@ if SCons.Util.can_read_reg:
 
                     dictionary = WdkScanner.versions
                     for n in range(0, len(version) - 1):
-                        if not dictionary.has_key(version[n]):
+                        if version[n] not in dictionary:
                             dictionary[version[n]] = {}
                         dictionary = dictionary[version[n]]
                     dictionary[version[-1]] = dir
@@ -209,7 +209,7 @@ WDK.Register(hosts=hosts, targets=targets, info=WdkInfo())
 
 def _pdbEmitter(target, source, env):
     extratargets = []
-    if env.has_key('PDB') and env['PDB'] and not env.get('IGNORE_PDB', False):
+    if 'PDB' in env and env['PDB'] and not env.get('IGNORE_PDB', False):
         pdb = env.arg2nodes('$PDB', target=target, source=source)[0]
         extratargets.append(pdb)
         target[0].attributes.pdb = pdb
@@ -264,12 +264,12 @@ def _resolve_wdk_flags(env, flags):
     }.get(env.get('DDK_MIN_WIN') or env.get('TARGET_VARIANT')) or 'wxp'
     res = []
     flags = env.get(flags.lower())
-    if type(flags) is list:
+    if isinstance(flags, list):
         for flag in flags:
-            if type(flag) == dict:
+            if isinstance(flag, dict):
                 try:
                     l = flag[min_win_ver]
-                    if type(l) is not list:
+                    if not isinstance(l, list):
                         l = [l]
                     res += l
                 except KeyError:
@@ -403,8 +403,8 @@ def _dllEmitter(target, source, env):
     no_import_lib = env.get('no_import_lib', 0)
 
     if not dll:
-        raise SCons.Errors.UserError, 'A shared library should have exactly one target with the suffix: %s' % env.subst(
-            '$DDKSHLIBSUFFIX')
+        raise SCons.Errors.UserError('A shared library should have exactly one target with the suffix: %s' % env.subst(
+            '$DDKSHLIBSUFFIX'))
 
     insert_def = env.subst("$WINDOWS_INSERT_DEF")
     if not insert_def in ['', '0', 0] and \

@@ -42,7 +42,7 @@ def call_emit(part):
 
 
 def build_func(manager, target):
-    ''' 
+    '''
     manager is the part manger object that we can use to get more information
     or other parts objects
     target is the target we want to build

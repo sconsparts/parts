@@ -164,7 +164,7 @@ if sys.platform == 'win32':
 
     _orginal_mkdir = os.mkdir
 
-    def mkdir(dir, mode=0777):
+    def mkdir(dir, mode=0o777):
         if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
             dir = unicode("\\\\?\\" + os.path.abspath(dir))
         return _orginal_mkdir(dir, mode)

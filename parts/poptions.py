@@ -22,7 +22,7 @@ def SetOptionDefault(key, value):
 
     # special logger logic
     if key == 'LOGGER':
-        if type(glb.rpter.logger) is not logger.QueueLogger:
+        if not isinstance(glb.rpter.logger, logger.QueueLogger):
             api.output.verbose_msg(['settings'], 'Logger already set -- ignoring')
             pass
         else:

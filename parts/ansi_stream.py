@@ -7,7 +7,7 @@ from SCons.Debug import logInstanceCreation
 
 
 class ColorTextStream(object):
-    '''Basically is an object that wraps a stream and process color ansi 
+    '''Basically is an object that wraps a stream and process color ansi
     command codes for color
     '''
 

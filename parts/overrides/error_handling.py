@@ -9,13 +9,13 @@ OrigSConscript_exception = _SConscript.SConscript_exception
 
 
 def PartSConscript_exception(file=None):
-    ''' this is silly in general, but is done to allow the remapping of stream 
+    ''' this is silly in general, but is done to allow the remapping of stream
     to work better as the orginal code get the stream before I remap it as it is
-    a default option. This prevents sys.stderr from being used but rather my 
+    a default option. This prevents sys.stderr from being used but rather my
     stderr to be used.'''
 
     # in case of a early startup issues error
-    if file == None:
+    if file is None:
         file = sys.stderr
     OrigSConscript_exception(file)
 _SConscript.SConscript_exception = PartSConscript_exception

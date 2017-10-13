@@ -201,7 +201,7 @@ class ToolSetting(object):
         root_path = env.get(self.rootpath_tag, None)
         use_script = env.get(self.script_tag, False)
         # make sure we have a target key
-        if not self.found.has_key(target):
+        if target not in self.found:
             self.found[key] = []
         # test raw target
 
@@ -223,19 +223,19 @@ class ToolSetting(object):
                         # skip the rest
                         break
                     swap = True
-            if env.has_key(self.name):
+            if self.name in env:
                 del env[self.name]
 
-        if self.tools.has_key(target):
+        if target in self.tools:
             query_logic(target)
         # test for <OS>-any
-        if self.tools.has_key(t1):
+        if t1 in self.tools:
             query_logic(t1)
         # test for any-<Arch>
-        if self.tools.has_key(t2):
+        if t2 in self.tools:
             query_logic(t2)
         # test for any-any
-        if self.tools.has_key(t3):
+        if t3 in self.tools:
             query_logic(t3)
         self.found[key].sort(reverse=True, cmp=_cmp_)
 
@@ -256,7 +256,7 @@ class ToolSetting(object):
             pass
         api.output.verbose_msgf(['toolsettings'], "query for Exact version '{0}'", version)
         # don't have it, so we setup to get it added to cache
-        if not self.found.has_key(key):
+        if key not in self.found:
             self.found[key] = []
             self.not_found[key] = []
 
@@ -300,20 +300,20 @@ class ToolSetting(object):
             return False
 
         # test raw target
-        if self.tools.has_key(target):
+        if target in self.tools:
             if exist_logic(target):
                 return
 
         # test for <OS>-any
-        if self.tools.has_key(t1):
+        if t1 in self.tools:
             if exist_logic(t1):
                 return
         # test for any-<Arch>
-        if self.tools.has_key(t2):
+        if t2 in self.tools:
             if exist_logic(t2):
                 return
         # test for any-any
-        if self.tools.has_key(t3):
+        if t3 in self.tools:
             if exist_logic(t3):
                 return
 
@@ -373,22 +373,22 @@ class ToolSetting(object):
         # Platform is given priority to architecture
         ret = None
 
-        if self.tools.has_key(target):
+        if target in self.tools:
             for k, vl in self.tools[target].iteritems():
                 for v in vl:
                     if version in v.version_set() and v.exists(env, self.name, version, root_path, use_script):
                         return v
-        if self.tools.has_key(t1):
+        if t1 in self.tools:
             for k, vl in self.tools[t1].iteritems():
                 for v in vl:
                     if version in v.version_set() and v.exists(env, self.name, version, root_path, use_script):
                         return v
-        if self.tools.has_key(t2):
+        if t2 in self.tools:
             for k, vl in self.tools[t2].iteritems():
                 for v in vl:
                     if version in v.version_set() and v.exists(env, self.name, version, root_path, use_script):
                         return v
-        if self.tools.has_key(t3):
+        if t3 in self.tools:
             for k, vl in self.tools[t3].iteritems():
                 for v in vl:
                     if version in v.version_set() and v.exists(env, self.name, version, root_path, use_script):
@@ -412,7 +412,7 @@ class ToolSetting(object):
                                 str(i) for i in tools.keys()], host)
         for key, val in tools.iteritems():
             # if we have this version already
-            if items.has_key(key):
+            if key in items:
                 # only add it if the key is native
                 if val[0].is_native:
                     items[key] = val + items[key]

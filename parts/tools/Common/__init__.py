@@ -5,7 +5,7 @@ from SCons.Subst import CmdStringHolder
 class toolvar(str, CmdStringHolder):
     '''
         toolvar should look like str to be passed to os.open/os.stat etc.
-        toolvar should look like CmdStringHolder to be correctly quoted 
+        toolvar should look like CmdStringHolder to be correctly quoted
     '''
     literal = False
     '''

@@ -131,7 +131,7 @@ def SdkItem(env, target_dir, sources, sub_dir='', post_fix='', export_info=[], a
         # Process the Export of data values
         for _type, _prop in export_info:
             # add missing properties in map
-            if pobj.DefiningSection.Exports.has_key(_prop) == False:
+            if (_prop in pobj.DefiningSection.Exports) == False:
                 pobj.DefiningSection.Exports[_prop] = [[]]
             # might add case that allow export of all directories
             if _type == Xp.EXPORT_TYPES.PATH and add_to_path == True:
@@ -283,7 +283,7 @@ def SdkPkgData(env, sources, sub_dir='', create_sdk=True):
 
 def Sdk(env, sources, sub_dir='', add_to_path=True, auto_add_libs=True, use_src_dir=False, create_sdk=True):
     errors.SetPartStackFrameInfo(True)
-    if sources == None:
+    if sources is None:
         return
     if util.isList(sources) == False:
         sources = [sources]

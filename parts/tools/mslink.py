@@ -114,8 +114,8 @@ def _dllEmitter(target, source, env, paramtp):
     no_import_lib = env.get('no_import_lib', 0)
 
     if not dll:
-        raise SCons.Errors.UserError, 'A shared library should have exactly one target with the suffix: %s' % env.subst(
-            '$%sSUFFIX' % paramtp)
+        raise SCons.Errors.UserError('A shared library should have exactly one target with the suffix: %s' % env.subst(
+            '$%sSUFFIX' % paramtp))
 
     insert_def = env.subst("$WINDOWS_INSERT_DEF")
     if not insert_def in ['', '0', 0] and \
@@ -140,7 +140,7 @@ def _dllEmitter(target, source, env, paramtp):
     #    tmp.attributes.FilterAs=target[0]
     #    extratargets.append(tmp)
 
-    if env.has_key('PDB') and env['PDB'] and not env.get('IGNORE_PDB', False):
+    if 'PDB' in env and env['PDB'] and not env.get('IGNORE_PDB', False):
         pdb = env.arg2nodes('$PDB', target=target, source=source)[0]
         extratargets.append(pdb)
         target[0].attributes.pdb = pdb
@@ -187,7 +187,7 @@ def prog_emitter(target, source, env):
 
     exe = env.FindIxes(target, "PROGPREFIX", "PROGSUFFIX")
     if not exe:
-        raise SCons.Errors.UserError, "An executable should have exactly one target with the suffix: %s" % env.subst("$PROGSUFFIX")
+        raise SCons.Errors.UserError("An executable should have exactly one target with the suffix: %s" % env.subst("$PROGSUFFIX"))
 
     #tmp = env.get('MSVC_VERSION', '6.0')
     # if tmp is None:
@@ -202,7 +202,7 @@ def prog_emitter(target, source, env):
     #    tmp.attributes.FilterAs=target[0]
     #    extratargets.append(tmp)
     #
-    if env.has_key('PDB') and env['PDB'] and not env.get('IGNORE_PDB', False):
+    if 'PDB' in env and env['PDB'] and not env.get('IGNORE_PDB', False):
         pdb = env.arg2nodes('$PDB', target=target, source=source)[0]
         extratargets.append(pdb)
         target[0].attributes.pdb = pdb
@@ -211,10 +211,10 @@ def prog_emitter(target, source, env):
 
 
 def RegServerFunc(target, source, env):
-    if env.has_key('register') and env['register']:
+    if 'register' in env and env['register']:
         ret = regServerAction([target[0]], [source[0]], env)
         if ret:
-            raise SCons.Errors.UserError, "Unable to register %s" % target[0]
+            raise SCons.Errors.UserError("Unable to register %s" % target[0])
         else:
             print "Registered %s sucessfully" % target[0]
         return ret
@@ -232,7 +232,7 @@ def EmbedManifestDLLFunc(target, source, env):
         manifest = manifestSrc
         ret = (embedManifestDLLAction)([target[0]], None, env)
         if ret:
-            raise SCons.Errors.UserError, "Unable to embed manifest into %s" % (target[0])
+            raise SCons.Errors.UserError("Unable to embed manifest into %s" % (target[0]))
         else:
             print "Embedded %(target)s.manifest successfully into %(target)s" % {'target': target[0]}
         return ret
@@ -253,7 +253,7 @@ def EmbedManifestProgFunc(target, source, env):
         manifest = manifestSrc
         ret = (embedManifestProgAction)(env.Precious(target[0]), None, env)
         if ret:
-            raise SCons.Errors.UserError, "Unable to embed manifest into %s" % (target[0])
+            raise SCons.Errors.UserError("Unable to embed manifest into %s" % (target[0]))
         else:
             print "Embedded %(target)s.manifest successfully into %(target)s" % {'target': target[0]}
         return ret
@@ -269,7 +269,7 @@ def CertFunc(env):
 
     ret = certAction([], [], env)
     if ret:
-        raise SCons.Errors.UserError, "Unable to make code signing certificate"
+        raise SCons.Errors.UserError("Unable to make code signing certificate")
 
     print "Successfully generated code signing certificate"
 
@@ -298,7 +298,7 @@ def SignFunc(target, source, env):
             ret = compositeSign(target[:1], [], env)
 
         if ret:
-            raise SCons.Errors.UserError, "Unable to sign %s" % target[0]
+            raise SCons.Errors.UserError("Unable to sign %s" % target[0])
 
     print "Successfully signed %s" % target[0]
 

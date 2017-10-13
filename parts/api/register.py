@@ -7,7 +7,7 @@ import SCons.Script
 
 
 def add_section(section):
-    ''' 
+    '''
     Called to add a new section type
 
     @param section The mapper object to add globally
@@ -32,9 +32,9 @@ def add_global_parts_object(key, object, map_env=False):
 
     @param key The value the object will be seen as by the user
     @param object The object we want to add
-    @param map_env Map the object with env instance that will passed to the user. 
+    @param map_env Map the object with env instance that will passed to the user.
 
-    If map_env is true the object as to be a class. the setup code will create an 
+    If map_env is true the object as to be a class. the setup code will create an
     instance that will have the __init__ passed env as the only argument, for it to store
     when the calls an API or __call__ method.
     '''
@@ -59,7 +59,7 @@ def add_builder(name, builder):
         builder.name
     except AttributeError:
         builder.name = name
-    if glb.builders.has_key(name) == False:
+    if (name in glb.builders) == False:
         glb.builders[name] = builder
     else:
         output.warning_msg('Builder "{0}" was already defined. Ignoring new definition.'.format(name), show_stack=False)
@@ -68,14 +68,14 @@ def add_builder(name, builder):
 def add_variable(key, default, help, validator=None, converter=None):
     '''Generic variable addition'''
     from .. import settings
-    settings.DefaultSettings().AddVariable(key, help=help,  default=default, validator=validator,
+    settings.DefaultSettings().AddVariable(key, help=help, default=default, validator=validator,
                                            converter=converter, value=None, help_group=None)
 
 
 def add_bool_variable(key, default, help):
     '''Generic variable addition'''
     from .. import settings
-    settings.DefaultSettings().BoolVariable(key, help=help,  default=default, value=None, help_group=None)
+    settings.DefaultSettings().BoolVariable(key, help=help, default=default, value=None, help_group=None)
 
 
 def add_enum_variable(key, default, help, allowed_values, map={}, ignorecase=1):
@@ -89,4 +89,4 @@ def add_list_variable(key, default, help, names=[], map={}):
     '''Generic variable addition'''
     from .. import settings
     from .. import Variables
-    settings.DefaultSettings().ListVariable(key, help=help,  default=default, names=names, map=map, value=None, help_group=None)
+    settings.DefaultSettings().ListVariable(key, help=help, default=default, names=names, map=map, value=None, help_group=None)

@@ -1,7 +1,7 @@
 import sys
 
 Test.Summary = '''
-This test checks that the dpkg-deb adds files to deb from Parts file 
+This test checks that the dpkg-deb adds files to deb from Parts file
 DefaultEnvironment() is used in packaging.parts.
 Works fine without giving the path to dpkg-deb
 '''

@@ -197,7 +197,7 @@ def copytree(src, dst):
         # Make sure the destination directory exists
         try:
             os.makedirs(dst_dir)
-        except OSError, error:
+        except OSError as error:
             if error.errno == errno.EEXIST:
                 if not os.path.isdir(dst_dir):
                     raise SCons.Errors.UserError("cannot overwrite non-directory "
@@ -216,7 +216,7 @@ def copytree(src, dst):
 
         try:
             shutil.copystat(src, dst)
-        except OSError, why:
+        except OSError as why:
             if WindowsError and isinstance(why, WindowsError):
                 # Copying file access times may fail on Windows
                 pass

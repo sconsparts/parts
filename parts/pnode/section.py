@@ -448,7 +448,7 @@ class build_section(section):
             id = "{1}::{0}".format(pobj.ID, 'build')
             setup = True
         elif id is None:
-            raise ValueError, "Invalid arguments values when creating section type"
+            raise ValueError("Invalid arguments values when creating section type")
 
         return id, setup
 
@@ -471,7 +471,7 @@ class utest_section(section):
             id = "{1}::{0}".format(pobj.ID, 'utest')
             setup = True
         elif id is None:
-            raise ValueError, "Invalid arguments values when creating section type"
+            raise ValueError("Invalid arguments values when creating section type")
 
         return id, setup
 

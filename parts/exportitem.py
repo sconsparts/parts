@@ -164,7 +164,7 @@ def ExportItem(env, variable, values, create_sdk=True, map_as_depenance=False): 
         if variable in ('CPPPATH', 'LIBPATH'):
             values = env.arg2nodes(values, env.fs.Dir)
         #map(lambda x:  _map_group(x,variable),values)
-        if pobj.DefiningSection.Exports.has_key(variable) == False:
+        if (variable in pobj.DefiningSection.Exports) == False:
             pobj.DefiningSection.Exports[variable] = [[]]
         # this is not a list already.. make it one
         if util.isList(pobj.DefiningSection.Exports[variable]) == False:
@@ -175,7 +175,7 @@ def ExportItem(env, variable, values, create_sdk=True, map_as_depenance=False): 
         pobj.DefiningSection.Exports[variable][0] += values
 
     else:
-        if pobj.DefiningSection.Exports.has_key(variable):
+        if variable in pobj.DefiningSection.Exports:
             api.output.verbose_msg(
                 ['export'], 'Part "{0}" already as variable "{1}" in export table, overriding with new value'.format(pobj.Name, variable))
         pobj.DefiningSection.Exports[variable] = values

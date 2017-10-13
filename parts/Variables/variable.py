@@ -12,9 +12,9 @@ import types
 
 
 def make_list(obj):
-    ''' 
+    '''
     The purpose of thsi function is to make the obj into a list if it is not
-    already one. It will flatten as well    
+    already one. It will flatten as well
     '''
     if SCons.Util.is_List(obj):
         return SCons.Util.flatten(obj)
@@ -23,7 +23,7 @@ def make_list(obj):
 
 class Variable(object):
 
-    def __init__(self, name, help=None,  default=None, validator=None, converter=None, value=None, help_group=None):
+    def __init__(self, name, help=None, default=None, validator=None, converter=None, value=None, help_group=None):
         if __debug__:
             logInstanceCreation(self)
         if SCons.Util.is_List(name) or SCons.Util.is_Tuple(name):
@@ -125,8 +125,8 @@ class Variable(object):
                         env[self.__name] = self.__converter(str_value, env)
                     except TypeError:
                         env[self.__name] = self.__converter(str_value)
-            except ValueError, x:
-                raise SCons.Errors.UserError, 'Error converting option: %s\n%s' % (self.__name, x)
+            except ValueError as x:
+                raise SCons.Errors.UserError('Error converting option: %s\n%s' % (self.__name, x))
         # validate the value
         if self.__validator:
             str_value = env.subst('${{{0}}}'.format(self.__name))

@@ -23,8 +23,8 @@ class Test_settings(unittest.TestCase):
     def test_DefaultSettings_DefaultEnvironment(self):
         """Test that default environment is properly initialized, i.e. it has 'INSTALL' and 'ZIP' env variables set"""
         defEnv = DefaultSettings().DefaultEnvironment()
-        self.assertEqual(defEnv.has_key('INSTALL'), True)
-        self.assertEqual(defEnv.has_key('ZIP'), True)
+        self.assertEqual('INSTALL' in defEnv, True)
+        self.assertEqual('ZIP' in defEnv, True)
         # TODO: Test for more default env vars
 
     def test_DefaultSettings_Environment(self):

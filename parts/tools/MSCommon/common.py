@@ -35,7 +35,7 @@ def get_current_sdk():
     try:
         dir = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE, key)[0]
         debug('Found SDK dir in registry: %s' % dir)
-    except WindowsError, e:
+    except WindowsError as e:
         debug('Did not find SDK dir key %s in registry' %
               (key))
     return dir
@@ -51,7 +51,7 @@ def get_current_sdk11():
     try:
         dir = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE, key)[0]
         debug('Found SDK dir in registry: %s' % dir)
-    except WindowsError, e:
+    except WindowsError as e:
         debug('Did not find SDK dir key %s in registry' %
               (key))
     return dir
@@ -66,7 +66,7 @@ def framework_root():
     try:
         comps = read_reg(key)
         debug('Found framework dir in registry: %s' % comps)
-    except WindowsError, e:
+    except WindowsError as e:
         debug('Did not find framework dir key %s in registry' %
               (key))
         return ''
@@ -87,7 +87,7 @@ def framework_root64():
                 debug('Did not find framework64 dir')
                 return ''
         debug('Found framework64 dir in registry: %s' % comps)
-    except WindowsError, e:
+    except WindowsError as e:
         debug('Did not find framework64 dir key %s in registry' %
               (key))
         return ''
@@ -96,11 +96,11 @@ def framework_root64():
 
 def validate_vars(env):
     """Validate the PCH and PCHSTOP construction variables."""
-    if env.has_key('PCH') and env['PCH']:
-        if not env.has_key('PCHSTOP'):
-            raise SCons.Errors.UserError, "The PCHSTOP construction must be defined if PCH is defined."
+    if 'PCH' in env and env['PCH']:
+        if 'PCHSTOP' not in env:
+            raise SCons.Errors.UserError("The PCHSTOP construction must be defined if PCH is defined.")
         if not SCons.Util.is_String(env['PCHSTOP']):
-            raise SCons.Errors.UserError, "The PCHSTOP construction variable must be a string: %r" % env['PCHSTOP']
+            raise SCons.Errors.UserError("The PCHSTOP construction variable must be a string: %r" % env['PCHSTOP'])
 
 # VC teh compiler and related tools
 msvc = ToolSetting('MSVC')

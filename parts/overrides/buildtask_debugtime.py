@@ -33,7 +33,7 @@ def logTaskEvent(task, event, timestamp, duration=-1):
 
     try:
         os.makedirs(logTaskEvent.storeLogsTo)
-    except OSError, err:
+    except OSError as err:
         # cannot mkdir this path... maybe it already exists?
         if err.errno != errno.EEXIST:
             # in the case when we cannot make logpath and the cause for that is *not*
@@ -50,7 +50,7 @@ def logTaskEvent(task, event, timestamp, duration=-1):
                 [str(s) for s in sources],
                 env.subst(str(executor), target=targets, source=sources))
             )
-        except BaseException, substErr:
+        except BaseException as substErr:
             taskLine = 'Cannot get task representation: %r' % substErr
     else:
         taskLine = 'duration=%.5f' % duration

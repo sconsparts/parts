@@ -47,7 +47,8 @@ class configuration(object):
     def map_none_version(self, env):
         return self.default_ver_func(env)
 
-    def VersionRange(self, ver_rng, replace={}, filter={}, append={}, prepend={}, prepend_env={}, append_env={}, post_process_func=None):
+    def VersionRange(self, ver_rng, replace={}, filter={}, append={}, prepend={},
+                     prepend_env={}, append_env={}, post_process_func=None):
         self.ver_rng[version.version_range(ver_rng)] = {
             'append': append,
             'prepend': prepend,
@@ -79,7 +80,7 @@ class configuration(object):
 
         # setup settings_ex
         tmp = mysetting['post_process_func']
-        if settings_ex.has_key('post_process_func') == False:
+        if ('post_process_func' in settings_ex) == False:
             settings_ex['post_process_func'] = []
         if tmp is not None:
             settings_ex['post_process_func'].append(tmp)
@@ -92,12 +93,12 @@ class configuration(object):
 
         tmp = mysetting['prepend_env']
         settings_ex['prepend_env'] = []
-        if tmp != None:
+        if tmp is not None:
             settings_ex['prepend_env'].append(tmp)
 
         tmp = mysetting['append_env']
         settings_ex['append_env'] = []
-        if tmp != None:
+        if tmp is not None:
             settings_ex['append_env'].append(tmp)
 
         # process normal flags settings
@@ -120,14 +121,14 @@ class configuration(object):
         tmp = mysetting['append']
         if tmp != {}:
             for k, v in tmp.iteritems():
-                if settings.has_key(k) == False:
+                if (k in settings) == False:
                     settings[k] = {'append': [], 'prepend': []}
                 settings[k]['append'].extend(v)
 
         tmp = mysetting['prepend']
         if tmp != {}:
             for k, v in tmp.iteritems():
-                if settings.has_key(k) == False:
+                if (k in settings) == False:
                     settings[k] = {'append': [], 'prepend': []}
                 v.extend(settings[k]['prepend'])
                 settings[k]['prepend'] = v
@@ -149,25 +150,25 @@ class _ConfigurationSet(object):
     def has_tool(self, tool):
         # if the key exists it has been loaded.. however the tool
         # may have a value of None
-        return self.map.has_key(tool)
+        return tool in self.map
 
     def has_tool_cfg(self, tool, host, target, ver=None):
 
         # first see if we have matching tool
         tool_config = self.map.get(tool, None)
-        if tool_config == None:
+        if tool_config is None:
             # no tool defined.. return None so master logic can fallback
             return False
 
         # next find the host
         host_config = tool_config.get(host, None)
-        if host_config == None:
+        if host_config is None:
             # Don't have anything for this tool to configure
             return False
 
         # next we find the target
         target_config = host_config.get(target, None)
-        if target_config == None:
+        if target_config is None:
             # Don't have anything for this tool to configure
             return False
 
@@ -195,7 +196,7 @@ class _ConfigurationSet(object):
         if tool in self.map:
             if host in self.map[tool]:
                 if target in self.map[tool][host]:
-                    if self.map[tool][host][target].has_key('versions'):
+                    if 'versions' in self.map[tool][host][target]:
                         if ver_rng in self.map[tool][host][target]['versions']:
                             self.map[tool][host][target]['versions'][ver_rng].update(settings)
                             self.map[tool][host][target]['default_ver_func'] = ver_mapping
@@ -239,29 +240,29 @@ class _ConfigurationSet(object):
 
         # first see if we have matching tool
         tool_config = self.map.get(tool, None)
-        if tool_config == None:
+        if tool_config is None:
             # no tool defined.. return None so master logic can fallback
             return None
 
         # next find the host
         host_config = tool_config.get(host, None)
-        if host_config == None:
+        if host_config is None:
             # Don't have anything for this tool to configure
             return None
 
         # next we find the target
         target_config = host_config.get(target, None)
-        if target_config == None:
+        if target_config is None:
             # Don't have anything for this tool to configure
             return None
 
         # next we get the version range list
         versions = target_config.get('versions', None)
-        if versions == None:
+        if versions is None:
             return None
 
         # map version if set to None to best value based on mapping function
-        if ver == None:
+        if ver is None:
             ver = target_config['default_ver_func'](env)
         # see if we have a match with the version.
         ver_config = None
@@ -290,7 +291,7 @@ class _ConfigurationSet(object):
 
 def DefineConfiguration(name, dependsOn='default'):
     # add configuration
-    if g_configuration.has_key(name):
+    if name in g_configuration:
         print "ConfigurationSet", name, " already exists"
         # warning is it exists?
     # add dependance
@@ -305,7 +306,7 @@ def load_cfg(name):
     with.
     '''
     # stop any loop/crashes that might happen if loading a None cfg
-    if name == None:
+    if name is None:
         return
     # load the configuration meta information
     api.output.verbose_msg('configuration', "Loading configuration definition for <%s>" % name)
@@ -313,7 +314,7 @@ def load_cfg(name):
     # make sure any dependent config is loaded as well
     dep = g_configuration[name].Dependent()
 
-    if g_configuration.has_key(dep) == False and dep is not None:
+    if (dep in g_configuration) == False and dep is not None:
         load_cfg(dep)
 
 
@@ -567,7 +568,7 @@ def get_config(env, name, tool, host, target):
     ver = None
     # is "meta" config loaded. ie the data about the configuration relationships
     # and other properties
-    if g_configuration.has_key(name) == False:
+    if (name in g_configuration) == False:
         # if not load it this information
         load_cfg(name)
     # Get the information we now have stored
@@ -578,7 +579,7 @@ def get_config(env, name, tool, host, target):
         # if not load all information about this tool
         ver = load_tool_config(env, name, tool, host, target)
     # if version is None get a real version
-    if ver == None:
+    if ver is None:
         api.output.trace_msgf('configuration', "No version defined for tool {0}", tool)
         ver = config.resolve_version(tool, host, target, env)
         api.output.trace_msgf('configuration', "Resolved version for tool {0} to {1}", tool, ver)
@@ -589,7 +590,7 @@ def get_config(env, name, tool, host, target):
 
     # get settings
     settings = config.get_config_setting(env, tool, ver, host, target)
-    if settings == None:
+    if settings is None:
         return ({}, {}), files
     return settings, files
 
@@ -600,7 +601,7 @@ def get_defining_config_files(name, tool, host, target):
     Which is needed for testing purposes configuratition context.
     '''
     # is "meta" config loaded
-    if g_configuration.has_key(name) == False:
+    if (name in g_configuration) == False:
         # if not load it
         load_cfg(name)
     # is tool loaded?
@@ -647,7 +648,7 @@ def apply_config(env, name=None):
     host = env['HOST_PLATFORM']
     target = env['TARGET_PLATFORM']
 
-    if name == None:
+    if name is None:
         env['CONFIG'] = env.subst('${CONFIG}')
         name = env['CONFIG']
     else:
@@ -670,12 +671,12 @@ def apply_config(env, name=None):
 
         for flag, items in settings.iteritems():
             # replace values
-            if items.has_key('replace'):
+            if 'replace' in items:
                 env.Replace(**{flag: items['replace']})
-            if items.has_key('append'):
+            if 'append' in items:
                 env.AppendUnique(**{flag: items['append']})
             # prepend values in env
-            if items.has_key('prepend'):
+            if 'prepend' in items:
                 env.PrependUnique(**{flag: items['prepend']})
 
         tmp = setting_extra.get('prepend_env', {})

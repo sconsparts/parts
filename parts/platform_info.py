@@ -98,7 +98,8 @@ def ValidatePlatform(platform_str):
     tmp = glb.valid_platform_re.match(platform_str)
     if tmp is not None:
         dict = tmp.groupdict()
-        if (not dict.get('os') and not dict.get('arch')) or (dict.get('sep1') == '-' and (not dict.get('os') or not dict.get('arch'))):
+        if (not dict.get('os') and not dict.get('arch')) or (
+                dict.get('sep1') == '-' and (not dict.get('os') or not dict.get('arch'))):
             return False
         else:
             if dict.get('sep1') == '-':
@@ -237,9 +238,9 @@ class SystemPlatform(common.bindable):
             tkey = key.rsplit("_PLATFORM", 1)[0]
 
             env[tkey + "_ARCH"] = self.ARCH if self.ARCH != 'any' and self.ARCH else env[tkey +
-                                                                                         "_ARCH"] if env.has_key(tkey + "_ARCH") else ChipArchitecture()  # getArch
+                                                                                         "_ARCH"] if tkey + "_ARCH" in env else ChipArchitecture()  # getArch
             env[tkey + "_OS"] = self.OS if self.OS != 'any' and self.OS else env[tkey +
-                                                                                 "_OS"] if env.has_key(tkey + "_OS") else SCons.Platform.platform_default()  # getPlatform
+                                                                                 "_OS"] if tkey + "_OS" in env else SCons.Platform.platform_default()  # getPlatform
 
             self.key = tkey
             self._env = env
@@ -250,8 +251,8 @@ class SystemPlatform(common.bindable):
         # this allows us to clone TARGET_ARCH or TARGET_OS correctly
         # we DON"T want HOST to be changed, it should be inmutable.
         if key == "TARGET_PLATFORM":
-            tmp = SystemPlatform(os=env["TARGET_OS"] if env.has_key("TARGET_OS") else self.OS,
-                                 arch=env["TARGET_ARCH"] if env.has_key("TARGET_ARCH") else self.ARCH)
+            tmp = SystemPlatform(os=env["TARGET_OS"] if "TARGET_OS" in env else self.OS,
+                                 arch=env["TARGET_ARCH"] if "TARGET_ARCH" in env else self.ARCH)
         else:
             tmp = SystemPlatform(os=self.OS, arch=self.ARCH)
         tmp._bind(env, key)
@@ -293,7 +294,7 @@ class SystemPlatform(common.bindable):
         return self.__class__.__dict__[key.upper()].fget(self)
 
     def __setitem__(self, key, val):
-        if self.__class__.__dict__.has_key(key.upper()) == False:
+        if (key.upper() in self.__class__.__dict__) == False:
             raise KeyError('SystemPlatform has no member ' + key.upper())
         self.__class__.__dict__[key.upper()].fset(self, val)
 
@@ -315,9 +316,9 @@ def target_convert(str_val, raw_val=None, base=None, error=True):
     else:
         p = lst[0]
         a = lst[1]
-        if p == None:
+        if p is None:
             p = host_sys.OS
-        if a == None:
+        if a is None:
             a = host_sys.ARCH
         ret = SystemPlatform(p, a)
     return ret

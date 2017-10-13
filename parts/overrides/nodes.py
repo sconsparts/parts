@@ -49,7 +49,7 @@ def wrap_MkdirFunc(function):
         if not target.exists():
             try:
                 target.fs.mkdir(target.abspath)
-            except OSError, error:
+            except OSError as error:
                 if error.errno == errno.EEXIST:
                     if not target.fs.isdir(target.abspath):
                         raise BuildError(node=target,

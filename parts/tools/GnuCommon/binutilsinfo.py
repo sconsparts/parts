@@ -21,12 +21,12 @@ class BinutilInfo(GnuInfo):
         super(self.__class__, self).__init__(install_scanner, opt_dirs, script, subst_vars, shell_vars, test_file, opt_pattern)
 
     def query(self, env, namespace, root_path, use_script):
-        if env.has_key('BINUTILS_INSTALL_ROOT'):
+        if 'BINUTILS_INSTALL_ROOT' in env:
             return super(self.__class__, self).query(env, namespace, env['BINUTILS_INSTALL_ROOT'], use_script)
         return super(self.__class__, self).query(env, namespace, root_path, use_script)
 
     def exists(self, env, namespace, version, root_path, use_script, tool=None):
-        if root_path is None and env.has_key('BINUTILS_INSTALL_ROOT'):
+        if root_path is None and 'BINUTILS_INSTALL_ROOT' in env:
             root_path = env['BINUTILS_INSTALL_ROOT']
         shell_env = self.get_shell_env(env, namespace, version, root_path, use_script, tool)
         try:
@@ -48,7 +48,7 @@ class BinutilsSetupWrapper(object):
     def __call__(self, env):
         if env.subst('$TARGET_ARCH') in ('k1om', ) and env.get('OBJCOPY', '') in ('objcopy', ''):
             env['OBJCOPY'] = '${HOST_ARCH}-${TARGET_ARCH}-linux-objcopy'
-        if env.has_key('BINUTILS_VERSION') or env.has_key('BINUTILS_INSTALL_ROOT') or env.get('HOST_OS') != env.get('TARGET_OS'):
+        if 'BINUTILS_VERSION' in env or 'BINUTILS_INSTALL_ROOT' in env or env.get('HOST_OS') != env.get('TARGET_OS'):
             # We call it MergeShellEnv but don't be confused by its name because binutils ToolSetting objects do not
             # modify shell environment but only initialize BINUTILS namespace
             self.__binutils.MergeShellEnv(env)

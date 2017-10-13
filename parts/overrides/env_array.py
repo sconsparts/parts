@@ -7,7 +7,7 @@ from ..core import util
 
 def Parts__setitem__(self, key, val):
     if getattr(self, '_log_keys', False):
-        if self.has_key(key) == False:
+        if (key in self) == False:
             pobj = glb.engine._part_manager._from_env(self)
             sec = None
             if pobj:

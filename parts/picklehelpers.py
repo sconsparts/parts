@@ -23,10 +23,10 @@ def persistent_id(obj):
             return None
         except NameError:
             class_names = {
-                SCons.Node.Alias.Alias:         'SCons.Node.Alias.Alias',
-                SCons.Node.FS.Entry:            'SCons.Node.FS.Entry',
-                SCons.Node.FS.File:             'SCons.Node.FS.File',
-                SCons.Node.FS.Dir:              'SCons.Node.FS.Dir',
+                SCons.Node.Alias.Alias: 'SCons.Node.Alias.Alias',
+                SCons.Node.FS.Entry: 'SCons.Node.FS.Entry',
+                SCons.Node.FS.File: 'SCons.Node.FS.File',
+                SCons.Node.FS.Dir: 'SCons.Node.FS.Dir',
                 SCons.Node.FS.FileSymbolicLink: 'SCons.Node.FS.FileSymbolicLink',
             }
 
@@ -47,10 +47,10 @@ def persistent_load(obj_id):
             return node_factories[cls_name](path)
         except NameError:
             node_factories = {
-                'SCons.Node.Alias.Alias':         SCons.Node.Alias.default_ans.Alias,
-                'SCons.Node.FS.Entry':            SCons.Node.FS.get_default_fs().Entry,
-                'SCons.Node.FS.File':             SCons.Node.FS.get_default_fs().File,
-                'SCons.Node.FS.Dir':              SCons.Node.FS.get_default_fs().Dir,
+                'SCons.Node.Alias.Alias': SCons.Node.Alias.default_ans.Alias,
+                'SCons.Node.FS.Entry': SCons.Node.FS.get_default_fs().Entry,
+                'SCons.Node.FS.File': SCons.Node.FS.get_default_fs().File,
+                'SCons.Node.FS.Dir': SCons.Node.FS.get_default_fs().Dir,
                 'SCons.Node.FS.FileSymbolicLink': SCons.Node.FS.get_default_fs().FileSymbolicLink,
             }
 

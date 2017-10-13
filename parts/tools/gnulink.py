@@ -39,7 +39,7 @@ def _pdbEmitter(target, source, env):
     environment variable.
     """
     # The following three lines are copy/pasted from SCons/Tool/mslink.py
-    if env.has_key('PDB') and env['PDB'] and not env.get('IGNORE_PDB', False):
+    if 'PDB' in env and env['PDB'] and not env.get('IGNORE_PDB', False):
         pdb = env.arg2nodes('$PDB', target=target, source=source)[0]
         target[0].attributes.pdb = pdb
 
@@ -214,7 +214,7 @@ def exists(env):
     """
     Proxy for SCons.Tool.gnulink.exists function.
     """
-    if env.has_key('BINUTILS_VERSION'):
+    if 'BINUTILS_VERSION' in env:
         parts.tools.GnuCommon.binutils.MergeShellEnv(env)
 
     return SCons.Tool.gnulink.exists(env)

@@ -14,7 +14,7 @@ def part_version(env, ver=None, _warn=True):
     '''
     # if _warn: # need to think about if I can really do this internally
     #    api.output.verbose_msg(['warning'],'Use of env.PartVersion() is deprecated, Please us PartVersion() instead')
-    if ver == None:
+    if ver is None:
         return get_part_version(env)
 
     part_obj = glb.engine._part_manager._from_env(env)

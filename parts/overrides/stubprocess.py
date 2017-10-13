@@ -56,7 +56,7 @@ if sys.platform in ('linux2', 'darwin'):
                 '''
                 for i in xrange(3, MAXFD):
                     try:
-                        if i <> but:
+                        if i != but:
                             os.close(i)
                     except:
                         pass
@@ -174,7 +174,7 @@ if sys.platform in ('linux2', 'darwin'):
                 while True:
                     try:
                         return func(*args, **kw)
-                    except OSError, err:
+                    except OSError as err:
                         if err.errno == errno.EINTR:
                             continue
                         raise

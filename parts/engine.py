@@ -120,7 +120,7 @@ class parts_addon(object):
         # need to trace this before we set the colors else the tests break
         api.output.trace_msg("use_color_option", "use_color =", use_color)
         redirected = os.isatty(sys.__stdout__.fileno()) == False or os.isatty(sys.__stderr__.fileno()) == False
-        if use_color is not None and use_color.has_key('defaults') and redirected:
+        if use_color is not None and 'defaults' in use_color and redirected:
             use_color = False
 
         log_obj = logger.QueueLogger
@@ -400,7 +400,7 @@ class parts_addon(object):
         log_obj = SCons.Script.GetOption('logger')
 
         # compatibility check
-        if type(glb.rpter.logger) is logger.QueueLogger:
+        if isinstance(glb.rpter.logger, logger.QueueLogger):
             tmp = SCons.Script.ARGUMENTS.get('LOGGER', None)
             if tmp is not None:
                 directory = self.def_env.Dir(self.def_env['LOG_ROOT_DIR'])
@@ -419,7 +419,7 @@ class parts_addon(object):
             log_obj = logger.nil_logger
         # If the first try at this had nothing we have a Queue logger
         # to store everything we have to report so far
-        if type(glb.rpter.logger) is logger.QueueLogger:
+        if isinstance(glb.rpter.logger, logger.QueueLogger):
             # Setup new log object and copy over stored messages
             log_obj = log_obj(directory.abspath, self.def_env['LOG_FILE_NAME'])
             glb.rpter.reset_logger(log_obj)
@@ -511,7 +511,7 @@ Use -H or --help-options for a list of scons options
                 tmpval = tmp.get('variant_src_mapping', {})
                 tmpval.update(self.__variant_source_mapping)
                 self.__variant_source_mapping = tmpval
-                if not self.__variant_source_mapping.has_key(nodestr):
+                if nodestr not in self.__variant_source_mapping:
                     self.__variant_source_mapping[nodestr] = None
         return self.__variant_source_mapping[nodestr]
 

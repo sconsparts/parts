@@ -12,7 +12,7 @@ def part_name(env, name=None, parent_name=None):
     This allow the developer to ID what this component is and a way to later
     define DependOn(...) logic for his component
     '''
-    if name == None:
+    if name is None:
         return get_part_name(env)
 
     pobj = glb.engine._part_manager._from_env(env)

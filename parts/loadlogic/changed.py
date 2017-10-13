@@ -506,7 +506,7 @@ class Changed(base.Base):
         if not dref.hasStoredUniqueMatch:
             # we seem to have a problem, or bad set of parts being defined
             # raise expection to force loading everything
-            raise StandardError  # replace with better type!!!
+            raise Exception  # replace with better type!!!
         # at the moment we assume we can find a good match, else
         # we map to a all loader
         return dref.StoredMatchingSections[0]
@@ -667,7 +667,7 @@ class Changed(base.Base):
         '''
         pinfo = glb.pnodes.GetStoredPNodeIDInfo(sec.Stored.PartID)
         if pinfo and pinfo.BuildTargets:
-            return pinfo.BuildTargets <> set(
+            return pinfo.BuildTargets != set(
                 target_type.target_type(target).Section for target in
                 SCons.Script.BUILD_TARGETS)
 
@@ -694,7 +694,7 @@ class Changed(base.Base):
 
     def AddSection(self, sec, iscore=False):
 
-        if self._section_info.has_key(sec.ID):
+        if sec.ID in self._section_info:
             return False
         # Not known at the moment
         # set up basic structure

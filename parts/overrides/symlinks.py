@@ -433,12 +433,12 @@ def _wrap_MetaTag(MetaTag):
                         # Convert source nodes into a SymLink nodes
                         _convert_nodes(node.sources, linkto)
 
-        if kw.has_key('SymLink'):
+        if 'SymLink' in kw:
             _warning('SymLink')
             linkto = kw.pop('SymLink')
             _convert_nodes(common.make_list(nodes), linkto)
 
-        if kw.has_key('SymLinkMakeDummyFile'):
+        if 'SymLinkMakeDummyFile' in kw:
             _warning('SymLinkMakeDummyFile')
             kw.pop('SymLinkMakeDummyFile')
         if kw and MetaTag:
