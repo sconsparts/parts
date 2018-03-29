@@ -25,6 +25,9 @@ def resolve(env, version):
                 ('icl', None),
             ]
         else:
+            if test_tool(env,"gcc") and not test_tool(env,"msvc"):
+                # use gcc if it is the only tool installed
+                return [('gcc',None)]
             return [
                 ('cl', None)
             ]
