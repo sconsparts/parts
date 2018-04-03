@@ -1,5 +1,5 @@
 from common import binutils, GnuInfo
-from parts.tools.Common.Finders import PathFinder, ScriptFinder
+from parts.tools.Common.Finders import PathFinder, ScriptFinder, EnvFinder
 from parts.platform_info import SystemPlatform
 from parts.tools.Common.ToolInfo import ToolInfo
 import parts.tools.Common
@@ -195,6 +195,36 @@ binutils.Register(
             shell_vars={'BINUTILS_INSTALL_ROOT': '${BINUTILS.INSTALL_ROOT}'},
             test_file='ld',
             opt_pattern=binutils_pattern
+        )
+    ]
+)
+
+# mingw
+binutils.Register(
+    hosts=[SystemPlatform('win32', 'any')],
+    targets=[SystemPlatform('win32', 'x86'), SystemPlatform('win32', 'x86_64')],
+    info=[
+        BinutilInfo(
+            install_scanner=[
+                EnvFinder([
+                    'MINGW_PREFIX',
+                    'MINGW_PATH'
+                ], 'bin'),
+                PathFinder(['c:\\MinGW\\bin'])
+            ],
+            opt_dirs=[
+                'c:\\MinGW\\opt\\'
+            ],
+            script=None,
+            subst_vars={
+                'ARCOM':'${TEMPFILE("$AR $ARFLAGS $TARGET $SOURCES",force_posix_paths=True)}',
+                'LINKCOM':'${TEMPFILE("$LINK -o $TARGET $LINKFLAGS $__RPATH $SOURCES $_LIBDIRFLAGS $_LIBFLAGS",force_posix_paths=True)}',
+                'SHLINKCOM':'${TEMPFILE("$SHLINK -o $TARGET $SHLINKFLAGS $__RPATH $SOURCES $_LIBDIRFLAGS $_LIBFLAGS",force_posix_paths=True)}',
+                '__RPATH':'$_RPATH',
+                'RPATHPREFIX':'-Wl,-rpath=',
+            },
+            shell_vars={'PATH':'${GCC.INSTALL_ROOT}'},
+            test_file='ld.exe'
         )
     ]
 )
