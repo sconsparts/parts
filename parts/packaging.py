@@ -53,7 +53,11 @@ def PackageGroup(name, parts=None):
     return tuple(x for x in result)
 
 # global form
-
+def AddPackageNodeFilter(callbacks):
+    try:
+        settings.DefaultSettings().vars['PACKAGE_NODE_FILTER'].Default.extend(common.make_list(callbacks))
+    except:
+        settings.DefaultSettings().vars['PACKAGE_NODE_FILTER'] = common.make_list(callbacks)
 
 def ReplacePackageGroupCriteria(name, func):
     name = SCons.Script.DefaultEnvironment().subst(name)
@@ -182,57 +186,45 @@ def _clear_sorted_group():
     _sorted_groups[1].clear()
 
 
-def _set_file_info(curr_group, f, map_objs):
-    # ATTENTION: for performance reasons we inline
-    # metatag.MetaTag() function in this code.
-    try:
-        # get the package object
-        package = f.attributes.package
-    except AttributeError:
-        # if it does not exist set the value for group and no_pkg default values
-        _no_pkg, group_val = False, set()
-        f.attributes.package = package = common.namespace(no_package=_no_pkg, group=group_val)
-    else:
-        # we have it.. get values that are set
-        _no_pkg, group_val = package.get('no_package', False), package.get('group', set())
+def _filter_by_criteria(node, filters, metainfo):
+    api.output.verbose_msgf(["packaging"], "Filtering node via Group {0}", node.ID)
+    no_pkg = metainfo.get('no_package', False)
+    for group, tests in filters.viewitems():
+        # test if there is a filter to move this to a different group
+        for test in tests:
+            if test(node):
+                api.output.verbose_msgf(["packaging-filter"],
+                                        "Criteria filter mapped {0} add to group={1}, no_pkg={2}", node.ID, group, no_pkg)
+                get_group_set(group, no_pkg).add(node)
+                # update node meta info with package info
+                # based on criteria filter replacing everything
+                metainfo.update(groups=(group,))
+                return True
+    return False
 
-    # Add file to group
 
-    # the file has a string tag saying what group it should be in
-    # this has to be set manually with a metatag call forcing it
-    # to a given group, cannot be filter after this
-    if util.isString(group_val):
-        get_group_set(group_val, _no_pkg).add(f)
-    # group value is not set yet
-    # so we will add the current group to it
-    elif not group_val:
-        # Set default meta-tag value
-        # package.update(group=name)
-
-        for group, tests in map_objs.viewitems():
-            # test if there is a filter to move this to a different group
-            for test in tests:
-                if test(f):
-                    group_val.add(group)
-                    get_group_set(group, _no_pkg).add(f)
-                    break
-        # if the filter did not set this to a new value
-        # set this to a default value of the current group
-        if not group_val:
-            group_val = set([curr_group])
-            get_group_set(curr_group, _no_pkg).add(f)
-        # apply meta tag to file
-        # we make it a tuple to save space as this will not change during this run
-        package.update(group=tuple(group_val))
-    else:
-        # group_val is asserted to be a tuple or a set
-        # Map the value in to the different groups it has been mapped to
-        for group in group_val:
-            get_group_set(group, _no_pkg).add(f)
-    api.output.verbose_msgf(["packaging-mapping"], "{0} add to group(s)={1}, no_pkg={2}", f.ID, group_val, _no_pkg)
-
-# make this a util function ( been copied and pasted around a little)
-
+def _filter_node(node, filters, metainfo):
+    '''
+    call each filter on the node
+    the returned value from the filter may be a string or (string,Boolean) 
+    in which the boolean is if the node should be 'no_pkg'ed for the group
+    '''
+    
+    api.output.verbose_msgf(["packaging"], "Filtering node {0}", node.ID)
+    new_groups = set(metainfo.get('groups', set()))
+    default_no_pkg = metainfo.get('no_package', False)
+    for _filter in filters:
+        grps = _filter(node)
+        if grps:
+            for group_info in grps:
+                try:
+                    group, no_pkg = group_info
+                except ValueError:
+                    group, no_pkg = group_info, default_no_pkg
+                api.output.verbose_msgf(["packaging-filter"], "Node filter mapped {0} to group={1}, no_pkg={2}", node.ID, group, no_pkg)
+                get_group_set(group, no_pkg).add(node)
+                new_groups.add(group)
+    metainfo.update(groups=tuple(new_groups))
 
 def _get_file_entries(node):
     # walk the Dir node to see what nodes it contains
@@ -253,35 +245,41 @@ def SortPackageGroups():
     # reset the cache
     _clear_sorted_group()
 
-    for name, obj_lst in g_package_groups.viewitems():
-        # get the Part Objects
-        api.output.verbose_msg('packaging', 'Sorting Group:', name)
-        for obj in obj_lst:
-            if util.isFile(obj):
-                files = [obj]
-                map_objs = glb.engine.def_env.get('PACKAGE_GROUP_FILTER', [])
-            # elif util.isDir(obj): fill in when we can
-            #    files = [obj]
-            #    map_objs = glb.engine.def_env.get('PACKAGE_GROUP_FILTER',[])
-            else:
-                # else we assume this is a string for a part alias/ID
-                pobj = glb.engine._part_manager._from_alias(obj)
-                map_objs = pobj.Env.get('PACKAGE_GROUP_FILTER', [])
-                # this needs to be updated with we add the new format
-                # as we will have different section other than build
-                # at moment we assume utest sectiond don't package
-                # this will be come a look to go over all defined sections
-                files = pobj.Section('build').InstalledFiles
+    group_filters = glb.engine.def_env.get('PACKAGE_GROUP_FILTER', {})
+    node_filters = glb.engine.def_env.get('PACKAGE_NODE_FILTER', [])
 
-            for f in files:
-                _set_file_info(name, f, map_objs)
-                # this needs to be called in a scanner for this to work
-                # if util.isFile(obj):
-                #    _set_file_info(name,f,map_objs)
-                # elif util.isDir(obj):
-                #    # get all items in the directory and apply
-                #    for i in _get_file_entries(f):
-                #        _set_file_info(name,i,map_objs)
+    # for each node that is "installed"
+    for node in SCons.Tool.install._INSTALLED_FILES:
+        api.output.verbose_msgf(["packaging"], "Mapping node {0}", node.ID)
+        try:
+            # get the package object
+            metainfo = node.attributes.package
+        except AttributeError:
+            # if it does not exist set the value for group and no_pkg default values
+            # we should see this case... but to be safe
+            node.attributes.package = metainfo = common.namespace()
+
+        part_alias = metainfo.part_alias
+        no_pkg = metainfo.get('no_package', False)
+        pobj = glb.engine._part_manager._from_alias(part_alias)
+        # the default group to map this to
+        part_grp = pobj.PackageGroup
+
+        # does it have a Metatag value forcing it to a group(s)?
+        # if so we use this and we don't do a criteria filter
+        if "groups" in metainfo:
+            for group in metainfo.groups:
+                get_group_set(group, no_pkg).add(node)
+        elif "group" in metainfo:
+            get_group_set(metainfo.group, no_pkg).add(node)
+        elif not _filter_by_criteria(node, group_filters, metainfo):
+            get_group_set(part_grp, no_pkg).add(node)
+            metainfo.update(groups=(part_grp,))
+            api.output.verbose_msgf(["packaging-mapping"], "{0} add to group(s)={1}, no_pkg={2}", node.ID, part_grp, no_pkg)
+        # run the node filter on the node to add it to any extra groups
+        _filter_node(node, node_filters, metainfo)
+
+    return
 
 
 def GetPackageGroupFiles_env(env, name, no_pkg=False):
@@ -350,6 +348,7 @@ api.register.add_variable('PACKAGE_ROOT', "/", "")
 
 api.register.add_variable('PACKAGE_LIB', '${PACKAGE_ROOT}/$INSTALL_LIB_SUBDIR', '')
 api.register.add_variable('PACKAGE_BIN', '${PACKAGE_ROOT}/$INSTALL_BIN_SUBDIR', '')
+api.register.add_variable('PACKAGE_PRIVATE_BIN', '${PACKAGE_ROOT}/$INSTALL_PRIVATE_BIN_SUBDIR', '')
 
 api.register.add_variable('PACKAGE_TOOLS', '${PACKAGE_ROOT}/$INSTALL_TOOLS_SUBDIR', '')
 api.register.add_variable('PACKAGE_API', '${PACKAGE_ROOT}/$INSTALL_API_SUBDIR', '')
@@ -370,11 +369,15 @@ api.register.add_variable('PACKAGE_NAME', 'unknown', '')
 api.register.add_variable('PACKAGE_VERSION', '0.0.0', '')
 
 api.register.add_variable('PACKAGE_GROUP_FILTER', {}, "")
+api.register.add_variable('PACKAGE_NODE_FILTER', [], "")
+
 
 api.register.add_global_object('PackageGroups', PackageGroups)
 api.register.add_global_object('PackageGroup', PackageGroup)
 api.register.add_global_object('GetPackageGroupFiles', GetPackageGroupFiles)
 api.register.add_global_object('GetFilesFromPackageGroups', GetFilesFromPackageGroups)
+
+api.register.add_global_object('AddPackageNodeFilter', AddPackageNodeFilter)
 
 api.register.add_global_object('ReplacePackageGroupCritera', ReplacePackageGroupCritera)
 api.register.add_global_object('AppendPackageGroupCritera', AppendPackageGroupCritera)

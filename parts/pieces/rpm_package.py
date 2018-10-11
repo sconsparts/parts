@@ -8,12 +8,17 @@ import os
 import re
 import operator
 import platform
+import subprocess
 
-rpm_reg = "(\w+)\-([\d.]+)\-([\w.]+)\.(\w+)\.rpm"
+rpm_reg = "([\w_.-]+)-([\d.]+)-([\w_.]+)[.](\w+)\.rpm"
 
 
 def rpm_wrapper_mapper(env, target, sources, **kw):
     def rpm_builder():
+        #############################################
+        # Target most be only 1 item
+        if len(target) != 1:
+            api.output.error_msg("RPM builder has more than one targeted mapped: {}".format([i.ID for i in target]))
 
         #############################################
         # getting all the sources
@@ -65,15 +70,23 @@ def rpm_wrapper_mapper(env, target, sources, **kw):
             # get Package directory for node
             pk_type = env.MetaTagValue(n, 'category', 'package')
             pkg_dir = "${{PACKAGE_{0}}}".format(pk_type)
-            pkg_nodes.append(env.Entry('${{BUILD_DIR}}/{0}/{1}/{2}'.format(filename, pkg_dir,
-                                                                           env.Dir(n.env['INSTALL_{0}'.format(pk_type)]).rel_path(n))))
-
+            tmp_node = env.Entry(
+                '${{BUILD_DIR}}/{0}/{1}/{2}'.format(
+                    filename,
+                    pkg_dir,
+                    n.env.Dir(n.env['INSTALL_{0}'.format(pk_type)]).rel_path(n)
+                )
+            )
+            if tmp_node in pkg_nodes:
+                api.output.error_msg("Node: {0} was defined twice for package {1}".format(n,target[0].name),show_stack=False)
+            pkg_nodes.append(tmp_node)
+            
         spec_file = env._rpmspec(
             '${{BUILD_DIR}}/SPECS/{0}/{1}'.format(target[0].name[:-4], spec_in.name),
             spec_in,
             NAME=target_name,
             VERSION=target_version,
-            RELEASE=target_release,
+            RELEASE=target_release,  # +"%{?dist}",
             PKG_FILES=pkg_nodes
         )
 
@@ -141,6 +154,15 @@ def RpmPackage_wrapper(_env, target, sources, **kw):
 
     env = _env.Clone(**kw)
 
+    # get the dist value
+    try:
+        dist = subprocess.check_output(["rpm", "--eval", "%{?dist}"]).strip()
+    except:
+        api.output.error_msg("rpm was not found")
+
+    if ("DIST" in env and env.subst('$DIST') == "%{?dist}") or ("DIST" not in env):
+        env["DIST"] = dist
+
     # map arch to value the RPM will want to use
     env['TARGET_ARCH'] = rpmarch(env, env['TARGET_ARCH'])
     api.output.verbose_msgf(['rpm'], "mapping architecture to rpm value of: {0}", env['TARGET_ARCH'])
@@ -177,7 +199,8 @@ def RpmPackage_wrapper(_env, target, sources, **kw):
     # delay real work till we have everything loaded
     glb.engine.add_preprocess_logic_queue(rpm_wrapper_mapper(env, target, sources, **kw))
 
-    return target
+    return target[:]
+
 
 api.register.add_variable('PKG_ARCH_MAPPER', {}, '')
 
