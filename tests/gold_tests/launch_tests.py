@@ -8,11 +8,17 @@ Assumes you have SCons and Parts installed/setup on the path
 import subprocess
 import sys
 
+if sys.platform != "win32":
+    class WindowsError(object):
+        pass
+
 install = False
 # check to see if it already exists
 try:
     subprocess.check_call(["autest", "--version"], shell=False)
 except WindowsError:
+    install = True
+except OSError:
     install = True
 except subprocess.CalledProcessError:
     install = True
@@ -24,7 +30,9 @@ if install:
         # need admin)
         subprocess.call(["pip", "install", "autest"], shell=False)
     else:
-        # install it on the system ( user level )
-        subprocess.call(["pip", "install", "autest", "--user"], shell=False)
+        # install it on the system ( user level )        
+        if subprocess.call(["pip", "install", "autest", "--user"], shell=False):
+            # if that fails ( we are probally in a virtualenv)
+            subprocess.call(["pip", "install", "autest"], shell=False)
 
 sys.exit(subprocess.call(["autest"] + sys.argv[1:], shell=False))

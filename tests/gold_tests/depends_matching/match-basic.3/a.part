@@ -1,0 +1,9 @@
+Import('*')
+
+env.PartVersion("1.0.0")
+env.PartName("A")
+# this case is ambigious at the moment
+# the code is matching on more complex cases like B@mode:log
+# it is failing to match on the simple cases of just B when 
+# a complex B case exists
+DependsOn(Component("B"))

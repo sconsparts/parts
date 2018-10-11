@@ -20,37 +20,89 @@ from SCons.Debug import logInstanceCreation
 
 def Component(env, name, version_range=None, requires=REQ.DEFAULT, section="build"):
 
-    # fix up the name string
-    if name.startswith("name::") == False:
+    # fix up the name string.
+    # if this start with alias. we want to us it not name::
+    # If it does not start with name we want to add it
+    if name.startswith("name::") == False and name.startswith("alais::") == False:
         name = 'name::{0}'.format(name)
+
     # make it a target
-    t = target_type.target_type(name)
-    # get pobj
+    trg = target_type.target_type(name)
+
+    # debug/trace
+    #api.output.trace_msgf(['component'], "target value: {}\n {}", trg, trg.__dict__)
+
+    # get pobj that called this mapping of a component
     pobj = glb.engine._part_manager._from_env(env)
+    api.output.trace_msg(
+        ['component'],
+        "Mapping defined for:\n  target: {target}\n with part:\n  name:{name}\n  section:{section}\n  ID={ID}".format(
+            target=trg,
+            name=pobj.Name,
+            section=section,
+            ID=pobj.ID)
+    )
     # get any local space that was set
     localspace = pobj.Uses
+
+    if localspace:
+        # TODO clean up this message
+        api.output.trace_msg(
+            ['component'],
+            "Localspace mapping space was defined! {}".format(localspace)
+        )
+
     # try to auto select version
-    # this way we don't have to say env.PartVersion() when depending on
-    # subparts that are in the same Root Part
+    # check to see if this is a subpart and if so we want to
+    # auto define the version range to be that of the parent
+    # this allow subparts to easily depend on there part "group"
     if version_range is None:
+        # check to see if the name we dependon match
+        # TODO validate this test....
         if pobj.Root.Name == name.split('.')[0]:
             version_range = pobj.Version
     else:
-        version_range = version.version_range(version_range)
+        # we have a version range define...
+        # turn it in to an version_range object
+        version_range = version.version_range(env.subst(version_range))
     # set the version value
+
     if version_range:
-        t.Properties['version'] = version_range
-    elif ('version' in t.Properties) == False:
-        t.Properties['version'] = '*'
+        if trg.Properties.get('version'):
+            api.output.trace_msg(
+                ['component'],
+                "Overriding version properties of\n  {old} \n with\n  {new}".format(
+                    old=trg.Properties.get('version'),
+                    new=version_range
+                )
+            )
+        trg.Properties['version'] = version_range
+    elif ('version' in trg.Properties) == False:
+        api.output.trace_msg(
+                ['component'],
+                "Defining default version range mapping of '*'")
+        trg.Properties['version'] = '*'
+
     # set the target value
-    if ('target' in t.Properties) == False:  # ['target','target-platform','target_platform']
-        t.Properties['platform_match'] = env['TARGET_PLATFORM']
+    if ('target' in trg.Properties) == False:  # ['target','target-platform','target_platform']
+        api.output.trace_msg(
+                ['component'],
+                "Defining default platform_match mapping of:",env['TARGET_PLATFORM'])
+        trg.Properties['platform_match'] = env['TARGET_PLATFORM']
+    else:
+        api.output.trace_msg(
+                ['component'],
+                "Target defined platform_match mapping of:",trg.Properties['target'])
 
     # Set the configuration to try to match
-    if ('config' in t.Properties) == False:
-        t.Properties['config'] = str(env['CONFIG'])
+    if ('config' in trg.Properties) == False:
+        config = str(env['CONFIG'])
+        api.output.trace_msg(['component'],"Defining default config mapping of:",config)
+        trg.Properties['config'] = str(env['CONFIG'])
+    else:
+        api.output.trace_msg(['component'],"Target defined config mapping of:",trg.Properties['config'])
 
-    return dependent_ref.dependent_ref(part_ref.part_ref(t, localspace), section, requires)
+    return dependent_ref.dependent_ref(part_ref.part_ref(trg, localspace), section, requires)
 
 
 class ComponentEnv(object):

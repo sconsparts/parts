@@ -17,7 +17,7 @@ def getSystemName():
 Setup.Copy.FromDirectory('test7')
 
 # run test.. should not have any failures
-t = Test.AddBuildRun('run_utest:: -j3 TARGET_ARCH=x86')
+t = Test.AddBuildRun('run_utest:: -j3')
 t.ReturnCode = 0
 
 

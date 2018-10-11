@@ -3,6 +3,7 @@ import common
 import core.util as util
 import version
 import target_type
+import policy as policies
 
 from SCons.Debug import logInstanceCreation
 
@@ -30,13 +31,17 @@ class part_ref(object):
     @property
     def Matches(self):
         # returns all matches we have for this referance
-        if self.__matches:
-            return self.__matches
-
-        self.__matches = list(glb.engine._part_manager._from_target(
-            self.__target,
-            self.__local_space
-        ))
+        if not self.__matches:
+            # We have not tested yet for a match.
+            # query the Part Manager Object to get match information
+            # and then store this result
+            tmp = glb.engine._part_manager._from_target(
+                self.__target,
+                self.__local_space
+            )
+            if tmp is None:
+                return []
+            self.__matches = list(tmp)
         return self.__matches
 
     @property
@@ -165,3 +170,15 @@ class part_ref(object):
 
     def NoMatchStr(self):
         return "No match found for:\n  {0}".format(self.TargetStr())
+
+    def Clear(self):
+        self.__matches = None
+        self.__stored_matches = None
+
+    # this should be a safe API for users
+    def delaysubst(self, value, policy=policies.REQPolicy.warning):
+        return '${{PARTSUBST("{target}","{val}",{policy})}}'.format(
+            target=self.Target,
+            val=value,
+            policy=policy
+        )

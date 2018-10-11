@@ -1,4 +1,3 @@
-import sys
 
 Test.Summary = '''
 This test checks that the dpkg-deb adds files to deb from Parts file
@@ -10,6 +9,10 @@ Test.SkipUnless(
     Condition.HasProgram(
         program='dpkg-deb',
         msg='Need to have dpkg-deb tool on system to build the package',
+    ),
+    Condition.HasProgram(
+        program='debuild',        
+        msg='Need to have debuild tool on system to build the package',
     )
 )
 

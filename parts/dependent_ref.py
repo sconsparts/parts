@@ -3,6 +3,7 @@ import glb
 import api.output
 import errors
 import requirement
+import policy as policies
 
 import hashlib
 
@@ -20,7 +21,6 @@ class dependent_ref(object):
         '__sectionname',
         '__requires',
         '__stackframe',
-        #'__rsig',
         '__rsigs',
         '__section',
         '__part',
@@ -155,5 +155,9 @@ class dependent_ref(object):
 
         # self.__rsig=md5_rsig.hexdigest()
         self.__rsigs = rsigs
+
+    # this should be a safe API for users
+    def DelaySubst(self, value, policy=policies.REQPolicy.warning):
+        return self.PartRef.delaysubst(value,policy)
 
 # vim: set et ts=4 sw=4 ai ft=python :

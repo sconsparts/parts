@@ -1,0 +1,9 @@
+from parts import *
+
+
+b = Part("b.part")
+Part("b.part",mode=["log"])
+
+# provide a local mapping to prevent ambigiuous matching
+# this case should error as we have test for mode:log
+Part("a.part",requires=b)

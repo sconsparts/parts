@@ -1,0 +1,6 @@
+Import('*')
+
+env.PartVersion("1.0.0")
+env.PartName("A")
+
+DependsOn(Component("B@mode:log"))

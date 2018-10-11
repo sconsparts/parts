@@ -473,6 +473,10 @@ class part_manager(object):
         new_kw.update(parent_part._kw)
         new_append.update(parent_part._append)
         new_prepend.update(parent_part._prepend)
+
+        if vcs_type is None:
+            vcs_type = parent_part.Vcs
+            new_kw['CHECK_OUT_DIR'] = new_kw['VCS'] = parent_part.Env.subst("$CHECK_OUT_DIR")
         if package_group is None:
             package_group = parent_part.PackageGroup
         if mode == []:
@@ -735,9 +739,10 @@ class part_manager(object):
                 elif policy == 'unsafe':
                     # load only the sections assume everything is up to date
                     loader = loadlogic.nodepends.NoDepends(sections_to_process, self)
-                    api.output.warning_msg('''Load logic case of "unsafe" is being used!
- All dependents are assumed up-to-date!
- If this is not the case the build may be incorrect or fail!''', show_stack=False)
+                    api.output.warning_msg(
+                        'Load logic case of "unsafe" is being used!\n'
+                        ' All dependents are assumed up-to-date!\n'
+                        ' If this is not the case the build may be incorrect or fail!', show_stack=False)
 
                 elif policy == 'all':
                     # load everything
@@ -933,95 +938,220 @@ class part_manager(object):
         return False
 
     def _from_target(self, target, local_space=None, user_reduce=None, use_stored_info=False):
+        '''
+        Given a Target object we want to map this to the correct Part Object and section in that Part
+        We might have a local mapping space define by the control what is mapped.
+        This function returns all possible matches
+        '''
+        pobj_lst = []
 
-        name = target.Name
-        tmp = set()
-        full_set = set()
+        # user_reduce if not implemented ( may remove )
+        # use_stored_info always fails at the moment ( until I fix the cache logic again)
+        if use_stored_info:
+            return []
+
+        # if we have a local space defined by the user we want to look for possible matches in this space
+        # ie this means if there is a possible match, there can be no match in the global space
+        # if there is no possible match in the local space we will fallback to the global space for a match
+        # by possible match. this is before we try to reduce the set the an exact value
         if local_space:
             for pobj in local_space:
-                # if we have a match in the local space it has to match, or fail
-                if pobj.Name == name:
-                    tmp.add(pobj)
+                # Do we have an Alias define?
+                if target.Alias == pobj.Alias:
+                    # if so just return the Alias object if it is define
+                    pobj_lst.append(pobj)
+                    # we can only have one Alias match
+                    break
+                # do we have name that could match?
+                elif target.Name == pobj.Name:
+                    pobj_lst.append(pobj)
 
-        # if we found something in the local space tmp will have data in it
-        if not tmp:
-            if use_stored_info:
-                # what we had stored
-                if name:
-                    if datacache.GetCache("part_map") is None:
-                        return []
-                    set_data = datacache.GetCache("part_map")['name_to_alias'].get(name)
-                    if set_data:
-                        for v in set_data:
-                            full_set.add(glb.pnodes.GetPNode(v))
-                elif target.Alias and self.parts.get(target.Alias):
-                    full_set.add(self.parts.get(target.Alias))
-                else:
-                    return []
-                    #api.output.error_msg("{0} target is to ambigous to find any possible match".format(target.OrignialString))
+        # get the set of possible part objects that match based on the target name or alias (whichever is define)
+        # did we have a local_space that we might have matched on? If not try the global space.
+        if not pobj_lst:
+            # Do we have an Alias define?
+            if target.Alias:
+                # if so just return the Alias object if it is define
+                pobj_lst.append(self._from_alias(target.Alias))
             else:
-                # what is up-to-date
-                alias_lst = self._alias_list(name)
-                if alias_lst != []:
-                    for v in alias_lst:
-                        full_set.add(self._from_alias(v))
+                # this target is based on a name
+                # based on the name get all possible Alias/IDs that could be a match
+                for alias_str in self._alias_list(target.Name):
+                    # turn the string to a pobj
+                    pobj_lst.append(self._from_alias(alias_str))
 
+        # we have items to match
+        if pobj_lst:
+            # reduce the set of possible parts for this target
+            # to items that match the target
+            ret = self.reduce_list_from_target(target, pobj_lst)
         else:
-            full_set = tmp
-        if use_stored_info:
-            # need a copy for the stored case as we might want to return all possible matches
-            full_set_copy = full_set.copy()
-        ret = self.reduce_list_from_target_stored(
-            target, full_set) if use_stored_info else self.reduce_list_from_target(target, full_set)
-        # if user_reduce:
-        # user_reduce(name,ret)
-        if use_stored_info and ret == set([]):
-            return full_set_copy
+            # There is nothing to reduce
+            ret = None
+
         return ret
+
+
+    def reduce_list_from_target(self, tobj, part_lst):
+
+        ret_lst = []
+        api.output.trace_msgf("reduce_target_mapping", "Reducing list of parts based on target {0}", tobj)
+        api.output.trace_msgf("reduce_target_mapping", "Full list of possible matches are {0}", [p.ID for p in part_lst])
+
+        # we loop over all the "properties" and reduce based on values defined at that level
+        for pobj in part_lst:
+            match = True
+            for key, val in tobj.Properties.iteritems():
+                api.output.trace_msgf("reduce_target_mapping", " Testing Part {0}", pobj.ID)
+                if key == 'version':
+                    # normalize string to version_range object
+                    if util.isString(val):
+                        val = version.version_range(val + '.*')
+                    api.output.trace_msgf(
+                        "reduce_target_mapping",
+                        "  Matching Attibute: {key} Values:{val} with {tval}",
+                        key=key,
+                        val=val,
+                        tval=pobj.Version
+                    )
+                    # do the test
+                    if pobj.Version not in val:
+                        match = False
+                # check build config
+                elif key in ['cfg', 'config', 'build-config', 'build_config']:
+
+                    api.output.trace_msgf(
+                        "reduce_target_mapping",
+                        "  Matching Attibute: {key} Values:{val} Based on {tval}",
+                        key=key,
+                        val=val,
+                        tval=pobj.Env["CONFIG"]
+                    )
+
+                    if pobj.ConfigMatch:  # TODO double check this line!
+                        # test that the configuration is based on request value
+                        # this allows "debug" to work when using my "MyCustonmDebug" config
+                        if not pobj.Env.isConfigBasedOn(val):
+                            match = False
+                # check target_platform/platform_match
+                elif key in ['platform_match', 'target', 'target-platform', 'target_platform']:
+                    api.output.trace_msgf(
+                        "reduce_target_mapping",
+                        "  Matching Attibute: {key} Values:{val} with {tval}",
+                        key=key,
+                        val=val,
+                        tval=pobj.PlatformMatch
+                    )
+
+                    if pobj.PlatformMatch != val:
+                        part_lst.remove(pobj)
+                elif key == 'mode':
+                    val_list = val.split(',')
+                    api.output.trace_msgf(
+                        "reduce_target_mapping",
+                        "  Matching Attibute: {key} Values:{val} with {tval}",
+                        key=key,
+                        val=val_list,
+                        tval=pobj.Mode
+                    )
+                    # we might want to enhance this to say match on not having something
+                    # or some reduce set. This currently only works well when the depend
+                    # all test for a mode to exist. Empty set cases will most likely comeback
+                    # as ambiguous.
+
+                    # note. mode if not set by the root Part call, will add a "default" value
+                    # to the mode. This can be used to help with the checking logic in certain case                    
+
+                    # this is testing contains logic
+                    for v in val_list:
+                        if v not in pobj.Mode:
+                            match = False
+                            break
+
+                else:
+                    # look up in the parts environment
+                    # This case is like the above "mode" case. Using it work best we there is no
+                    # empty set, or the empty set was testing on something else to reduce ambigous matches
+                    try:
+                        api.output.trace_msgf(
+                            "reduce_target_mapping",
+                            "  Matching Emvironment Variable: {key} Values:{val} with {tval}",
+                            key=key,
+                            val=val,
+                            tval=pobj.Env[key]
+                        )
+
+                        if util.isList(pobj.Env[key]):
+                            api.output.trace_msgf("reduce_target_mapping", "  Variable is a list in the Environment")
+                            val_list = val.split(',')
+                            api.output.trace_msgf("reduce_target_mapping",
+                                                    "  Testing that Enviornment variable contains all values in {0}", val_list)
+                            for v in val_list:
+                                if v not in pobj.Env[key]:
+                                    match = False
+                                    break
+                        else:
+                            api.output.trace_msgf("reduce_target_mapping",
+                                                    "  Variable is not a list in the environment Environment")
+                            # if both cases are false then we have a failure
+                            if pobj.Env[key] != val and str(pobj.Env[key]) != v:
+                                api.output.trace_msgf("reduce_target_mapping", "   Removing Part {0}", pobj.ID)
+                                match = False
+                    except KeyError:
+                        match = False
+                if not match:
+                    api.output.trace_msgf("reduce_target_mapping", "  Removing Part {0}", pobj.ID)
+                    break
+
+            if match:
+                ret_lst.append(pobj)
+        # return what was ever added as a Pobj
+        api.output.trace_msgf("reduce_target_mapping", "Final reduced list {0}", [p.ID for p in ret_lst])
+        return ret_lst
 
     def reduce_list_from_target_stored(self, tobj, part_lst):
 
-        api.output.verbose_msgf("stored_reduce_target_mapping",
+        api.output.trace_msgf("stored_reduce_target_mapping",
                                 "Reducing list of parts based on target {0}\n set={1}", tobj, part_lst)
         for k, v in tobj.Properties.iteritems():
             for pobj in part_lst.copy():
-                api.output.verbose_msgf("stored_reduce_target_mapping", " Testing Part {0}", pobj.ID)
+                api.output.trace_msgf("stored_reduce_target_mapping", " Testing Part {0}", pobj.ID)
                 if pobj.Stored is None:
                     # We have no stored info. skip test
                     #(ie load it as it might be needed)
                     pass
                 elif k == 'version':
-                    api.output.verbose_msgf("stored_reduce_target_mapping",
+                    api.output.trace_msgf("stored_reduce_target_mapping",
                                             "  Matching Attibute: {0} Values:{1} {2}", k, v, pobj.Stored.Version)
                     if util.isString(v):
                         v = version.version_range(v + '.*')
                     if pobj.Stored.Version not in v:
-                        api.output.verbose_msgf("stored_reduce_target_mapping", "  Removing Part {0}", pobj.ID)
+                        api.output.trace_msgf("stored_reduce_target_mapping", "  Removing Part {0}", pobj.ID)
                         part_lst.remove(pobj)
                 elif k in ['target', 'target-platform', 'target_platform']:
-                    api.output.verbose_msgf("stored_reduce_target_mapping",
+                    api.output.trace_msgf("stored_reduce_target_mapping",
                                             "  Matching Attibute: {0} Values:{1} {2}", k, v, pobj.Stored.TargetPlatform)
                     if pobj.Stored.TargetPlatform != v:
-                        api.output.verbose_msgf("stored_reduce_target_mapping", "  Removing Part {0}", pobj.ID)
+                        api.output.trace_msgf("stored_reduce_target_mapping", "  Removing Part {0}", pobj.ID)
                         part_lst.remove(pobj)
                 elif k in ['platform_match']:
-                    api.output.verbose_msgf("stored_reduce_target_mapping", "  Matching Attibute: {0} Values:{1} {2} Types:{3} {4}", k, v, pobj.Stored.PlatformMatch, type(
+                    api.output.trace_msgf("stored_reduce_target_mapping", "  Matching Attibute: {0} Values:{1} {2} Types:{3} {4}", k, v, pobj.Stored.PlatformMatch, type(
                         v), type(pobj.Stored.PlatformMatch))
                     if pobj.Stored.PlatformMatch != v:
-                        api.output.verbose_msgf("stored_reduce_target_mapping", "  Removing Part {0}", pobj.ID)
+                        api.output.trace_msgf("stored_reduce_target_mapping", "  Removing Part {0}", pobj.ID)
                         part_lst.remove(pobj)
                 elif k in ['cfg', 'config', 'build-config', 'build_config']:
                     # weak... make better code for this case
                     if pobj.Stored.ConfigMatch:
-                        api.output.verbose_msgf("stored_reduce_target_mapping", "  Matching Attibute: {0} Values:{1}", k, v)
+                        api.output.trace_msgf("stored_reduce_target_mapping", "  Matching Attibute: {0} Values:{1}", k, v)
                         if pobj.Stored.Config != v:  # pobj.Env.isConfigBasedOn(v):
-                            api.output.verbose_msgf("stored_reduce_target_mapping", "  Removing Part {0}", pobj.ID)
+                            api.output.trace_msgf("stored_reduce_target_mapping", "  Removing Part {0}", pobj.ID)
                             part_lst.remove(pobj)
                 elif k == 'mode':
                     mv = v.split(',')
                     for v in mv:
                         if v not in pobj.Stored.Mode:
-                            api.output.verbose_msgf("stored_reduce_target_mapping", "  Removing Part {0}", pobj.ID)
+                            api.output.trace_msgf("stored_reduce_target_mapping", "  Removing Part {0}", pobj.ID)
                             part_lst.remove(pobj)
                             break
                 else:
@@ -1029,68 +1159,7 @@ class part_manager(object):
                     # skip this test for stored information
                     # as we don't have an env object yet
                     pass
-        api.output.verbose_msgf("stored_reduce_target_mapping", "Final reduced list {0}", part_lst)
-        return part_lst
-
-    def reduce_list_from_target(self, tobj, part_lst):
-
-        api.output.verbose_msgf("reduce_target_mapping", "Reducing list of parts based on target {0}", tobj)
-        api.output.verbose_msgf("reduce_target_mapping", "Full list of possible matches are {0}", part_lst)
-        for k, v in tobj.Properties.iteritems():
-            for pobj in part_lst.copy():
-                api.output.verbose_msgf("reduce_target_mapping", " Testing Part {0}", pobj.ID)
-                if k == 'version':
-                    api.output.verbose_msgf("reduce_target_mapping", "  Matching Attibute: {0} Values:{1} {2}", k, v, pobj.Version)
-                    if util.isString(v):
-                        v = version.version_range(v + '.*')
-                    if pobj.Version not in v:
-                        api.output.verbose_msgf("reduce_target_mapping", "  Removing Part {0}", pobj.ID)
-                        part_lst.remove(pobj)
-                elif k in ['target', 'target-platform', 'target_platform']:
-                    api.output.verbose_msgf("reduce_target_mapping",
-                                            "  Matching Attibute: {0} Values:{1} {2}", k, v, pobj.Env['TARGET_PLATFORM'])
-                    if pobj.Env['TARGET_PLATFORM'] != v:
-                        api.output.verbose_msgf("reduce_target_mapping", "  Removing Part {0}".format(pobj.ID))
-                        part_lst.remove(pobj)
-                elif k in ['platform_match']:
-                    api.output.verbose_msgf("reduce_target_mapping", "  Matching Attibute: {0} Values:{1} {2} Types:{3} {4}", k, v, pobj.PlatformMatch, type(
-                        v), type(pobj.PlatformMatch))
-                    if pobj.PlatformMatch != v:
-                        api.output.verbose_msgf("reduce_target_mapping", "  Removing Part {0}", pobj.ID)
-                        part_lst.remove(pobj)
-                elif k in ['cfg', 'config', 'build-config', 'build_config']:
-                    if pobj.ConfigMatch:
-                        api.output.verbose_msgf("reduce_target_mapping", "  Matching Attibute: {0} Values:{1}", k, v)
-                        if not pobj.Env.isConfigBasedOn(v):
-                            api.output.verbose_msgf("reduce_target_mapping", "  Removing Part {0}", pobj.ID)
-                            part_lst.remove(pobj)
-                elif k == 'mode':
-                    mv = v.split(',')
-                    api.output.verbose_msgf("reduce_target_mapping", "  Matching Attibute: {0} Values:{1} {2}", k, v, pobj.Mode)
-                    for v in mv:
-                        if v not in pobj.Mode:
-                            api.output.verbose_msgf("reduce_target_mapping", "  Removing Part {0}", pobj.ID)
-                            part_lst.remove(pobj)
-                            break
-                else:
-                    # look up in the parts environment
-                    try:
-                        api.output.verbose_msgf("reduce_target_mapping",
-                                                "  Matching Attibute: {0} Values:{1} {2}", k, v, pobj.Env[k])
-                        if util.isList(pobj.Env[k]):
-                            mv = v.split(',')
-                            for v in mv:
-                                if v not in pobj.Env[k]:
-                                    api.output.verbose_msgf("reduce_target_mapping", "  Removing Part {0}", pobj.ID)
-                                    part_lst.remove(pobj)
-                                    break
-                        elif pobj.Env[k] != v:
-                            part_lst.remove(pobj)
-                            api.output.verbose_msgf("reduce_target_mapping", "  Removing Part {0}", pobj.ID)
-                    except KeyError:
-                        api.output.verbose_msgf("reduce_target_mapping", "  Removing Part {0}", pobj.ID)
-                        part_lst.remove(pobj)
-        api.output.verbose_msgf("reduce_target_mapping", "Final reduced list {0}", part_lst)
+        api.output.trace_msgf("stored_reduce_target_mapping", "Final reduced list {0}", part_lst)
         return part_lst
 
     def _alias_list(self, name=None):

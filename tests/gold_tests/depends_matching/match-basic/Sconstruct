@@ -1,0 +1,6 @@
+from parts import *
+
+
+Part("b.part")
+Part("b.part",mode=["log"])
+Part("a.part")

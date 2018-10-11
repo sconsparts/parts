@@ -1,0 +1,7 @@
+Import('*')
+
+env.PartVersion("1.0.0")
+env.PartName("A")
+# this should error as the requires passed down the part
+# without mode=["log"]
+DependsOn(Component("B@mode:log"))
