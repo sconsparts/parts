@@ -17,8 +17,6 @@ from optparse import OptionValueError
 def SetOptionDefault(key, value):
     import settings
     args = sys.argv[1:]
-    if glb.engine._build_mode == 'help':
-        return
 
     # special logger logic
     if key == 'LOGGER':

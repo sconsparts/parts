@@ -1,6 +1,8 @@
+import api.output
 import common
 import core.util
-import api.output
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 
 def MetaTag(nodes, ns='meta', **metakv):
@@ -16,6 +18,8 @@ def MetaTag(nodes, ns='meta', **metakv):
 
         for item in metakv.iteritems():
             setattr(namespace, *item)
+
+    return nodes
 
 
 def MetaTagValue(node, key, ns='meta', default=None):
@@ -49,8 +53,6 @@ def Tag_wrapper(env, nodes, ns='meta', **metakv):
     return MetaTag(nodes, ns, **metakv)
 
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
 SConsEnvironment.MetaTag = MetaTag_method

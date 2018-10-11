@@ -10,7 +10,6 @@ class pnode(object):
     __slots__ = [
         # Some internal magic
         '__weakref__',
-
         '__load_state',
         '_remove_cache',
         '__is_loading',

@@ -74,10 +74,10 @@ class manager(object):
                 # clear out the cache
                 datacache.StoreData("nodeinfo", {})
 
-    def TotalNode(self):
+    def TotalNodes(self):
         return len(self.__known_nodes)
 
-    def TotalPnode(self):
+    def TotalPnodes(self):
         return len(self.__known_pnodes)
 
     def clear_node_states(self):

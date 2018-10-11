@@ -16,7 +16,7 @@ def error_msg(*lst, **kw):
 
 def error_msgf(sfmt, *lst, **kw):
     glb.engine.HadError = True
-    msg = sfmt.format(*lst)
+    msg = sfmt.format(*lst,**kw)
     msg = msg + kw.get('end', '\n')
     glb.rpter.part_error(msg, kw.get('stackframe', None), kw.get('show_stack', True), kw.get('exit', True))
 
@@ -28,7 +28,7 @@ def warning_msg(*lst, **kw):
 
 
 def warning_msgf(sfmt, *lst, **kw):
-    msg = sfmt.format(*lst)
+    msg = sfmt.format(*lst,**kw)
     msg = msg + kw.get('end', '\n')
     glb.rpter.part_warning(msg, kw.get('print_once', False), kw.get('stackframe', None), kw.get('show_stack', True))
 
@@ -38,7 +38,7 @@ def print_msg(*lst, **kw):
 
 
 def print_msgf(sfmt, *lst, **kw):
-    msg = common.dformat(sfmt, *lst)
+    msg = sfmt.format(*lst,**kw)
     glb.rpter.part_message([kw.get('sep', ' '), msg, kw.get('end', '\n')], kw.get('show_prefix', True))
 
 
@@ -53,7 +53,7 @@ def _verbose_pre(_func, catagory, *lst, **kw):
 def _verbose_msgf(catagory, sfmt, *lst, **kw):
     catagory = common.make_list(catagory)
     catagory.append('all')
-    msg = common.dformat(sfmt, *lst)
+    msg = common.dformat(sfmt, *lst, **kw)
     glb.rpter.verbose_msg(catagory, [kw.get('sep', ' '), msg, kw.get('end', '\n')])
 
 
@@ -75,7 +75,7 @@ def _trace_pre(_func, catagory, *lst, **kw):
 
 
 def _trace_msgf(catagory, sfmt, *lst, **kw):
-    msg = common.dformat(sfmt, *lst)
+    msg = common.dformat(sfmt, *lst, **kw)
     glb.rpter.trace_msg(catagory, [kw.get('sep', ' '), msg, kw.get('end', '\n')])
 
 
