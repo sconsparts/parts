@@ -8,12 +8,12 @@ if logfile:
     try:
         import logging
     except ImportError:
-        debug = lambda x: open(logfile, 'a').write(x + '\n')
+        def debug(x): return open(logfile, 'a').write(x + '\n')
     else:
         logging.basicConfig(filename=logfile, level=logging.DEBUG)
         debug = logging.debug
 else:
-    debug = lambda x: None
+    def debug(x): return None
 
 
 def is_win64():
@@ -101,6 +101,7 @@ def validate_vars(env):
             raise SCons.Errors.UserError("The PCHSTOP construction must be defined if PCH is defined.")
         if not SCons.Util.is_String(env['PCHSTOP']):
             raise SCons.Errors.UserError("The PCHSTOP construction variable must be a string: %r" % env['PCHSTOP'])
+
 
 # VC teh compiler and related tools
 msvc = ToolSetting('MSVC')

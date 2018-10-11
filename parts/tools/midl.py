@@ -65,6 +65,7 @@ def midl_emitter(target, source, env):
 
     return (t, source)
 
+
 idl_scanner = SCons.Scanner.IDL.IDLScan()
 
 midl_action = SCons.Action.Action('$MIDLCOM', '$MIDLCOMSTR')

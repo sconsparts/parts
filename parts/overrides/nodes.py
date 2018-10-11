@@ -64,6 +64,7 @@ def wrap_MkdirFunc(function):
     import errno
     function.__globals__.update(BuildError=BuildError, errno=errno)
 
+
 wrap_MkdirFunc(SCons.Node.FS.MkdirFunc)
 
 
@@ -84,6 +85,7 @@ class fake_ninfo(object):
             logInstanceCreation(self)
         self.timestamp = timestamp
         self.csig = csig
+
 
 Node.make_ninfo_from_dict = lambda self, dict: fake_ninfo(dict.get('timestamp', 0), dict.get('csig', 0))
 
@@ -130,6 +132,7 @@ def _get_isVisited(self):
 def _set_isVisited(self, value):
     self.attributes._isVisited = value
 
+
 SCons.Node.Node.isVisited = property(_get_isVisited, _set_isVisited)
 
 
@@ -152,6 +155,7 @@ def _get_ValueID(self):
 def _get_AliasID(self):
     return self.name
 
+
 SCons.Node.FS.Base.ID = property(_get_FSID)
 SCons.Node.Python.Value.ID = property(_get_ValueID)
 SCons.Node.Alias.Alias.ID = property(_get_AliasID)
@@ -161,6 +165,7 @@ def _my_init(self, name, directory, fs):
     self.orig_init(name, directory, fs)
     # may not be the best way.. but works for the moment
     glb.pnodes.AddNodeToKnown(self)
+
 
 SCons.Node.FS.Base.orig_init = SCons.Node.FS.Base.__init__
 SCons.Node.FS.Base.__init__ = _my_init
@@ -174,6 +179,8 @@ def def_FS_Entry___init__(klass):
             logInstanceCreation(self, 'Node.FS.Entry')
         orig(self, name, directory, fs)
     klass.__init__ = __init__
+
+
 def_FS_Entry___init__(SCons.Node.FS.Entry)
 
 
@@ -183,6 +190,7 @@ def _my_init(self, value, built_value=None):
     self.orig_init(value, built_value)
     # may not be the best way.. but works for the moment
     glb.pnodes.AddNodeToKnown(self)
+
 
 SCons.Node.Python.Value.orig_init = SCons.Node.Python.Value.__init__
 SCons.Node.Python.Value.__init__ = _my_init
@@ -206,6 +214,7 @@ def _my_init(self, name):
         map_alias_stored(self)
     else:
         glb.engine.SConstructLoadedEvent += lambda build_mode: map_alias_stored(self)
+
 
 SCons.Node.Alias.Alias.orig_init = SCons.Node.Alias.Alias.__init__
 SCons.Node.Alias.Alias.__init__ = _my_init
@@ -349,11 +358,13 @@ SCons.Node.Node.Stored = property(Stored)
 def LoadStoredInfo(self):
     return glb.pnodes.GetStoredNodeInfo(self)
 
+
 SCons.Node.Node.LoadStoredInfo = LoadStoredInfo
 
 
 def StoreStoredInfo(self):
     pass
+
 
 SCons.Node.Node.StoreStoredInfo = StoreStoredInfo
 
@@ -420,6 +431,7 @@ def GenerateStoredInfo(self):
 
     return info
 
+
 SCons.Node.Node.GenerateStoredInfo = GenerateStoredInfo
 
 # these are "factories" to allow Parts to recreate the Node from cache latter.
@@ -446,6 +458,7 @@ def Scons_alias_node_factory(func, ID=None, *lst, **kw):
     else:
         tmp = func(ID, *lst, **kw)[0]
     return tmp
+
 
 pnode_manager.manager.RegisterNodeType(
     File, lambda x, *lst, **kw: Scons_fsnode_factory(SCons.Script.DefaultEnvironment().File, *lst, **kw))

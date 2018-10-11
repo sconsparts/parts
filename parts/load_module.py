@@ -109,6 +109,7 @@ def load_module(pathlst, name, type):
 
     return sys.modules[modname]
 
+
 # replace this with cache for Pattern object as well
 # with will address issue with file scan speed
 g_glob_cache = {}

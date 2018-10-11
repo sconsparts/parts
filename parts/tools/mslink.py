@@ -304,6 +304,7 @@ def SignFunc(target, source, env):
 
     return ret
 
+
 # General signing actions
 certAction = SCons.Action.Action("$MAKECERTCOM", "$MAKECERTCOMSTR")
 certCheck = SCons.Action.Action(CertFunc, None)

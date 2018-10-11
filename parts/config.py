@@ -26,6 +26,7 @@ from platform_info import SystemPlatform
 def null_ver_mapper(env):
     return '0.0.0'
 
+
 # this is an internal trick to make the configuration object look like a function
 # but to have it instead store it self in a global map
 g_configuration = {}
@@ -103,7 +104,7 @@ class configuration(object):
 
         # process normal flags settings
         # we process this in a for of:
-        #{flag:{replace:val or [],append:[],prepend:[]}
+        # {flag:{replace:val or [],append:[],prepend:[]}
         tmp = mysetting['replace']
         if tmp != {}:
             for k, v in tmp.iteritems():
@@ -533,7 +534,7 @@ def load_tool_config(env, name, tool, host, target):
                 files = set()
                 # reports that for this configruation there was not special data defined
                 # api.output.verbose_msg('configuration',
-                #'Configuration <%s> found no configuration for tool <%s>' % (name, configName))
+                # 'Configuration <%s> found no configuration for tool <%s>' % (name, configName))
                 found = False  # nothing found
         if found:
             break
@@ -710,6 +711,7 @@ def _isconfigbasedon(env, name, config):
 
 def isConfigBasedOn(env, name):
     return _isconfigbasedon(env, name, env.subst('$CONFIG'))
+
 
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment

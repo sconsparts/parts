@@ -8,6 +8,7 @@ from parts.config import *
 def map_default_version(env):
     return env['GXX_VERSION']
 
+
 config = configuration(map_default_version)
 
 config.VersionRange("*",

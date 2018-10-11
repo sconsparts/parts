@@ -5,7 +5,7 @@ def clang_setup(env, ver):
 
 
 def resolve(env, version):
-    func = lambda x: clang_setup(x, version)
+    def func(x): return clang_setup(x, version)
 
     host = env['HOST_PLATFORM']
     if host.OS == 'darwin' and not env['TARGET_PLATFORM'] == 'android':

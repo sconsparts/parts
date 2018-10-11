@@ -216,13 +216,14 @@ class parts_addon(object):
                     pinfo = self._part_manager._from_env(node.env)
                     if pinfo:
                         msg += ' Part:"{0}"\n Target:"{1}"\n Config:"{2}"\n Node:"{3}"\n'.format(pinfo.Name,
-                                                                                          node.env['TARGET_PLATFORM'],
-                                                                                          node.env['CONFIG'],
-                                                                                          node)
+                                                                                                 node.env['TARGET_PLATFORM'],
+                                                                                                 node.env['CONFIG'],
+                                                                                                 node)
                     else:
                         msg += 'Node: "{0}"\n'.format(bf.node)
 
-            api.output.error_msg("Summary: {0} build failure detected during build\n{1}".format(bf_lst_len, msg), show_stack=False, exit=False)
+            api.output.error_msg("Summary: {0} build failure detected during build\n{1}".format(
+                bf_lst_len, msg), show_stack=False, exit=False)
 
         glb.rpter.ShutDown()
 
@@ -307,12 +308,12 @@ class parts_addon(object):
                 cnt = 0
                 msg = '{0}/{1}'.format(cnt, total)
                 api.output.console_msg(" Processing post logic queue %3.2f%% %s \033[K" % ((cnt / total * 100), msg))
-                for cnt,i in enumerate(self.__post_process_queue,1):
-                    msg = '{0}/{1} '.format(cnt, total)                    
+                for cnt, i in enumerate(self.__post_process_queue, 1):
+                    msg = '{0}/{1} '.format(cnt, total)
                     api.output.verbose_msg(["post_process_queue"],
-                                            "Processing post logic queue {0:.2%} {1}".format((cnt / total), msg))
+                                           "Processing post logic queue {0:.2%} {1}".format((cnt / total), msg))
                     api.output.console_msg(" Processing post logic queue {0:.2%} {1} \033[K".format((cnt / total), msg))
-                    i()           
+                    i()
 
                 msg = '{0}/{1}'.format(cnt, total)
                 api.output.console_msg(" Processing post logic queue {0:.2%} {1} \033[K".format((cnt / total), msg))
@@ -346,12 +347,12 @@ class parts_addon(object):
 
             # get SConstruct file data ( maybe more than one )
             # we store a dictionary of
-            #{<Sconstruct path w/name>:
+            # {<Sconstruct path w/name>:
             #       {
             #           csig:<value>
             #           timestamp:<value>
             #       }
-            #}
+            # }
 
             # Store ninfo about the SConstruct file
             tmp = {}
@@ -553,15 +554,15 @@ Use -H or --help-options for a list of scons options
         # list of arguments we want to process as they might effect build state
         # these items we know effect the build ( should change to list of item we know don't effect the system)
         args_to_process = [
-            #'build_config', # get this from the def env
+            # 'build_config', # get this from the def env
             'cfg_file',
             'file',
             'mode',
             'repository',
             'site_dir',
             'section_suppression',
-            #'tool_chain', # we use the different value to get a better match for this
-            #'target_platform' # we get this from the def_env
+            # 'tool_chain', # we use the different value to get a better match for this
+            # 'target_platform' # we get this from the def_env
         ]
         for k in args_to_process:
             v = SCons.Script.Main.OptionsParser.defaults[k]

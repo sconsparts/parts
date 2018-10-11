@@ -102,6 +102,7 @@ def shared_object_emitter(target, source, env):
     return object_emitter(target, source, env,
                           SCons.Defaults.SharedObjectEmitter)
 
+
 pch_action = SCons.Action.Action('$PCHCOM', '$PCHCOMSTR')
 pch_builder = SCons.Builder.Builder(action=pch_action, suffix='.pch',
                                     emitter=pch_emitter,
@@ -163,6 +164,7 @@ def msvc_output_flag(target, source, env, for_signature):
         # without having a hard-coded backslash mess up command-line
         # argument parsing.
         return '/Fo${TARGET.dir}' + os.sep
+
 
 CAction = SCons.Action.Action("$CCCOM", "$CCCOMSTR",
                               batch_key=msvc_batch_key,

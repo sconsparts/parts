@@ -198,7 +198,7 @@ def copytree(src, dst):
     We use our version of copytree because one from shutil fails when destination
     directory already exists.
     '''
-    
+
     dirs = deque(['.'])
     # copy the directory and any entries
     while dirs:
@@ -230,7 +230,7 @@ def copytree(src, dst):
                     os.chmod(target, stat.S_IMODE(st[stat.ST_MODE]) | stat.S_IWRITE)
                     os.remove(target)
                 shutil.copy2(src_entry, target)
-    
+
     # all entries are added update stats on the directory
     try:
         shutil.copystat(src, dst)
@@ -238,8 +238,9 @@ def copytree(src, dst):
         if WindowsError and isinstance(why, WindowsError):
             # Copying file access times may fail on Windows
             pass
-        else:    
-            api.output.warning_msgf("CCOPY builder copying directory tree\n copystat failed for:\n  {0}\n because:\n  {1}",dst,why,show_stack=False)
+        else:
+            api.output.warning_msgf(
+                "CCOPY builder copying directory tree\n copystat failed for:\n  {0}\n because:\n  {1}", dst, why, show_stack=False)
             raise
 
 

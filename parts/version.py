@@ -536,6 +536,7 @@ class version_range(object):
         '''
         return str(self.range)
 
+
 from SCons.Script.SConscript import SConsEnvironment
 import api
 

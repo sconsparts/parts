@@ -44,7 +44,7 @@ class git(base):
     def _branch_changed(self, data):
         return data['branch'] != "{0}...origin/{0}".format(self.__branch) and self.__branch not in data['tags']
 
-    def _on_tag(self,data):
+    def _on_tag(self, data):
         return self.__branch in data['tags']
 
     def _server_changed(self, data):

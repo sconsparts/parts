@@ -8,7 +8,7 @@ def wix_setup(env, ver):
 
 def resolve(env, version):
 
-    func = lambda x: wix_setup(x, version)
+    def func(x): return wix_setup(x, version)
     return [
         ('wix', func),
     ]

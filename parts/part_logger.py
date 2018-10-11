@@ -319,6 +319,7 @@ class log_file_writer(object):
         finally:
             self.lock.__exit__(exc_type, value, traceback)
 
+
 if sys.platform == 'win32':
     time_func = time.clock
 else:
@@ -385,6 +386,8 @@ def _get_part_log_mapper(env):
         if util.isString(result):
             result = env.subst(result, raw=1, conv=lambda x: x)
     return result
+
+
 from SCons.Environment import SubstitutionEnvironment as SConsEnvironment
 SConsEnvironment._get_part_log_mapper = _get_part_log_mapper
 

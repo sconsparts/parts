@@ -243,7 +243,7 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
                 # print "Pattern type"
             elif isinstance(s, SCons.Node.FS.Dir):
                 # get all file in the directory
-                #... add code...
+                # ... add code...
                 out += sec.Env.CCopy(target=dest_dir, source=s)
                 # print "Dir type"
             elif isinstance(s, SCons.Node.FS.File):
@@ -376,6 +376,7 @@ def run_utest_return_default(code, env=None, stackframe=None):
     @param stackframe: Tuple of (filename, lineno, routine, content).
     '''
     return code
+
 
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment

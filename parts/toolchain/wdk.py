@@ -7,7 +7,7 @@ def wdk_setup(env, ver):
 
 def resolve(env, version):
 
-    func = lambda x: wdk_setup(x, version)
+    def func(x): return wdk_setup(x, version)
     return [
         ('wdk', func),
     ]

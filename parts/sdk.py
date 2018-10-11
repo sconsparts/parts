@@ -16,7 +16,7 @@ g_sdked_files = set([])
 
 
 def process_Sdk_Copy(env, target_dir, sources, create_sdk=True, do_clean=False):
-    
+
     # make sure inputs are in good format
     target_dir = env.arg2nodes(target_dir)[0]
     # Some varibles
@@ -41,7 +41,7 @@ def process_Sdk_Copy(env, target_dir, sources, create_sdk=True, do_clean=False):
             # print "Pattern type"
         elif util.isDir(s):
             # get all file in the directory
-            #... add code...
+            # ... add code...
             t = s.srcnode().abspath
             if t not in src_dir:
                 src_dir.append(t)
@@ -66,7 +66,7 @@ def process_Sdk_Copy(env, target_dir, sources, create_sdk=True, do_clean=False):
             # src.append(s)
             # print "File type"
         # need to clean up this case
-        elif  util.isString(s):
+        elif util.isString(s):
             t = os.path.split(str(s))[0]
             if t not in src_dir:
                 src_dir.append(t)
@@ -190,6 +190,7 @@ def SdkBin(env, sources, sub_dir='', create_sdk=True):
 
     ret = SdkItem(env, '$SDK_BIN', sources, sub_dir, '', [], create_sdk=create_sdk)
     return ret
+
 
 def SdkPrivateBin(env, sources, sub_dir='', create_sdk=True):
 
@@ -448,6 +449,7 @@ def CreateSDK_Emit(target, source, env):
     tout = [os.path.join('$SDK_ROOT', tf + '.sdk.parts')]
     return (tout, source)
 
+
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
 
@@ -505,9 +507,9 @@ if 'win32' == glb._host_sys:
     api.register.add_variable('SDK_DATA', '$SDK_ROOT/data', 'Full SDK directory for the generic data concept')
     api.register.add_variable('SDK_MESSAGE', '$SDK_ROOT/message', 'Full SDK directory for the messages (catalogs) concept')
 
-else: #assume posix like layout
+else:  # assume posix like layout
     api.register.add_variable('SDK_PRIVATE_BIN', '$SDK_ROOT/libexec', '')
-    api.register.add_variable('SDK_DOC', '$SDK_ROOT/share/doc', 'Full SDK directory for the documenation concept')    
+    api.register.add_variable('SDK_DOC', '$SDK_ROOT/share/doc', 'Full SDK directory for the documenation concept')
     api.register.add_variable('SDK_HELP', '$SDK_ROOT/doc', 'Full SDK directory for the help concept')
     api.register.add_variable('SDK_MANPAGE', '$SDK_ROOT/share/man', 'Full SDK directory for the manpage concept')
     api.register.add_variable('SDK_DATA', '$SDK_ROOT/share', 'Full SDK directory for the generic data concept')

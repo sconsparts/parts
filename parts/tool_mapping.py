@@ -132,6 +132,7 @@ def tool_converter(str_val, raw_val):
         return raw_val
     raise "Invalid tool value '%s'" % raw_val
 
+
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
 

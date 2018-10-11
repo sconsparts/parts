@@ -81,6 +81,7 @@ def stripXmlComments_emitter(target, source, env):
 
     return (output, source)
 
+
 api.register.add_builder('__StripXMLComments__', SCons.Script.Builder(
     action=SCons.Script.Action(stripXmlComments),
     emitter=stripXmlComments_emitter,
@@ -104,6 +105,7 @@ def StripXMLCommentsAs(env, target, source, **kw):
         target_path = os.path.split(str(target_i))[0]
         output += StripXMLComments(env, target_path, source_i, **kw)
     return output
+
 
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment

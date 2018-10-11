@@ -249,6 +249,7 @@ class smart_svn(svn.svn):
 
         datacache.StoreData(name=self._cache_filename, data=tmp, key='vcs')
 
+
 api.register.add_global_object('VcsSmartSvn', smart_svn)
 api.register.add_variable(
     'VCS_SMART_SVN_DIR', '${CHECK_OUT_ROOT}/${VCS.NAME}${VCS.STABLE_VERSION}', 'Full path used for any given checked out item')
@@ -278,6 +279,7 @@ def opt_branch(option, opt, value, parser):
         fvalue[k] = v
 
     parser.values.build_branch = fvalue
+
 
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment

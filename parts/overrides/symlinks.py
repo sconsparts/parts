@@ -503,7 +503,7 @@ def _source_scanner():
 
         if len(path) != 1:
             return []
-        
+
         source = path[0]
         target = node
         if not isinstance(target, FileSymbolicLink) or not isinstance(source, FileSymbolicLink):

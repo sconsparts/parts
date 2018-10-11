@@ -97,6 +97,7 @@ def parts_call_(self, env, target=None, source=None, chdir=SCons.Builder._null, 
         # pass
     return tmp
 
+
 SCons.Builder.BuilderBase.__call__ = parts_call_
 SCons.Builder.BuilderBase.Orig_call = Orig_call
 #from SCons.Script.SConscript import SConsEnvironment

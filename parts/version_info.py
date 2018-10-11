@@ -31,6 +31,7 @@ def PartsExtensionVersion():
 def PartsExtensionVersion_env(env):
     return PartsExtensionVersion()
 
+
 # currently this allow us to load Parts without issues of SCons being loaded
 try:
     import api

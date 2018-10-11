@@ -78,9 +78,9 @@ def rpm_wrapper_mapper(env, target, sources, **kw):
                 )
             )
             if tmp_node in pkg_nodes:
-                api.output.error_msg("Node: {0} was defined twice for package {1}".format(n,target[0].name),show_stack=False)
+                api.output.error_msg("Node: {0} was defined twice for package {1}".format(n, target[0].name), show_stack=False)
             pkg_nodes.append(tmp_node)
-            
+
         spec_file = env._rpmspec(
             '${{BUILD_DIR}}/SPECS/{0}/{1}'.format(target[0].name[:-4], spec_in.name),
             spec_in,

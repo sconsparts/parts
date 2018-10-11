@@ -73,6 +73,7 @@ def MsiPackage_wrapper(_env, target, sources, **kw):
                                                           parts.errors.GetPartStackFrameInfo(), **kw))
     return target
 
+
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
 

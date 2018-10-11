@@ -62,6 +62,7 @@ def export_path(env, target_dirs, source_dirs, pobj, prop, use_src=False, create
                 ret.append(target_dir)
     return ret
 
+
 _reg = re.compile('[\w\-\.]*.so.([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)', re.I)
 
 
@@ -168,21 +169,21 @@ def ExportItem(env, variable, values, create_sdk=True, map_as_depenance=False): 
             pobj.DefiningSection.Exports[variable] = [[]]
         # this is not a list already.. make it one
         if util.isList(pobj.DefiningSection.Exports[variable]) == False:
-            tmp=[common.make_list(pobj.DefiningSection.Exports[variable])]
+            tmp = [common.make_list(pobj.DefiningSection.Exports[variable])]
             pobj.DefiningSection.Exports[variable] = tmp
-            api.output.verbose_msgf(['export'],"Exporting from part {0}:\n {1} = {2}",pobj.Name,variable,[str(v) for v in tmp])
+            api.output.verbose_msgf(['export'], "Exporting from part {0}:\n {1} = {2}", pobj.Name, variable, [str(v) for v in tmp])
 
         # add our values
         # common.extend_unique(pobj.DefiningSection.Exports[variable],values)
         pobj.DefiningSection.Exports[variable][0] += values
-        api.output.verbose_msgf(['export'],"Exporting from part {0}:\n {1} = {2}",pobj.Name,variable,[str(v) for v in values])
+        api.output.verbose_msgf(['export'], "Exporting from part {0}:\n {1} = {2}", pobj.Name, variable, [str(v) for v in values])
 
     else:
         if variable in pobj.DefiningSection.Exports:
             api.output.verbose_msg(
                 ['export'], 'Part "{0}" already as variable "{1}" in export table, overriding with new value'.format(pobj.Name, variable))
         pobj.DefiningSection.Exports[variable] = values
-        api.output.verbose_msgf(['export'],"Exporting from part {0}:\n {1} = {2}",pobj.Name,variable,values)
+        api.output.verbose_msgf(['export'], "Exporting from part {0}:\n {1} = {2}", pobj.Name, variable, values)
 
     if map_as_depenance:
         common.append_unique(pobj.DefiningSection.ExportAsDepends, variable)
@@ -196,6 +197,7 @@ def ExportItem(env, variable, values, create_sdk=True, map_as_depenance=False): 
         pobj._create_sdk_data.append(('ExportItem', [variable, values, False, map_as_depenance]))
 
     errors.ResetPartStackFrameInfo()
+
 
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment

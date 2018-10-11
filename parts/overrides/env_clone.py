@@ -13,6 +13,7 @@ def PartsClone(self, tools=[], toolpath=None, parse_flags=None, **kw):
             clone_env[i]._rebind(clone_env, i)
     return clone_env
 
+
 # this code is to fix a clone bug, that has been fixed in newer drop fo SCons
 try:
     SCons.Util._semi_deepcopy_inst

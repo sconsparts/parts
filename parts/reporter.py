@@ -38,6 +38,7 @@ class streamer(object):
     def flush(self):
         pass
 
+
 warning_tests = [
     re.compile('(\A|\s)warning?\s?(([?!: ])|(\.\s))\D', re.IGNORECASE).search
 ]

@@ -55,6 +55,7 @@ class BinutilsSetupWrapper(object):
             return True
         return False
 
+
 binutils.setup = BinutilsSetupWrapper(binutils)
 
 # We expect binutils be found in the dirs of form /opt/gcc/bin, /opt/gcc-4.1.1/bin
@@ -217,13 +218,13 @@ binutils.Register(
             ],
             script=None,
             subst_vars={
-                'ARCOM':'${TEMPFILE("$AR $ARFLAGS $TARGET $SOURCES",force_posix_paths=True)}',
-                'LINKCOM':'${TEMPFILE("$LINK -o $TARGET $LINKFLAGS $__RPATH $SOURCES $_LIBDIRFLAGS $_LIBFLAGS",force_posix_paths=True)}',
-                'SHLINKCOM':'${TEMPFILE("$SHLINK -o $TARGET $SHLINKFLAGS $__RPATH $SOURCES $_LIBDIRFLAGS $_LIBFLAGS",force_posix_paths=True)}',
-                '__RPATH':'$_RPATH',
-                'RPATHPREFIX':'-Wl,-rpath=',
+                'ARCOM': '${TEMPFILE("$AR $ARFLAGS $TARGET $SOURCES",force_posix_paths=True)}',
+                'LINKCOM': '${TEMPFILE("$LINK -o $TARGET $LINKFLAGS $__RPATH $SOURCES $_LIBDIRFLAGS $_LIBFLAGS",force_posix_paths=True)}',
+                'SHLINKCOM': '${TEMPFILE("$SHLINK -o $TARGET $SHLINKFLAGS $__RPATH $SOURCES $_LIBDIRFLAGS $_LIBFLAGS",force_posix_paths=True)}',
+                '__RPATH': '$_RPATH',
+                'RPATHPREFIX': '-Wl,-rpath=',
             },
-            shell_vars={'PATH':'${GCC.INSTALL_ROOT}'},
+            shell_vars={'PATH': '${GCC.INSTALL_ROOT}'},
             test_file='ld.exe'
         )
     ]

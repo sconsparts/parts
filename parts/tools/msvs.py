@@ -78,6 +78,7 @@ def xmlify(s):
     s = string.replace(s, '"', "&quot;")
     return s
 
+
 external_makefile_guid = '{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}'
 
 
@@ -98,6 +99,7 @@ def _generateGUID(slnfile, name):
     solution = "{" + solution[:8] + "-" + solution[8:12] + "-" + \
         solution[12:16] + "-" + solution[16:20] + "-" + solution[20:32] + "}"
     return solution
+
 
 version_re = re.compile(r'(\d+\.\d+)(.*)')
 
@@ -133,6 +135,7 @@ def getExecScriptMain(env, xml=None):
     if xml:
         exec_script_main = xmlify(exec_script_main)
     return exec_script_main
+
 
 # The string for the Python executable we tell the Project file to use
 # is either sys.executable or, if an external PYTHON_ROOT environment
@@ -347,6 +350,7 @@ class _DSPGenerator(object):
     def Build(self):
         pass
 
+
 V6DSPHeader = """\
 # Microsoft Developer Studio Project File - Name="%(name)s" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
@@ -550,6 +554,7 @@ class _GenerateV6DSP(_DSPGenerator):
             self.PrintHeader()
             self.PrintProject()
             self.file.close()
+
 
 V7DSPHeader = """\
 <?xml version="1.0" encoding = "%(encoding)s"?>
@@ -1082,6 +1087,7 @@ class _GenerateV7DSW(_DSWGenerator):
             self.PrintSolution()
             self.file.close()
 
+
 V6DSWHeader = """\
 Microsoft Developer Studio Workspace File, Format Version 6.00
 # WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
@@ -1370,6 +1376,7 @@ def solutionEmitter(target, source, env):
         source = [SCons.Node.Python.Value(source)]
 
     return ([target[0]], source)
+
 
 projectAction = SCons.Action.Action(GenerateProject, None)
 

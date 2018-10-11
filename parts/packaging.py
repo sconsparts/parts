@@ -53,11 +53,14 @@ def PackageGroup(name, parts=None):
     return tuple(x for x in result)
 
 # global form
+
+
 def AddPackageNodeFilter(callbacks):
     try:
         settings.DefaultSettings().vars['PACKAGE_NODE_FILTER'].Default.extend(common.make_list(callbacks))
     except:
         settings.DefaultSettings().vars['PACKAGE_NODE_FILTER'] = common.make_list(callbacks)
+
 
 def ReplacePackageGroupCriteria(name, func):
     name = SCons.Script.DefaultEnvironment().subst(name)
@@ -209,7 +212,7 @@ def _filter_node(node, filters, metainfo):
     the returned value from the filter may be a string or (string,Boolean) 
     in which the boolean is if the node should be 'no_pkg'ed for the group
     '''
-    
+
     api.output.verbose_msgf(["packaging"], "Filtering node {0}", node.ID)
     new_groups = set(metainfo.get('groups', set()))
     default_no_pkg = metainfo.get('no_package', False)
@@ -221,10 +224,12 @@ def _filter_node(node, filters, metainfo):
                     group, no_pkg = group_info
                 except ValueError:
                     group, no_pkg = group_info, default_no_pkg
-                api.output.verbose_msgf(["packaging-filter"], "Node filter mapped {0} to group={1}, no_pkg={2}", node.ID, group, no_pkg)
+                api.output.verbose_msgf(["packaging-filter"],
+                                        "Node filter mapped {0} to group={1}, no_pkg={2}", node.ID, group, no_pkg)
                 get_group_set(group, no_pkg).add(node)
                 new_groups.add(group)
     metainfo.update(groups=tuple(new_groups))
+
 
 def _get_file_entries(node):
     # walk the Dir node to see what nodes it contains

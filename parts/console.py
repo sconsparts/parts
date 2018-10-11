@@ -40,6 +40,7 @@ def opt_bool(option, opt, value, parser, var):
         raise OptionValueError('Invalid value for boolean option "%s" value "%s"\n Valid options are %s' %
                                (var.replace('-', '_'), value, opt_true_values | opt_false_values))
 
+
 SCons.Script.AddOption("--show-progress",
                        dest='show_progress',
                        nargs='?',
@@ -93,6 +94,7 @@ class Cursor(object):
     @property
     def Y(self):
         return self.__y
+
 
 if color.is_win32:
     import ctypes.wintypes

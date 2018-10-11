@@ -26,6 +26,7 @@ def _callWithCheck(message, *call_args, **call_kw):
         raise UserError(message.format(proc.returncode, '%s\n\n%s' % (stdout, stderr)))
     return stdout
 
+
 if os.name == 'nt':
     import ctypes
     from ctypes.wintypes import DWORD, HANDLE, BOOL, FILETIME, LARGE_INTEGER
@@ -309,6 +310,7 @@ def waitForProcess(process, timeout=None):
     else:
         __waitForProcess(process, timeout)
 
+
 import unittest
 
 
@@ -338,6 +340,7 @@ class TestKillProcessTree(unittest.TestCase):
         zombie.wait()  # Shoot it!
         self.assertTrue(pid in proclist1)
         self.assertFalse(pid in proclist2)
+
 
 if __name__ == '__main__':
     unittest.main()

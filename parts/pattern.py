@@ -37,7 +37,7 @@ class Pattern(object):
             self.src_dir = env.Dir("./")
         else:
             self.src_dir = env.Dir(src_dir)
-            
+
         self.includes = []
         for i in includes:
             self.includes.append(os.path.normpath(i))
@@ -104,7 +104,7 @@ class Pattern(object):
             for enity in objs:
                 is_dir = util.isDir(enity)
                 matches = common.matches(enity.ID, self.includes, self.excludes)
-                # __rt and __oot are funny files that are out of tree 
+                # __rt and __oot are funny files that are out of tree
                 # # or under the Sconstruct but not the parts file
                 if is_dir and not enity.name in ["__rt", "__oot"]:
                     paths.append(enity)

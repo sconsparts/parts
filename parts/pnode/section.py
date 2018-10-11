@@ -29,7 +29,7 @@ class section(pnode.pnode):
         '__exports',  # value we will export
         '__export_as_depends',  # list of values exported item to map as a depends node, when they are referenced in a dependson call
 
-        #'__build_context_files', # File that contain code for the builder (or best guess)
+        # '__build_context_files', # File that contain code for the builder (or best guess)
         '__target_nodes',  # target node for this section
         '__source_nodes',  # Source node for this section
         '__installed_files',  # anything that gets installed for packaging.

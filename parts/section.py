@@ -76,7 +76,7 @@ class section(object):
             logInstanceCreation(self)
         self.dict = {
             '_phases': [],
-            #'Process':processfunc
+            # 'Process':processfunc
         }
         self.name = name
         self.concepts = concepts_namspaces

@@ -216,7 +216,7 @@ class svn(base):
             if not tmp:
                 tmp = self._env.WhereIs('svn', os.environ['PATH'])
             if not tmp:
-                api.output.error_msg("Could find svn on the system!",show_stack=False)
+                api.output.error_msg("Could find svn on the system!", show_stack=False)
             svn.svnpath = tmp
         try:
             # useful for linux boxes
@@ -350,6 +350,7 @@ def GetSvnData(env, checkoutdir=None):
         'server': server
     }
     return ret
+
 
 # add configuartion varaible needed for part
 api.register.add_variable('SVN_SERVER', '', 'Value of SVN server to use')

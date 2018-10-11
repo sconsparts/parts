@@ -205,6 +205,7 @@ def GetLatestNDKAPI(path):
         LATEST_PLATFROM_VERSIONS[path] = result = versions and str(max(versions)) or ""
         return result
 
+
 # mapping table for differnt STL types in android SDK
 android_stl_map_x86 = {
     'system': {'CPPPATH':
@@ -355,5 +356,6 @@ class android_stl_mapper(mappers.mapper):
             # we have a bad key .. report it
             pass
         return ""
+
 
 api.register.add_mapper(android_stl_mapper)

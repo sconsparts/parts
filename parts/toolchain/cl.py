@@ -10,7 +10,7 @@ def cl_setup(env, ver):
 
 def resolve(env, version):
 
-    func = lambda x: cl_setup(x, version)
+    def func(x): return cl_setup(x, version)
     return [
         ('msvc', func),
         ('mslink', func),

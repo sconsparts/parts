@@ -24,7 +24,7 @@ ERROR_NO_MORE_ITEMS = 259
 
 # From Msi.h
 # typedef enum tagINSTALLSTATE
-#{
+# {
 INSTALLSTATE_NOTUSED = -7  # component disabled
 INSTALLSTATE_BADCONFIG = -6  # configuration data corrupt
 INSTALLSTATE_INCOMPLETE = -5  # installation suspended or in progress
@@ -39,7 +39,7 @@ INSTALLSTATE_ABSENT = 2  # uninstalled (or action state absent but clients remai
 INSTALLSTATE_LOCAL = 3  # installed on local drive
 INSTALLSTATE_SOURCE = 4  # run from source, CD or net
 INSTALLSTATE_DEFAULT = 5  # use default, local or source
-#} INSTALLSTATE;
+# } INSTALLSTATE;
 
 # From MsiQuery.h
 MSIDBOPEN_READONLY = 0  # database open read-only, no persistent changes

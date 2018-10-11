@@ -67,7 +67,7 @@ gcc.Register(
                 PathFinder(['/usr/linux-k1om-4.7/bin'])
             ],
             opt_dirs=[
-                #'/opt/'
+                # '/opt/'
             ],
             script=None,
             subst_vars={},

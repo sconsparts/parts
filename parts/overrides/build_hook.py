@@ -24,4 +24,5 @@ def _build_targets(fs, options, targets, target_top):
 
     return ret
 
+
 SCons.Script.Main._build_targets = _build_targets

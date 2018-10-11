@@ -7,6 +7,7 @@ def generate(env):
     env.SetDefault(CCCOM='${TEMPFILE("$CC -o $TARGET -c $CFLAGS $CCFLAGS $_CCCOMCOM $SOURCES $CCARCHFLAGS")}')
     env.SetDefault(SHCCCOM='${TEMPFILE("$SHCC -o $TARGET -c $SHCFLAGS $SHCCFLAGS $_CCCOMCOM $SOURCES $CCARCHFLAGS")}')
 
+
 exists = SCons.Tool.cc.exists
 
 # vim: set et ts=4 sw=4 ai ft=python :

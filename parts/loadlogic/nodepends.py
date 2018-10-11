@@ -17,7 +17,7 @@ class NoDepends(base.Base):  # task_master type
         if __debug__:
             logInstanceCreation(self)
         # set of sections to build
-        #.. assume nodes are filtered out if ther did not expand to a section
+        # .. assume nodes are filtered out if ther did not expand to a section
         self.sections = []
         for i in targets:
             self.sections.extend(i[0])

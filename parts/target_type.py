@@ -69,7 +69,7 @@ def get_partrefdata(tok):
     # xxx which we assume to be a name..
     elif tok[0] != '':
         return get_name(tok)
-    #<concept>::::<group> or <concept>::::
+    # <concept>::::<group> or <concept>::::
     elif tok[0] == '':
         return {}, tok[1:]
     else:
@@ -78,23 +78,23 @@ def get_partrefdata(tok):
 
 def get_alias(tok):
 
-    #<concept>::alias:: same as concept::
+    # <concept>::alias:: same as concept::
     if len(tok) == 1 and tok[0] == '':
         return {}, tok
-    #<concept>::alias::::<group>
+    # <concept>::alias::::<group>
     elif tok[0] == '':
         return {}, tok[1:]
-    #<concept>::alias::<alias>
+    # <concept>::alias::<alias>
     else:
         return {'_alias': tok[0]}, tok[1:]
 
 
 def get_name(tok):
 
-    #<concept>::name:: same as concept::
+    # <concept>::name:: same as concept::
     if len(tok) == 1 and tok[0] == '':
         return {}, tok
-    #<concept>::name::::<group>
+    # <concept>::name::::<group>
     elif tok[0] == '':
         return {}, tok[1:]
     # name::@k,v
@@ -192,6 +192,7 @@ def _parse_target(target):
     if len(t) > 1:
         api.output.error_msg('target value "{0}" is bad, too many :: breaks'.format(target))
     return ret
+
 
 '''
 target_type is a class that allow a quick parsing to allow one to figureout if

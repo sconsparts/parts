@@ -6,7 +6,7 @@ def icl_setup(env, ver):
 
 
 def resolve(env, version):
-    func = lambda x: icl_setup(x, version)
+    def func(x): return icl_setup(x, version)
     return [
         ('intelc', func)
     ]

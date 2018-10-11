@@ -52,6 +52,7 @@ class _PartVersion(object):
     def __call__(self, ver=None):
         return part_version(self.env, ver, _warn=False)
 
+
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
 

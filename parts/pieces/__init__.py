@@ -16,4 +16,5 @@ def loadAllPieces():
                 if name != '__init__':
                     load_module.load_module([directory], name, 'pieces')
 
+
 loadAllPieces()

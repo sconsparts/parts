@@ -44,6 +44,7 @@ class _PartName(object):
     def __call__(self, name=None, parent_name=None):
         return part_name(self.env, name, parent_name)
 
+
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
 

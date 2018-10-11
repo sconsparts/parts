@@ -79,28 +79,28 @@ def Component(env, name, version_range=None, requires=REQ.DEFAULT, section="buil
         trg.Properties['version'] = version_range
     elif ('version' in trg.Properties) == False:
         api.output.trace_msg(
-                ['component'],
-                "Defining default version range mapping of '*'")
+            ['component'],
+            "Defining default version range mapping of '*'")
         trg.Properties['version'] = '*'
 
     # set the target value
     if ('target' in trg.Properties) == False:  # ['target','target-platform','target_platform']
         api.output.trace_msg(
-                ['component'],
-                "Defining default platform_match mapping of:",env['TARGET_PLATFORM'])
+            ['component'],
+            "Defining default platform_match mapping of:", env['TARGET_PLATFORM'])
         trg.Properties['platform_match'] = env['TARGET_PLATFORM']
     else:
         api.output.trace_msg(
-                ['component'],
-                "Target defined platform_match mapping of:",trg.Properties['target'])
+            ['component'],
+            "Target defined platform_match mapping of:", trg.Properties['target'])
 
     # Set the configuration to try to match
     if ('config' in trg.Properties) == False:
         config = str(env['CONFIG'])
-        api.output.trace_msg(['component'],"Defining default config mapping of:",config)
+        api.output.trace_msg(['component'], "Defining default config mapping of:", config)
         trg.Properties['config'] = str(env['CONFIG'])
     else:
-        api.output.trace_msg(['component'],"Target defined config mapping of:",trg.Properties['config'])
+        api.output.trace_msg(['component'], "Target defined config mapping of:", trg.Properties['config'])
 
     return dependent_ref.dependent_ref(part_ref.part_ref(trg, localspace), section, requires)
 

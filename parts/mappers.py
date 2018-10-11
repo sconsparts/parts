@@ -443,7 +443,7 @@ class part_id_mapper(mapper):
         t = target_type.target_type("name::" + self.part_name)
         t.Properties['version'] = self.ver_range
         t.Properties['platform_match'] = env['TARGET_PLATFORM']
-        match = part_ref.part_ref(t,glb.engine._part_manager._from_env(env).Uses)
+        match = part_ref.part_ref(t, glb.engine._part_manager._from_env(env).Uses)
         if match.hasUniqueMatch:
             pobj = match.UniqueMatch
         else:
@@ -649,7 +649,7 @@ class part_subst_mapper(mapper):
         thread_id = thread.get_ident()
         spacer = "." * env_guard.depth(thread_id)
         pobj_org = glb.engine._part_manager._from_env(env)
-        ref = part_ref.part_ref(self.target_str,pobj_org.Uses)
+        ref = part_ref.part_ref(self.target_str, pobj_org.Uses)
         api.output.trace_msgf(['partsubst_mapper', 'mapper'], "{spacer}Mapping target: {0}", self.target_str, spacer=spacer)
         api.output.trace_msgf(['partsubst_mapper', 'mapper'], "{spacer}Has Match: {0}", ref.hasUniqueMatch, spacer=spacer)
         if not ref.hasUniqueMatch or not ref.hasMatch:

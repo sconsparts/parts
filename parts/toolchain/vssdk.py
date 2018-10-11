@@ -4,7 +4,7 @@ def vssdk_setup(env, ver):
 
 
 def resolve(env, version):
-    func = lambda x: vssdk_setup(x, version)
+    def func(x): return vssdk_setup(x, version)
     return [
         ('vssdk', func)
     ]

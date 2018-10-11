@@ -67,6 +67,7 @@ def parts_node_errors(builder, env, tlist, slist):
     # call the SCons code
     scons_node_errors(builder, env, tlist, slist)
 
+
 SCons.Builder._node_errors = parts_node_errors
 
 # util function

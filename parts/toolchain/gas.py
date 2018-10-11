@@ -6,5 +6,6 @@ def gas_setup(env, ver):
 
 def resolve(env, version):
     del env
-    func = lambda x: gas_setup(x, version)
+
+    def func(x): return gas_setup(x, version)
     return [('gas', func)]

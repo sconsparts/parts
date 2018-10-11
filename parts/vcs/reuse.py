@@ -45,7 +45,7 @@ class reuse_part_vcs(base):
         '''
         return self._vcs.CheckOutDir
 
-    #@property
+    # @property
     # def PartFileName(self):
     #    '''Forward the vcs file name value
     #    '''
@@ -89,7 +89,6 @@ class reuse_part_vcs(base):
             api.output.error_msg('VcsReuse was unable to map the vcs object to part "%s"' % (self._partref))
         self._env['VCS'] = self._vcs._env['VCS'].clone()
         self._env['VCS_DIR'] = self._partref.Env.subst('$CHECK_OUT_DIR')
-        
 
     def NeedsToUpdate(self):
         '''Forward the vcs need to update value

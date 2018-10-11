@@ -110,6 +110,7 @@ def merge_script_vars(env, script, args=None, vars=None):
     for k, v in shell_env.iteritems():
         env.PrependENVPath(k, v, delete_existing=1)
 
+
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
 

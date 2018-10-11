@@ -16,7 +16,7 @@ def error_msg(*lst, **kw):
 
 def error_msgf(sfmt, *lst, **kw):
     glb.engine.HadError = True
-    msg = sfmt.format(*lst,**kw)
+    msg = sfmt.format(*lst, **kw)
     msg = msg + kw.get('end', '\n')
     glb.rpter.part_error(msg, kw.get('stackframe', None), kw.get('show_stack', True), kw.get('exit', True))
 
@@ -28,7 +28,7 @@ def warning_msg(*lst, **kw):
 
 
 def warning_msgf(sfmt, *lst, **kw):
-    msg = sfmt.format(*lst,**kw)
+    msg = sfmt.format(*lst, **kw)
     msg = msg + kw.get('end', '\n')
     glb.rpter.part_warning(msg, kw.get('print_once', False), kw.get('stackframe', None), kw.get('show_stack', True))
 
@@ -38,7 +38,7 @@ def print_msg(*lst, **kw):
 
 
 def print_msgf(sfmt, *lst, **kw):
-    msg = sfmt.format(*lst,**kw)
+    msg = sfmt.format(*lst, **kw)
     glb.rpter.part_message([kw.get('sep', ' '), msg, kw.get('end', '\n')], kw.get('show_prefix', True))
 
 
@@ -62,6 +62,7 @@ def _verbose_msg(catagory, *lst, **kw):
     catagory.append('all')
     glb.rpter.verbose_msg(catagory, [kw.get('sep', ' ')] + list(lst) + [kw.get('end', '\n')])
 
+
 verbose_msgf = lambda catagory, *lst, **kw: _verbose_pre(_verbose_msgf, catagory, *lst, **kw)
 verbose_msg = lambda catagory, *lst, **kw: _verbose_pre(_verbose_msg, catagory, *lst, **kw)
 
@@ -81,6 +82,7 @@ def _trace_msgf(catagory, sfmt, *lst, **kw):
 
 def _trace_msg(catagory, *lst, **kw):
     glb.rpter.trace_msg(catagory, [kw.get('sep', ' ')] + list(lst) + [kw.get('end', '\n')])
+
 
 trace_msgf = lambda catagory, *lst, **kw: _trace_pre(_trace_msgf, catagory, *lst, **kw)
 trace_msg = lambda catagory, *lst, **kw: _trace_pre(_trace_msg, catagory, *lst, **kw)

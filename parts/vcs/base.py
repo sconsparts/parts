@@ -257,7 +257,8 @@ class base(object):
                     if self.is_modified():
                         api.output.error_msg(mod_msg, show_stack=False)
                     elif os.path.exists(self.CheckOutDir.abspath):
-                        api.output.print_msg('No local modification detected in "{0}", updating...'.format(self.CheckOutDir.abspath))
+                        api.output.print_msg(
+                            'No local modification detected in "{0}", updating...'.format(self.CheckOutDir.abspath))
                 elif pol == 'warning-update':
                     ret_val = True
                     api.output.warning_msg(ret, show_stack=False)
@@ -508,6 +509,7 @@ class base(object):
         return True  # there is no cache file.. so it can't not exists
 
 # add configuartion varaible needed for part
+
 
 api.register.add_bool_variable('UPDATE_ALL', False, 'Controls if Parts will update source from servers')
 api.register.add_variable('CHECK_OUT_ROOT', '#_vcs', 'Root directory to place checked out data')

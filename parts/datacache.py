@@ -58,6 +58,7 @@ def __store_cache_data(datafile, data):
             data_to_dump = ((db_key(1), v), data)
         cPickle.dump(data_to_dump, outfile, 2)
 
+
 __use_parts_cache = None
 
 

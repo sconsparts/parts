@@ -6,7 +6,7 @@ def icc_setup(env, ver):
 
 
 def resolve(env, version):
-    func = lambda x: icc_setup(x, version)
+    def func(x): return icc_setup(x, version)
     return [
         ('intelc', func)
     ]

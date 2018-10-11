@@ -18,19 +18,19 @@ class EnumVariable(variable.Variable):
 
         # define validator
         if ignorecase >= 1:
-            validator = lambda key, val, env: \
+            def validator(key, val, env): return \
                 _validator(key, val.lower(), env, allowed_values)
         else:
-            validator = lambda key, val, env: \
+            def validator(key, val, env): return \
                 _validator(key, val, env, allowed_values)
 
         # define converter
         if ignorecase == 2:
-            converter = lambda val: map.get(val.lower(), val).lower()
+            def converter(val): return map.get(val.lower(), val).lower()
         elif ignorecase == 1:
-            converter = lambda val: map.get(val.lower(), val)
+            def converter(val): return map.get(val.lower(), val)
         else:
-            converter = lambda val: map.get(val, val)
+            def converter(val): return map.get(val, val)
 
         super(EnumVariable, self).__init__(
             name,

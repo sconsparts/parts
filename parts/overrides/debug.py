@@ -37,7 +37,8 @@ def wrap_logInstanceCreation(func):
         '''
         Class of objects to keep references to counted objects.
         '''
-        __hash__ = lambda self: id(self)
+
+        def __hash__(self): return id(self)
         '''
         We override hash function to allow count non-hashable objects.
         '''
@@ -77,6 +78,7 @@ def wrap_logInstanceCreation(func):
         the_set.add(wref(instance, remover(the_set)))
 
     func.__code__ = logInstanceCreation.__code__
+
 
 wrap_logInstanceCreation(SCons.Debug.logInstanceCreation)
 

@@ -481,6 +481,7 @@ def wixObjScanner(node, env, path):
 
     return result
 
+
 SCons.Tool.SourceFileScanner.add_scanner(
     '.wixobj',
     SCons.Scanner.Scanner(
@@ -529,6 +530,7 @@ def wixEnvScanner(varnames):
 
         return result
     return scan
+
 
 wixObjEnvScanner = SCons.Scanner.Scanner(
     wixEnvScanner([('WIXLINKEXTENSIONS', 'WIXLINKEXTPREFIX', 'WIXLINKEXTSUFFIX'), ]),

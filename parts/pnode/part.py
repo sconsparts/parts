@@ -118,7 +118,7 @@ class part(pnode.pnode):
         '__order_value',  # use to help with ordering in a compatible way between classic and new formats
         '__cache',  # used for internal caching of data
         '__build_targets',  # How does it care about SCons.Script.BUILD_TARGETS
-        #'__dict__'
+        # '__dict__'
     ]
     # constructor
 
@@ -808,9 +808,9 @@ class part(pnode.pnode):
                         'Mode value "{val}" was defined globally and locally. This may cause ambgious dependancy matching',
                         val=m,
                         id=self.ID
-                        )
+                    )
             else:
-                self.__mode.append(m)        
+                self.__mode.append(m)
         self.__env['MODE'] = self.__mode
 
         # alias info
@@ -1027,7 +1027,7 @@ class part(pnode.pnode):
             except KeyError:
                 pass
             bdir = env.Dir(env.subst('$BUILD_DIR'))
-            env['BUILD_DIR']=bdir
+            env['BUILD_DIR'] = bdir
             st = time.time()
             sdir = env.Dir(self.__src_path)
             bk_path = sys.path[:]
@@ -1402,11 +1402,11 @@ def complex_compare(v1, v2, env):
     elif not isinstance(v1, type(v2)):
         return True
     elif isinstance(v1, SCons.Action.ActionBase):
-        # get a genstring value as this will tell us if the 
+        # get a genstring value as this will tell us if the
         # base action is different or not, cannot do more than this
         # as we may not have enough data defined for stuff to resolve correctly
-        r1=v1.genstring(["fake_target"],["fake_source"],env)
-        r2=v1.genstring(["fake_target"],["fake_source"],env)              
+        r1 = v1.genstring(["fake_target"], ["fake_source"], env)
+        r2 = v1.genstring(["fake_target"], ["fake_source"], env)
         return r1 != r2
     elif isinstance(v1, types.ClassType):
         return True if (v1.__module__, v1.__name__) != (v2.__module__, v2.__name__) else False
@@ -1418,7 +1418,7 @@ def complex_compare(v1, v2, env):
         if len(v1) != len(v2):
             return True
         for i, j in zip(v1, v2):
-            if complex_compare(i, j,env):
+            if complex_compare(i, j, env):
                 return True
             return False
     elif isinstance(v1, types.InstanceType):
@@ -1452,7 +1452,7 @@ def diff_env(env, env2, ignore_keys=[]):
     d2.fromkeys(common_keys)
 
     for k in common_keys:
-        if complex_compare(d1[k], d2[k],env):
+        if complex_compare(d1[k], d2[k], env):
             ret[k] = d2[k]
     return ret
 

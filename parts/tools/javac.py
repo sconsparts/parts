@@ -100,6 +100,7 @@ def emit_java_classes(target, source, env):
 
     return full_tlist, slist
 
+
 javac.emit_java_classes = emit_java_classes
 
 

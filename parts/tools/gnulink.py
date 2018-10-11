@@ -182,9 +182,9 @@ def generate(env):
     # this is a hard set.. normally handled by scons platform logic
     # but for win32 hosts it gets the values wrong ( it assumes .a only)
     env['LIBSUFFIXES'] = ['$LIBSUFFIX', '$SHLIBSUFFIX']
-    
+
     # get option that are set globally
-    tmpflags = env.get("LINKFLAGS",[])
+    tmpflags = env.get("LINKFLAGS", [])
 
     parts.tools.GnuCommon.binutils.setup(env)
     env['OBJCOPY'] = parts.tools.Common.toolvar(env.get('BINUTILS', {}).get(
@@ -193,7 +193,7 @@ def generate(env):
 
     # add global link flags
     env.AppendUnique(LINKFLAGS=tmpflags)
-        
+
     # Sometimes we have to use specific tools and command lines.
     # For example when building Android executables on Windows host
     try:

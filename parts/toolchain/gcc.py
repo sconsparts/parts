@@ -9,7 +9,7 @@ def gxx_setup(env, ver):
 
 
 def resolve(env, version):
-    func = lambda x: gxx_setup(x, version)
+    def func(x): return gxx_setup(x, version)
     host = env['HOST_PLATFORM']
     if host.OS == 'darwin' and not env['TARGET_PLATFORM'] == 'android':
         return [

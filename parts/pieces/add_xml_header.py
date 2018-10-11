@@ -35,6 +35,7 @@ def addXmlHeader_emitter(target, source, env):
         output.append(env.File(s.name, dnode))
     return (output, source)
 
+
 api.register.add_builder('__AddXmlHeader__', SCons.Script.Builder(
     action=SCons.Script.Action(addXmlHeader, varlist=['XML_HEADER']),
     emitter=addXmlHeader_emitter,
@@ -56,6 +57,7 @@ def AddXmlHeaderAs(env, target, source, **kw):
         target_path = os.path.split(str(target_i))[0]
         output += AddXmlHeader(env, target_path, source_i)
     return output
+
 
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment

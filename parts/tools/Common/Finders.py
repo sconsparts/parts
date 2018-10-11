@@ -87,6 +87,7 @@ class RegFinder(object):
             ret = os.path.normpath(os.path.join(ret, self.rel_path))
         return ret
 
+
 # special windows only finder that looks up data based on how MSI files
 # store information in the registry hive. On non windows system this is
 # an empty object that does nothing

@@ -7,5 +7,5 @@ def _setup(env, ver):
 
 
 def resolve(env, version):
-    func = lambda x: _setup(x, version)
+    def func(x): return _setup(x, version)
     return [('ld', func, True)]

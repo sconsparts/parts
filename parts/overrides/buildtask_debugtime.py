@@ -89,4 +89,5 @@ def patched_execute(self):
             Main.cumulative_command_time += finishTime - startTime
             sys.stdout.write("Command execution time: %f seconds\n" % (finishTime - startTime))
 
+
 Main.BuildTask.execute = patched_execute

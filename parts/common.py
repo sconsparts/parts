@@ -67,7 +67,8 @@ class dformat(DelayVariable):
     def __init__(self, sfmt, *lst, **kw):
         if __debug__:
             logInstanceCreation(self)
-        tmp = lambda: sfmt.format(*lst, **kw)
+
+        def tmp(): return sfmt.format(*lst, **kw)
         super(dformat, self).__init__(tmp)
 
 
@@ -147,11 +148,11 @@ def get_content(obj):
     ret = None
     # Is this a function?
     if isinstance(obj, types.LambdaType) or \
-            isinstance(obj, types.MethodType  ) or \
-            isinstance(obj, types.FunctionType ) or\
-            isinstance(obj, types.InstanceType ) or \
-            isinstance(obj, types.ClassType  ) or \
-            isinstance(obj, types.FunctionType ) or\
+            isinstance(obj, types.MethodType) or \
+            isinstance(obj, types.FunctionType) or\
+            isinstance(obj, types.InstanceType) or \
+            isinstance(obj, types.ClassType) or \
+            isinstance(obj, types.FunctionType) or\
             isinstance(obj, types.CodeType):
         return SCons.Action._object_contents(obj)
 
@@ -161,7 +162,7 @@ def get_content(obj):
             ret += "%s:%s," % (k, get_content(v))
         ret += '}'
     elif isinstance(obj, types.TupleType) or\
-            isinstance(obj, types.GeneratorType ) or\
+            isinstance(obj, types.GeneratorType) or\
             isinstance(obj, types.ListType):
         ret = '['
         for i in obj:
@@ -389,7 +390,7 @@ def relpath(to_dir, from_dir=os.curdir):
     return os.path.join(*rel_list)
 
 
-#---------------------------------------------------------------------
+# ---------------------------------------------------------------------
 # parseVersionNumber
 #
 # Parses a version number string such as '8.1.0' and returns
@@ -400,7 +401,7 @@ def relpath(to_dir, from_dir=os.curdir):
 #
 # Returns (error_msg, major_number, minor_number, revision_number).
 # error_msg is an empty string if there is no error.
-#---------------------------------------------------------------------
+# ---------------------------------------------------------------------
 def parseVersionNumber(versionNumber):
     fields = string.split(versionNumber, '.')
     fieldValues = [-1, -1, -1]		# default values

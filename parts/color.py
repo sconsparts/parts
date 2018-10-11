@@ -240,6 +240,7 @@ class ConsoleColor(object):
     def __repr__(self):
         return "<%s instance fg:%s bk:%s>" % (self.__class__.__name__, color_to_str(self.fg_color), color_to_str(self.bk_color))
 
+
 is_win32 = sys.platform == 'win32'
 if is_win32:
 

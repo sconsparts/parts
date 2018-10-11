@@ -83,6 +83,7 @@ def ArchivePackage_wrapper(env, target, sources, archive_type, **kw):
                                                               parts.errors.GetPartStackFrameInfo(), **kw))
     return target
 
+
 # This is what we want to be setup in parts'''
 from SCons.Script.SConscript import SConsEnvironment
 

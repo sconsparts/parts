@@ -76,6 +76,8 @@ def wrap_FindPathDirs(klass):
         mappers=mappers,
         thread=thread,
     )
+
+
 wrap_FindPathDirs(SCons.Scanner.FindPathDirs)
 
 # vim: set et ts=4 sw=4 ai :

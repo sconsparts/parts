@@ -18,7 +18,8 @@ try:
 except AttributeError:
     try:
         CreateHardLinkW = ctypes.windll.kernel32.CreateHardLinkW
-        os_link = lambda src, dst: CreateHardLinkW(unicode(src), unicode(dst), None)
+
+        def os_link(src, dst): return CreateHardLinkW(unicode(src), unicode(dst), None)
     except AttributeError:
         def os_link(src, dst):
             raise OSError("Don't know how to make hard link on Windows NT")
@@ -284,8 +285,12 @@ def actionUnpack(generator, target, source, env):
 def batch_key(action, env, target, source):
     return _getNameForKey(source[0])
 
-actionUntar = lambda target, source, env: actionUnpack(tarGenerator, target, source, env)
-actionUnzip = lambda target, source, env: actionUnpack(zipGenerator, target, source, env)
+
+def actionUntar(target, source, env): return actionUnpack(tarGenerator, target, source, env)
+
+
+def actionUnzip(target, source, env): return actionUnpack(zipGenerator, target, source, env)
+
 
 api.register.add_builder('Extract',
                          SCons.Builder.Builder(

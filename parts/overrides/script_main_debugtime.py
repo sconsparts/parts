@@ -24,6 +24,7 @@ def wrapFunction(targetObj, targetAttrName):
         return wrapper
     return wrapped
 
+
 SCONS_EXITED_NORMALLY = False
 pre_parts_cache_storing = None
 
@@ -59,5 +60,6 @@ def patched_dump_caller_counts(original, *args, **kw):
     global SCONS_EXITED_NORMALLY
     SCONS_EXITED_NORMALLY = True
     return original(*args, **kw)
+
 
 atexit.register(printTimingStatistics)

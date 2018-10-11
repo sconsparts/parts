@@ -57,6 +57,7 @@ def zip(target, source, env):
 def CCopyStringFunc(target, source, env):
     return "Creating Zip file: {} containing {} files ".format(target[0], len(source))
 
+
 ZipAction = SCons.Action.Action(zip, CCopyStringFunc, varlist=['BUILD_DIR', 'SRC_DIR', 'src_dir'])
 
 api.register.add_builder('ZipFile', SCons.Builder.Builder(action=ZipAction,

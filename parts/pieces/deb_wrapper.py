@@ -87,6 +87,7 @@ def dep_create_install_file(target, source, env):
             for x in target[0].attributes.files_to_pack))
     return None
 
+
 api.register.add_builder(
     'DPKGPackage',
     SCons.Builder.Builder(

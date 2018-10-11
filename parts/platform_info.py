@@ -56,6 +56,7 @@ def UpdateValidOSList():
     glb.valid_os.sort(lambda a, b: cmp(len(b), len(a)))
     UpdatePlatformRegEx()
 
+
 if glb.valid_arch is None or glb.valid_os is None:
     glb.valid_arch = []
     glb.valid_os = []
@@ -298,6 +299,7 @@ class SystemPlatform(common.bindable):
             raise KeyError('SystemPlatform has no member ' + key.upper())
         self.__class__.__dict__[key.upper()].fset(self, val)
 
+
 if glb._host_platform is None:
     glb._host_sys = SystemPlatform()
 
@@ -322,6 +324,7 @@ def target_convert(str_val, raw_val=None, base=None, error=True):
             a = host_sys.ARCH
         ret = SystemPlatform(p, a)
     return ret
+
 
 # add configuartion varaible
 #api.register.add_variable('OSBITNESS',str(OSBit()),'to be removed??')

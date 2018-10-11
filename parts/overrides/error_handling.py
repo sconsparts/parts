@@ -18,6 +18,8 @@ def PartSConscript_exception(file=None):
     if file is None:
         file = sys.stderr
     OrigSConscript_exception(file)
+
+
 _SConscript.SConscript_exception = PartSConscript_exception
 
 import SCons.Script.Main
@@ -59,5 +61,6 @@ def Parts_find_deepest_user_frame(tb):
         lastframe = frame
     # print "->",tb[0]
     return tb[0]
+
 
 SCons.Script.Main.find_deepest_user_frame = Parts_find_deepest_user_frame

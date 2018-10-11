@@ -58,10 +58,10 @@ class Variable(object):
         if isinstance(obj, int) or\
                 isinstance(obj, long) or\
                 isinstance(obj, bool) or\
-                isinstance(obj, float ) or\
-                isinstance(obj, complex ) or\
-                isinstance(obj, str ) or\
-                isinstance(obj, unicode ) or\
+                isinstance(obj, float) or\
+                isinstance(obj, complex) or\
+                isinstance(obj, str) or\
+                isinstance(obj, unicode) or\
                 isinstance(obj, types.LambdaType) or \
                 isinstance(obj, types.MethodType) or \
                 isinstance(obj, types.ModuleType) or \

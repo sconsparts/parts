@@ -158,6 +158,6 @@ class dependent_ref(object):
 
     # this should be a safe API for users
     def DelaySubst(self, value, policy=policies.REQPolicy.warning):
-        return self.PartRef.delaysubst(value,policy)
+        return self.PartRef.delaysubst(value, policy)
 
 # vim: set et ts=4 sw=4 ai ft=python :

@@ -991,7 +991,6 @@ class part_manager(object):
 
         return ret
 
-
     def reduce_list_from_target(self, tobj, part_lst):
 
         ret_lst = []
@@ -1060,7 +1059,7 @@ class part_manager(object):
                     # as ambiguous.
 
                     # note. mode if not set by the root Part call, will add a "default" value
-                    # to the mode. This can be used to help with the checking logic in certain case                    
+                    # to the mode. This can be used to help with the checking logic in certain case
 
                     # this is testing contains logic
                     for v in val_list:
@@ -1085,14 +1084,14 @@ class part_manager(object):
                             api.output.trace_msgf("reduce_target_mapping", "  Variable is a list in the Environment")
                             val_list = val.split(',')
                             api.output.trace_msgf("reduce_target_mapping",
-                                                    "  Testing that Enviornment variable contains all values in {0}", val_list)
+                                                  "  Testing that Enviornment variable contains all values in {0}", val_list)
                             for v in val_list:
                                 if v not in pobj.Env[key]:
                                     match = False
                                     break
                         else:
                             api.output.trace_msgf("reduce_target_mapping",
-                                                    "  Variable is not a list in the environment Environment")
+                                                  "  Variable is not a list in the environment Environment")
                             # if both cases are false then we have a failure
                             if pobj.Env[key] != val and str(pobj.Env[key]) != v:
                                 api.output.trace_msgf("reduce_target_mapping", "   Removing Part {0}", pobj.ID)
@@ -1112,17 +1111,17 @@ class part_manager(object):
     def reduce_list_from_target_stored(self, tobj, part_lst):
 
         api.output.trace_msgf("stored_reduce_target_mapping",
-                                "Reducing list of parts based on target {0}\n set={1}", tobj, part_lst)
+                              "Reducing list of parts based on target {0}\n set={1}", tobj, part_lst)
         for k, v in tobj.Properties.iteritems():
             for pobj in part_lst.copy():
                 api.output.trace_msgf("stored_reduce_target_mapping", " Testing Part {0}", pobj.ID)
                 if pobj.Stored is None:
                     # We have no stored info. skip test
-                    #(ie load it as it might be needed)
+                    # (ie load it as it might be needed)
                     pass
                 elif k == 'version':
                     api.output.trace_msgf("stored_reduce_target_mapping",
-                                            "  Matching Attibute: {0} Values:{1} {2}", k, v, pobj.Stored.Version)
+                                          "  Matching Attibute: {0} Values:{1} {2}", k, v, pobj.Stored.Version)
                     if util.isString(v):
                         v = version.version_range(v + '.*')
                     if pobj.Stored.Version not in v:
@@ -1130,7 +1129,7 @@ class part_manager(object):
                         part_lst.remove(pobj)
                 elif k in ['target', 'target-platform', 'target_platform']:
                     api.output.trace_msgf("stored_reduce_target_mapping",
-                                            "  Matching Attibute: {0} Values:{1} {2}", k, v, pobj.Stored.TargetPlatform)
+                                          "  Matching Attibute: {0} Values:{1} {2}", k, v, pobj.Stored.TargetPlatform)
                     if pobj.Stored.TargetPlatform != v:
                         api.output.trace_msgf("stored_reduce_target_mapping", "  Removing Part {0}", pobj.ID)
                         part_lst.remove(pobj)
@@ -1212,7 +1211,7 @@ class part_manager(object):
                 if v.LoadState == glb.load_file:  # might need to relook at this case when we get new formats working
                     tmp[k] = {
                         'name': v.Name,
-                        #'version':v.Version,
+                        # 'version':v.Version,
 
                         'format': format,
                         'root_alias': v.Root.ID
@@ -1419,7 +1418,7 @@ class part_manager(object):
         for pobj in parts_to_load:
             self.pmgr.LoadPart(pobj)
 
-        #?? do something to get states resolved??
+        # ?? do something to get states resolved??
 
         # Now we want to update the stored information
         datacache.ClearCache(save=True)

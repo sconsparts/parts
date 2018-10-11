@@ -17,6 +17,8 @@ def def_UserList___init__(klass):
             logInstanceCreation(self)
         orig(self, *args, **kw)
     klass.__init__ = __init__
+
+
 def_UserList___init__(UserList)
 
 ##from SCons.Util import UniqueList
@@ -155,6 +157,7 @@ class UniqueList(list):
     def extend(self, other):
         list.extend(self, other)
         self.unique = False
+
 
 SCons.Util.UniqueList = UniqueList
 

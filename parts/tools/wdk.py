@@ -276,6 +276,7 @@ def _resolve_wdk_flags(env, flags):
                     pass
     return res
 
+
 # Actions for DDK stuff
 ASAction = SCons.Action.Action("$DDKASCOM", "$DDKASCOMSTR")
 CAction = SCons.Action.Action("$DDKCCCOM", "$DDKCCCOMSTR")

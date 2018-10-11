@@ -84,6 +84,7 @@ def opt_chain(option, opt, value, parser):
 def opt_list(option, opt, value, parser, var):
     parser.values.__dict__[var] = value.split(',')
 
+
 opt_true_values = set(['y', 'yes', 'true', 't', '1', 'on', 'all'])
 opt_false_values = set(['n', 'no', 'false', 'f', '0', 'off', 'none'])
 
@@ -247,6 +248,7 @@ def opt_logging(option, opt, value, parser):
             parser.values.logger = mod.__dict__.get(value, logger.nil_logger)
     except ImportError:
         raise OptionValueError('No logger called "%s" was found' % value)
+
 
 SCons.Script.AddOption("--use-parts-site",
                        dest='use_part_site',

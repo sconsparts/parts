@@ -151,5 +151,6 @@ class map_depends(object):
                 self.env.Alias(alias, self.env.Alias(alias1))
                 self.env.Alias(alias1, self.env.Alias(alias2))
 
+
 # add configuartion varaible
 api.register.add_bool_variable('AUTO_RPATH', True, 'Controls if RPath values are automatically added to path')

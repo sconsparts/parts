@@ -99,19 +99,19 @@ def rpm_spec(env, target, source):
     target_release = env['RELEASE']
     pkg_files = env['PKG_FILES']
     # list of custom vars to add
-    rpm_vals = env.get('RPM_VARS',[])
+    rpm_vals = env.get('RPM_VARS', [])
 
     if not rpm_spec:
         api.output.verbose_msg(['rpm-spec'], "No custom RPM spec variables added")
     else:
-        new_vals=[]
+        new_vals = []
         for v in rpm_vals:
             try:
                 new_vals.append(env.subst(v))
             except:
-                api.output.warning_msgf("Failed to subst() value:\n {0}\n passing orginal value instead.",v)
+                api.output.warning_msgf("Failed to subst() value:\n {0}\n passing orginal value instead.", v)
                 new_vals.append(v)
-        rpm_vals=new_vals
+        rpm_vals = new_vals
 
     # open spec file
     with open(source[0].abspath, 'r') as file_obj:

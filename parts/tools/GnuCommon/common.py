@@ -182,14 +182,14 @@ class GnuInfo(ToolInfo):
                                         if tmp is not None:
                                             ret[tmp] = (fullpath, pathwtool)
                 for d in self.opt_paths:
-                  if os.path.isdir(d):
-                    for fitem in os.listdir(d):
-                      result = reg.match(fitem)
-                      if result or self.test_file == fitem:
-                        pathwtool = os.path.join(d, fitem)
-                        tmp = self.get_default_ver(pathwtool)
-                        if tmp is not None:
-                            ret[tmp] = (d, pathwtool)
+                    if os.path.isdir(d):
+                        for fitem in os.listdir(d):
+                            result = reg.match(fitem)
+                            if result or self.test_file == fitem:
+                                pathwtool = os.path.join(d, fitem)
+                                tmp = self.get_default_ver(pathwtool)
+                                if tmp is not None:
+                                    ret[tmp] = (d, pathwtool)
 
             if install_root is not None:
                 # see if in this area we have any possible matches of different versions
