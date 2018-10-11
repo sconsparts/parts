@@ -215,6 +215,7 @@ class parts_dict(dict):
     def __delattr__(self, name):
         del self[name]
 
+
 opt_true_values = set(['y', 'yes', 'true', 't', '1', 'on', 'all'])
 opt_false_values = set(['n', 'no', 'false', 'f', '0', 'off', 'none'])
 
@@ -234,7 +235,10 @@ class Settings(object):
         self.vars = Variables.Variables()
         self.vars._on_change.Connect(self._handle_var_change)
         self.options = SCons.Script.Main.OptionsParser.values
-        self.__addshellpath = True
+        self.__addshellpath = False
+        self.__env_replace = {}
+        self.__env_prepend = {}
+        self.__env_append = {}
         self.__env_cache = {}
 
     # stuff for self.value logic
@@ -261,6 +265,26 @@ class Settings(object):
         Sets if we are going to add the Shell when we create the Environment
         '''
         self.__addshellpath = val
+
+    # user define modification to the "shell" environment
+
+    def ReplaceENV(self, name, value):
+        self.__env_replace[name] = value
+        self._handle_var_change()
+
+    def PrependENVPath(self, name, value):
+        if name in self.__env_prepend:
+            self.__env_prepend[name] = value + os.pathsep + self.__env_prepend[name]
+        else:
+            self.__env_prepend[name] = value
+        self._handle_var_change()
+
+    def AppendENVPath(self, name, value):
+        if name in self.__env_append:
+            self.__env_append[name] = self.__env_append[name] + os.pathsep + value
+        else:
+            self.__env_append[name] = value
+        self._handle_var_change()
 
     # option get --<name>
     def AddOption(self, *lst, **kw):
@@ -525,11 +549,24 @@ class Settings(object):
                 else:
                     api.output.warning_msg('Ignoring prepending value', k, "as it is not a list. It is type", type(v), ".")
 
-            self.__env_cache[cache_key] = env
-
         # See if the user want to whack the default environment with the shell value.
-        if SCons.Script.GetOption('use_env') == True:  # or self.UseSystemEnvironment:
+        if SCons.Script.GetOption('use_env') == True or self.__addshellpath:
             env['ENV'] = os.environ
+
+        # we still add any environment values defined in the setting object
+        # replace ideally for setting "non" path values
+        for k, v in self.__env_replace.items():
+            env["ENV"][k] = v
+        # for the "path" like values
+        for k, v in self.__env_prepend.items():
+            env.PrependENVPath(k, v, delete_existing=True)
+
+        for k, v in self.__env_append.items():
+            env.AppendENVPath(k, v, delete_existing=True)
+
+        # add to cache
+        self.__env_cache[cache_key] = env
+
         return env
 
     def BasicEnvironment(self, toolpath=[]):
@@ -619,6 +656,8 @@ class Settings(object):
         env['RPATH'] = []  # double check this case, linker tools may have this covered now.
 
         # some setup we want in the "shell" Environment
+        if 'SSH_AUTH_SOCK' in os.environ:
+            env['ENV']['SSH_AUTH_SOCK'] = os.environ['SSH_AUTH_SOCK']
 
         if env['HOST_PLATFORM']['OS'] == 'win32':
             # add certain paths for windows, that have been missing.
@@ -627,6 +666,8 @@ class Settings(object):
             env['ENV']['USERNAME'] = env['PART_USER']
 
         elif env['HOST_PLATFORM'] == 'posix':
+            if 'LD_LIBRARY_PATH' in os.environ:
+                env['ENV']['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']
             env['ENV']['HOME'] = os.environ['HOME']
             env['ENV']['USER'] = env['PART_USER']
 
@@ -655,3 +696,6 @@ def DefaultSettings():
     except AttributeError:
         DefaultSettings.__cache = Settings()
         return DefaultSettings.__cache
+
+
+api.register.add_global_object('DefaultSettings', DefaultSettings)

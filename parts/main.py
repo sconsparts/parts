@@ -41,4 +41,5 @@ glb.engine.Start()  # sets up everything
 globals().update(glb.globals)
 
 import SCons.Script
+# empty target for checking out vcs logic code only
 SCons.Script.Alias('extract_sources')

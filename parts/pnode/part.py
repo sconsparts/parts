@@ -150,8 +150,10 @@ class part(pnode.pnode):
 
         # packaging stuff
         # what package group to add this to
-        self.__package_group = package_group
-
+        if package_group:
+            self.__package_group = package_group
+        else:
+            self.__package_group = None
         # state stuff
         self.__is_default_target = default  # do we set this as a default build target
 
@@ -401,7 +403,7 @@ class part(pnode.pnode):
                         p = glb.engine._part_manager._from_alias(p)
                         if p is None:
                             api.output.error_msg('Cannot use non existing Part "%s"' % tmp_alias)
-                    elif isinstance(p, Part_t):
+                    elif isinstance(p, part):
                         # just a Validation check
                         pass
                     else:
@@ -794,7 +796,21 @@ class part(pnode.pnode):
         self.__env.Append(LIBPATH=libpath)
 
         # setup the mode
-        self.__mode.extend(self.__env['mode'])
+        if not self.__mode:
+            self.__mode.append("default")
+        # add any global mode values to known set
+        for m in self.__env['mode']:
+            if m == "default":
+                pass
+            elif m in self.__mode:
+                if self.isRoot:
+                    api.output.warning_msgf(
+                        'Mode value "{val}" was defined globally and locally. This may cause ambgious dependancy matching',
+                        val=m,
+                        id=self.ID
+                        )
+            else:
+                self.__mode.append(m)        
         self.__env['MODE'] = self.__mode
 
         # alias info
@@ -1011,6 +1027,7 @@ class part(pnode.pnode):
             except KeyError:
                 pass
             bdir = env.Dir(env.subst('$BUILD_DIR'))
+            env['BUILD_DIR']=bdir
             st = time.time()
             sdir = env.Dir(self.__src_path)
             bk_path = sys.path[:]
@@ -1378,14 +1395,19 @@ def pcmp(x, y):
     return cmp(x._order_value, y._order_value)
 
 
-def complex_compare(v1, v2):
+def complex_compare(v1, v2, env):
 
     if id(v1) == id(v2):  # Equal pointer point to equal objects
         return False
     elif not isinstance(v1, type(v2)):
         return True
     elif isinstance(v1, SCons.Action.ActionBase):
-        return SCons.Action._object_contents(v1) != SCons.Action._object_contents(v2)
+        # get a genstring value as this will tell us if the 
+        # base action is different or not, cannot do more than this
+        # as we may not have enough data defined for stuff to resolve correctly
+        r1=v1.genstring(["fake_target"],["fake_source"],env)
+        r2=v1.genstring(["fake_target"],["fake_source"],env)              
+        return r1 != r2
     elif isinstance(v1, types.ClassType):
         return True if (v1.__module__, v1.__name__) != (v2.__module__, v2.__name__) else False
     elif isinstance(v1, types.FunctionType):
@@ -1396,7 +1418,7 @@ def complex_compare(v1, v2):
         if len(v1) != len(v2):
             return True
         for i, j in zip(v1, v2):
-            if complex_compare(i, j):
+            if complex_compare(i, j,env):
                 return True
             return False
     elif isinstance(v1, types.InstanceType):
@@ -1430,7 +1452,7 @@ def diff_env(env, env2, ignore_keys=[]):
     d2.fromkeys(common_keys)
 
     for k in common_keys:
-        if complex_compare(d1[k], d2[k]):
+        if complex_compare(d1[k], d2[k],env):
             ret[k] = d2[k]
     return ret
 

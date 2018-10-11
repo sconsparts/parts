@@ -7,7 +7,8 @@ from .. import api
 
 import SCons.Script
 
-glb.sconstruct_path = SCons.Script.DefaultEnvironment().Dir("#").abspath
+# We are trying to get a path. No need to load any toolchains
+glb.sconstruct_path = SCons.Script.DefaultEnvironment(tools=[]).Dir("#").abspath
 
 scons_DefaultEnvironment = SCons.Script.DefaultEnvironment
 

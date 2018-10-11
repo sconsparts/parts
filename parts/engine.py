@@ -215,14 +215,14 @@ class parts_addon(object):
                 for node in flatten(bf.node):
                     pinfo = self._part_manager._from_env(node.env)
                     if pinfo:
-                        msg += 'Part:"{0}" Target:"{1}" config:"{2}" Node:"{3}"\n'.format(pinfo.Name,
+                        msg += ' Part:"{0}"\n Target:"{1}"\n Config:"{2}"\n Node:"{3}"\n'.format(pinfo.Name,
                                                                                           node.env['TARGET_PLATFORM'],
                                                                                           node.env['CONFIG'],
                                                                                           node)
                     else:
                         msg += 'Node: "{0}"\n'.format(bf.node)
 
-            api.output.print_msg("Summary: {0} build failure detected during build\n{1}".format(bf_lst_len, msg))
+            api.output.error_msg("Summary: {0} build failure detected during build\n{1}".format(bf_lst_len, msg), show_stack=False, exit=False)
 
         glb.rpter.ShutDown()
 
@@ -307,13 +307,12 @@ class parts_addon(object):
                 cnt = 0
                 msg = '{0}/{1}'.format(cnt, total)
                 api.output.console_msg(" Processing post logic queue %3.2f%% %s \033[K" % ((cnt / total * 100), msg))
-                for i in self.__post_process_queue:
-                    cnt += 1
-                    msg = '{0}/{1} '.format(cnt, total)
+                for cnt,i in enumerate(self.__post_process_queue,1):
+                    msg = '{0}/{1} '.format(cnt, total)                    
                     api.output.verbose_msg(["post_process_queue"],
-                                           "Processing post logic queue {0:.2%} {1}".format((cnt / total), i))
+                                            "Processing post logic queue {0:.2%} {1}".format((cnt / total), msg))
                     api.output.console_msg(" Processing post logic queue {0:.2%} {1} \033[K".format((cnt / total), msg))
-                    i()
+                    i()           
 
                 msg = '{0}/{1}'.format(cnt, total)
                 api.output.console_msg(" Processing post logic queue {0:.2%} {1} \033[K".format((cnt / total), msg))
@@ -401,19 +400,19 @@ class parts_addon(object):
 
         # compatibility check
         if isinstance(glb.rpter.logger, logger.QueueLogger):
-            tmp = SCons.Script.ARGUMENTS.get('LOGGER', None)
-            if tmp is not None:
+            tmp = self.def_env.get('LOGGER', "NIL_LOGGER")
+            if tmp is not "NIL_LOGGER":
                 directory = self.def_env.Dir(self.def_env['LOG_ROOT_DIR'])
                 tmp = self.def_env.subst(tmp)
                 # remap old TEXT_LOGGER value
                 if tmp == 'TEXT_LOGGER':
                     tmp = self.def_env.subst('$' + tmp)
 
-                    mod = load_module.load_module(
-                        load_module.get_site_directories('loggers'),
-                        tmp,
-                        'logger')
-                    log_obj = mod.__dict__.get(tmp, logger.QueueLogger)
+                mod = load_module.load_module(
+                    load_module.get_site_directories('loggers'),
+                    tmp,
+                    'logger')
+                log_obj = mod.__dict__.get(tmp, logger.QueueLogger)
         # just in case of some not running in a normal build run
         if not log_obj:
             log_obj = logger.nil_logger
@@ -648,7 +647,7 @@ Use -H or --help-options for a list of scons options
 api.register.add_bool_variable(
     'use_env', False, 'Controls if the shell enviroment will be used instead of values setup by SCons, and Parts')
 api.register.add_bool_variable('duplicate_build', False, 'Controls if the src files are copied to the build area for building')
-api.register.add_list_variable('mode', ['default'], 'Values used to control different build mode for a given part')
+api.register.add_list_variable('mode', [], 'Values used to control different build mode for a given part')
 
 api.register.add_variable('ALIAS_SEPARATOR', '::', 'seperator used to seperate namespace concepts from general alias value')
 

@@ -8,7 +8,7 @@ from ..core import util
 
 def Parts_Alias(self, target, source=[], action=None, **kw):
     try:
-        self["PART_SECTION"]  # checks that thsi is a "part" else we don't want to do this
+        self["PART_SECTION"]  # checks that this is a "part" else we don't want to do this
         t = self.subst(target)
         # check that we want to modify this target
         if not t.startswith(self.subst("${PART_SECTION}::")) and not t.startswith("run_utest::"):
@@ -16,6 +16,7 @@ def Parts_Alias(self, target, source=[], action=None, **kw):
     except KeyError:
         pass
     return self._orig_Alias(target, source, action, **kw)
+
 
 from SCons.Script.SConscript import SConsEnvironment
 ##
