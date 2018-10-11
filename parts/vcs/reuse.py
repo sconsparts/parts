@@ -88,7 +88,8 @@ class reuse_part_vcs(base):
         else:
             api.output.error_msg('VcsReuse was unable to map the vcs object to part "%s"' % (self._partref))
         self._env['VCS'] = self._vcs._env['VCS'].clone()
-        self._env['CHECK_OUT_DIR'] = self._partref.Env.subst('$CHECK_OUT_DIR')
+        self._env['VCS_DIR'] = self._partref.Env.subst('$CHECK_OUT_DIR')
+        
 
     def NeedsToUpdate(self):
         '''Forward the vcs need to update value

@@ -121,16 +121,20 @@ class base(object):
     @property
     def CheckOutDir(self):
         '''returns the path in which we want to checkout to'''
-        return self._env.Dir('.').rel_path(self._env.Dir('$CHECK_OUT_DIR'))
+        return self._env.Dir('$CHECK_OUT_DIR').srcnode()
 
     @property
     def PartFileName(self):
         '''returns the modifed path of the Parts file based on the check out directory'''
-        return self._env.Dir(self.CheckOutDir).File(self._pobj.File).abspath
+        return self._env.Dir(self.CheckOutDir).File(self._pobj.File)
 
     @property
     def PartFileExists(self):
-        return os.path.exists(self.PartFileName)
+        return os.path.exists(self.PartFileName.abspath)
+
+    @property
+    def CheckOutDirExists(self):
+        return os.path.exists(self.CheckOutDir.abspath)
 
     @property
     def FullPath(self):
@@ -217,7 +221,7 @@ class base(object):
                 ret = False
                 return ret
             mod_msg = 'Local modification detected in "{0}".\n Add --update to force update for merge and potential loss of local changes'.format(
-                self.CheckOutDir)
+                self.CheckOutDir.abspath)
             if ret:
                 # get policy for how to handle a positive reponse
                 pol = self._env.GetOption('vcs_policy')
@@ -252,24 +256,24 @@ class base(object):
                     api.output.print_msg(ret)
                     if self.is_modified():
                         api.output.error_msg(mod_msg, show_stack=False)
-                    elif os.path.exists(self.CheckOutDir):
-                        api.output.print_msg('No local modification detected in "{0}", updating...'.format(self.CheckOutDir))
+                    elif os.path.exists(self.CheckOutDir.abspath):
+                        api.output.print_msg('No local modification detected in "{0}", updating...'.format(self.CheckOutDir.abspath))
                 elif pol == 'warning-update':
                     ret_val = True
                     api.output.warning_msg(ret, show_stack=False)
                     if self.is_modified():
                         api.output.error_msg(mod_msg, show_stack=False)
-                    elif os.path.exists(self.CheckOutDir):
+                    elif os.path.exists(self.CheckOutDir.abspath):
                         api.output.warning_msg('No local modification detected in "{0}", updating...'.format(
-                            self.CheckOutDir), show_stack=False)
+                            self.CheckOutDir.abspath), show_stack=False)
                 elif pol == 'update':
                     ret_val = True
                     api.output.verbose_msg('vcs_update', ret)
                     if self.is_modified():
                         api.output.error_msg(mod_msg, show_stack=False)
-                    elif os.path.exists(self.CheckOutDir):
+                    elif os.path.exists(self.CheckOutDir.abspath):
                         api.output.verbose_msg(
-                            'vcs_update', 'No local modification detected in "{0}", updating...'.format(self.CheckOutDir))
+                            'vcs_update', 'No local modification detected in "{0}", updating...'.format(self.CheckOutDir.abspath))
                 else:
                     ret_val = False
             else:
@@ -338,7 +342,7 @@ class base(object):
     def UpdateOnDisk(self):
         ''' This function does the update logic on the disk'''
 
-        if self.PartFileExists:
+        if self.PartFileExists and self.CheckOutDirExists:
             try:
                 try:
                     ret = self.Update()
@@ -364,9 +368,9 @@ class base(object):
 
         if ret and self._env.GetOption('vcs_retry') == True:
             api.output.print_msg("{0} action failed, restoring clean state for {1}.".format(astr, self._pobj.Alias))
-            api.output.print_msg('Deleting directory: %s' % self.CheckOutDir)
+            api.output.print_msg('Deleting directory: %s' % self.CheckOutDir.abspath)
             try:
-                removeall(self.CheckOutDir)
+                removeall(self.CheckOutDir.abspath)
             except OSError as e:
                 api.output.error_msg("Failed to remove directory: {0}".format(e), show_stack=False, exit=False)
                 raise
@@ -420,7 +424,7 @@ class base(object):
         Ideally this does not get overidden as the and tool only needs to provide a command to run
         '''
 
-        action = self.UpdateAction(self.CheckOutDir)
+        action = self.UpdateAction(self.CheckOutDir.abspath)
         return self._env.Execute(action)
 
     def CheckOut(self):
@@ -429,7 +433,7 @@ class base(object):
         Ideally this does not get overidden as the and tool only needs to provide a command to run
         '''
 
-        action = self.CheckOutAction(self.CheckOutDir)
+        action = self.CheckOutAction(self.CheckOutDir.abspath)
         return self._env.Execute(action)
 
     def ProcessResult(self, result):

@@ -14,13 +14,14 @@ class git(base):
 
     __slots__ = [
         '__branch',
-        '__remote_branches',
         '_disk_data',
         '_completed',
+        '_method',
+        '_patchfile',
     ]
     gitpath = None  # the path to the git program to run
 
-    def __init__(self, repository, server=None, branch='master', remote_branches=[], **kw):
+    def __init__(self, repository, server=None, method=None, branch='master', tag=None, patchfile=None, **kw):
         '''Constructor call for the GIT object
         @param repository The repository or path from server under the server to get our data from
         @param server The server to connect to
@@ -30,12 +31,37 @@ class git(base):
         self.__branch = branch
         self._disk_data = None
         self._completed = None
-        if repository.endswith('/'):
-            repository = repository[:-1]
+        self._method = method
+        self._patchfile = patchfile
+        if repository.endswith('.git'):
+            repository = repository[:-4]
         if server and server.endswith('/'):
             server = server[:-1]
-        self.__remote_branches = remote_branches
+
+        self.__branch = tag
         super(git, self).__init__(repository, server)
+
+    def _branch_changed(self, data):
+        return data['branch'] != "{0}...origin/{0}".format(self.__branch) and self.__branch not in data['tags']
+
+    def _on_tag(self,data):
+        return self.__branch in data['tags']
+
+    def _server_changed(self, data):
+        return data['server'] != self.FullPath
+
+    def _setup_(self, *lst, **kw):
+        base._setup_(self, *lst, **kw)
+        if self._server:
+            self._server = self._server[:-1]
+
+    @base.FullPath.getter
+    def FullPath(self):
+        if self._method == "git":
+            self._full_path = "git@{server}:{repo}.git".format(server=self.Server, repo=self.Repository)
+        else:
+            self._full_path = "https://{server}/{repo}.git".format(server=self.Server, repo=self.Repository)
+        return self._full_path
 
     @base.Server.getter
     def Server(self):
@@ -45,55 +71,89 @@ class git(base):
         return self._env['GIT_SERVER']
 
     def UpdateAction(self, out_dir):
-        '''Returns the update Action for GIT
+        '''
+        Returns the update Action for GIT
 
-         in reality we may want to say update this area with a different version; the switch
-         command is the more correct option in this case than the update command!
-         '''
+        Checks to see what set we need to do.  
+        '''
         # todo add the ability to stash changes for the user...
         # if the server is different we need to relocate
-        update_path = self.FullPath
+        #update_path = self.FullPath
 
         # clean actions.. use if --vcs-clean is set
-        cmd1 = 'cd {0} && "{1}" clean -d -f && "{1}" reset --hard'.format(out_dir, git.gitpath)
-        strval1 = 'cd {0} && {1} clean -d -f && "{1}" reset --hard'.format(out_dir, 'git')
+        cmd1 = 'cd {0} && "{1}" clean -dfx --force && "{1}" reset --hard'.format(out_dir, git.gitpath)
+        strval1 = 'cd {0} && {1} clean -dfx --force && "{1}" reset --hard'.format(out_dir, 'git')
         clean_action = [
             self._env.Action(cmd1, strval1)
         ]
 
-        # we do this with a pull request
+        # Fetch action to update with correct branch/tag
+        cmd1 = 'cd {0} && "{1}" fetch'.format(out_dir, git.gitpath)
+        strval1 = 'cd {0} && {1} fetch'.format(out_dir, 'git')
+        fetch_action = [
+            self._env.Action(cmd1, strval1)
+        ]
+
+        # we do this switch to the correct branch/tag
+        if self.__branch is None:
+            branch = 'master'
+        else:
+            branch = self.__branch
+        cmd1 = 'cd {0} && "{1}" checkout {2}'.format(out_dir, git.gitpath, branch)
+        strval1 = 'cd {0} && {1} checkout {2}'.format(out_dir, 'git', branch)
+        checkout_action = [
+            self._env.Action(cmd1, strval1)
+        ]
+
+        # we do this with a update request on if we are not on a tag
         cmd1 = 'cd {0} && "{1}" pull'.format(out_dir, git.gitpath)
         strval1 = 'cd {0} && {1} pull'.format(out_dir, 'git')
         pull_action = [
             self._env.Action(cmd1, strval1)
         ]
 
-        # we do this to relocate the primary server.. we assume origin
-        cmd1 = 'cd {0} && "{1}" remote set-url origin {1}'.format(out_dir, git.gitpath, update_path)
-        strval1 = 'cd {0} && {1} remote set-url origin {1}'.format(out_dir, 'git', update_path)
-        relocate_action = [
-            self._env.Action(cmd1, strval1)
-        ]
-
         ret = []
-        # first check to see if we want to a clean setup
-        if self._env.GetOption('vcs_clean') == True:
-            ret += clean_action
-        # check to see if teh server is different ( ie need to relocate)
-        if self.get_git_data()['server'] != self.FullPath and self.get_git_data()['server'] is not None:
-            ret += relocate_action
-        # these to see if we cannot get data on the git directory ( for some reason like it already exists)
-        elif self.get_git_data()['server'] is None:
-            # if clean and or retry is set, we can whack this data
-            if self._env.GetOption('vcs_clean') == True or self._env.GetOption('vcs_retry') == True:
-                ret = [self._env.Action(lambda target, source, env: removeall(
-                    out_dir), "Cleaning up checkout area for {0}".format(out_dir))] + self.CheckOutAction(out_dir)
+        do_clean = self._env.GetOption('vcs_clean')
+        do_retry = self._env.GetOption('vcs_retry')
+        data = self.get_git_data()
+
+        # do we have data?
+        if data is None:
+            # we have some bad state
+            # could happen if check policy is existance or cache and user messed around
+            if do_clean or do_retry:
+                ret = [
+                    self._env.Action(
+                        lambda target, source, env: removeall(out_dir),
+                        "Cleaning up checkout area for {0}".format(out_dir)
+                    )
+                ] + self.CheckOutAction(out_dir)
+
             else:
                 # if it they are not set we want to say something is up.. give me the power to fix it, or do something about it
                 api.platforms.output.error_msg(
                     'Directory "{0}" already exists with no .git directory. Manually remove directory or update with --vcs-retry or --vcs-clean'.format(out_dir), show_stack=False)
         else:
-            ret += pull_action
+            server_disk = data['server']
+            server_changed = self._server_changed(data)
+            branch = data['branch']
+            tags = data['tags']
+            branch_changed = self._branch_changed(data)
+            on_tag = self._on_tag(data)
+
+            # first check to see if we want to a clean setup
+            # this will remove and reset the branch
+            if do_clean:
+                ret += clean_action
+            # if we changed we will do a fetch and a checkout to new branch
+            if branch_changed:
+                # do fetch to get data
+                ret += fetch_action
+                # do the checkout
+                ret += checkout_action
+            elif not on_tag:
+                # branch did not change
+                ret += pull_action
 
         return ret
 
@@ -117,25 +177,22 @@ class git(base):
 
         # the intial clone
         git_out_path = out_dir.replace('\\', '/')
-        strval = '{0} clone --progress {1} "{2}"'.format(git.gitpath, self.FullPath, git_out_path)
-        cmd = '{0} clone --progress {1} "{2}"'.format(git.gitpath, self.FullPath, git_out_path)
+        clone_path = self.FullPath
+
+        if self.__branch:
+            branch = "-b {}".format(self.__branch)
+        else:
+            branch = ''
+        strval = '{0} clone --progress {branch} {1} "{2}"'.format(git.gitpath, clone_path, git_out_path, branch=branch)
+        cmd = '"{0}" clone --progress {branch} {1} "{2}"'.format(git.gitpath, clone_path, git_out_path, branch=branch)
+
         ret = [self._env.Action(cmd, strval)]
-        # get any remote branches, and add them to be tracked
-        for trackme in self.__remote_branches:
-            strval = 'cd {0} && {1} checkout --track "{2}"'.format(out_dir, 'git', trackme)
-            cmd = 'cd {0} && {1} checkout --track "{2}"'.format(out_dir, git.gitpath, trackme)
-            ret += [self._env.Action(cmd, strval)]
-        # if remote_branch and branch.. switch to branch
-        if self.__remote_branches != [] and self.__branch is not None:
-            strval = 'cd {0} && {1} checkout "{2}"'.format(out_dir, 'git', self.__branch)
-            cmd = 'cd {0} && {1} checkout "{2}"'.format(out_dir, git.gitpath, self.__branch)
-            ret += [self._env.Action(cmd, strval)]
-        # elif branch is none and remote_branches.. switch to master
-        elif self.__remote_branches != []:
-            # if self.__branch != 'master' and self.__branch is not None:
-            #    api.output.warning_msg('No remote_branches provided, switching to "master" branch instead of ""'.format(self.__branch),show_stack=False)
-            strval = 'cd {0} && {1} checkout "{2}"'.format(out_dir, 'git', 'master')
-            cmd = 'cd {0} && {1} checkout "{2}"'.format(out_dir, git.gitpath, 'master')
+
+        # have patch file .. apply it
+        if self._patchfile:
+            fullpath = self._env.File(self._patchfile).abspath
+            strval = 'cd {0} && {1} am "{2}"'.format(out_dir, git.gitpath, fullpath)
+            cmd = 'cd {0} && "{1}" am "{2}"'.format(out_dir, git.gitpath, fullpath)
             ret += [self._env.Action(cmd, strval)]
 
         return ret
@@ -170,10 +227,10 @@ class git(base):
         returns None if it passes, returns a string to possible print tell why it failed
         '''
         api.output.verbose_msg(["vcs_update", "vcs_git"], " Doing existance check")
-        if self.PartFileExists and os.path.exists(os.path.join(self.CheckOutDir, '.git')):
+        if self.PartFileExists and os.path.exists(os.path.join(self.CheckOutDir.abspath, '.git')):
             return None
         api.output.verbose_msg(["vcs_update", "vcs_git"], " Existance check failed")
-        return "%s needs to be updated on disk" % self._pobj.Alias
+        return "{0} needs to be updated on disk" .format(self._pobj.Alias)
 
     def do_check_logic(self):
         ''' call for checking if what we have in the data cache is matching the current checkout request
@@ -183,7 +240,7 @@ class git(base):
         '''
         # todo.. fix issue with mismatch branch/tag being used
 
-        api.output.verbose_msg(["vcs_update", "vcs_git"], " Using check vcs logic.")
+        api.output.verbose_msg(["vcs_update", "vcs_git"], " Using vcs-logic: check.")
         # test for existance
         tmp = self.do_exist_logic()
         if tmp:
@@ -199,14 +256,30 @@ class git(base):
                 data = self.get_git_data()
                 if data:
                     if data['url'] != self.FullPath:
-                        api.output.verbose_msg(["vcs_update", "vcs_git"], " Disk version does not match")
-                        return 'Server on disk is different than the one requested for Parts "%s\n On disk: %s\n requested: %s"' % (self._pobj.Alias, data[
+                        api.output.verbose_msg(["vcs_update", "vcs_git"], " Disk urls does not match")
+                        return 'Server on disk is different than the one requested for Parts "%s"\n On disk: %s\n requested: %s' % (self._pobj.Alias, data[
                                                                                                                                     'server'], self.FullPath)
-                    else:
-                        api.output.verbose_msg(["vcs_update", "vcs_git"], " Disk version matches")
                 else:
                     api.output.verbose_msg(["vcs_update", "vcs_git"], " Could not query disk version for information!")
                     return 'Disk copy seems bad... updating'
+            api.output.verbose_msg(["vcs_update", "vcs_git"], " Disk urls matches")
+            # check branch
+            api.output.verbose_msg(["vcs_update", "vcs_git"], " Cached branch: %s" % (cache['branch']))
+            api.output.verbose_msg(["vcs_update", "vcs_git"], " Requested branch: %s" % (self.__branch))
+            if cache['branch'] != self.__branch:
+                api.output.verbose_msg(["vcs_update", "vcs_git"], " Cache version of branch does not match.. verifing on disk..")
+                # hard check to verify it is really bad
+                data = self.get_git_data()
+                if data:
+                    if data['branch'] != "{0}...origin/{0}".format(self.__branch) and self.__branch not in data['tags']:
+                        api.output.verbose_msg(["vcs_update", "vcs_git"], " Disk branch does not match")
+                        return 'Branch on disk is different than the one requested for Parts "%s"\n On disk: %s\n requested: %s' % (self._pobj.Alias, data[
+                                                                                                                                    'branch'], self.__branch)
+                else:
+                    api.output.verbose_msg(["vcs_update", "vcs_git"], " Could not query disk version for information!")
+                    return 'Disk copy seems bad... updating'
+            api.output.verbose_msg(["vcs_update", "vcs_git"], " Disk branch matches")
+
         else:
             api.output.verbose_msg(["vcs_update", "vcs_git"], " Data Cache does not exist.. doing force logic")
             return self.do_force_logic()
@@ -226,18 +299,24 @@ class git(base):
         if data:
             if data['server'] != self.FullPath:
                 api.output.verbose_msg(["vcs_update", "vcs_git"], " Disk checked failed")
-                return 'Server on disk is different than the one requested for Parts "%s\n On disk: %s\n requested: %s"' % (self._pobj.Alias, data[
-                                                                                                                            'server'], self.FullPath)
-            else:
-                return None
+                return 'Server on disk is different than the one requested for Parts "%s"\n On disk: %s\n requested: %s' % (self._pobj.Alias, data[
+                    'server'], self.FullPath)
+            if data['branch'] != "{0}...origin/{0}".format(self.__branch) and self.__branch not in data['tags']:
+                api.output.verbose_msg(["vcs_update", "vcs_git"], " Disk branch does not match")
+                return 'Branch on disk is different than the one requested for Parts "%s"\n On disk: %s\n requested: %s' % (self._pobj.Alias, data[
+                    'branch'], self.__branch)
 
     def UpdateEnv(self):
         '''
         Update the with information about the current VCS object
         '''
         if git.gitpath is None:
-            git.gitpath = self._env.WhereIs('git', os.environ['PATH'])
-            git.gitpath = '{0}'.format(git.gitpath)
+            tmp = self._env.WhereIs('git')
+            if not tmp:
+                tmp = self._env.WhereIs('git', os.environ['PATH'])
+            if not tmp:
+                api.output.error_msg("Could find git on the system!", show_stack=False)
+            git.gitpath = tmp
 
         if self._env['HOST_OS'] == 'win32':
             try:
@@ -275,6 +354,7 @@ class git(base):
             '__version__': 1.0,
             'type': 'git',
             'server': self.FullPath,
+            'branch': self.__branch,
             'completed': self._completed
         }
 
@@ -286,7 +366,7 @@ class git(base):
     def get_git_data(self):
         # get current state
         if self._disk_data is None:
-            self._disk_data = GetGitData(self._env, self.CheckOutDir)
+            self._disk_data = GetGitData(self._env, self.CheckOutDir.abspath)
         return self._disk_data
 
     @property
@@ -311,9 +391,9 @@ def GetGitData(env, checkoutdir=None):
         git.gitpath = env.WhereIs('git', os.environ['PATH'])
         git.gitpath = '{0}'.format(git.gitpath)
 
-    if self._env['HOST_OS'] == 'win32':
+    if env['HOST_OS'] == 'win32':
         try:
-            self._env['ENV']['GIT_SSH'] = os.environ['GIT_SSH']
+            env['ENV']['GIT_SSH'] = os.environ['GIT_SSH']
         except KeyError:
             pass
 
@@ -345,6 +425,11 @@ def GetGitData(env, checkoutdir=None):
             if untracked and modified:
                 break
 
+    # get tags as these might be the "branch" we are on
+    ret, data = base.command_output('cd {1} && "{0}" tag --points-at HEAD'.format(git.gitpath, checkoutdir))
+    if not ret:
+        data.replace('\r\n', '\n')
+    tags = data.split('\n')[:-1]
     # get the server we will pull from
     ret, data = base.command_output('cd {1} && "{0}" remote -v'.format(git.gitpath, checkoutdir))
 
@@ -361,9 +446,11 @@ def GetGitData(env, checkoutdir=None):
 
     ret = {
         'branch': branch,
+        'tags': tags,
         'modified': modified,
         'untracked': untracked,
-        'server': server
+        'server': server,
+        'url': url
     }
 
     return ret
@@ -372,7 +459,7 @@ def GetGitData(env, checkoutdir=None):
 # add configuartion varaible needed for part
 api.register.add_variable('GIT_SERVER', '', '')
 api.register.add_variable('GIT_USER', '$PART_USER', '')
-api.register.add_variable('VCS_GIT_DIR', '${CHECK_OUT_ROOT}/${ALIAS}', '')
+api.register.add_variable('VCS_GIT_DIR', '${CHECK_OUT_ROOT}/${PART_ALIAS}', '')
 
 api.register.add_global_object('VcsGit', git)
 

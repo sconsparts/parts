@@ -148,7 +148,7 @@ class svn(base):
         returns None if it passes, returns a string to possible print tell why it failed
         '''
         api.output.verbose_msg(["vcs_update", "vcs_svn"], " Doing existance check")
-        if self.PartFileExists and os.path.exists(os.path.join(self.CheckOutDir, '.svn')):
+        if self.PartFileExists and os.path.exists(os.path.join(self.CheckOutDir.abspath, '.svn')):
             return None
         api.output.verbose_msg(["vcs_update", "vcs_svn"], " Existance check failed")
         return "%s needs to be updated on disk" % self._pobj.Alias
@@ -159,7 +159,7 @@ class svn(base):
 
         returns None if it passes, returns a string to possible print tell why it failed
         '''
-        api.output.verbose_msg(["vcs_update", "vcs_svn"], " Using check vcs logic.")
+        api.output.verbose_msg(["vcs_update", "vcs_svn"], " Using vcs-logic: check.")
         # test for existance
         tmp = self.do_exist_logic()
         if tmp:
@@ -212,7 +212,12 @@ class svn(base):
         Update the with information about the current VCS object
         '''
         if svn.svnpath is None:
-            svn.svnpath = self._env.WhereIs('svn', os.environ['PATH'])
+            tmp = self._env.WhereIs('svn')
+            if not tmp:
+                tmp = self._env.WhereIs('svn', os.environ['PATH'])
+            if not tmp:
+                api.output.error_msg("Could find svn on the system!",show_stack=False)
+            svn.svnpath = tmp
         try:
             # useful for linux boxes
             self._env['ENV']['DBUS_SESSION_BUS_ADDRESS'] = os.environ['DBUS_SESSION_BUS_ADDRESS']
@@ -263,7 +268,7 @@ class svn(base):
     def get_svn_data(self):
         # get current state
         if self._disk_data is None:
-            self._disk_data = GetSvnData(self._env, self.CheckOutDir)
+            self._disk_data = GetSvnData(self._env, self.CheckOutDir.abspath)
         return self._disk_data
 
     @property
@@ -350,7 +355,7 @@ def GetSvnData(env, checkoutdir=None):
 api.register.add_variable('SVN_SERVER', '', 'Value of SVN server to use')
 api.register.add_list_variable('SVN_FLAGS', ['--non-interactive'], 'Flags to use for the svn call')
 #api.register.add_variable('SVN_REVISION',None,'Value of SVN revision to checkout, None mean latest' )
-api.register.add_variable('VCS_SVN_DIR', '${CHECK_OUT_ROOT}/${ALIAS}', 'Full path used for any given checked out item')
+api.register.add_variable('VCS_SVN_DIR', '${CHECK_OUT_ROOT}/${PART_ALIAS}', 'Full path used for any given checked out item')
 
 api.register.add_global_object('VcsSvn', svn)
 
