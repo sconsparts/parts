@@ -5,9 +5,11 @@ internal here instead, and then possiblely removing pattern 100%
 '''
 
 # patterns
+import glb
 import common
-import core.util
+import core.util as util
 import api
+
 
 import SCons.Script
 
@@ -16,19 +18,126 @@ from SCons.Debug import logInstanceCreation
 import os
 
 
-def pattern(env, sub_dir='', src_dir='', includes=['*'], excludes=[], recursive=True):
-    return Pattern(sub_dir, src_dir, includes, excludes, recursive)
+def Pattern_func(env, sub_dir='', src_dir='', includes=['*'], excludes=[], recursive=True):
+    return Pattern(sub_dir, src_dir, includes, excludes, recursive, env)
+
 
 g_db = {}
 
 
 class Pattern(object):
+    def __init__(self, sub_dir=None, src_dir=None, includes=['*'], excludes=[], recursive=True, env=None):
+        if env is None:
+            env = glb.engine.def_env
+        self._env = env
 
-    def __init__(self, sub_dir='', src_dir='', includes=['*'], excludes=[], recursive=True):
+        if __debug__:
+            logInstanceCreation(self)
+        if src_dir is None:
+            self.src_dir = env.Dir("./")
+        else:
+            self.src_dir = env.Dir(src_dir)
+            
+        self.includes = []
+        for i in includes:
+            self.includes.append(os.path.normpath(i))
+
+        self.excludes = []
+        for i in excludes:
+            if i != '*':
+                self.excludes.append(os.path.normpath(i))
+
+        self.recursive = recursive
+        self.map = None
+
+    def files(self, directory=None):
+        '''
+        return the files found by the pattern
+        '''
+        if self.map is None:
+            self.generate()
+
+        if directory is None:
+            fl = []
+            root_path = SCons.Script.Dir('.').srcnode().abspath
+            if self.src_dir.abspath.startswith(root_path) == False:
+                root_path = self.src_dir.abspath
+            for root_dir, src_nodes in self.map.iteritems():
+                for node in src_nodes:
+                    fl.append(node)
+            fl.sort(key=lambda x: x.ID)
+            return fl
+
+        return self.map[directory]
+
+    def sub_dirs(self):
+        if self.map is None:
+            self.generate()
+        return self.map.keys()
+
+    def target_source(self, root_target):
+        src_list = []
+        trg_list = []
+        if self.map is None:
+            self.generate()
+        for dnode, slist in self.map.items():
+            for node in slist:
+                if util.isSymLink(node):
+                    target_node = root_target.FileSymbolicLink(self.src_dir.rel_path(node))
+                else:
+                    target_node = root_target.File(self.src_dir.rel_path(node))
+                trg_list.append(target_node)
+                src_list.append(node)
+
+        return (trg_list, src_list)
+
+    def generate(self, exclude_path=''):
+        '''
+        do a recursive glob
+        '''
+        m = {}
+        # create base path
+        paths = [self.src_dir]
+        for path in paths:
+            objs = path.glob(".*")
+            objs += path.glob("*")
+            for enity in objs:
+                is_dir = util.isDir(enity)
+                matches = common.matches(enity.ID, self.includes, self.excludes)
+                # __rt and __oot are funny files that are out of tree 
+                # # or under the Sconstruct but not the parts file
+                if is_dir and not enity.name in ["__rt", "__oot"]:
+                    paths.append(enity)
+                elif not is_dir and matches:
+                    try:
+                        m[path].append(enity)
+                    except KeyError:
+                        m[path] = [enity]
+                else:
+                    api.output.verbose_msgf(["pattern"], "Skipped {0}", enity.ID)
+        self.map = m
+
+        # else we ignore the item
+        self.map = m
+
+
+'''
+class Pattern(object):
+
+    def __init__(self, sub_dir='', src_dir='', includes=['*'], excludes=[], recursive=True, env=None):
         if __debug__:
             logInstanceCreation(self)
         self.sub_dir = sub_dir
-        self.src_dir = SCons.Script.Dir(SCons.Script.Dir('.').srcnode().Dir(src_dir).abspath)
+        if env is None:
+            env = glb.engine.def_env
+        self._env = env
+        # this funky logic to make sure we get the path of the source location
+        # not the path of the Variant Directory
+        self.src_dir = SCons.Script.Dir(
+            SCons.Script.Dir('.').srcnode().Dir(
+                env.subst(src_dir)
+            ).abspath
+        )
 
         # print "Pattern src_dir (srcnode):",self.src_dir.srcnode().abspath
         # print "Pattern src_dir path     :",self.src_dir.abspath
@@ -50,12 +159,10 @@ class Pattern(object):
         return self.map.keys()
 
     def files(self, directory=None):
-        ''' basicly do a recursive glob '''
         if self.map is None:
             self.generate()
         if directory is None:
             fl = []
-            # root_path=SCons.Script.Dir('.').srcnode().abspath
             root_path = SCons.Script.Dir('.').srcnode().abspath
             if self.src_dir.abspath.startswith(root_path) == False:
                 root_path = self.src_dir.abspath
@@ -148,12 +255,24 @@ class Pattern(object):
             # else we ignore the item
         self.map = m
 
+'''
+
+
+class _Pattern(object):
+    def __init__(self, env):
+        if __debug__:
+            logInstanceCreation(self)
+        self.env = env
+
+    def __call__(self, sub_dir='', src_dir='', includes=['*'], excludes=[], recursive=True):
+        return Pattern(sub_dir=sub_dir, src_dir=src_dir, includes=includes, excludes=excludes, recursive=recursive, env=self.env)
+
 
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
-SConsEnvironment.Pattern = pattern
+SConsEnvironment.Pattern = Pattern_func
 
-api.register.add_global_object('Pattern', Pattern)
-api.register.add_global_parts_object('Pattern', Pattern)
+api.register.add_global_object('Pattern', _Pattern)
+api.register.add_global_parts_object('Pattern', _Pattern, True)

@@ -16,7 +16,7 @@ g_sdked_files = set([])
 
 
 def process_Sdk_Copy(env, target_dir, sources, create_sdk=True, do_clean=False):
-
+    
     # make sure inputs are in good format
     target_dir = env.arg2nodes(target_dir)[0]
     # Some varibles
@@ -31,7 +31,7 @@ def process_Sdk_Copy(env, target_dir, sources, create_sdk=True, do_clean=False):
             t = s.src_dir.srcnode().abspath
             if t not in src_dir:
                 src_dir.append(t)
-            t, sr = s.target_source(target_dir.abspath)
+            t, sr = s.target_source(target_dir)
 
             if create_sdk == False:
                 out += sr  # s.files(t)
@@ -51,7 +51,7 @@ def process_Sdk_Copy(env, target_dir, sources, create_sdk=True, do_clean=False):
             else:
                 out.extend(env.CCopy(target=target_dir, source=s))
             # print "Dir type"
-        elif util.isFile(s):
+        elif util.isFile(s) or isinstance(s, SCons.Node.Node):
             # print s.abspath
             t = s.srcnode().dir.abspath
             if t not in src_dir:
@@ -66,7 +66,7 @@ def process_Sdk_Copy(env, target_dir, sources, create_sdk=True, do_clean=False):
             # src.append(s)
             # print "File type"
         # need to clean up this case
-        elif isinstance(s, SCons.Node.Node) or util.isString(s):
+        elif  util.isString(s):
             t = os.path.split(str(s))[0]
             if t not in src_dir:
                 src_dir.append(t)
@@ -189,6 +189,11 @@ def SdkLib(env, sources, sub_dir='', add_to_path=None, auto_add_libs=True, use_s
 def SdkBin(env, sources, sub_dir='', create_sdk=True):
 
     ret = SdkItem(env, '$SDK_BIN', sources, sub_dir, '', [], create_sdk=create_sdk)
+    return ret
+
+def SdkPrivateBin(env, sources, sub_dir='', create_sdk=True):
+
+    ret = SdkItem(env, '$SDK_PRIVATE_BIN', sources, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
 
@@ -450,6 +455,7 @@ from SCons.Script.SConscript import SConsEnvironment
 SConsEnvironment.SdkInclude = SdkInclude
 SConsEnvironment.SdkLib = SdkLib
 SConsEnvironment.SdkBin = SdkBin
+SConsEnvironment.SdkPrivateBin = SdkPrivateBin
 SConsEnvironment.Sdk = Sdk
 SConsEnvironment.SdkTarget = Sdk
 SConsEnvironment.SdkConfig = SdkConfig
@@ -482,22 +488,36 @@ import datetime
 api.register.add_variable("DATE_STAMP", datetime.datetime.now().strftime('%Y%m%d%H%M'), '')
 
 api.register.add_variable('SDK_ROOT',
-                          '#_sdks/${CONFIG}_${TARGET_PLATFORM}_${TOOLCHAIN.replace(",", "_")}/${PART_ROOT_NAME}_${PART_VERSION}${"_%s"%PART_ROOT_SIG if PART_ROOT_SIG!="" else ""}',
+                          '#_sdks/${CONFIG}_${TARGET_PLATFORM}_${TOOLCHAIN.replace(",", "_")}/${PART_ROOT_NAME}_${PART_VERSION}${"_%s"%PART_ROOT_MINI_SIG if PART_ROOT_MINI_SIG!="" else ""}',
                           'Root Directory used for copy SDKs to')
 api.register.add_variable('SDK_LIB_ROOT', '$SDK_ROOT/lib', 'Full SDK directory for the lib concept')
 api.register.add_variable('SDK_BIN_ROOT', '$SDK_ROOT/bin', 'Full SDK directory for the bin concept')
 api.register.add_variable('SDK_INCLUDE_ROOT', '$SDK_ROOT/include', 'Full SDK directory for the include or header concept')
 api.register.add_variable('SDK_LIB', '$SDK_LIB_ROOT', 'Full SDK directory for the lib concept')
 api.register.add_variable('SDK_BIN', '$SDK_BIN_ROOT', 'Full SDK directory for the bin concept')
+
+
+if 'win32' == glb._host_sys:
+    api.register.add_variable('SDK_PRIVATE_BIN', '$SDK_ROOT/private/bin', '')
+    api.register.add_variable('SDK_DOC', '$SDK_ROOT/share/doc', 'Full SDK directory for the documenation concept')
+    api.register.add_variable('SDK_HELP', '$SDK_ROOT/help', 'Full SDK directory for the help concept')
+    api.register.add_variable('SDK_MANPAGE', '$SDK_ROOT/man', 'Full SDK directory for the manpage concept')
+    api.register.add_variable('SDK_DATA', '$SDK_ROOT/data', 'Full SDK directory for the generic data concept')
+    api.register.add_variable('SDK_MESSAGE', '$SDK_ROOT/message', 'Full SDK directory for the messages (catalogs) concept')
+
+else: #assume posix like layout
+    api.register.add_variable('SDK_PRIVATE_BIN', '$SDK_ROOT/libexec', '')
+    api.register.add_variable('SDK_DOC', '$SDK_ROOT/share/doc', 'Full SDK directory for the documenation concept')    
+    api.register.add_variable('SDK_HELP', '$SDK_ROOT/doc', 'Full SDK directory for the help concept')
+    api.register.add_variable('SDK_MANPAGE', '$SDK_ROOT/share/man', 'Full SDK directory for the manpage concept')
+    api.register.add_variable('SDK_DATA', '$SDK_ROOT/share', 'Full SDK directory for the generic data concept')
+    api.register.add_variable('SDK_MESSAGE', '$SDK_ROOT/share/nls', 'Full SDK directory for the messages (catalogs) concept')
+
 api.register.add_variable('SDK_INCLUDE', '$SDK_INCLUDE_ROOT', 'Full SDK directory for the include or header concept')
 api.register.add_variable('SDK_TOOLS', '$SDK_ROOT/tools', 'Full SDK directory for the tools concept')
 api.register.add_variable('SDK_API', '$SDK_ROOT/API', 'Full SDK directory for the API concept')
 api.register.add_variable('SDK_CONFIG', '$SDK_ROOT/config', 'Full SDK directory for the configuration file concept')
-api.register.add_variable('SDK_DOC', '$SDK_ROOT/doc', 'Full SDK directory for the documenation concept')
-api.register.add_variable('SDK_HELP', '$SDK_ROOT/help', 'Full SDK directory for the help concept')
-api.register.add_variable('SDK_MANPAGE', '$SDK_ROOT/man', 'Full SDK directory for the manpage concept')
-api.register.add_variable('SDK_DATA', '$SDK_ROOT/data', 'Full SDK directory for the generic data concept')
-api.register.add_variable('SDK_MESSAGE', '$SDK_ROOT/message', 'Full SDK directory for the messages (catalogs) concept')
+
 api.register.add_variable('SDK_RESOURCE', '$SDK_ROOT/resource', 'Full SDK directory for the resource concept')
 api.register.add_variable('SDK_SAMPLE', '$SDK_ROOT/sample', 'Full SDK directory for the sample concept')
 api.register.add_variable('SDK_TOP_LEVEL', '$SDK_ROOT/TOP_LEVEL',
