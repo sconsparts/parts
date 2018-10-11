@@ -1,20 +1,21 @@
 # pylint: disable=missing-docstring
 
-import sys
+import copy
+import errno
 import os
 import shutil
 import stat
-import errno
+import sys
 from collections import deque, namedtuple
+
+import parts.api as api
+import parts.common as common
+import parts.core.util as util
+import parts.overrides.symlinks as symlinks
+import parts.pattern as pattern
 
 import SCons.Script
 from SCons.Script.SConscript import SConsEnvironment
-
-import parts.common as common
-import parts.core.util as util
-import parts.api as api
-import parts.overrides.symlinks as symlinks
-import parts.pattern as pattern
 
 
 class CCopyException(Exception):
@@ -23,8 +24,16 @@ class CCopyException(Exception):
         Exception.__init__(self)
         self.exc = exc
 
-CopyBuilderDescription = namedtuple('CopyBuilderDescription',
-                                    'builderName ccopyName copyFunctions')
+
+class CopyBuilderDescription(object):
+    def __init__(self, builderName, ccopyName, copyFunctions):
+        self.builderName = builderName
+        self.ccopyName = ccopyName
+        self.copyFunctions = copyFunctions
+
+# CopyBuilderDescription = namedtuple('CopyBuilderDescription',
+ #                                   'builderName ccopyName copyFunctions')
+
 
 if sys.platform == 'win32':
     import msvcrt
@@ -177,6 +186,7 @@ def clear_dest(dest):
                                 dest)
         os.remove(dest)
 
+
 try:
     WindowsError
 except NameError:
@@ -188,7 +198,9 @@ def copytree(src, dst):
     We use our version of copytree because one from shutil fails when destination
     directory already exists.
     '''
+    
     dirs = deque(['.'])
+    # copy the directory and any entries
     while dirs:
         current = dirs.popleft()
         src_dir = os.sep.join((src, current))
@@ -196,15 +208,15 @@ def copytree(src, dst):
 
         # Make sure the destination directory exists
         try:
-            os.makedirs(dst_dir)
+            if not os.path.isdir(dst_dir):
+                os.makedirs(dst_dir)
         except OSError as error:
             if error.errno == errno.EEXIST:
                 if not os.path.isdir(dst_dir):
                     raise SCons.Errors.UserError("cannot overwrite non-directory "
-                                                 "'%s' with a directory '%s'" % (dst_dir, src_dir))
+                                                 "'{0}' with a directory '{1}'".format(dst_dir, src_dir))
             else:
                 raise
-
         # Iterate by source directory entries.
         # Files are copied, directories are add to the dirs list.
         for entry in os.listdir(src_dir):
@@ -212,16 +224,23 @@ def copytree(src, dst):
             if os.path.isdir(src_entry):
                 dirs.append(os.sep.join((current, entry)))
             else:
-                shutil.copy2(src_entry, os.sep.join((dst_dir, entry)))
-
-        try:
-            shutil.copystat(src, dst)
-        except OSError as why:
-            if WindowsError and isinstance(why, WindowsError):
-                # Copying file access times may fail on Windows
-                pass
-            else:
-                raise
+                target = os.sep.join((dst_dir, entry))
+                if os.path.exists(target) and not os.access(target, os.W_OK):
+                    st = os.stat(target)
+                    os.chmod(target, stat.S_IMODE(st[stat.ST_MODE]) | stat.S_IWRITE)
+                    os.remove(target)
+                shutil.copy2(src_entry, target)
+    
+    # all entries are added update stats on the directory
+    try:
+        shutil.copystat(src, dst)
+    except OSError as why:
+        if WindowsError and isinstance(why, WindowsError):
+            # Copying file access times may fail on Windows
+            pass
+        else:    
+            api.output.warning_msgf("CCOPY builder copying directory tree\n copystat failed for:\n  {0}\n because:\n  {1}",dst,why,show_stack=False)
+            raise
 
 
 def CCopyFuncWrapper(env, dest, source, copyfunc=None):
@@ -320,7 +339,7 @@ def CCopyWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw):
                 e = dnode.Entry(os.sep.join(['.', src.name]))
             elif isinstance(src, pattern.Pattern):
                 # this case needs some tweaking to deal with symlinks
-                t, sr = src.target_source(dnode.abspath)
+                t, sr = src.target_source(dnode)
                 n_targets.extend(env.CCopyAs(target=t, source=sr))
                 continue
             elif isinstance(src, SCons.Node.FS.Dir):
@@ -351,21 +370,26 @@ def CCopyWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw):
 
             copyTargets = copyBuilder(target=e, source=src, **kw)
             try:
-                copyTargets[0].attributes = src.attributes
+                copy_metatags(copyTargets[0], src, env)
             except (AttributeError, IndexError):
                 pass
             n_targets.extend(copyTargets)
-
-    # for target in n_targets:
-    #    target.set_precious(True)
+    n_targets.sort(key=lambda x: x.ID)
     return n_targets
+
+
+def copy_metatags(target, source, env):
+    for k, v in source.attributes.__dict__.iteritems():
+        if not k.startswith("__"):
+            tmp = copy.copy(v)
+            setattr(target.attributes, k, tmp)
 
 
 def CCopyAsWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw):
     result = []
     copyBuilder = CCopy.getCopyBuilder(env, copy_logic)
     source = env.arg2nodes(source)
-    target = common.make_list(target)
+    target = env.arg2nodes(target)
     if len(target) != len(source):
         api.output.error_msg("Number of targets and sources should be the same")
 
@@ -380,6 +404,8 @@ def CCopyAsWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw
             except AttributeError:
                 src.attributes.copiedas = copiedas = []
             copiedas.append(tgt)
+
+        copy_metatags(tgt, src, env)
         result.extend(copyBuilder(tgt, src, **kw))
 
     for target in result:
@@ -399,7 +425,7 @@ def CCopyFunc(target, source, env, copy_logic):
 
     for targetEntry, sourceEntry in zip(target, source):
         # Get info if this should be handled as a symlink
-        if isinstance(sourceEntry, symlinks.FileSymbolicLink):
+        if util.isSymLink(sourceEntry):
             assert sourceEntry.exists() and sourceEntry.linkto
             # A symbolic link can only be a copy of another symlink.
             # Convert a target node to FileSymbolicLink this is needed for
@@ -419,7 +445,7 @@ def CCopyFunc(target, source, env, copy_logic):
             CCopyFuncWrapper(env, targetEntry.get_path(), sourceEntry.get_path(), copy_logic)
     # tell logger the task has end correctly.
     output.TaskEnd(taskId, 0)
-    return
+    return 0
 
 
 def generateCopyBuilder(description):
@@ -439,7 +465,7 @@ def generateCopyBuilder(description):
             dest = unicode("\\\\?\\" + os.path.abspath(dest))
         if len(source) >= 200 and not source.startswith("\\\\?\\") and sys.platform == 'win32':
             source = unicode("\\\\?\\" + os.path.abspath(source))
-        if copy_hard in description.copyFunctions and not os.path.isdir(dest):
+        if copy_hard in description.copyFunctions() and not os.path.isdir(dest):
             # Check if dest is a hardlink of source - to save time; also on
             # Windows hardlinks have a quirk - if a file is opened without
             # SHARED_DELETE via some hardlink it's impossible to delete _any_
@@ -455,7 +481,7 @@ def generateCopyBuilder(description):
         api.output.verbose_msgf("ccopy", "{0}: dest={1} source={2}", description.ccopyName,
                                 dest, source)
         clear_dest(dest)
-        for copyFunc in description.copyFunctions:
+        for copyFunc in description.copyFunctions():
             try:
                 return copyFunc(dest, source)
             except CCopyException:
@@ -466,30 +492,43 @@ def generateCopyBuilder(description):
             raise err.exc
 
     def doAction(target, source, env):
-        return CCopyFunc(target, source, env, doCopy)
+        tmp = CCopyFunc(target, source, env, doCopy)
+        return tmp
 
     api.register.add_builder(description.builderName,
-                             SCons.Builder.Builder(action=SCons.Action.Action(doAction, CCopyStringFunc),
+                             SCons.Builder.Builder(action=SCons.Action.Action(lambda target, source, env: doAction(target, source, env), CCopyStringFunc),
                                                    target_factory=SCons.Node.FS.Entry,
                                                    source_factory=SCons.Node.FS.Entry,
-                                                   emitter=CCopyEmit, source_scanner=symlinks.source_scanner,
+                                                   emitter=CCopyEmit, target_scanner=symlinks.source_scanner,
                                                    name='CCOPY'))
+
+
+class copyfunctions(object):
+    def __init__(self, funcs):
+        self.__funcs = funcs
+
+    def __call__(self):
+        return self.__funcs
+
+    def __repr__(self):
+        return "<copyfunctions>"
+
 
 COPY_BUILDERS = {
     CCopy.hard_soft_copy: CopyBuilderDescription(builderName='__CCopyBuilderHSC__',
                                                  ccopyName='copy_hard_soft',
-                                                 copyFunctions=(copy_hard, copy_soft)),
+                                                 copyFunctions=copyfunctions((copy_hard, copy_soft))),
     CCopy.soft_hard_copy: CopyBuilderDescription(builderName='__CCopyBuilderSHC__',
                                                  ccopyName='copy_soft_hard',
-                                                 copyFunctions=(copy_soft, copy_hard)),
+                                                 copyFunctions=copyfunctions((copy_soft, copy_hard))),
     CCopy.hard_copy: CopyBuilderDescription(builderName='__CCopyBuilderHC__',
                                             ccopyName='copy_hard',
-                                            copyFunctions=(copy_hard,)),
+                                            copyFunctions=copyfunctions((copy_hard,))),
     CCopy.soft_copy: CopyBuilderDescription(builderName='__CCopyBuilderSC__',
                                             ccopyName='copy_soft',
-                                            copyFunctions=(copy_soft,)),
+                                            copyFunctions=copyfunctions((copy_soft,))),
     CCopy.copy: CopyBuilderDescription(builderName='__CCopyBuilderC__', ccopyName='copy',
-                                       copyFunctions=()),
+                                       copyFunctions=copyfunctions(())),
 }
 
 # This is what we want to be setup in parts

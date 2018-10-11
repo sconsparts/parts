@@ -22,7 +22,8 @@ from .. import api
 # Begin OS level support for symbolic links
 try:
     from os import symlink as _os_symlink
-    os_symlink = lambda linkto, linkname, isdir: _os_symlink(linkto, linkname)
+
+    def os_symlink(linkto, linkname, isdir): return _os_symlink(linkto, linkname)
 except ImportError:
     # Some magic numbers are needed. Their names can be found in MSDN.
     FSCTL_SET_REPARSE_POINT = 589988
@@ -349,6 +350,8 @@ class FileSymbolicLink(SCons.Node.FS.File):
         if klass is SCons.Node.FS.File:
             return
         return SCons.Node.FS.File.must_be_same(self, klass)
+
+
 SCons.Node.FS.FileSymbolicLink = FileSymbolicLink
 
 
@@ -356,6 +359,8 @@ def _def_SCons_Node_FS_FS_FileSymbolicLink(klass):
     def FileSymbolicLink(self, name, directory=None, create=1):
         return self._lookup(name, directory, SCons.Node.FS.FileSymbolicLink, create)
     klass.FileSymbolicLink = FileSymbolicLink
+
+
 _def_SCons_Node_FS_FS_FileSymbolicLink(SCons.Node.FS.FS)
 
 
@@ -363,6 +368,8 @@ def _def_SCons_Node_FS_Dir_FileSymbolicLink(klass):
     def FileSymbolicLink(self, name):
         return self.fs.FileSymbolicLink(name, self)
     klass.FileSymbolicLink = FileSymbolicLink
+
+
 _def_SCons_Node_FS_Dir_FileSymbolicLink(SCons.Node.FS.Dir)
 
 
@@ -370,6 +377,8 @@ def _def_SCons_Node_FS_File_FileSymbolicLink(klass):
     def FileSymbolicLink(self, name):
         return self.dir.FileSymbolicLink(name)
     klass.FileSymbolicLink = FileSymbolicLink
+
+
 _def_SCons_Node_FS_File_FileSymbolicLink(SCons.Node.FS.File)
 
 
@@ -383,6 +392,8 @@ def _def_SConsEnvironment_FileSymbolicLink(klass):
             return result
         return self.fs.FileSymbolicLink(s, *args, **kw)
     klass.FileSymbolicLink = FileSymbolicLink
+
+
 _def_SConsEnvironment_FileSymbolicLink(SConsEnvironment)
 
 
@@ -446,6 +457,7 @@ def _wrap_MetaTag(MetaTag):
         return None
     return lambda nodes, ns='meta', **kw: call(MetaTag, nodes, ns, **kw)
 
+
 metatag.MetaTag = _wrap_MetaTag(metatag.MetaTag)
 
 
@@ -459,7 +471,12 @@ def _wrap_SCons_Node_FS_Entry_disambiguate(disambiguate):
         else:
             return disambiguate(self, must_exist)
     return call
+
+
 SCons.Node.FS.Entry.disambiguate = _wrap_SCons_Node_FS_Entry_disambiguate(SCons.Node.FS.Entry.disambiguate)
+# have to add File node object as well as the "class" definition
+# does not get updated with the base class modification (monkey patch)
+SCons.Node.FS.File.disambiguate = _wrap_SCons_Node_FS_Entry_disambiguate(SCons.Node.FS.File.disambiguate)
 
 
 def _source_scanner():
@@ -484,23 +501,22 @@ def _source_scanner():
         contains one FileSymbolicLink node - the target.
         '''
 
-        # This function is executed very often for performance reasons return ASAP.
-
         if len(path) != 1:
-            # We expected a one element tuple
             return []
-
-        target = path[0]
-        if not isinstance(target, FileSymbolicLink):
+        
+        source = path[0]
+        target = node
+        if not isinstance(target, FileSymbolicLink) or not isinstance(source, FileSymbolicLink):
             # Don't know how to handle non-symlink nodes
             return []
 
-        linkto = target.linkto
+        linkto = source.linkto
         if linkto:
             # if the target has a linkto property set use it.
             result = target.Entry(linkto)
             return [result] if not result in target.children(scan=0) else []
-
+        '''
+        #double check this case...
         if isinstance(node, FileSymbolicLink) and node.linkto:
             try:
                 # A node pointed by source node's linkto may be copied into several
@@ -513,7 +529,7 @@ def _source_scanner():
                 return [result] if not result in target.children(scan=0) else []
             except (AttributeError, IndexError):
                 pass
-
+        '''
         return []
 
     def path_function(env, scons_dir, target, source, arg=None):
@@ -521,9 +537,10 @@ def _source_scanner():
         Scanner path_function. We don't make a real path_function here we use
         it as the way to pass target into Scanner function.
         '''
-        return tuple(node for node in target if isinstance(node, FileSymbolicLink))
+        return tuple(node for node in source if isinstance(node, FileSymbolicLink))
 
     return Scanner(function, path_function=path_function)
+
 
 source_scanner = _source_scanner()
 
@@ -591,12 +608,14 @@ def make_link_bf(target, source, env):
 
     return None
 
+
 api.register.add_builder('__make_link__', SCons.Builder.Builder(
     action=SCons.Action.Action(make_link_bf, cmdstr="Symbolic link $TARGET -> ${TARGET.linkto}"),
     target_factory=SCons.Node.FS.FileSymbolicLink,
     source_factory=SCons.Node.FS.Entry,
     single_source=1,
     emitter=make_link_Emit,
+    target_scanner=source_scanner
 ))
 
 
@@ -626,6 +645,7 @@ def ResolveSymLinkChain(env, link):
                 result[-1] = linkto
 
     return result
+
 
 SConsEnvironment.SymLink = SymLinkEnv
 SConsEnvironment.ResolveSymLinkChain = ResolveSymLinkChain
