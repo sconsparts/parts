@@ -108,6 +108,9 @@ class mapper(object):
             # because the exception thrown will not get thrown the try catch in subst()
             env.Exit(1)
 
+    def ref_to_part_failed(self, env, match, policy=Policy.ReportingPolicy.error):
+        self.name_to_alias_failed(env, match, policy)
+
     def name_to_alias_failed(self, env, match, policy=Policy.ReportingPolicy.error):
 
         if match.hasAmbiguousMatch:
@@ -115,15 +118,16 @@ class mapper(object):
         else:
             reason = match.NoMatchStr()
         api.output.policy_msg(
-            Policy.ReportingPolicy.error,
+            policy,
             [self.name, 'mappers'],
             "Failed to map dependency for {0}\n  with Version: {1} config: {2} TARGET_PLATFORM: {3}\n {4}".format(
                 env.PartName(), env.PartVersion(), env['CONFIG'], env['TARGET_PLATFORM'], reason),
             stackframe=self.stackframe,
             exit=False
         )
-        # because the exception thrown will not get thrown the try catch in subst()
-        env.Exit(1)
+        if policy == Policy.ReportingPolicy.error:
+            # because the exception thrown will not get thrown the try catch in subst()
+            env.Exit(1)
 
     @staticmethod
     def map_export_table(sec, prop, rvalue, value, spacer, recursed):
@@ -286,6 +290,8 @@ def _concat(prefix, list, suffix, env, f=lambda x: x, target=None, source=None):
         list = l
 
     return env['_concat_ixes'](prefix, list, suffix, env)
+
+
 _concat.name = "_concat"
 
 
@@ -323,6 +329,7 @@ def _concat_ixes(prefix, list, suffix, env):
                     result[-1] = result[-1] + suffix
 
     return result
+
 
 _concat_ixes.name = "_concat_ixes"
 
@@ -436,7 +443,7 @@ class part_id_mapper(mapper):
         t = target_type.target_type("name::" + self.part_name)
         t.Properties['version'] = self.ver_range
         t.Properties['platform_match'] = env['TARGET_PLATFORM']
-        match = part_ref.part_ref(t)
+        match = part_ref.part_ref(t,glb.engine._part_manager._from_env(env).Uses)
         if match.hasUniqueMatch:
             pobj = match.UniqueMatch
         else:
@@ -582,7 +589,8 @@ class part_id_export_mapper(mapper):
         return tmp
 
 
-class part_subst_mapper(mapper):
+# deprecated .. better to use PARTSUBST()
+class part_sub_mapper(mapper):
     ''' This class maps the part vars in the Default enviroment to the actual
     value stored the in default Env PART_INFO map. It then returns the value
     of the property for the requested part alias. This version doesn't have the
@@ -594,7 +602,7 @@ class part_subst_mapper(mapper):
 
     def __init__(self, part_alias, substr, section='build'):
         if __debug__:
-            logInstanceCreation(self, 'parts.mappers.part_subst_mapper')
+            logInstanceCreation(self, 'parts.mappers.part_sub_mapper')
         mapper.__init__(self)
         self.part_alias = part_alias
         self.substr = substr
@@ -613,6 +621,46 @@ class part_subst_mapper(mapper):
         penv = pobj.Section(self.section).Env
         return penv.subst(self.substr, conv=lambda x: x)
 
+
+class part_subst_mapper(mapper):
+    ''' This class maps the part vars in the Default enviroment to the actual
+    value stored the in default Env PART_INFO map. It then returns the value
+    of the property for the requested part target. This version doesn't have the
+    small hack to fix the list subst in SCons. As such it a bit faster is is mostly
+    used for delay substiution of more simple value such as $OUT_BIN which may contain
+    values not fully filled in.
+    '''
+    name = 'PARTSUBST'
+    # probally need to remove section as the target shoudl handle this?
+
+    def __init__(self, target_str, substr, section='build', policy=Policy.REQPolicy.warning):
+        if __debug__:
+            logInstanceCreation(self, 'parts.mappers.part_subst_mapper')
+        mapper.__init__(self)
+        self.target_str = target_str
+        self.substr = substr
+        self.section = section
+        self.policy = policy
+
+    def __repr__(self):
+        return '${{{0}("{1}","{2}","{3}", {4})}}'.format(self.name, self.target_str, self.substr, self.section, self.policy)
+
+    def _guarded_call(self, target, source, env, for_signature):
+        thread_id = thread.get_ident()
+        spacer = "." * env_guard.depth(thread_id)
+        pobj_org = glb.engine._part_manager._from_env(env)
+        ref = part_ref.part_ref(self.target_str,pobj_org.Uses)
+        api.output.trace_msgf(['partsubst_mapper', 'mapper'], "{spacer}Mapping target: {0}", self.target_str, spacer=spacer)
+        api.output.trace_msgf(['partsubst_mapper', 'mapper'], "{spacer}Has Match: {0}", ref.hasUniqueMatch, spacer=spacer)
+        if not ref.hasUniqueMatch or not ref.hasMatch:
+            self.ref_to_part_failed(env, ref, self.policy)
+            api.output.trace_msgf(['partsubst_mapper', 'mapper'], "{spacer}Match failed: Returning None", spacer=spacer)
+            return None
+
+        pobj = ref.UniqueMatch
+        penv = pobj.Section(self.section).Env
+        ret = penv.subst(self.substr, conv=lambda x: x)
+        api.output.trace_msgf(['partsubst_mapper', 'mapper'], "{spacer}Returning value of: {0}", ref.hasUniqueMatch, spacer=spacer)
         return ret
 
 
@@ -684,9 +732,9 @@ class abspath_mapper(mapper):
         return '${{{0}("{1}")}}'.format(self.name, self.value)
 
     def _guarded_call(self, target, source, env, for_signature):
-        if self.value[0] == '$':
-            return env.Entry(env.subst(self.value)).abspath
-        return env.Entry(env.subst("${" + self.value + "}")).abspath
+        # if self.value[0] == '$':
+        return env.Entry(env.subst(self.value)).abspath
+        # return env.Entry(env.subst("${" + self.value + "}")).abspath
 
 
 class normpath_mapper(mapper):
@@ -866,6 +914,7 @@ api.register.add_mapper(_concat_ixes)
 api.register.add_mapper(part_mapper)
 api.register.add_mapper(part_id_mapper)
 api.register.add_mapper(part_id_export_mapper)
+api.register.add_mapper(part_sub_mapper)
 api.register.add_mapper(part_subst_mapper)
 api.register.add_mapper(part_name_mapper)
 api.register.add_mapper(part_shortname_mapper)
