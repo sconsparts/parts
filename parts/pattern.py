@@ -106,7 +106,7 @@ class Pattern(object):
                 matches = common.matches(enity.ID, self.includes, self.excludes)
                 # __rt and __oot are funny files that are out of tree
                 # # or under the Sconstruct but not the parts file
-                if is_dir and not enity.name in ["__rt", "__oot"]:
+                if is_dir and not enity.name in ["__rt", "__oot"] and self.recursive:
                     paths.append(enity)
                 elif not is_dir and matches:
                     try:
