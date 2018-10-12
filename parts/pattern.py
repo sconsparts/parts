@@ -103,7 +103,7 @@ class Pattern(object):
             objs += path.glob("*")
             for enity in objs:
                 is_dir = util.isDir(enity)
-                matches = common.matches(enity.ID, self.includes, self.excludes)
+                matches = common.matches(self.src_dir.rel_path(enity), self.includes, self.excludes)
                 # __rt and __oot are funny files that are out of tree
                 # # or under the Sconstruct but not the parts file
                 if is_dir and not enity.name in ["__rt", "__oot"] and self.recursive:
