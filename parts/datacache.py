@@ -1,14 +1,15 @@
-import glb
-import common
-import core.util
-import api.output
-import errors
+from __future__ import absolute_import, division, print_function
 
-import cPickle
-import os
+import pickle
 import fnmatch
+import os
 
 import SCons.Script
+
+import parts.api as api
+import parts.common as common
+import parts.errors as errors
+import parts.glb as glb
 
 __cache = {}
 __dirty_cache = set()
@@ -23,7 +24,7 @@ def db_key(length):
     except KeyError:
         import hashlib
         md5 = hashlib.md5()
-        md5.update("DB Cache Version 1.3.0 length %s" % (length))
+        md5.update("DB Cache Version 1.3.0 length {0}".format(length).encode())
         __db_key[length] = md5.hexdigest()
     return __db_key[length]
 
@@ -33,10 +34,10 @@ def __load_cache_data(datafile):
         if os.path.exists(datafile):
             with open(datafile, 'rb') as inputfile:
                 data = inputfile.read()
-            return cPickle.loads(data)
+            return pickle.loads(data)
 
     except Exception as ec:
-        api.output.warning_msg("Failed to load datacache file %s, will rebuild file." % datafile, print_once=True)
+        api.output.warning_msg("Failed to load datacache file {0}, will rebuild file.".format(datafile), print_once=True)
         global __bad_cache
         __bad_cache = True
 
@@ -56,7 +57,7 @@ def __store_cache_data(datafile, data):
             data_to_dump = ((db_key(len(data)), v), data)
         except TypeError:
             data_to_dump = ((db_key(1), v), data)
-        cPickle.dump(data_to_dump, outfile, 2)
+        pickle.dump(data_to_dump, outfile, 2)
 
 
 __use_parts_cache = None
@@ -188,7 +189,7 @@ def ClearCache(name=None, key=None, save=False):
      # clear everything for a given key
     if name is None and key:
         tmp = os.sep.join((".parts.cache", key, "*.cache"))
-        for k in __cache.keys():
+        for k in list(__cache.keys()):
             # see if the path matched
             if fnmatch.fnmatchcase(k, tmp):
                 clear_item(k)

@@ -1,8 +1,10 @@
 '''
 Module contains overrides for SCons.Debug module
 '''
+from __future__ import absolute_import, division, print_function
 
 import weakref
+
 import SCons.Debug
 import SCons.Script
 
@@ -29,7 +31,7 @@ def wrap_logInstanceCreation(func):
         # To save memory we will count objects only when we are asked for.
         def empty(instance, name=None):
             pass
-        func.func_code = empty.func_code
+        func.__code__ = empty.__code__
         tracked_classes.clear()
         return
 
@@ -56,7 +58,7 @@ def wrap_logInstanceCreation(func):
 
     # When wrap_logInstanceCreation is called there are some entries in the tracked_classes already.
     # Convert the lists to sets.
-    for key, refs in tracked_classes.items():
+    for key, refs in list(tracked_classes.items()):
         tracked_classes[key] = the_set = set()
         the_set.update(wref(ref(), remover(the_set)) for ref in refs if ref() is not None)
 

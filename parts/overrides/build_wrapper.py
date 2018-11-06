@@ -5,16 +5,20 @@
 # building duplicate files. This is nice for copying config files that are platform independent
 # during a cross build.
 
-# we used lists as a dictionary can't take a tuple as a key
+
 # I could try to turn the key into a string however i was unsure of speed impact..
 # deal with that latter
+from __future__ import absolute_import, division, print_function
 
-import SCons.Environment
-import SCons.Builder
-from .. import glb
-from .. import errors
 
 import os
+
+import SCons.Builder
+# we used lists as a dictionary can't take a tuple as a key
+import SCons.Environment
+
+import parts.errors as errors
+import parts.glb as glb
 
 key_list = []
 value_list = []

@@ -1,21 +1,24 @@
-import glb
-import common
-import core.util
-import color
-import api.output
-import logger
-import load_module
-import platform_info
+from __future__ import absolute_import, division, print_function
 
-import SCons.Script
 import os
 import sys
 from optparse import OptionValueError
 
+import SCons.Script
+
+import parts.api as api
+import parts.color as color
+import parts.common as common
+import parts.core as core
+import parts.glb as glb
+import parts.load_module as load_module
+import parts.logger as logger
+import parts.platform_info as platform_info
+import parts.settings as settings
 
 # used to help scripts set defaults when there is no config script
 def SetOptionDefault(key, value):
-    import settings
+    
     args = sys.argv[1:]
 
     # special logger logic

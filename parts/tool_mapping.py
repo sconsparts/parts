@@ -1,12 +1,17 @@
 
-import common
-import core.util as util
-import load_module
-import SCons.Tool
-import os
-import api.output
+from __future__ import absolute_import, division, print_function
 
+import os
+
+import SCons.Tool
 from SCons.Errors import UserError
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
+
+import parts.api as api
+import parts.common as common
+import parts.core.util as util
+import parts.load_module as load_module
 
 
 def get_tlset_module(tlchain, version):
@@ -50,10 +55,9 @@ def get_tools(env, tlset):
         __tools_dirs
     except NameError:
         __tools_dirs = load_module.get_site_directories('tools')
-
     new_list = []
     repeat = False
-    for tool in tlset:
+    for tool in tlset:        
         try:
             tool, configuration = tool
         except ValueError:
@@ -75,7 +79,6 @@ def get_tools(env, tlset):
                     SCons.Tool.Tool(tool, toolpath=__tools_dirs)
                 except:
                     api.output.error_msg("Failed to load Unknown ToolChain or Tool:", tool, show_stack=False)
-                    pass
                 else:
                     new_list.extend([(tool, {}, configured)])
         else:
@@ -117,7 +120,7 @@ def _ToolChain(env, chainlist):
             # apply the tool to the enviroment
             configured_tools.append(tool_name)
         tool = SCons.Tool.Tool(tool_name, toolpath=env['toolpath'])
-        env['_BUILD_CONTEXT_FILES'].add(tool.generate.func_code.co_filename)
+        env['_BUILD_CONTEXT_FILES'].add(tool.generate.__code__.co_filename)
         tool(env)
 
 
@@ -133,8 +136,6 @@ def tool_converter(str_val, raw_val):
     raise "Invalid tool value '%s'" % raw_val
 
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
 

@@ -30,10 +30,16 @@ selection method.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import absolute_import, division, print_function
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import os.path
+
+import parts.api.output as output
+import parts.common as common
+import parts.tools.Common
+from parts.tools.MSCommon import msvc, validate_vars
 
 import SCons.Action
 import SCons.Defaults
@@ -41,11 +47,6 @@ import SCons.Errors
 import SCons.Platform.win32
 import SCons.Tool
 import SCons.Util
-
-import parts.api.output as output
-import parts.common as common
-from parts.tools.MSCommon import msvc, validate_vars
-import parts.tools.Common
 
 
 def pdbGenerator(env, target, source, for_signature):
@@ -216,7 +217,7 @@ def RegServerFunc(target, source, env):
         if ret:
             raise SCons.Errors.UserError("Unable to register %s" % target[0])
         else:
-            print "Registered %s sucessfully" % target[0]
+            print("Registered %s sucessfully" % target[0])
         return ret
     return 0
 
@@ -234,7 +235,7 @@ def EmbedManifestDLLFunc(target, source, env):
         if ret:
             raise SCons.Errors.UserError("Unable to embed manifest into %s" % (target[0]))
         else:
-            print "Embedded %(target)s.manifest successfully into %(target)s" % {'target': target[0]}
+            print("Embedded %(target)s.manifest successfully into %(target)s" % {'target': target[0]})
         return ret
     return 0
 
@@ -255,7 +256,7 @@ def EmbedManifestProgFunc(target, source, env):
         if ret:
             raise SCons.Errors.UserError("Unable to embed manifest into %s" % (target[0]))
         else:
-            print "Embedded %(target)s.manifest successfully into %(target)s" % {'target': target[0]}
+            print("Embedded %(target)s.manifest successfully into %(target)s" % {'target': target[0]})
         return ret
     return 0
 
@@ -271,7 +272,7 @@ def CertFunc(env):
     if ret:
         raise SCons.Errors.UserError("Unable to make code signing certificate")
 
-    print "Successfully generated code signing certificate"
+    print("Successfully generated code signing certificate")
 
     return ret
 
@@ -300,7 +301,7 @@ def SignFunc(target, source, env):
         if ret:
             raise SCons.Errors.UserError("Unable to sign %s" % target[0])
 
-    print "Successfully signed %s" % target[0]
+    print("Successfully signed %s" % target[0])
 
     return ret
 

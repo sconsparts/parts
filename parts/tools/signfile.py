@@ -2,20 +2,23 @@
 # default to the moment signtool on windows...
 # all other places need to be filled in
 
+from __future__ import absolute_import, division, print_function
+
+
 import os
 
-import SCons.Script
+import parts.api.output as output
+import parts.common as common
+import parts.tools.Common
+from parts.tools.MSCommon import msvc, validate_vars
+
 import SCons.Action
 import SCons.Defaults
 import SCons.Errors
 import SCons.Platform.win32
+import SCons.Script
 import SCons.Tool
 import SCons.Util
-
-import parts.api.output as output
-import parts.common as common
-from parts.tools.MSCommon import msvc, validate_vars
-import parts.tools.Common
 
 
 def signEmit(target, source, env):
@@ -47,7 +50,7 @@ def CertFunc(env):
     if ret:
         raise SCons.Errors.UserError("Unable to make code signing certificate")
 
-    print "Successfully generated code signing certificate"
+    print("Successfully generated code signing certificate")
 
     return ret
 
@@ -75,7 +78,7 @@ def SignFunc(target, source, env):
         if ret:
             raise SCons.Errors.UserError("Unable to sign %s" % target[0])
 
-    print "Successfully signed %s" % target[0]
+    print("Successfully signed %s" % target[0])
 
     return ret
 

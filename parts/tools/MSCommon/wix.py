@@ -3,23 +3,28 @@ The file contains WiX tool stuff which we want to be in single instance.
 This file is not loaded by SCons.Tool() call it is called with Python
 import technique so its uniqueness is supported by python.
 """
+from __future__ import absolute_import, division, print_function
+
+
+
 import os
 import re
-import SCons.Scanner
-import SCons.Builder
-import SCons.Tool
-import SCons.Node.FS
-import SCons.Util
 import xml
 import xml.sax
 from xml.dom.pulldom import PullDOM
-from parts.platform_info import SystemPlatform
-from parts.tools.Common.ToolSetting import ToolSetting
-from parts.tools.Common.ToolInfo import ToolInfo
-from parts.tools.Common.Finders import PathFinder
-from parts.tools.Common.Finders import EnvFinder
-from parts.tools.MSCommon.MsiFinder import MsiFinder
+
 from parts import api
+from parts.platform_info import SystemPlatform
+from parts.tools.Common.Finders import EnvFinder, PathFinder
+from parts.tools.Common.ToolInfo import ToolInfo
+from parts.tools.Common.ToolSetting import ToolSetting
+from parts.tools.MSCommon.MsiFinder import MsiFinder
+
+import SCons.Builder
+import SCons.Node.FS
+import SCons.Scanner
+import SCons.Tool
+import SCons.Util
 
 wix = ToolSetting('WIX')
 

@@ -1,3 +1,4 @@
+from __future__ import absolute_import, division, print_function
 # equivalent to "import SCons.Tool.c++ as cplusplus"
 cplusplus = getattr(__import__('SCons.Tool.c++', globals(), locals(), []).Tool, 'c++')
 

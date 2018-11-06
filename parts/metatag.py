@@ -1,6 +1,8 @@
-import api.output
-import common
-import core.util
+from __future__ import absolute_import, division, print_function
+
+import parts.api as api
+import parts.common as common
+import parts.core as core
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
 
@@ -16,7 +18,7 @@ def MetaTag(nodes, ns='meta', **metakv):
             namespace = common.namespace()
             setattr(node.attributes, ns, namespace)
 
-        for item in metakv.iteritems():
+        for item in metakv.items():
             setattr(namespace, *item)
 
     return nodes

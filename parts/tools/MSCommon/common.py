@@ -1,7 +1,11 @@
+from __future__ import absolute_import, division, print_function
+
 import os
-import SCons.Util
-from parts.tools.Common.ToolSetting import ToolSetting
+
 import parts.platform_info
+from parts.tools.Common.ToolSetting import ToolSetting
+
+import SCons.Util
 
 logfile = os.environ.get('SCONS_MSCOMMON_DEBUG')
 if logfile:

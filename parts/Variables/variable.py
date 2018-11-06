@@ -1,12 +1,16 @@
 
-import SCons.Environment
-import SCons.Util
-from .. import events
-from .. import api
+from __future__ import absolute_import, division, print_function
 
-from SCons.Debug import logInstanceCreation
+
 
 import types
+
+import SCons.Environment
+import SCons.Util
+from SCons.Debug import logInstanceCreation
+
+import parts.api as api
+import parts.events as events
 
 # remove to use common version once we clean up code a bit more
 
@@ -50,18 +54,17 @@ class Variable(object):
         self.__help_group = help_group
 
         self._on_change = events.Event()
+        self.__env=None
 
     def _changeable(self, obj):
         # if it is one of these guys we feel that
         # it should be inmutable from our point of view
         # may need some tweaking still
         if isinstance(obj, int) or\
-                isinstance(obj, long) or\
                 isinstance(obj, bool) or\
                 isinstance(obj, float) or\
                 isinstance(obj, complex) or\
                 isinstance(obj, str) or\
-                isinstance(obj, unicode) or\
                 isinstance(obj, types.LambdaType) or \
                 isinstance(obj, types.MethodType) or \
                 isinstance(obj, types.ModuleType) or \

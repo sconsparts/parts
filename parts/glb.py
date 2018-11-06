@@ -1,5 +1,10 @@
 
+from __future__ import absolute_import, division, print_function
+
 import os
+import sys
+
+isPY2 = sys.version_info < (3, 0)
 
 load_none = 0
 load_cache = 1

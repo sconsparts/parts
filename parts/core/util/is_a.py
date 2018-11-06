@@ -1,5 +1,8 @@
-import SCons.Util
+from __future__ import absolute_import, division, print_function
+
+from future.utils import native_str
 import SCons.Node
+import SCons.Util
 
 
 def isEntry(obj):
@@ -34,8 +37,12 @@ def isDictionary(obj):
     return SCons.Util.is_Dict(obj)
 
 
+def isTuple(obj):
+    return isinstance(obj, tuple)
+
+
 def isString(obj):
-    return isinstance(obj, basestring) or SCons.Util.is_String(obj)
+    return isinstance(obj, native_str) or SCons.Util.is_String(obj)
 
 
 def isBool(obj):

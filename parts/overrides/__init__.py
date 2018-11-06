@@ -1,22 +1,24 @@
-﻿# this area defines code in Parts thart overides code in SCons because of feature enhancement or bug fixes
+﻿from __future__ import print_function
+# this area defines code in Parts thart overides code in SCons because of feature enhancement or bug fixes
 
-import debug
-import scons_util
-import env_alias
-import os_file
-import build_hook
-import build_wrapper
-import builder
-import default_env
-import dup_node_builder_env
-import env_array
-import env_clone
-import error_handling
-import scanner
-import nodes
-import tool
-import executor
-import buildtask_debugtime
-import stubprocess
-import script_main_debugtime
-import sconf
+from . import debug
+from . import scons_util
+from . import env_alias
+from . import os_file
+from . import build_hook
+from . import build_wrapper
+from . import builder
+from . import default_env
+from . import dup_node_builder_env
+from . import env_array
+from . import env_clone
+from . import error_handling
+from . import scanner
+from . import nodes
+from . import tool
+from . import executor
+from . import buildtask_debugtime
+from . import stubprocess
+from . import script_main_debugtime
+from . import sconf
+from . import subst

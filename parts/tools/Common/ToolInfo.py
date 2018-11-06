@@ -1,11 +1,17 @@
 
-import SCons.Util
-import parts.common
-import Finders
+from __future__ import absolute_import, division, print_function
+
+
+from builtins import range
+
 import os
+
 import parts.api as api
+import parts.common
 from parts.version import version_range
 
+from . import Finders
+import SCons.Util
 from SCons.Debug import logInstanceCreation
 
 
@@ -136,7 +142,7 @@ class ToolInfo(object):
             else:  # script is False
                 # subst data
                 api.output.verbose_msg("toolinfo", "Getting environment via variable substution")
-                for k, v in self.shell_vars.iteritems():
+                for k, v in self.shell_vars.items():
                     ret[k] = os.path.normpath(env.subst(v))
 
         self.shell_cache[cache_key] = ret
@@ -161,7 +167,7 @@ class ToolInfo(object):
             return None
 
         ret = {}
-        for v, p in found.iteritems():
+        for v, p in found.items():
             tmp = self.exists(env, namespace, v, p, use_script)
             api.output.verbose_msgf("toolinfo", "Exists test returned {0}", tmp)
             if tmp:

@@ -1,13 +1,15 @@
 
-import glb
-import api.output
-import errors
-import requirement
-import policy as policies
+from __future__ import absolute_import, division, print_function
 
 import hashlib
 
 from SCons.Debug import logInstanceCreation
+
+import parts.api as api
+import parts.errors as errors
+import parts.glb as glb
+import parts.policy as policies
+import parts.requirement as requirement
 
 
 class dependent_ref(object):
@@ -16,7 +18,6 @@ class dependent_ref(object):
     be shared between the two environments defining each section
     """
     __slots__ = [
-        '__weakref__',
         '__part_ref',
         '__sectionname',
         '__requires',

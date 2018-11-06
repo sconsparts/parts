@@ -1,5 +1,6 @@
-from SCons.Subst import quote_spaces
-from SCons.Subst import CmdStringHolder
+from __future__ import absolute_import, division, print_function
+
+from SCons.Subst import CmdStringHolder, quote_spaces
 
 
 class toolvar(str, CmdStringHolder):

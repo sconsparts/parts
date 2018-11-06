@@ -1,19 +1,21 @@
 #
 # $Id: doxygen.py 23243 2008-05-30 15:15:40Z eleskine $
 
+from __future__ import absolute_import, division, print_function
+
+
+import fnmatch
+import os
+import re
+import string
+import time
+
 import SCons.Builder
 import SCons.Node.FS
 import SCons.Util
-import re
-import string
-import os
-import time
-import fnmatch
-
 from SCons.Debug import Trace
 
 t = 0
-
 
 def DetectDot(env):
     res = env.Detect('dot')

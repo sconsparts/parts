@@ -1,31 +1,35 @@
-from .. import glb
-from .. import errors
-from .. import common
-from ..core import util
-from .. import api
-from .. import datacache
-from ..pnode import scons_node_info
-from ..pnode import pnode_manager
-from .. import metatag
-from .. import node_helpers
+from __future__ import absolute_import, division, print_function
 
-from SCons.Debug import logInstanceCreation
+from builtins import zip
+
+import hashlib
+import itertools
+import os
+import pprint
+import stat
+import sys
 
 import SCons.Node
 import SCons.Util
-from SCons.Util import silent_intern
-SCons.Node.NodeList = SCons.Util.NodeList
-
-import itertools
-import os
-import sys
-import hashlib
-import pprint
-import stat
-
 # Import symlinks to make sure it patches SCons.Node.FS and SCons.Environment before
 # we refer it
-import symlinks
+from . import symlinks
+from SCons.Debug import logInstanceCreation
+from SCons.Util import silent_intern
+
+import parts.api as api
+import parts.common as common
+import parts.datacache as datacache
+import parts.errors as errors
+import parts.glb as glb
+import parts.metatag as metatag
+import parts.node_helpers as node_helpers
+from parts.core import util
+from parts.pnode import pnode_manager, scons_node_info
+
+SCons.Node.NodeList = SCons.Util.NodeList
+
+
 
 Node = SCons.Node.Node
 File = SCons.Node.FS.File
@@ -78,7 +82,7 @@ class wrapper(object):
 
 
 class fake_ninfo(object):
-    __slots__ = ['timestamp', 'csig', '__weakref__']
+    __slots__ = ['timestamp', 'csig']
 
     def __init__(self, timestamp, csig):
         if __debug__:
@@ -374,7 +378,7 @@ def GenerateStoredInfo(self):
     info = scons_node_info.scons_node_info()
     info.Type = self.__class__
     info.Components = metatag.MetaTagValue(self, 'components', ns='partinfo', default={}).copy()
-    for partid, sections in info.Components.iteritems():
+    for partid, sections in info.Components.items():
         info.Components[partid] = set([sec.ID for sec in sections])
 
     info.AlwaysBuild = bool(self.always_build)
@@ -387,8 +391,8 @@ def GenerateStoredInfo(self):
 
     if self.has_builder() or self.side_effect:
         binfo = self.get_binfo()
-        nodes = zip(getattr(binfo, 'bsources', []) + getattr(binfo, 'bdepends', []) + getattr(binfo, 'bimplicit', []),
-                    binfo.bsourcesigs + binfo.bdependsigs + binfo.bimplicitsigs)
+        nodes = list(zip(getattr(binfo, 'bsources', []) + getattr(binfo, 'bdepends', []) + getattr(binfo, 'bimplicit', []),
+                    binfo.bsourcesigs + binfo.bdependsigs + binfo.bimplicitsigs))
     else:
         nodes = []
 
@@ -415,7 +419,7 @@ def GenerateStoredInfo(self):
             # we make them depend on the directories contents
             nodes.extend(
                 # Don't care about the ninfo. It will be got later.
-                (entry, None) for name, entry in node.entries.iteritems()
+                (entry, None) for name, entry in node.entries.items()
                 if name not in ('.', '..'))
             continue
 

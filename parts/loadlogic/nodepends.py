@@ -1,10 +1,13 @@
-from .. import glb
-import base
-from .. import api
+from __future__ import absolute_import, division, print_function
 
 import time
 
 from SCons.Debug import logInstanceCreation
+
+import parts.api as api
+import parts.errors as errors
+import parts.glb as glb
+from . import base
 
 
 class NoDepends(base.Base):  # task_master type

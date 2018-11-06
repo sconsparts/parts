@@ -14,13 +14,16 @@ Popen("/foo/bar") -> fork -> execve(["python", __file__]) -> execve("/foo/bar")
 
 All parameters needed for I/O redirection are passed in pickle via temporary file.
 '''
+from __future__ import absolute_import, division, print_function
 
 import sys
+from builtins import range
+
 if sys.platform in ('linux2', 'darwin'):
     import types
     import time
     import os
-    import cPickle as pickle
+    import pickle as pickle
     import fcntl
     import errno
     import traceback
@@ -54,7 +57,7 @@ if sys.platform in ('linux2', 'darwin'):
                 '''
                 Closes all open file descriptors
                 '''
-                for i in xrange(3, MAXFD):
+                for i in range(3, MAXFD):
                     try:
                         if i != but:
                             os.close(i)
@@ -158,7 +161,7 @@ if sys.platform in ('linux2', 'darwin'):
         except:
             report_exception(errpipe_write)
 
-    else:  # __name__ <> '__main__'
+    else:
         import ctypes
         import tempfile
 
@@ -258,22 +261,22 @@ if sys.platform in ('linux2', 'darwin'):
 
                     errpipe_read, errpipe_write = os.pipe()
 
-                    if isinstance(args, types.StringTypes):
-                        args = [unicode(args)]
+                    if isinstance(args, (str,)):
+                        args = [str(args)]
                     else:
-                        args = [unicode(x) for x in args]
+                        args = [str(x) for x in args]
 
                     if env:
-                        env = dict((unicode(key), unicode(value))
-                                   for (key, value) in env.iteritems())
+                        env = dict((str(key), str(value))
+                                   for (key, value) in env.items())
                     else:
                         env = None
                     if executable:
-                        executable = unicode(executable)
+                        executable = str(executable)
                     else:
                         executable = None
                     if cwd:
-                        cwd = unicode(cwd)
+                        cwd = str(cwd)
                     else:
                         cwd = None
 
@@ -302,7 +305,7 @@ if sys.platform in ('linux2', 'darwin'):
                     pid = ctypes.c_int()
 
                     os_environ = (ctypes.c_char_p * (len(os.environ) + 1))(
-                        *(['{0}={1}'.format(*value) for value in os.environ.iteritems()] + [0]))
+                        *(['{0}={1}'.format(*value) for value in os.environ.items()] + [0]))
 
                     try:
                         ret = posix_spawn(ctypes.byref(pid), ctypes.c_char_p(sys.executable),

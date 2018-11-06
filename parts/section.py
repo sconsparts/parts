@@ -1,3 +1,6 @@
+from __future__ import absolute_import, division, print_function
+
+
 from SCons.Debug import logInstanceCreation
 
 
@@ -46,7 +49,7 @@ def default_test_func(self, *lst, **kw):
             # error.. must be a callable type
             pass
 
-    for k, v in kw.iteritems():
+    for k, v in kw.items():
         try:
             if not (self.env[k] == v):
                 return False
@@ -121,7 +124,7 @@ class section(object):
         self.dict[name] = phase
 
     def Type(self):
-        if hasattr(self.Type.im_func, 'type') == False:
+        if hasattr(self.Type.__func__, 'type') == False:
             class mybase(object):
 
                 def __init__(self, env):
@@ -162,9 +165,9 @@ class section(object):
                             ret.append(p[0])
                     return ret
 
-            self.Type.im_func.type = mybase.__class__('%sSectionType' % self.name, (mybase,), self.dict)
+            self.Type.__func__.type = mybase.__class__('%sSectionType' % self.name, (mybase,), self.dict)
 
-        return self.Type.im_func.type
+        return self.Type.__func__.type
 
     def GetHandler(self):
         return self.processfunc

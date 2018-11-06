@@ -1,10 +1,15 @@
-import parts.glb as glb
+from __future__ import absolute_import, division, print_function
+
+
 import parts.api as api
 import parts.api.output as output
+import parts.glb as glb
 import parts.version as version
-import SCons.Script
 
+import SCons.Script
 from SCons.Debug import logInstanceCreation
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 
 def part_version(env, ver=None, _warn=True):
@@ -53,8 +58,6 @@ class _PartVersion(object):
         return part_version(self.env, ver, _warn=False)
 
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 # add global for new format
 api.register.add_global_parts_object('PartVersion', _PartVersion, True)

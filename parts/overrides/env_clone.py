@@ -1,4 +1,7 @@
+from __future__ import absolute_import, division, print_function
+
 import SCons.Util
+from SCons.Script.SConscript import SConsEnvironment
 
 # this add Parts bindable support to SCons clone call
 
@@ -31,7 +34,6 @@ except AttributeError:
     pass
 
 
-from SCons.Script.SConscript import SConsEnvironment
 
 # override Clone to deepcopy bindable objects
 SConsEnvironment._orig_Clone = SConsEnvironment.Clone

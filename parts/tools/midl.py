@@ -31,19 +31,21 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+from __future__ import absolute_import, division, print_function
+
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 import string
+
+import parts.api.output as output
+import parts.tools.Common
+from parts.tools.MSCommon import msvc
 
 import SCons.Action
 import SCons.Builder
 import SCons.Defaults
 import SCons.Scanner.IDL
 import SCons.Util
-
-import parts.api.output as output
-from parts.tools.MSCommon import msvc
-import parts.tools.Common
 
 
 def midl_emitter(target, source, env):
@@ -56,10 +58,10 @@ def midl_emitter(target, source, env):
 
     midlcom = env['MIDLCOM']
 
-    if string.find(midlcom, '/proxy') != -1:
+    if midlcom.find('/proxy') != -1:
         proxy = base + '_p.c'
         t.append(proxy)
-    if string.find(midlcom, '/dlldata') != -1:
+    if midlcom.find('/dlldata') != -1:
         dlldata = base + '_data.c'
         t.append(dlldata)
 

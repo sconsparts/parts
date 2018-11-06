@@ -1,5 +1,7 @@
-from .. import glb
-import stored_info
+from __future__ import absolute_import, division, print_function
+
+import parts.glb as glb
+import parts.pnode.stored_info as stored_info
 
 
 class scons_node_info(stored_info.stored_info):

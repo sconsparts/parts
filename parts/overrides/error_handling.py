@@ -1,9 +1,12 @@
 # this set of fixes deal with error handing issues
+from __future__ import absolute_import, division, print_function
 
-from SCons.Script import _SConscript
-import SCons.Script
-import sys
 import os
+import sys
+
+import SCons.Script
+import SCons.Script.Main
+from SCons.Script import _SConscript
 
 OrigSConscript_exception = _SConscript.SConscript_exception
 
@@ -22,7 +25,6 @@ def PartSConscript_exception(file=None):
 
 _SConscript.SConscript_exception = PartSConscript_exception
 
-import SCons.Script.Main
 
 # overides for better error reporting
 

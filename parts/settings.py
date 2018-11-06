@@ -1,24 +1,25 @@
 ﻿
-# this implements My first attempt at the IAPAT object
-# i caling it Settings as this in the end is what this does
-# it deal with the logic of different ways to setup/configure/defines
-# a set of setting used to define a Environment contect to build within
-
-import glb
-import api
-import Variables
-import common
-import core.util as util
-import load_module
 #import platform_info
 
-from SCons.Debug import logInstanceCreation
+# it deal with the logic of different ways to setup/configure/defines
+# a set of setting used to define a Environment contect to build within
+from __future__ import absolute_import, division, print_function
 
-import SCons.Script
+
 
 import copy
 import os
 import sys
+
+import SCons.Script
+from SCons.Debug import logInstanceCreation
+
+import parts.api as api
+import parts.common as common
+import parts.core.util as util
+import parts.glb as glb
+import parts.load_module as load_module
+import parts.Variables as Variables
 
 
 def normalize_map(m):
@@ -126,7 +127,7 @@ def get_cache_values(*lst):
     return ret
 
 
-class ToolChain():
+class ToolChain(object):
 
     def __init__(self):
         if __debug__:
@@ -136,7 +137,7 @@ class ToolChain():
         pass
 
 
-class All:
+class All(object):
 
     def __init__(self, *lst):
         if __debug__:
@@ -153,7 +154,7 @@ class All:
         return self.lst
 
 
-class OneOf:
+class OneOf(object):
 
     def __init__(self, *lst):
         if __debug__:
@@ -173,7 +174,7 @@ class OneOf:
         return []
 
 
-class AnyOf:
+class AnyOf(object):
 
     def __init__(self, *lst):
         if __debug__:
@@ -326,7 +327,7 @@ class Settings(object):
     def FeatureOption(self, name, default=True, explict=False, dest=None, help=''):
 
         if default != True and default != False:
-            print "Error Default value for Feature has to be a True or False value"
+            print("Error Default value for Feature has to be a True or False value")
 
         a = SCons.Script.AddOption("--enable-{0}".format(name),
                                    dest=dest,
@@ -411,7 +412,7 @@ class Settings(object):
         return self.Config_Set.Configuration(default_ver_func, post_process_func)
 
     def __apply_tools_and_config(self, env, pre=[], post=[]):
-         # apply tool chain
+         # apply tool chain        
         env.ToolChain(pre + env['toolchain'] + post)
         # apply the configuration for the tool
         env.Configuration()
@@ -425,7 +426,7 @@ class Settings(object):
 
         # this breaks up the value string toolchain in to a list of values ( need to tweak this logic when we use properties )
         env['TOOLCHAIN'] = env['toolchain'] if isinstance(env['toolchain'], str) else ",".join(
-            map(lambda x: x if isinstance(x, str) else x[0] if len(x) == 1 or x[1] is None else "_".join(x), env['toolchain']))
+            [x if isinstance(x, str) else x[0] if len(x) == 1 or x[1] is None else "_".join(x) for x in env['toolchain']])
 
     def DefaultEnvironment(self):
         '''
@@ -481,8 +482,7 @@ class Settings(object):
         # normalize_map(glb.defaultoverides))
         try:
             env = self.__env_cache[cache_key]
-        except KeyError:
-            # print "new custom"
+        except KeyError:            
             # check to see if the user set their own tools up in the old way
             user_tools = kw.get('tools')
             if user_tools is None:
@@ -509,7 +509,7 @@ class Settings(object):
             # from the rest of the general key values
             vars = {}
             tmp_kw = kw.copy()
-            for k, v in tmp_kw.iteritems():
+            for k, v in tmp_kw.items():
                 # if the value if a callable we want to add it as a function
                 if hasattr(v, '__call__'):
                     api.output.verbose_msgf("settings", "Adding function {0} as {1}", v, k)
@@ -522,7 +522,7 @@ class Settings(object):
             env = env.Clone(**kw)
 
             # reapply any values that are Vars so the convert logic gets applied correctly
-            for k, v in vars.iteritems():
+            for k, v in vars.items():
                 self.vars[k].Update(env, v)
 
             # apply our tool chain user is not using a hard coded SCons one
@@ -531,7 +531,7 @@ class Settings(object):
 
             # append any data or prepend any data as needed
             # will probally need better error handling later
-            for k, v in append.iteritems():
+            for k, v in append.items():
                 has_hey = k in env
                 if util.isList(v) and has_hey:
                     env.AppendUnique(**{k: v})
@@ -540,7 +540,7 @@ class Settings(object):
                 else:
                     api.output.warning_msg('Ignoring appending value', k, "as it is not a list. It is type", type(v), ".")
 
-            for k, v in prepend.iteritems():
+            for k, v in prepend.items():
                 has_hey = k in env
                 if util.isList(v) and has_hey:
                     env.PrependUnique(**{k: v})
@@ -555,13 +555,13 @@ class Settings(object):
 
         # we still add any environment values defined in the setting object
         # replace ideally for setting "non" path values
-        for k, v in self.__env_replace.items():
+        for k, v in list(self.__env_replace.items()):
             env["ENV"][k] = v
         # for the "path" like values
-        for k, v in self.__env_prepend.items():
+        for k, v in list(self.__env_prepend.items()):
             env.PrependENVPath(k, v, delete_existing=True)
 
-        for k, v in self.__env_append.items():
+        for k, v in list(self.__env_append.items()):
             env.AppendENVPath(k, v, delete_existing=True)
 
         # add to cache
@@ -648,7 +648,7 @@ class Settings(object):
             **kw
         )
 
-        env['HOST_PLATFORM'] = glb._host_sys
+        env['HOST_PLATFORM'] = glb._host_platform
         env['_BUILD_CONTEXT_FILES'] = set()  # make a Var
 
         # some general values we need to setup on any given system

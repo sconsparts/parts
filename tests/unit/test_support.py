@@ -14,13 +14,13 @@ def find_tests():
             dirs.remove('.svn')
         for f in files:
             if f.endswith('.test.py'):
-                print 'Loading tests from module', f,
+                print('Loading tests from module', f,)
                 try:
                     found.append(my_load(root, f[:-3]))
-                    print "- Succeeded!"
+                    print("- Succeeded!")
                     sys.stdout.flush()
                 except:
-                    print "- Failed! "
+                    print("- Failed! ")
                     errors.append((f, traceback.format_exc()))
                     print >> sys.stderr, "Stack Dump %s" % ('-' * 40)
                     traceback.print_exc()

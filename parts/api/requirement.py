@@ -1,9 +1,9 @@
+from __future__ import absolute_import, division, print_function
 
-from .. import common
+from .. import common, policy
 from ..core import util
-from .. import policy
-
-from ..requirement import DefineRequirementSet, requirement, REQ, requirement_internal
+from ..requirement import (REQ, DefineRequirementSet, requirement,
+                           requirement_internal)
 
 # setup default value for common stuff... some of this should move to tools that define them
 

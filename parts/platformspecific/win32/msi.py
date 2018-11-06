@@ -1,3 +1,8 @@
+from __future__ import absolute_import, division, print_function
+
+
+from builtins import range
+
 import ctypes
 from ctypes import windll
 
@@ -56,7 +61,7 @@ class Product(object):
         self.__productGuid = productGuid
 
     def __getattr__(self, name):
-        name = unicode(name)
+        name = str(name)
 
         # Determine buffer size for data
         buffSize = ctypes.c_int(0)
@@ -114,7 +119,7 @@ class Database(MsiHandle):
 
     def openView(self, query):
         self._check()
-        query = unicode(query)
+        query = str(query)
         viewHandle = ctypes.c_int(0)
         ret = windll.msi.MsiDatabaseOpenViewW(self._handle, query, ctypes.byref(viewHandle))
         if ret != 0:
@@ -187,7 +192,7 @@ class Record(MsiHandle):
         return buff.value
 
     def __iter__(self):
-        for index in xrange(1, self.getFieldCount() + 1):
+        for index in range(1, self.getFieldCount() + 1):
             yield self.valueAsString(index)
 
 
@@ -207,7 +212,7 @@ def allProducts():
 if __name__ == '__main__':
     import re
     for product in allProducts():
-        print ('\t'.join(((product.ProductName or
+        print('\t'.join(((product.ProductName or
                            product.ProductGuid).encode('mbcs', errors='ignore'),
                           getattr(product, 'VersionString',
                                   'No version info').encode('mbcs', errors='ignore'))))

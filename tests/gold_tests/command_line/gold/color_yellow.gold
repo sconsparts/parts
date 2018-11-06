@@ -1,1 +1,1 @@
-Trace: [use_color_option] use_color = {'console': <ConsoleColor instance fg:BrightPurple/BrightMagenta bk:Default>, 'stdtrace': <ConsoleColor instance fg:Yellow bk:Default>, 'stdout': <ConsoleColor instance fg:Dim bk:Default>, 'stdwrn': <ConsoleColor instance fg:BrightYellow bk:Default>, 'stderr': <ConsoleColor instance fg:BrightRed bk:Default>, 'stdverbose': <ConsoleColor instance fg:BrightAqua/BrightCyan bk:Default>, 'stdmsg': <ConsoleColor instance fg:Bold bk:Default>}
+Trace: [use_color_option] use_color = {``'stdtrace': <ConsoleColor instance fg:Yellow bk:Default>``}

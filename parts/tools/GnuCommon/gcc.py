@@ -1,9 +1,14 @@
+from __future__ import absolute_import, division, print_function
+
+from builtins import range
 import os
-from common import gcc, GnuInfo
-from parts.tools.Common.Finders import PathFinder, ScriptFinder, EnvFinder
+
 from parts.platform_info import SystemPlatform
+from parts.tools.Common.Finders import EnvFinder, PathFinder, ScriptFinder
 from parts.tools.Common.ToolInfo import ToolInfo
-import android
+
+from . import android
+from .common import GnuInfo, gcc
 
 gcc.Register(
     # we assume that the system has the correct libraies installed to do a cross build

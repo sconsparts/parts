@@ -31,7 +31,16 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+from __future__ import absolute_import, division, print_function
+
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
+
+from past.builtins import cmp
+from builtins import zip
+from builtins import filter
+
+from builtins import map
+from builtins import range
 
 import base64
 import hashlib
@@ -42,15 +51,15 @@ import re
 import string
 import sys
 
+import parts.tools.Common
+from parts.tools.MSCommon import msvc
+
 import SCons.Builder
 import SCons.Node.FS
 import SCons.Platform.win32
 import SCons.Script.SConscript
 import SCons.Util
 import SCons.Warnings
-
-from parts.tools.MSCommon import msvc
-import parts.tools.Common
 
 ##############################################################################
 # Below here are the classes and functions for generation of
@@ -336,13 +345,13 @@ class _DSPGenerator(object):
                 config.platform = 'Win32'
 
             self.configs[variant] = config
-            print "Adding '" + self.name + ' - ' + config.variant + '|' + config.platform + "' to '" + str(dspfile) + "'"
+            print("Adding '" + self.name + ' - ' + config.variant + '|' + config.platform + "' to '" + str(dspfile) + "'")
 
         for i in range(len(variants)):
             AddConfig(self, variants[i], buildtarget[i], outdir[i], runfile[i], cmdargs)
 
         self.platforms = []
-        for key in self.configs.keys():
+        for key in list(self.configs.keys()):
             platform = self.configs[key].platform
             if not platform in self.platforms:
                 self.platforms.append(platform)
@@ -455,10 +464,10 @@ class _GenerateV6DSP(_DSPGenerator):
 
         if self.nokeep == 0:
             # now we pickle some data and add it to the file -- MSDEV will ignore it.
-            pdata = pickle.dumps(self.configs, 1)
+            pdata = pickle.dumps(self.configs)
             pdata = base64.encodestring(pdata)
             self.file.write(pdata + '\n')
-            pdata = pickle.dumps(self.sources, 1)
+            pdata = pickle.dumps(self.sources)
             pdata = base64.encodestring(pdata)
             self.file.write(pdata + '\n')
 
@@ -469,7 +478,7 @@ class _GenerateV6DSP(_DSPGenerator):
                       'Resource Files': 'r|rc|ico|cur|bmp|dlg|rc2|rct|bin|cnt|rtf|gif|jpg|jpeg|jpe',
                       'Other Files': ''}
 
-        cats = categories.keys()
+        cats = list(categories.keys())
         # TODO(1.5):
         #cats.sort(lambda a, b: cmp(a.lower(), b.lower()))
         cats.sort(lambda a, b: cmp(string.lower(a), string.lower(b)))
@@ -716,15 +725,15 @@ class _GenerateV7DSP(_DSPGenerator):
 
         if self.nokeep == 0:
             # now we pickle some data and add it to the file -- MSDEV will ignore it.
-            pdata = pickle.dumps(self.configs, 1)
+            pdata = pickle.dumps(self.configs)
             pdata = base64.encodestring(pdata)
             self.file.write('<!-- SCons Data:\n' + pdata + '\n')
-            pdata = pickle.dumps(self.sources, 1)
+            pdata = pickle.dumps(self.sources)
             pdata = base64.encodestring(pdata)
             self.file.write(pdata + '-->\n')
 
     def printSources(self, hierarchy, commonprefix):
-        sorteditems = hierarchy.iteritems()
+        sorteditems = iter(hierarchy.items())
         # TODO(1.5):
         #sorteditems.sort(lambda a, b: cmp(a[0].lower(), b[0].lower()))
         sorteditems.sort(lambda a, b: cmp(string.lower(a[0]), string.lower(b[0])))
@@ -757,11 +766,11 @@ class _GenerateV7DSP(_DSPGenerator):
 
         self.file.write('\t<Files>\n')
 
-        cats = categories.keys()
+        cats = list(categories.keys())
         # TODO(1.5)
         #cats.sort(lambda a, b: cmp(a.lower(), b.lower()))
         cats.sort(lambda a, b: cmp(string.lower(a), string.lower(b)))
-        cats = filter(lambda k, s=self: s.sources[k], cats)
+        cats = list(filter(lambda k, s=self: s.sources[k], cats))
         for kind in cats:
             if len(cats) > 1:
                 self.file.write('\t\t<Filter\n'
@@ -773,14 +782,14 @@ class _GenerateV7DSP(_DSPGenerator):
             # First remove any common prefix
             commonprefix = None
             if len(sources) > 1:
-                s = map(os.path.normpath, sources)
+                s = list(map(os.path.normpath, sources))
                 # take the dirname because the prefix may include parts
                 # of the filenames (e.g. if you have 'dir\abcd' and
                 # 'dir\acde' then the cp will be 'dir\a' )
                 cp = os.path.dirname(os.path.commonprefix(s))
                 if cp and s[0][len(cp)] == os.sep:
                     # +1 because the filename starts after the separator
-                    sources = map(lambda s, l=len(cp) + 1: s[l:], sources)
+                    sources = list(map(lambda s, l=len(cp) + 1: s[l:], sources))
                     commonprefix = cp
             elif len(sources) == 1:
                 commonprefix = os.path.dirname(sources[0])
@@ -861,7 +870,7 @@ class _GenerateV7DSP(_DSPGenerator):
             self.file.close()
 
 
-class _DSWGenerator:
+class _DSWGenerator(object):
     """ Base class for DSW generators """
 
     def __init__(self, dswfile, source, env):
@@ -876,7 +885,7 @@ class _DSWGenerator:
         projects = SCons.Util.flatten(projects)
         if len(projects) < 1:
             raise SCons.Errors.UserError("You must specify at least one project to create an MSVSSolution.")
-        self.dspfiles = map(str, projects)
+        self.dspfiles = list(map(str, projects))
 
         if 'name' in self.env:
             self.name = self.env['name']
@@ -931,7 +940,7 @@ class _GenerateV7DSW(_DSWGenerator):
                 config.platform = 'Win32'
 
             self.configs[variant] = config
-            print "Adding '" + self.name + ' - ' + config.variant + '|' + config.platform + "' to '" + str(dswfile) + "'"
+            print("Adding '" + self.name + ' - ' + config.variant + '|' + config.platform + "' to '" + str(dswfile) + "'")
 
         if 'variant' not in env:
             raise SCons.Errors.InternalError("You must specify a 'variant' argument (i.e. 'Debug' or " +
@@ -943,7 +952,7 @@ class _GenerateV7DSW(_DSWGenerator):
                 AddConfig(self, variant)
 
         self.platforms = []
-        for key in self.configs.keys():
+        for key in list(self.configs.keys()):
             platform = self.configs[key].platform
             if not platform in self.platforms:
                 self.platforms.append(platform)
@@ -1074,7 +1083,7 @@ class _GenerateV7DSW(_DSWGenerator):
                             '\tEndGlobalSection\n')
         self.file.write('EndGlobal\n')
         if self.nokeep == 0:
-            pdata = pickle.dumps(self.configs, 1)
+            pdata = pickle.dumps(self.configs)
             pdata = base64.encodestring(pdata)
             self.file.write(pdata + '\n')
 
@@ -1190,7 +1199,7 @@ def GenerateProject(target, source, env):
         try:
             bdsp = open(str(builddspfile), "w+")
         except IOError as detail:
-            print 'Unable to open "' + str(dspfile) + '" for writing:', detail, '\n'
+            print(('Unable to open "' + str(dspfile) + '" for writing:', detail, '\n'))
             raise
 
         bdsp.write("This is just a placeholder file.\nThe real project file is here:\n%s\n" % dspfile.get_abspath())
@@ -1206,7 +1215,7 @@ def GenerateProject(target, source, env):
             try:
                 bdsw = open(str(builddswfile), "w+")
             except IOError as detail:
-                print 'Unable to open "' + str(dspfile) + '" for writing:', detail, '\n'
+                print(('Unable to open "' + str(dspfile) + '" for writing:', detail, '\n'))
                 raise
 
             bdsw.write("This is just a placeholder file.\nThe real workspace file is here:\n%s\n" % dswfile.get_abspath())

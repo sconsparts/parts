@@ -1,5 +1,6 @@
-import SCons.Script
 import parts.api as api
+
+import SCons.Script
 
 rpm_action = SCons.Action.Action([
     'mkdir -p ${TARGET.dir}/BUILD',

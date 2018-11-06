@@ -1,16 +1,17 @@
 ﻿
-import sys
-import os
+from __future__ import absolute_import, division, print_function
+
 import imp
-import traceback
+import os
 import re
+import sys
+import traceback
 
 import SCons.Errors
 import SCons.Script
 
-import glb
-import api.output
-
+import parts.api as api
+import parts.glb as glb
 
 g_site_dir_cache = {}
 
@@ -19,11 +20,11 @@ def get_site_directories(subdir):
     try:
         return g_site_dir_cache[subdir]
     except KeyError:
-        if glb._host_sys is None:
-            print "host_os bootstrap bug"
+        if glb._host_platform is None:
+            print("host_os bootstrap bug")
             1 / 0
 
-        host_os = glb._host_sys  # can't use HOST_OS because of bootstrap issue.
+        host_os = glb._host_platform  # can't use HOST_OS because of bootstrap issue.
         localpath = []
         # local data
         localpath = [
@@ -85,23 +86,23 @@ def load_module(pathlst, name, type):
     made more generic so Parts can reuse the logic
     instead of using the C&P anti-patttern.
     """
-    modname = '<%s>%s' % (type, name)
+    modname = '<{type}>{name}'.format(type=type, name=name)
     try:
         return sys.modules[modname]
     except KeyError:
         api.output.verbose_msg('load_module',
-                               'Trying to load module <%s> type <%s>' % (name, type))
+                               'Trying to load module {name} type {type}'.format(name=name, type=type))
         file, path1, desc = imp.find_module(name, pathlst)
         oldPath = sys.path[:]
         sys.path = pathlst + sys.path
         try:
             mod = imp.load_module(modname, file, path1, desc)
-            api.output.verbose_msg("load_module", "Module was loaded from <%s>" % path1)
+            api.output.verbose_msg("load_module", "Module was loaded from {path}".format(path=path1))
         except ImportError:
             api.output.verbose_msg("load_module", "Failed to load module!")
             api.output.verbose_msg(["load_module_failure", "load_module"],
-                                   "Stack:\n%s" % traceback.format_exc())
-            raise SCons.Errors.UserError("No module named '%s'" % (name))
+                                   "Stack:\n{0}".format(traceback.format_exc()))
+            raise SCons.Errors.UserError("No module named '{name}'".format(name=name))
         finally:
             sys.path = oldPath
             if file:
@@ -124,7 +125,7 @@ def get_possible_modules(pathList):
         except KeyError:
             modules = set()
             try:
-                files = os.walk(path).next()[2]
+                files = next(os.walk(path))[2]
             except StopIteration:
                 # path does not exist so it does not contain any modules
                 pass

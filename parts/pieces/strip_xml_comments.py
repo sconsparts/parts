@@ -1,8 +1,15 @@
+from __future__ import absolute_import, division, print_function
+
+from builtins import zip
+
 import os
 import re
-import SCons.Script
 
 import parts.api as api
+
+import SCons.Script
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 xmlComment = re.compile(r'(.*)(<!--)(.*)(-->)(.*)')
 
@@ -107,8 +114,6 @@ def StripXMLCommentsAs(env, target, source, **kw):
     return output
 
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
 SConsEnvironment.StripXMLComments = StripXMLComments

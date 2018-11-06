@@ -1,9 +1,13 @@
-import parts.glb as glb
+from __future__ import absolute_import, division, print_function
+
+
 import parts.api as api
+import parts.glb as glb
 
 import SCons.Script
-
 from SCons.Debug import logInstanceCreation
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 
 def part_name(env, name=None, parent_name=None):
@@ -45,8 +49,6 @@ class _PartName(object):
         return part_name(self.env, name, parent_name)
 
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 # add global for new format
 api.register.add_global_parts_object('PartName', _PartName, True)

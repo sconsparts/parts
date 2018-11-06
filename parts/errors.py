@@ -1,8 +1,10 @@
-import glb
+from __future__ import absolute_import, division, print_function
 
 import linecache
-import sys
 import os
+import sys
+
+import parts.glb as glb
 
 
 class AllowedDuplication(Exception):
@@ -90,5 +92,5 @@ def GetPartStackFrameInfo():
 
     if ret is []:
         return ("unknown", "unknown", "unknown", "unknown")
-    # print "->",ret
+    
     return ret

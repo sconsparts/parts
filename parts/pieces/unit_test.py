@@ -1,24 +1,27 @@
 
-import parts.glb as glb
-import parts.common as common
-import parts.core.util as util
-import parts.api as api
-import parts.errors as errors
-import parts.node_helpers as node_helpers
-import parts.pattern as pattern
-import parts.functors as functors
-import parts.parts as parts
-import parts.api.output as output
-import parts.pnode as pnode
+from __future__ import absolute_import, division, print_function
 
-from parts.target_type import target_type
-
-import SCons.Script
 
 import os
 import stat
 import sys
 
+import parts.api as api
+import parts.api.output as output
+import parts.common as common
+import parts.core.util as util
+import parts.errors as errors
+import parts.functors as functors
+import parts.glb as glb
+import parts.node_helpers as node_helpers
+import parts.parts as parts
+import parts.pattern as pattern
+import parts.pnode as pnode
+from parts.target_type import target_type
+
+import SCons.Script
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 # map unit testing stuff.. clean up depends..
 
@@ -45,9 +48,10 @@ def unit_test_script_bf(target, source, env):
         # UNIT_TEST_ENV may be a dict or a list of (key, value) tuples
         command_env = dict(
             (key, env.subst(value)) for (key, value) in dict(env.get(
-                'UNIT_TEST_ENV', {})).iteritems())
+                'UNIT_TEST_ENV', {})).items())
 
         command = '''#! /usr/bin/env python
+from __future__ import absolute_import, division, print_function
 import os
 import sys
 import subprocess
@@ -62,7 +66,7 @@ if len(sys.argv) > 1:
     cmd = cmd+" "+' '.join(sys.argv[1:])
 else:
     cmd = cmd
-print cmd
+print(cmd)
 proc = subprocess.Popen (cmd, env=env, shell=True)
 proc.wait()
 sys.stdout.flush()
@@ -70,10 +74,10 @@ sys.stderr.flush()
 sys.exit(proc.returncode)
 
 '''
-        f.write(command)
+        f.write(command.encode())
     with open(target_cmd.path, 'wb') as f:
-        f.write("@pushd %~dp0\r\n@python " + target_py.name +
-                " %*\r\nset ERROR_LEVEL=%ERRORLEVEL%\r\n@popd\r\nexit %ERROR_LEVEL%")
+        f.write(("@pushd %~dp0\r\n@python " + target_py.name +
+                " %*\r\nset ERROR_LEVEL=%ERRORLEVEL%\r\n@popd\r\nexit %ERROR_LEVEL%").encode())
     st = os.stat(target_py.path)
     os.chmod(target_py.path, stat.S_IMODE(st[stat.ST_MODE]) | stat.S_IEXEC)
     st = os.stat(target_cmd.path)
@@ -297,7 +301,7 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
 
         # this builder makes the scripts to run the test on
         # the command line with ease
-        for k, v in sec.Env.get('UNIT_TEST_ENV', {}).iteritems():
+        for k, v in sec.Env.get('UNIT_TEST_ENV', {}).items():
             sec.Env['ENV'][k] = sec.Env.subst(v)
         # in case a python script is being called.. it is the same version of python as we are using
         sec.Env.PrependENVPath('PATH', os.path.split(sys.executable)[0], delete_existing=True)
@@ -306,7 +310,7 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
             # Need to convert UNIT_TEST_ENV dictionary into a list
             # of (key, value) pairs to make SCons correctly track changes
             # in its contents.
-            UNIT_TEST_ENV=sec.Env.get('UNIT_TEST_ENV', {}).items()
+            UNIT_TEST_ENV=list(sec.Env.get('UNIT_TEST_ENV', {}).items())
         )
         scripts_out = sec.Env.CCopy("$UNIT_TEST_DIR", scripts_out)
         # here we map a bunch of aliases
@@ -378,8 +382,6 @@ def run_utest_return_default(code, env=None, stackframe=None):
     return code
 
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
 SConsEnvironment.UnitTest = unit_test

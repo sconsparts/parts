@@ -1,17 +1,22 @@
-from parts.tools.Common.ToolSetting import ToolSetting
-from parts.tools.Common.ToolSetting import MatchVersionNumbers
-from parts.tools.Common.ToolInfo import ToolInfo
-from parts.tools.Common.Finders import PathFinder
-from parts.platform_info import SystemPlatform
-from parts.tools.MSCommon import validate_vars
-import parts.tools.mslink
+from __future__ import absolute_import, division, print_function
 
-import SCons.Util
-from SCons.Scanner.Prog import print_find_libs
+from builtins import map
+
+from builtins import range
+
 import os
 
 import parts.api.output as output
 import parts.tools.Common
+import parts.tools.mslink
+from parts.platform_info import SystemPlatform
+from parts.tools.Common.Finders import PathFinder
+from parts.tools.Common.ToolInfo import ToolInfo
+from parts.tools.Common.ToolSetting import MatchVersionNumbers, ToolSetting
+from parts.tools.MSCommon import validate_vars
+
+import SCons.Util
+from SCons.Scanner.Prog import print_find_libs
 
 WDK = ToolSetting('WDK')
 
@@ -60,7 +65,7 @@ if SCons.Util.can_read_reg:
         except:
             return None
 
-    class WdkScanner:
+    class WdkScanner(object):
         # Versions is a dictionary of form {Major0 : {Minor0: {Build0: path}, Minor1: path}}
         versions = None
         plain_versions = None
@@ -73,7 +78,7 @@ if SCons.Util.can_read_reg:
                 """ return list of tuples of form ('Major.Minor.Build': 'path') """
                 assert isinstance(dictionary, dict)
                 res = []
-                for key in dictionary.keys():
+                for key in list(dictionary.keys()):
                     value = dictionary[key]
                     if not isinstance(value, dict):
                         res.append((str(key), value))
@@ -112,7 +117,7 @@ if SCons.Util.can_read_reg:
                         continue
                     dir = os.path.normpath(dir)
                     version = os.path.basename(dir)
-                    if version is unicode:
+                    if version is str:
                         version = version.encode('ascii', 'ignore')
                     version = version.split('.')
                     dictionary = WdkScanner.versions
@@ -137,7 +142,7 @@ if SCons.Util.can_read_reg:
                         continue
                     dir = os.path.normpath(dir)
                     version = s
-                    if version is unicode:
+                    if version is str:
                         version = version.encode('ascii', 'ignore')
                     version = version.split('.')
                     if len(version) == 0:
@@ -162,13 +167,13 @@ if SCons.Util.can_read_reg:
 
         def resolve(self, version):
             res = self.scan()
-            for k in res.keys():
+            for k in list(res.keys()):
                 if MatchVersionNumbers(version, k):
                     return res[k]
             return None
 
         def resolve_version(self, version):
-            for k in self.scan().keys():
+            for k in list(self.scan().keys()):
                 if MatchVersionNumbers(version, k):
                     return k
             return None
@@ -199,7 +204,7 @@ if SCons.Util.can_read_reg:
             )
 
         def version_set(self):
-            return set([x for x in self.install_root.scan().keys()])
+            return set([x for x in list(self.install_root.scan().keys())])
 
         def resolve_version(self, version):
             return self.install_root.resolve_version(version)

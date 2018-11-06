@@ -1,22 +1,24 @@
 
-from .. import glb
-from .. import datacache
-from .. import api
-from .. import metatag
+from __future__ import absolute_import, division, print_function
 
-import pnode
-import part_info  # needed for a type type
+from builtins import map
+
+import os
 
 import SCons.Node
-
-import parts.picklehelpers as picklehelpers
-
 from SCons.Debug import logInstanceCreation
+
+import parts.api as api
+import parts.datacache as datacache
+import parts.glb as glb
+import parts.metatag as metatag
+import parts.picklehelpers as picklehelpers
+import parts.pnode.part_info as part_info  # needed for a type type
+import parts.pnode.pnode as pnode
 
 
 class _node_info(object):
     __slots__ = [
-        '__weakref__',
         '__csig',
         '__timestamp',
         '__id'
@@ -81,7 +83,7 @@ class manager(object):
         return len(self.__known_pnodes)
 
     def clear_node_states(self):
-        for node in self.__known_nodes.itervalues():
+        for node in self.__known_nodes.values():
             node.clear_memoized_values()
 
     def isKnownNode(self, ID):
@@ -170,7 +172,7 @@ class manager(object):
                 # Old-style cache. Convert it into new one
                 data = data['known_nodes'][nodeID]
                 result = data['pinfo']
-                data['pinfo'] = picklehelpers.dumps(result, 2)
+                data['pinfo'] = picklehelpers.dumps(result)
                 return result
         return None
 
@@ -188,7 +190,7 @@ class manager(object):
                 # Old-style cache. Convert it into new one
                 data = data['known_pnodes'][nodeID]
                 result = data['pinfo']
-                data['pinfo'] = picklehelpers.dumps(result, 2)
+                data['pinfo'] = picklehelpers.dumps(result)
                 return result
         return None
 
@@ -196,7 +198,7 @@ class manager(object):
         data = self._get_cache()
         if data:
             try:
-                ids = data['known_nodes'].keys()
+                ids = list(data['known_nodes'].keys())
                 return ids
             except KeyError:
                 pass
@@ -241,7 +243,7 @@ class manager(object):
     def store_value(self, node, _info, valuestostore):
         valuestostore[node.ID] = {
             'type': node.__class__,
-            'pinfo': picklehelpers.dumps(_info, 2)
+            'pinfo': picklehelpers.dumps(_info)
         }
 
     def StoreAlias(self, node, valuestostore=None):
@@ -273,7 +275,7 @@ class manager(object):
             new_info = node.GenerateStoredInfo()
             newvalues = metatag.MetaTagValue(node, 'sections', ns='partinfo', default={})
             old_comp_data = node.Stored.Components
-            for k1, v in new_info.Components.iteritems():
+            for k1, v in new_info.Components.items():
                 try:
                     old_comp_data[k1].update(v)
                 except KeyError:
@@ -308,7 +310,7 @@ class manager(object):
 
     def StoreAllPNodes(self, build_mode):
         # this is mapped to the PostProcessEvent event to store all Pnode information we have
-        for node in self.__known_pnodes.values():
+        for node in list(self.__known_pnodes.values()):
             if node.LoadState == glb.load_file:
                 self.StorePNode(node)
 
@@ -319,13 +321,13 @@ class manager(object):
         store_all = self.__store_all or stored_data is None
         if store_all:
             aliases_stored = 0
-            for node in self.__aliases.values():
+            for node in list(self.__aliases.values()):
                 if not node.isVisited:
                     aliases_stored += 1
                     self.StoreAlias(node)
 
             nodes_stored = 0
-            for node in self.__known_nodes.values():
+            for node in list(self.__known_nodes.values()):
                 if not node.isVisited or not self.GetStoredNodeIDInfo(node.ID):
                     nodes_stored += 1
                     self.StoreNode(node)
@@ -394,7 +396,7 @@ class manager(object):
                         st_info = None
 
                 if st_info:
-                    info = _node_info(nodeid, long(st_info.st_mtime))
+                    info = _node_info(nodeid, int(st_info.st_mtime))
 
             if info is None:
                 info = _node_info(nodeid, 0)
@@ -474,7 +476,7 @@ class manager(object):
         src_data = info.SourceInfo
 
         # for each source check:
-        for snode, ninfo in src_data.iteritems():
+        for snode, ninfo in src_data.items():
             # if this node has changed
             if self.hasNodeRelationChanged(snode, ninfo):
                 api.output.verbose_msg(
@@ -498,12 +500,12 @@ class manager(object):
         if stored_data is None:
             return ret
         pnodes = stored_data.get('known_pnodes', {})
-        for data in pnodes.itervalues():
+        for data in pnodes.values():
             try:
                 pinfo = picklehelpers.loads(data['pinfo'])
             except (TypeError, picklehelpers.UnpicklingError):
                 pinfo = data['pinfo']
-                data['pinfo'] = picklehelpers.dumps(pinfo, 2)
+                data['pinfo'] = picklehelpers.dumps(pinfo)
             if isinstance(pinfo, part_info.part_info):
                 # if so test the Part file state
                 tmp = pinfo.File
@@ -512,8 +514,6 @@ class manager(object):
         return ret
 
 
-import SCons.Node
-import os
 
 
 def node_to_str(node):
@@ -538,7 +538,7 @@ def node_to_str(node):
     elif isinstance(node, SCons.Node.Alias.Alias):
         return node.name
     else:
-        print "unknown type", node, type(node)
+        print("unknown type", node, type(node))
     return None
 
 # vim: set et ts=4 sw=4 ai ft=python :

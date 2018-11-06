@@ -1,16 +1,23 @@
-from .. import common
-from ..core import util
-from .. import datacache
-from .. import api
-from .. import version
-from .. import target_type
+from __future__ import absolute_import, division, print_function
 
-from .base import normalize_url
-
-import SCons.Script
-import svn
 
 import os
+from optparse import OptionValueError
+
+import SCons.Script
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
+
+import parts.api as api
+import parts.common as common
+import parts.datacache as datacache
+import parts.glb as glb
+import parts.target_type as target_type
+import parts.version as version
+from parts.core import util
+
+from . import svn
+from .base import normalize_url
 
 
 class smart_svn(svn.svn):
@@ -190,7 +197,7 @@ class smart_svn(svn.svn):
  <branch and default:<branch> set the default branch value for a given Part
  <part ref>:branch set the branch for a given Part(s) referred to by <part ref>
  <branch> can be {1}
- <component name> which is the value of the component_name argument in the VcsSmartSvn()'''.format(branch, self._vars['BRANCH_MAP'].keys())
+ <component name> which is the value of the component_name argument in the VcsSmartSvn()'''.format(branch, list(self._vars['BRANCH_MAP'].keys()))
             api.output.error_msg(err_str, show_stack=False)
         # check each path till we get a hit
         for path in brch_lst:
@@ -217,7 +224,7 @@ class smart_svn(svn.svn):
         # new stuff
         value = self._env.GetOption('build_branch')
 
-        for k, v in value.iteritems():
+        for k, v in value.items():
             t = target_type.target_type(k)
             # we ignore version.. as we don't know it technically.
             if t.Alias == self._env['VCS']['NAME'] or t.Name == self._env['VCS']['NAME']:
@@ -254,8 +261,6 @@ api.register.add_global_object('VcsSmartSvn', smart_svn)
 api.register.add_variable(
     'VCS_SMART_SVN_DIR', '${CHECK_OUT_ROOT}/${VCS.NAME}${VCS.STABLE_VERSION}', 'Full path used for any given checked out item')
 api.register.add_variable('UID_PATH', '<unknown>', '')
-from .. import glb
-from optparse import OptionValueError
 
 
 def opt_branch(option, opt, value, parser):
@@ -281,8 +286,6 @@ def opt_branch(option, opt, value, parser):
     parser.values.build_branch = fvalue
 
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 api.register.add_variable('BUILD_BRANCH', "", "")
 
 SCons.Script.AddOption("--build-branch", "--bb",

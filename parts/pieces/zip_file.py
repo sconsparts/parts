@@ -1,15 +1,20 @@
 
-import zipfile
+from __future__ import absolute_import, division, print_function
+
+
 import os
-import SCons.Script
+import zipfile
+
 import parts.api as api
+
+import SCons.Script
 
 
 def _get_file_entries(node):
     # walk the Dir node to see what nodes it contains
     # return a flat list of file node
     ret = []
-    for k, v in node.entries.viewitems():
+    for k, v in node.entries.items():
         if isinstance(v, SCons.Node.FS.Dir) and k != ".." and k != ".":
             ret.extend(_get_file_entries(v))
         else:  # this is a File node

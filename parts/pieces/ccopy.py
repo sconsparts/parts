@@ -1,5 +1,11 @@
 # pylint: disable=missing-docstring
 
+from __future__ import absolute_import, division, print_function
+
+from builtins import zip
+from builtins import map
+
+
 import copy
 import errno
 import os
@@ -113,20 +119,20 @@ if sys.platform == 'win32':
         # convert Windows error code to errno using Python's implementation of WindowsError
         lastErrno = WindowsError(lastError, '').errno
         api.output.verbose_msgf("ccopy", "{0}: {1}", message, errorMessage)
-        raise CCopyException(IOError(lastErrno, errorMessage, unicode(dest)))
+        raise CCopyException(IOError(lastErrno, errorMessage, str(dest)))
 
     def copy_hard(dest, source):
-        if not CreateHardLink(unicode(dest), unicode(source), 0):
+        if not CreateHardLink(str(dest), str(source), 0):
             _reportError("Failed to create HardLink", dest)
 
     def copy_soft(dest, source):
         dirName, baseName = os.path.split(source)
         relativeSource = os.path.join(common.relpath(dirName, os.path.dirname(dest)), baseName)
-        if not CreateSymbolicLink(unicode(dest), unicode(relativeSource), 0):
+        if not CreateSymbolicLink(str(dest), str(relativeSource), 0):
             _reportError("Failed to create SymLink", dest)
 
     def copy_copy(dest, source):
-        if not CopyFile(unicode(source), unicode(dest), False):
+        if not CopyFile(str(source), str(dest), False):
             _reportError("Failed to copy", dest)
 
 else:
@@ -289,7 +295,7 @@ class CCopy(object):
 
     @classmethod
     def getList(cls):
-        return [attrName.replace('_', '-') for (attrName, attrValue) in cls.__dict__.iteritems()
+        return [attrName.replace('_', '-') for (attrName, attrValue) in cls.__dict__.items()
                 if isinstance(attrValue, int)]
 
     @classmethod
@@ -380,7 +386,7 @@ def CCopyWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw):
 
 
 def copy_metatags(target, source, env):
-    for k, v in source.attributes.__dict__.iteritems():
+    for k, v in source.attributes.__dict__.items():
         if not k.startswith("__"):
             tmp = copy.copy(v)
             setattr(target.attributes, k, tmp)
@@ -421,8 +427,8 @@ def CCopyFunc(target, source, env, copy_logic):
     # tell it we are starting a task
     taskId = output.TaskStart(CCopyStringFunc(target, source, env) + "\n")
 
-    assert len(target) == len(source), "\ntarget: %s\nsource: %s" % (map(str, target),
-                                                                     map(str, source))
+    assert len(target) == len(source), "\ntarget: %s\nsource: %s" % (list(map(str, target)),
+                                                                     list(map(str, source)))
 
     for targetEntry, sourceEntry in zip(target, source):
         # Get info if this should be handled as a symlink
@@ -463,9 +469,9 @@ def generateCopyBuilder(description):
         If all functions failed try simple copying.
         '''
         if len(dest) >= 200 and not dest.startswith("\\\\?\\") and sys.platform == 'win32':
-            dest = unicode("\\\\?\\" + os.path.abspath(dest))
+            dest = str("\\\\?\\" + os.path.abspath(dest))
         if len(source) >= 200 and not source.startswith("\\\\?\\") and sys.platform == 'win32':
-            source = unicode("\\\\?\\" + os.path.abspath(source))
+            source = str("\\\\?\\" + os.path.abspath(source))
         if copy_hard in description.copyFunctions() and not os.path.isdir(dest):
             # Check if dest is a hardlink of source - to save time; also on
             # Windows hardlinks have a quirk - if a file is opened without
@@ -537,7 +543,7 @@ SConsEnvironment.CCopy = CCopyWrapper
 SConsEnvironment.CCopyAs = CCopyAsWrapper
 SConsEnvironment.CCopyFuncWrapper = CCopyFuncWrapper
 
-for builderDescription in COPY_BUILDERS.itervalues():
+for builderDescription in COPY_BUILDERS.values():
     generateCopyBuilder(builderDescription)
 
 api.register.add_global_object('CCopy', CCopy)

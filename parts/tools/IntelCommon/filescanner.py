@@ -1,13 +1,16 @@
-import SCons.Util
-import sys
-import re
-import os
-import parts.tools.Common.Finders as Finders
-import common
-import subprocess
+from __future__ import absolute_import, division, print_function
 
+
+import os
+import re
+import subprocess
+import sys
+
+import parts.tools.Common.Finders as Finders
 from parts.common import make_list
 
+from . import common
+import SCons.Util
 from SCons.Debug import logInstanceCreation
 
 # for version 12.x
@@ -59,7 +62,7 @@ class file_scanner12(object):
 
                                 pipe.wait()
                                 for line in pipe.stdout:
-                                    match = re.search(r'icc\s+version\s+([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+)', line)
+                                    match = re.search(r'icc\s+version\s+([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+)', line.decode())
 
                                     if match:
                                         version_group2 = match.groups()[-1]
@@ -84,7 +87,7 @@ class file_scanner12(object):
         tmp = self.scan()
         if tmp is None:
             return None
-        k = tmp.keys()
+        k = list(tmp.keys())
         # k.reverse()
         for i in k:
             if common.MatchVersionNumbers(version, i):
@@ -95,7 +98,7 @@ class file_scanner12(object):
         tmp = self.scan()
         if tmp is None:
             return None
-        k = tmp.keys()
+        k = list(tmp.keys())
         # k.reverse()
         for i in k:
             if common.MatchVersionNumbers(version, i):
@@ -152,7 +155,7 @@ class file_scanner11(object):
         tmp = self.scan()
         if tmp is None:
             return None
-        k = tmp.keys()
+        k = list(tmp.keys())
         # k.reverse()
         for i in k:
             if common.MatchVersionNumbers(version, i):
@@ -163,7 +166,7 @@ class file_scanner11(object):
         tmp = self.scan()
         if tmp is None:
             return None
-        k = tmp.keys()
+        k = list(tmp.keys())
         # k.reverse()
         for i in k:
             if common.MatchVersionNumbers(version, i):
@@ -210,7 +213,7 @@ class file_scanner9_10(object):
         tmp = self.scan()
         if tmp is None:
             return None
-        k = tmp.keys()
+        k = list(tmp.keys())
         # k.reverse()
         for i in k:
             if common.MatchVersionNumbers(version, i):
@@ -221,7 +224,7 @@ class file_scanner9_10(object):
         tmp = self.scan()
         if tmp is None:
             return None
-        k = tmp.keys()
+        k = list(tmp.keys())
         # k.reverse()
         for i in k:
             if common.MatchVersionNumbers(version, i):

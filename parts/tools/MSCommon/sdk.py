@@ -1,9 +1,13 @@
-from common import mssdk
-from parts.tools.Common.ToolInfo import ToolInfo
-from parts.tools.Common.Finders import RegFinder, EnvFinder, PathFinder, ScriptFinder
-from parts.platform_info import SystemPlatform
+from __future__ import absolute_import, division, print_function
+
 import os
 
+from parts.platform_info import SystemPlatform
+from parts.tools.Common.Finders import (EnvFinder, PathFinder, RegFinder,
+                                        ScriptFinder)
+from parts.tools.Common.ToolInfo import ToolInfo
+
+from .common import mssdk
 
 # need to clean up some more as this has lots of false positives in detection
 

@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 
 def gas_setup(env, ver):
     if env.get('GCC_VERSION') is None:

@@ -1,10 +1,14 @@
 
+from __future__ import absolute_import, division, print_function
+
+
 import os
 import os.path
-import variable
-import SCons.Errors
 
+import SCons.Errors
 from SCons.Debug import logInstanceCreation
+
+from .variable import Variable
 
 # JK note that this took a little extra to get work to get working as this was
 # a translation of a class not a tuple of values
@@ -20,7 +24,7 @@ class PathVariable(object):
         if validator is None:
             validator = self._PathExists
 
-        if SCons.Util.is_List(key) or SCons.Util.is_Tuple(key):
+        if SCons.Util.is_List(name) or SCons.Util.is_Tuple(name):
             help = '{0} ( /path/to/{1} )'.format(help, name[0])
         else:
             help = '{0} ( /path/to/{1} )'.format(help, name)

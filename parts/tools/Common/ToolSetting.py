@@ -1,13 +1,19 @@
-import SCons.Util
-import parts.platform_info as platform_info
-import parts.common as common
+from __future__ import absolute_import, division, print_function
+
+from past.builtins import cmp
+
+
+import copy
+
 import parts.api as api
 import parts.api.output as output
-import copy
-import SCons.Errors
-
+import parts.common as common
+import parts.platform_info as platform_info
 from parts.version import version_range
+import parts.version
 
+import SCons.Errors
+import SCons.Util
 from SCons.Debug import logInstanceCreation
 
 
@@ -200,20 +206,31 @@ class ToolSetting(object):
         version = env.get(self.version_tag, None)
         root_path = env.get(self.rootpath_tag, None)
         use_script = env.get(self.script_tag, False)
+        api.output.verbose_msgf(
+            ['toolsettings'],
+            "query logic:\n version={version}\n root_path={root}\n use_script={script}",
+            root=root_path,
+            script=use_script,
+            version=version
+        )
+
         # make sure we have a target key
         if target not in self.found:
             self.found[key] = []
+            
         # test raw target
-
+        
         def query_logic(_target):
-            for k, vl in self.tools[_target].iteritems():
+            api.output.verbose_msgf(['toolsettings'],"Query based on:{0}",_target)
+            for k, vl in self.tools[_target].items():                
                 swap = False
                 for v in vl:
                     tmp = v.query(env, self.name, root_path, use_script)
+                    
                     # if we find anything
                     if tmp is not None:
                         # go through all items and store needed information
-                        for ver, senv in tmp.iteritems():
+                        for ver, senv in tmp.items():
                             common.append_unique(self.found[key], ver)
                         # move found item with front
                         if swap:
@@ -237,7 +254,9 @@ class ToolSetting(object):
         # test for any-any
         if t3 in self.tools:
             query_logic(t3)
-        self.found[key].sort(reverse=True, cmp=_cmp_)
+
+        #self.found[key].sort(reverse=True, cmp=_cmp_)
+        self.found[key].sort(reverse=True, key=lambda x: parts.version.version(x))
 
     def query_for_exact(self, env, key, version):
         '''
@@ -250,6 +269,7 @@ class ToolSetting(object):
         # see if we have tested for it
         try:
             if self.not_found[key] is None:
+                api.output.verbose_msgf(['toolsettings'], "not_found : {}", key)
                 # this combo was fully queried
                 return
         except:
@@ -274,9 +294,15 @@ class ToolSetting(object):
         cache_key = str(version) + key
         root_path = env.get(self.rootpath_tag, None)
         use_script = env.get(self.script_tag, False)
+        api.output.verbose_msgf(
+            ['toolsettings'],
+            "query logic root_path={root} use_script={script}",
+            root=root_path,
+            use_script=use_script
+        )
 
         def exist_logic(_target):
-            for k, vl in self.tools[_target].iteritems():
+            for k, vl in self.tools[_target].items():
                 swap = False
                 for v in vl:
                     if version in v.version_set():
@@ -374,22 +400,22 @@ class ToolSetting(object):
         ret = None
 
         if target in self.tools:
-            for k, vl in self.tools[target].iteritems():
+            for k, vl in self.tools[target].items():
                 for v in vl:
                     if version in v.version_set() and v.exists(env, self.name, version, root_path, use_script):
                         return v
         if t1 in self.tools:
-            for k, vl in self.tools[t1].iteritems():
+            for k, vl in self.tools[t1].items():
                 for v in vl:
                     if version in v.version_set() and v.exists(env, self.name, version, root_path, use_script):
                         return v
         if t2 in self.tools:
-            for k, vl in self.tools[t2].iteritems():
+            for k, vl in self.tools[t2].items():
                 for v in vl:
                     if version in v.version_set() and v.exists(env, self.name, version, root_path, use_script):
                         return v
         if t3 in self.tools:
-            for k, vl in self.tools[t3].iteritems():
+            for k, vl in self.tools[t3].items():
                 for v in vl:
                     if version in v.version_set() and v.exists(env, self.name, version, root_path, use_script):
                         return v
@@ -404,13 +430,13 @@ class ToolSetting(object):
         except KeyError:
             # not defined so we just add the set and return
             api.output.verbose_msgf("toolsettings", "For tool: '{0}' host: '{3}' adding info for target:{1} verions:{2}", self.name, target, [
-                                    str(i) for i in tools.keys()], host)
+                                    str(i) for i in list(tools.keys())], host)
             self.tools[target] = tools
             return
 
         api.output.verbose_msgf("toolsettings", "For tool: '{0}' host: '{3}' adding info for target:{1} verions:{2}", self.name, target, [
-                                str(i) for i in tools.keys()], host)
-        for key, val in tools.iteritems():
+                                str(i) for i in list(tools.keys())], host)
+        for key, val in tools.items():
             # if we have this version already
             if key in items:
                 # only add it if the key is native
@@ -545,7 +571,7 @@ class ToolSetting(object):
         # print tmp
         shell_env, ns = tmp
         # Add data to env
-        for k, v in shell_env.iteritems():
+        for k, v in shell_env.items():
             env.PrependENVPath(k, v, delete_existing=1)
         api.output.verbose_msg('toolsettings', "env['ENV'] equal to\n", pprint.pformat(env['ENV']))
         # setup any common state

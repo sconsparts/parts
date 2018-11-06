@@ -1,13 +1,14 @@
+from __future__ import absolute_import, division, print_function
 
-import SCons.Util
-import SCons.Tool.cc
+import parts.api.output as output
 import parts.tools.cc
+import parts.tools.Common
 import parts.tools.GnuCommon
 from parts.tools.GnuCommon.android import GetLatestNDKAPI
-import parts.tools.Common
-import parts.api.output as output
 
+import SCons.Tool.cc
 import SCons.Tool.mingw as mingw
+import SCons.Util
 
 
 def generate(env):

@@ -1,4 +1,6 @@
 
+from __future__ import absolute_import, division, print_function
+
 import os
 import subprocess
 
@@ -29,7 +31,7 @@ remove_rpath_action = SCons.Action.Action([copy_rpath_action, 'patchelf --remove
 
 def _is_text(node):
     try:
-        text = subprocess.check_output(['file', node.abspath])
+        text = subprocess.check_output(['file', node.abspath]).decode()
         if "text" in text:
             return True
     except:

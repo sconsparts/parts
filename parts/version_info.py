@@ -1,8 +1,10 @@
-from parts_version import _PARTS_VERSION
+from __future__ import absolute_import, division, print_function
+
+from parts.parts_version import _PARTS_VERSION
 
 
 def print_version():
-    print parts_version_text()
+    print(parts_version_text())
 
 
 def parts_version_text():
@@ -24,7 +26,7 @@ def is_parts_version_beta_env(env):
 
 
 def PartsExtensionVersion():
-    import version
+    import parts.version as version
     return version.version(_PARTS_VERSION)
 
 
@@ -34,7 +36,7 @@ def PartsExtensionVersion_env(env):
 
 # currently this allow us to load Parts without issues of SCons being loaded
 try:
-    import api
+    import parts.api as api
 
     # add to parts file as globals
     api.register.add_global_parts_object('PartVersionString', parts_version_text)

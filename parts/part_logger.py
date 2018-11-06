@@ -1,27 +1,27 @@
-import time
-import glb
-import common
-import core.util as util
-import console
-import api.output
-import version
-from process_tools import waitForProcess, killProcessTree
+from __future__ import absolute_import, division, print_function
+
 import json
-
-import SCons.Script
-
+import platform
 import subprocess
 import sys
-import string
-import thread
 import threading
-import platform
+import time
 import traceback
 
+import SCons.Script
 from SCons.Debug import logInstanceCreation
+from SCons.Environment import SubstitutionEnvironment as SConsEnvironment
 from SCons.Errors import UserError
 
-pyver = version.version(platform.python_version())
+import _thread
+import parts.api as api
+import parts.common as common
+import parts.console as console
+import parts.core.util as util
+import parts.glb as glb
+import parts.version as version
+from parts.process_tools import killProcessTree, waitForProcess
+
 # We need to close file descriptors on POSIX systems which have fork() mechanism right after
 # the fork, otherwise all descriptors get inherited, and some files are being open much longer
 # than we expect. We don't need this on Windows (or Cygwin) because on Windows processes don't
@@ -36,6 +36,10 @@ class pipeRedirector(object):
         try:
             while line:
                 line = self.pipein.readline()
+                try:
+                    line = line.decode()
+                except:
+                    pass
                 if line:
                     self.output.WriteStream(self.taskId, self.streamId, line)
         except:
@@ -74,7 +78,7 @@ class pipeRedirector(object):
 
 
 class part_spawner(object):
-    __slots__ = ['__weakref__', 'env']
+    __slots__ = ['env']
 
     def __init__(self, env=None):
         if __debug__:
@@ -84,8 +88,13 @@ class part_spawner(object):
     def __call__(self, shell, escape, cmd, args, Env):
         # setup the call
         ENV = {}
-        for k, v in Env.iteritems():
-            ENV[k] = str(v)
+        for k, v in Env.items():
+            if not isinstance(k, str):
+                k = k.encode() if glb.isPY2 else k.decode()
+            if not isinstance(v, str):
+                v = v.encode() if glb.isPY2 else v.decode()
+            ENV[k] = v
+
         # get the part_logger
         output = self.env._get_part_log_mapper()
 
@@ -93,10 +102,7 @@ class part_spawner(object):
         # and was breaking on python 2.7 windows by adding extra " values
         # ie '"c:\program file\x.exe" foo bar"' -> '""c:\program file\x.exe" foo bar""'
         # we assume the command has "quotes" around it as need
-        if pyver < '2.7' and sys.platform == 'win32':
-            command_line = escape(string.join(args))
-        else:
-            command_line = string.join(args)
+        command_line = " ".join(args)
 
         # TempFileMunge issues handling. When executing command using TEMPFILE
         # the command-line is lost in per-component log files.
@@ -284,8 +290,8 @@ class log_file_writer(object):
     The class ensures there is only one log writer instance per each
     log file.
     '''
-    __slots__ = ('nodepath', 'file', 'lock', '__weakref__')
-    __lock__ = thread.allocate_lock()
+    __slots__ = ('nodepath', 'file', 'lock')
+    __lock__ = _thread.allocate_lock()
 
     def __new__(cls, name, env):
         with cls.__lock__:
@@ -303,7 +309,7 @@ class log_file_writer(object):
                         pass
                 node.attributes.log_file_writer = result = super(log_file_writer, cls).__new__(cls)
                 result.nodepath = node.abspath
-                result.lock = thread.allocate_lock()
+                result.lock = _thread.allocate_lock()
                 if __debug__:
                     logInstanceCreation(result)
                 return result
@@ -368,13 +374,14 @@ class parts_text_logger(object):
         except AttributeError:
             return
         s = ""
-        for id in cache.keys():
+        for id in list(cache.keys()):
             s += "".join(content for (text_type, content) in cache.pop(id)
                          if text_type in (console.Console.out_stream, console.Console.error_stream))
             s += "Build interupted] (return code = 1)\n"
             s += "Elapsed time {0:.6f} seconds\n".format(time_func() - times.pop(id))
-        with writer as output:
-            output.write(s)
+        if s:
+            with writer as output:
+                output.write(s)
 
 
 def _get_part_log_mapper(env):
@@ -388,7 +395,6 @@ def _get_part_log_mapper(env):
     return result
 
 
-from SCons.Environment import SubstitutionEnvironment as SConsEnvironment
 SConsEnvironment._get_part_log_mapper = _get_part_log_mapper
 
 api.register.add_variable('_part_logger', part_logger, '')

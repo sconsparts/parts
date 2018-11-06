@@ -1,16 +1,18 @@
 
-from variable import Variable
-from .. import events
-from .. import api
-from parts.common import make_list
+from __future__ import absolute_import, division, print_function
 
 import os
 import sys
 
 import SCons.Environment
 import SCons.Util
-
 from SCons.Debug import logInstanceCreation
+
+import parts.api as api
+import parts.events as events
+from parts.common import make_list
+from .variable import Variable
+
 
 
 class Variables(dict, object):
@@ -51,7 +53,7 @@ class Variables(dict, object):
         self.__dict__['_unknowns'] = {}
         self.__dict__['_on_change'] = events.Event()
 
-        for k, v in kw.iteritems():
+        for k, v in kw.items():
             if not isinstance(v, Variable):
                 kw[k] = Variable(v)
             kw[k]._on_change += self._on_change
@@ -185,7 +187,7 @@ class Variables(dict, object):
 
         # user overides to default values
         # first fill in all options value with default values
-        for k, option in self.iteritems():
+        for k, option in self.items():
             # if not option.default is None:
             values[k] = option.Default
         # add any default overides
@@ -207,7 +209,7 @@ class Variables(dict, object):
                     values['__name__'] = filename
                     with open(filename) as file_obj:
                         file_content = file_obj.read()
-                    exec file_content.replace('\r', '\n') in {}, values
+                    exec(file_content.replace('\r', '\n'), {}, values)
                 finally:
                     # cleanup
                     if dir:
@@ -222,11 +224,11 @@ class Variables(dict, object):
             args = self._args
 
         # Override any value we have with Arguments provided
-        for arg, value in args.iteritems():
+        for arg, value in args.items():
             # we need to see if there is a alias for this
             # for each option we need to test if this is an alias+key that
             # is a match for the arg
-            for k, option in self.iteritems():
+            for k, option in self.items():
                 if arg in option.Aliases + [k]:
                     # we have a match, so store and break for this argument
                     values[k] = value
@@ -238,7 +240,7 @@ class Variables(dict, object):
         # at this point the values should be up to date
         # put the variables in the environment:
         to_remove = []
-        for k, v in values.iteritems():
+        for k, v in values.items():
             # There is a possiblility that unkown values have been read by the cfg file
             # This code will try to get the option and if that fails adds it to the unknowns
             tmp = self.get(k, None)
@@ -253,7 +255,7 @@ class Variables(dict, object):
         if add_unknown:
             env.Replace(**self._unknowns)
         # this loop allow the convertion and validation
-        for k, v in values.iteritems():
+        for k, v in values.items():
             tmp = self[k]
             tmp.Update(env, v)
 

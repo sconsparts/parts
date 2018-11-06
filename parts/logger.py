@@ -1,8 +1,12 @@
-import api
-import console  # for stream types
-import thread
-import os
+from __future__ import absolute_import, division, print_function
 
+
+import os
+import _thread
+
+import parts.api as api
+import parts.api.register # for fixing init load order issues
+import parts.console as console  # for stream types
 from SCons.Debug import logInstanceCreation
 
 
@@ -11,7 +15,7 @@ class Logger(object):
     def __init__(self, dir="", file=""):
         if __debug__:
             logInstanceCreation(self)
-        self._lock = thread.allocate_lock()  # used to sync output
+        self._lock = _thread.allocate_lock()  # used to sync output
 
     def logout(self, msg):
         pass
@@ -67,9 +71,9 @@ class nil_logger(Logger):
     pass
 
 
-api.register.add_variable('LOGGER', 'NIL_LOGGER', '')
+parts.api.register.add_variable('LOGGER', 'NIL_LOGGER', '')
 
-api.register.add_variable('TEXT_LOGGER', 'text', '')
-api.register.add_variable('LOG_ROOT_DIR', '#logs', '')
-api.register.add_variable('LOG_DIR', '${LOG_ROOT_DIR}', '')
-api.register.add_variable('LOG_FILE_NAME', 'all.log', '')
+parts.api.register.add_variable('TEXT_LOGGER', 'text', '')
+parts.api.register.add_variable('LOG_ROOT_DIR', '#logs', '')
+parts.api.register.add_variable('LOG_DIR', '${LOG_ROOT_DIR}', '')
+parts.api.register.add_variable('LOG_FILE_NAME', 'all.log', '')

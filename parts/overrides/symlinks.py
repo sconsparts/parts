@@ -5,19 +5,22 @@ and SCons.Node.FS.File classes.
 
 There is also env.SymLink builder is introduced here
 '''
-import os
+from __future__ import absolute_import, division, print_function
+
+
+
 import ctypes
+import os
 
 import SCons.Node.FS
-from SCons.Script.SConscript import SConsEnvironment
-from SCons.Scanner import Scanner
 from SCons.Debug import logInstanceCreation
+from SCons.Scanner import Scanner
+from SCons.Script.SConscript import SConsEnvironment
 
-
-from .. import metatag
-from .. import common
-from ..core import util
-from .. import api
+import parts.api as api
+import parts.common as common
+import parts.metatag as metatag
+from parts.core import util
 
 # Begin OS level support for symbolic links
 try:
@@ -142,7 +145,7 @@ except ImportError:
 
         def os_symlink(linkto, linkname, isdir):
             with Privilege(SYMLINK_PRIVILEGE_NAME):
-                if not CreateSymbolicLink(unicode(linkname), unicode(linkto),
+                if not CreateSymbolicLink(str(linkname), str(linkto),
                                           1 if isdir else 0):
                     raise createWindowsError(path=linkname)
     except AttributeError:
@@ -157,8 +160,8 @@ except ImportError:
 
             @param target: C{string} representing a symbolic link (junction) target.
             """
-            printName = unicode(target)
-            sysName = unicode(target if not os.path.isabs(target) else r'\\??\\' + target)
+            printName = str(target)
+            sysName = str(target if not os.path.isabs(target) else r'\\??\\' + target)
 
             buffsize = ctypes.sizeof(SymbolicLinkReparseBuffer) + (
                 len(printName) + len(sysName)) * 2

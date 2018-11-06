@@ -1,8 +1,14 @@
 
+from __future__ import absolute_import, division, print_function
 
-from .. import glb
-from .. import common
-from ..core import util
+import SCons.Environment
+import SCons.Node
+from SCons.Script.SConscript import SConsEnvironment
+
+import parts.common as common
+import parts.glb as glb
+from parts.core import util
+
 #
 
 
@@ -18,7 +24,6 @@ def Parts_Alias(self, target, source=[], action=None, **kw):
     return self._orig_Alias(target, source, action, **kw)
 
 
-from SCons.Script.SConscript import SConsEnvironment
 ##
 # override __setitem__ bind env with bindable objects when set
 SConsEnvironment._orig_Alias = SConsEnvironment.Alias
@@ -36,8 +41,6 @@ def alias_source_node(name, **kw):
     return glb.pnodes.Create(SCons.Node.FS.Entry, name, kw)
 
 
-import SCons.Environment
-import SCons.Node
 
 SCons.Environment.AliasBuilder = SCons.Builder.Builder(action=SCons.Environment.alias_builder,
                                                        target_factory=SCons.Node.Alias.default_ans.Alias,

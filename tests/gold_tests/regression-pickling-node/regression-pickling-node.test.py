@@ -21,7 +21,7 @@ PicklingError: Can't pickle <class 'SCons.Util.UniqueList'>: it's not the same o
   File "C:\Python26\lib\site-packages\parts\pnode\pnode_manager.py", line 309:
     self.store_value(pnode,sd,valuestostore)
   File "C:\Python26\lib\site-packages\parts\pnode\pnode_manager.py", line 244:
-    'pinfo':pickle.dumps(_info, 2)
+    'pinfo':pickle.dumps(_info)
 '''
 Setup.Copy.FromDirectory('source')
 

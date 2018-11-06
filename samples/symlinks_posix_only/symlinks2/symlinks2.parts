@@ -1,5 +1,10 @@
 '''
 This is an example on how to deal with existing symbolic links
+
+This Sample breaks when the line up the of the .so links are not in the same directory
+
+Needs to be updated
+
 '''
 Import('*')
 
@@ -16,8 +21,8 @@ def isLibrary(path):
     It checks first four bytes of the binary to be an ELF signature.
     '''
     try:
-        with open(path) as file:
-            return file.read(4)[1:] == 'ELF'
+        with open(path,'rb') as file:
+            return file.read(4)[1:] == b'ELF'
     except IOError:
         return False
 

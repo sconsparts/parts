@@ -1,8 +1,12 @@
 
-import section
-import common
-import core.util
-import api.output
+from __future__ import absolute_import, division, print_function
+
+import parts.api.output as output
+import parts.api.register as register
+import parts.version as version
+import parts.common as common
+import parts.core.util as util
+import parts.section as section
 
 
 def resolve_dependents(manager, part):
@@ -11,7 +15,7 @@ def resolve_dependents(manager, part):
     if not part._has_section_phase_been_called('build', 'config'):
 
         # call the config section
-        print "calling build.config on", part.Alias
+        print("calling build.config on", part.Alias)
         part._call_section('build', 'config')
 
         for comp in part.Depends:
@@ -56,19 +60,19 @@ def build_func(manager, target):
         # ideally in this case we can just start calling stuff
         # however if we see that we can get top level part that would be the
         # best items to put in the list
-        print "building 'all'"
-        plst = manager.parts.values()
+        print("building 'all'")
+        plst = list(manager.parts.values())
     elif target.alias:
-        print "building alias", target.root_alias()
+        print("building alias", target.root_alias())
         plst = [manager._from_alias(target.root_alias())]
     elif target.name and target.version is None:
-        print "building name no version"
+        print("building name no version")
         tmp = manager._alias_list(target.root_name())
         # for each alias we get the part that maps to it
         for a in tmp:
             plst.append(manager._from_alias(target.root_alias()))
     elif target.name and target.version:
-        print "building name with version"
+        print("building name with version")
         tmp = manager._alias_list(target.name)
         # for each alias we get the part that maps to it
         vrange = version.version_range(target.version + ".*")
@@ -82,17 +86,17 @@ def build_func(manager, target):
 
     for p in plst:
         if p is None:
-            api.output.error_msg("Target \"%s\" was not found as a Part" % target.orginal_string)
+            output.error_msg("Target \"%s\" was not found as a Part" % target.orginal_string)
         # Call config phase to get dependance information
         elif p._has_section_defined('build') == False:
-            api.output.error_msg("Part does not have section build defined")
+            output.error_msg("Part does not have section build defined")
 
         # this will be recurisve and resolve all dependent parts as well
         resolve_dependents(manager, p)
 
         # at this point we know all the dependent parts
         # so we call the build.emit phase to find out what it will build
-        print "calling build.emit on", p.Alias
+        print("calling build.emit on", p.Alias)
         call_emit(p)
 
         # at this point we could try to force start the build of this target in SCons
@@ -103,4 +107,4 @@ bld_sec = section.section('build', build_func, ['build'])
 bld_sec.AddPhase('config', optional=True)
 bld_sec.AddPhase('emit', optional=True)
 
-api.register.add_section(bld_sec)
+register.add_section(bld_sec)

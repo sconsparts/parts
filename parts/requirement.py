@@ -1,11 +1,17 @@
 
-import common
-import core.util as util
-import api
+from __future__ import absolute_import, division, print_function
+
+from past.builtins import cmp
+
 import copy
-from policy import REQPolicy, ReportingPolicy
 
 from SCons.Debug import logInstanceCreation
+
+import parts.api as api
+import parts.common as common
+import parts.core.util as util
+from parts.policy import ReportingPolicy, REQPolicy
+from future.utils import with_metaclass
 
 _added_types = {}
 
@@ -125,9 +131,29 @@ class requirement(object):
     def __hash__(self):
         return hash(self.key)
 
+    # this only works in python2 sort
     def __cmp__(self, rhs):
         return cmp(self.key, rhs.key)
 
+    # this is python 3 sort
+    def __eq__(self, other):
+        return self.key == self.key
+
+    def __ne__(self, other):
+        return self.key != self.key
+        
+    def __lt__(self, other):
+        return self.key < self.key
+        
+    def __le__(self, other):
+        return self.key <= self.key
+        
+    def __gt__(self, other):
+        return self.key > self.key
+        
+    def __ge__(self, other):
+        return self.key >= self.key
+        
     def Serialize(self):
         return {'key': self._key,
                 'internal': self._internal,
@@ -254,8 +280,7 @@ class metaREQ(type):
         return requirement(name, internal)
 
 
-class REQ(object):
-    __metaclass__ = metaREQ
+class REQ(with_metaclass(metaREQ, object)):
     Policy = REQPolicy
 
     def __init__(self, lst=[], weight=None):

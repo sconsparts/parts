@@ -3,22 +3,25 @@ this tool override is provided as a way to support the a hock we need to deal
 with libraries on linux that use symlinks. this add a hack support to unpack file
 on copy... hopefully this can be dropped soon once i get time to make a better solution
 """
+from __future__ import absolute_import, division, print_function
 
-import os
+from builtins import zip
+from builtins import map
+
+
 import fnmatch
+import os
 
-from SCons.Debug import logInstanceCreation
+import parts.core.util as util
+import parts.overrides.symlinks as symlinks
+from parts.common import make_list
+
 import SCons.Action
 import SCons.Errors
-from SCons.Util import make_path_relative
-
 # We keep track of *all* installed files.
 import SCons.Tool.install
-
-from parts.common import make_list
-import parts.core.util as util
-
-import parts.overrides.symlinks as symlinks
+from SCons.Debug import logInstanceCreation
+from SCons.Util import make_path_relative
 
 
 def copyFunction(target, source, env):
@@ -46,7 +49,7 @@ def installFunc(target, source, env):
 
     assert len(target) == len(source), \
         ("Installing source %s into target %s: target and source lists must have same "
-         "length.") % (map(str, source), map(str, target))
+         "length.") % (list(map(str, source)), list(map(str, target)))
 
     # get the logger for a given Part if it exists
     output = env._get_part_log_mapper()

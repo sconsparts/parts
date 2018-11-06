@@ -1,12 +1,12 @@
 '''
 This module contains overrides for SCons.Util module
 '''
-
-from SCons.Debug import logInstanceCreation
-
-import SCons.Util
+from __future__ import absolute_import, division, print_function
 
 from collections import UserList
+
+import SCons.Util
+from SCons.Debug import logInstanceCreation
 
 
 def def_UserList___init__(klass):
@@ -19,7 +19,7 @@ def def_UserList___init__(klass):
     klass.__init__ = __init__
 
 
-def_UserList___init__(UserList)
+#def_UserList___init__(UserList)
 
 ##from SCons.Util import UniqueList
 # def def_UniqueList___iter__(klass):
@@ -159,7 +159,7 @@ class UniqueList(list):
         self.unique = False
 
 
-SCons.Util.UniqueList = UniqueList
+#SCons.Util.UniqueList = UniqueList
 
 
 class CLVar(list):

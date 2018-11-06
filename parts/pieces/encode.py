@@ -3,10 +3,19 @@
 # encoding and you want to translate it to a different code page that might
 # be used on a users system
 
+from __future__ import absolute_import, division, print_function
+
+from builtins import zip
+
+from builtins import map
 import codecs
-import parts.common as common
+
 import parts.api as api
+import parts.common as common
+
 import SCons.Action
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 
 def _encode_bd(target, source, env):
@@ -34,7 +43,7 @@ def _EncodeFile(env, target, source, target_encoding, source_encoding='utf-8'):
     assert len(target) == len(source), \
         ("Installing source %s into target %s: "
          "target and source lists must have same length.") % (
-            map(str, source), map(str, target))
+            list(map(str, source)), list(map(str, target)))
     return env.__EncodeFile(target=target,
                             source=source,
                             ENCODE_SOURCE=source_encoding,
@@ -42,8 +51,6 @@ def _EncodeFile(env, target, source, target_encoding, source_encoding='utf-8'):
                             )
 
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
 SConsEnvironment.EncodeFile = _EncodeFile

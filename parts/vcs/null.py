@@ -1,6 +1,9 @@
-from base import base
-from .. import common
-from .. import api
+from __future__ import absolute_import, division, print_function
+
+import parts.api as api
+import parts.common as common
+
+from .base import base
 
 
 class null_t(base):

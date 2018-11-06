@@ -4,17 +4,19 @@ time statistics are gathered for all commands, even for those ending in some kin
 exception. We are also adding per-thread logging that could be enabled or disabled via
 commandline option.
 '''
+from __future__ import absolute_import, division, print_function
 
+import datetime
+import errno
+import os
+import sys
+import time
+
+import SCons.Script
 import SCons.Script.Main as Main
 import SCons.Taskmaster
-import SCons.Script
 
-import time
-import sys
-import thread
-import os
-import errno
-import datetime
+import _thread
 
 EVENT_START, EVENT_STOP = 'start', 'stop'
 
@@ -55,7 +57,7 @@ def logTaskEvent(task, event, timestamp, duration=-1):
     else:
         taskLine = 'duration=%.5f' % duration
     try:
-        with open(os.sep.join([logTaskEvent.storeLogsTo, 'thread-%d.log' % thread.get_ident()]),
+        with open(os.sep.join([logTaskEvent.storeLogsTo, 'thread-%d.log' % _thread.get_ident()]),
                   'a+') as logFile:
             logFile.write('%s\t%s\t%s\n' % (datetime.datetime.fromtimestamp(timestamp), event,
                                             taskLine))

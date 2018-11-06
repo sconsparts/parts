@@ -1,13 +1,18 @@
 # this override fixes some issue with tools being reloaded
 # and imporve report handling when a tools fails
+from __future__ import absolute_import, division, print_function
+
+
+
 import imp
 import sys
 import traceback
-import SCons.Tool
-from .. import api
-
-from SCons.Debug import logInstanceCreation
 from collections import defaultdict
+
+import SCons.Tool
+from SCons.Debug import logInstanceCreation
+
+import parts.api as api
 
 
 class Parts_Tool(object):
@@ -56,8 +61,9 @@ class Parts_Tool(object):
                     return result
                 except ImportError as e:
                     api.output.verbose_msg("tools", "Failed to load module!")
-                    api.output.verbose_msg(["tools_failure", "load_module"], "Stack:\n%s" % (traceback.format_exc()))
-                    if str(e) != "No module named %s" % self.name:
+                    api.output.verbose_msg(["tools_failure", "load_module"], "Stack:\n{0}".format(traceback.format_exc()))
+                    
+                    if str(e) != "No module named {0}".format(self.name) and str(e) != "No module named '{0}'".format(self.name):
                         raise SCons.Errors.EnvironmentError(e)
                     try:
                         import zipimport

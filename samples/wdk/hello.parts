@@ -9,7 +9,7 @@ if env.subst('$TARGET_OS') != 'win32':
 env.DriverStaticLibrary(
     target = 'library',
     source = env.DriverObject(
-        ['tostatic.c'] + (['test64.asm'] if env['TARGET_ARCH'] <> 'x86' else []),
+        ['tostatic.c'] + (['test64.asm'] if env['TARGET_ARCH'] != 'x86' else []),
         DDKCPPDEFINES=['DLL_EXPORTS']
         )
     )

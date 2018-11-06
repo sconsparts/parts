@@ -1,14 +1,17 @@
 
 def AddCleanRun(Test,target='all'):
-        tr=Test.AddTestRun("cleaning_target","Cleaning Target: {0}".format(target))
+        tr=Test.AddTestRun(
+            "Cleaning Target: {0}".format(target),
+            "cleaning_target"
+            )
         tr.Command='scons -c {0} --console-stream=none'.format(target)
         tr.ReturnCode=0
         return tr
 
 def AddUpdateCheckSCons(Test,target='all'):
     tr=Test.AddTestRun(
-        "up-to-date-scons-run-scons",
         "SCons up to date check"
+        "up-to-date-scons-run-scons",
         )
     tr.Command='scons -q {0} --disable-parts-cache --console-stream=none'.format(target)
     tr.ReturnCode=0
@@ -16,12 +19,12 @@ def AddUpdateCheckSCons(Test,target='all'):
 
 def AddUpdateCheckParts(Test,target='all'):
     tr=Test.AddTestRun(
-        "up-to-date-parts-run-parts",
         "Parts up to date check"
+        "up-to-date-parts-run-parts",
     )
     tr.Command='scons -q {0} --console-stream=none'.format(target)
     tr.ReturnCode=0
-    
+
     return tr
 
 def AddUpdateCheck(Test,target='all'):
@@ -30,22 +33,22 @@ def AddUpdateCheck(Test,target='all'):
 
 def AddOutOfDateCheckParts(Test,target="all"):
     tr=Test.AddTestRun(
-        "out-of-date-check-run-parts",
         "Parts out to date check"
+        "out-of-date-check-run-parts",
     )
     tr.Command='scons -q {0} --console-stream=none'.format(target)
     tr.ReturnCode=1
-    
+
     return tr
 
 def AddOutOfDateCheckSCons(Test,target="all"):
     tr=Test.AddTestRun(
-        "out-of-date-check-run-scons",
         "SCons out to date check"
+        "out-of-date-check-run-scons",
     )
     tr.Command='scons -q {0} --disable-parts-cache --console-stream=none'.format(target)
     tr.ReturnCode=1
-    
+
     return tr
 
 def AddBuildRun(Test,target="all",options=''):
@@ -54,12 +57,11 @@ def AddBuildRun(Test,target="all",options=''):
     else:
         s="Building target: {0}".format(target)
     tr=Test.AddTestRun(
-        "build_run",
-        s
+        s,"build_run"
     )
     tr.Command='scons {0} {1} --console-stream=none'.format(target,options)
     tr.ReturnCode=0
-    
+
     return tr
 
 def AddOutOfDateCheck(Test,target='all'):

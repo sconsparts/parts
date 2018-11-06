@@ -1,23 +1,27 @@
-import glb
-import part_ref
-import policy as Policy
-import common
-import core.util as util
-import version
-import api.output
-import errors
-import target_type
+from __future__ import absolute_import, division, print_function
 
-import SCons.Script.Main
-import SCons.Script
-import SCons.Subst
-import traceback
-import thread
 import os
-
-from SCons.Debug import logInstanceCreation
-
+import tempfile
+import traceback
+from builtins import map
 from collections import defaultdict
+
+import SCons.Script
+import SCons.Script.Main
+import SCons.Subst
+from SCons.Debug import logInstanceCreation
+from SCons.Subst import CmdStringHolder
+
+import _thread
+import parts.api as api
+import parts.common as common
+import parts.core.util as util
+import parts.errors as errors
+import parts.glb as glb
+import parts.part_ref as part_ref
+import parts.policy as Policy
+import parts.target_type as target_type
+import parts.version as version
 
 
 class env_guard(object):
@@ -25,7 +29,7 @@ class env_guard(object):
     __depth__ = defaultdict(int)
 
     def __init__(self, thread_id=None):
-        self.thread_id = thread_id or thread.get_ident()
+        self.thread_id = thread_id or _thread.get_ident()
 
     def __enter__(self):
         self.__depth__[self.thread_id] += 1
@@ -35,11 +39,11 @@ class env_guard(object):
 
     @classmethod
     def depth(cls, thread_id=None):
-        return cls.__depth__[thread_id or thread.get_ident()]
+        return cls.__depth__[thread_id or _thread.get_ident()]
 
     @classmethod
     def can_modify(cls, thread_id=None):
-        return not cls.__depth__[thread_id or thread.get_ident()]
+        return not cls.__depth__[thread_id or _thread.get_ident()]
 
 
 def replace_list_items(container, marker, replacement, wrap=lambda x: x):
@@ -83,6 +87,7 @@ def replace_list_items(container, marker, replacement, wrap=lambda x: x):
 
 
 class mapper(object):
+    name = "Base"
 
     def __init__(self):
         if __debug__:
@@ -183,7 +188,7 @@ class mapper(object):
         api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "After env value: {0}".format(env[prop]))
 
     def _guarded_call(self, target, source, env, for_signature=False):
-        raise NotImplemented()
+        raise NotImplementedError
 
     def __call__(self, target, source, env, for_signature=False):
         try:
@@ -282,7 +287,7 @@ def _concat(prefix, list, suffix, env, f=lambda x: x, target=None, source=None):
 
     # this does a append_unique of the items, so it should be
     # a unique list with everything in correct order
-    tmp = sub_lst(env, list, thread.get_ident(), recurse=False)
+    tmp = sub_lst(env, list, _thread.get_ident(), recurse=False)
     list = env.Flatten(tmp)
 
     l = f(SCons.PathList.PathList(list).subst_path(env, target, source))
@@ -354,7 +359,7 @@ class part_mapper(mapper):
         return '${{{0}("{1}","{2}",{3})}}'.format(self.name, self.part_alias, self.part_prop, self.ignore)
 
     def _guarded_call(self, target, source, env, for_signature):
-        thread_id = thread.get_ident()
+        thread_id = _thread.get_ident()
         spacer = "." * env_guard.depth(thread_id)
 
         api.output.trace_msg(['parts_mapper', 'mapper'], spacer, 'Expanding value "{0!r}"'.format(self))
@@ -435,7 +440,7 @@ class part_id_mapper(mapper):
         return '${{{0}("{1}","{2}","{3}",{4})}}'.format(self.name, self.part_name, self.ver_range, self.part_prop, self.ignore)
 
     def _guarded_call(self, target, source, env, for_signature):
-        thread_id = thread.get_ident()
+        thread_id = _thread.get_ident()
         spacer = "." * env_guard.depth(thread_id)
         api.output.trace_msg(['partid_mapper', 'mapper'], spacer, 'Expanding value "{0!r}"'.format(self))
 
@@ -526,7 +531,7 @@ class part_id_export_mapper(mapper):
         return '${{{0}("{1}","{2}","{3}",{4})}}'.format(self.name, self.part_name, self.section, self.part_prop, self.policy)
 
     def _guarded_call(self, target, source, env, for_signature):
-        thread_id = thread.get_ident()
+        thread_id = _thread.get_ident()
         spacer = "." * env_guard.depth(thread_id)
 
         pobj_org = glb.engine._part_manager._from_env(env)
@@ -569,7 +574,7 @@ class part_id_export_mapper(mapper):
             # we have data.. but we need to tweak the data to not piss SCons off
             # scons does not expect a list back or a list of lists.. only a string
             # Here we need to flatten the list
-            ret = filter(None, env.Flatten(ret))
+            ret = [_f for _f in env.Flatten(ret) if _f]
             self.map_global_var(env, self.part_prop, str_val, ret, spacer)
             if ret == []:
                 api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "Returning (1) value of {0}".format("''"))
@@ -612,8 +617,6 @@ class part_sub_mapper(mapper):
         return '${{{0}("{1}","{2}","{3}")}}'.format(self.name, self.part_alias, self.substr, self.section)
 
     def _guarded_call(self, target, source, env, for_signature):
-        def_env = SCons.Script.DefaultEnvironment()
-
         pobj = glb.engine._part_manager._from_alias(self.part_alias)
         if pobj is None:
             self.alias_missing(env)
@@ -646,7 +649,7 @@ class part_subst_mapper(mapper):
         return '${{{0}("{1}","{2}","{3}", {4})}}'.format(self.name, self.target_str, self.substr, self.section, self.policy)
 
     def _guarded_call(self, target, source, env, for_signature):
-        thread_id = thread.get_ident()
+        thread_id = _thread.get_ident()
         spacer = "." * env_guard.depth(thread_id)
         pobj_org = glb.engine._part_manager._from_env(env)
         ref = part_ref.part_ref(self.target_str, pobj_org.Uses)
@@ -780,10 +783,6 @@ class relpath_mapper(mapper):
         return common.relpath(t, f) + os.sep
 
 
-import tempfile
-from SCons.Subst import CmdStringHolder
-
-
 class TempFileMunge(mapper):
 
     """A callable class.  You can set an Environment variable to this,
@@ -904,7 +903,7 @@ class TempFileMunge(mapper):
         # purity get in the way of just being helpful, so we'll
         # reach into SCons.Action directly.
         if SCons.Action.print_actions:
-            print command_args.id
+            print(command_args.id)
         return [cmd[0], command_args]
 
 
@@ -922,6 +921,7 @@ api.register.add_mapper(abspath_mapper)
 api.register.add_mapper(normpath_mapper)
 api.register.add_mapper(relpath_mapper)
 
-api.register.add_mapper(TempFileMunge)
+# seems to be fixed in Scons
+#api.register.add_mapper(TempFileMunge)
 
 api.register.add_bool_variable('MAPPER_BAD_ALIAS_AS_WARNING', True, 'Controls if a missing alias is an error or a warning')

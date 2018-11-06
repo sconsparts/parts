@@ -3,24 +3,24 @@ This contain the base code for all configurations we define in parts, and
 some helpfunction to help dump data, or get the correct configuration data
 '''
 
-import common
-import core.util
-import version
-import configurations
-import api.output
-import load_module
+from __future__ import absolute_import, division, print_function
 
-import SCons.Script
-
+import copy
 import os
 import traceback
-import StringIO
-import pprint
-import copy
 
+import SCons.Script
 from SCons.Debug import logInstanceCreation
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
-from platform_info import SystemPlatform
+import parts.api as api
+import parts.common as common
+import parts.configurations as configurations
+import parts.core.util as util
+import parts.load_module as load_module
+import parts.version as version
+from parts.platform_info import SystemPlatform
 
 
 def null_ver_mapper(env):
@@ -68,7 +68,7 @@ class configuration(object):
 
         # need range for store key later
         ver_rng = version.version_range()
-        for v_range, val in self.ver_rng.iteritems():
+        for v_range, val in self.ver_rng.items():
             if ver in v_range:
                 mysetting = val
                 ver_rng = v_range
@@ -107,28 +107,28 @@ class configuration(object):
         # {flag:{replace:val or [],append:[],prepend:[]}
         tmp = mysetting['replace']
         if tmp != {}:
-            for k, v in tmp.iteritems():
+            for k, v in tmp.items():
                 settings[k] = {'replace': v, 'append': [], 'prepend': []}
 
         tmp = mysetting['filter']
         if tmp != {}:
-            for k, v in tmp.iteritems():
+            for k, v in tmp.items():
                 data = settings.get(k, {})
                 for i in v:
-                    for dk, dv in data.iteritems():
+                    for dv in data.values():
                         if i in dv:
                             dv.remove(i)
 
         tmp = mysetting['append']
         if tmp != {}:
-            for k, v in tmp.iteritems():
+            for k, v in tmp.items():
                 if (k in settings) == False:
                     settings[k] = {'append': [], 'prepend': []}
                 settings[k]['append'].extend(v)
 
         tmp = mysetting['prepend']
         if tmp != {}:
-            for k, v in tmp.iteritems():
+            for k, v in tmp.items():
                 if (k in settings) == False:
                     settings[k] = {'append': [], 'prepend': []}
                 v.extend(settings[k]['prepend'])
@@ -200,7 +200,7 @@ class _ConfigurationSet(object):
                     if 'versions' in self.map[tool][host][target]:
                         if ver_rng in self.map[tool][host][target]['versions']:
                             self.map[tool][host][target]['versions'][ver_rng].update(settings)
-                            self.map[tool][host][target]['default_ver_func'] = ver_mapping
+                            self.map[tool][host][target]['default_ver_func'] = ver_mapper
                             self.map[tool][host][target]['defining_files'] = files
                         else:
                             self.map[tool][host][target]['versions'][ver_rng] = settings
@@ -267,7 +267,7 @@ class _ConfigurationSet(object):
             ver = target_config['default_ver_func'](env)
         # see if we have a match with the version.
         ver_config = None
-        for v_range in versions.keys():
+        for v_range in list(versions.keys()):
             if ver in v_range:
                 ver_config = versions[v_range]
                 break
@@ -293,7 +293,7 @@ class _ConfigurationSet(object):
 def DefineConfiguration(name, dependsOn='default'):
     # add configuration
     if name in g_configuration:
-        print "ConfigurationSet", name, " already exists"
+        print("ConfigurationSet", name, " already exists")
         # warning is it exists?
     # add dependance
     g_configuration[name] = _ConfigurationSet(name, dependsOn)
@@ -434,7 +434,7 @@ def found_config_files(name, tool, host, target):
         ret = found_config_files(dep, tool, host, target)
     name_list = make_name_list(tool, host, target)
     pathList = load_module.get_site_directories(os.path.join('configurations', name))
-    typeName = 'config%s'.format(name)
+    typeName = 'config{0}'.format(name)
 
     for path in pathList:
          # for each path we need to see if the module we might care about exists here
@@ -578,7 +578,7 @@ def get_config(env, name, tool, host, target):
     # dif we load information about the tool for a given host-target combination?
     if config.has_tool_cfg(tool, host, target) == False:
         # if not load all information about this tool
-        ver = load_tool_config(env, name, tool, host, target)
+        load_tool_config(env, name, tool, host, target)
     # if version is None get a real version
     if ver is None:
         api.output.trace_msgf('configuration', "No version defined for tool {0}", tool)
@@ -586,7 +586,7 @@ def get_config(env, name, tool, host, target):
         api.output.trace_msgf('configuration', "Resolved version for tool {0} to {1}", tool, ver)
         if config.has_tool_cfg(tool, host, target, ver) == False:
             # if not load all information about this tool
-            ver = load_tool_config(env, name, tool, host, target)
+            load_tool_config(env, name, tool, host, target)
     files = config.defining_files(tool, host, target)
 
     # get settings
@@ -670,7 +670,7 @@ def apply_config(env, name=None):
             env['_CONFIG_CONTEXT'] = {}
             env['_CONFIG_CONTEXT'][t] = files
 
-        for flag, items in settings.iteritems():
+        for flag, items in settings.items():
             # replace values
             if 'replace' in items:
                 env.Replace(**{flag: items['replace']})
@@ -682,12 +682,12 @@ def apply_config(env, name=None):
 
         tmp = setting_extra.get('prepend_env', {})
         for i in tmp:
-            for k, v in i.iteritems():
+            for k, v in i.items():
                 env.PrependENVPath(k, v, delete_existing=True)
 
         tmp = setting_extra.get('append_env', {})
         for i in tmp:
-            for k, v in i.iteritems():
+            for k, v in i.items():
                 env.AppendENVPath(k, v, delete_existing=True)
 
         tmp = setting_extra.get('post_process_func', [])
@@ -713,8 +713,6 @@ def isConfigBasedOn(env, name):
     return _isconfigbasedon(env, name, env.subst('$CONFIG'))
 
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
 SConsEnvironment.isConfigBasedOn = isConfigBasedOn

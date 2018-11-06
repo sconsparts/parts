@@ -1,9 +1,13 @@
+from __future__ import absolute_import, division, print_function
+
+
+import collections
 import errno
-import sys
 import os
 import subprocess
-import collections
+import sys
 import time
+import unittest
 
 try:
     from SCons.Errors import UserError
@@ -11,7 +15,7 @@ except ImportError:
     UserError = Exception
 
 
-class ProcessAction:
+class ProcessAction(object):
     SUSPEND = 'suspend'
     TERMINATE = 'terminate'
     RESUME = 'resume'
@@ -23,8 +27,8 @@ def _callWithCheck(message, *call_args, **call_kw):
     proc = subprocess.Popen(*call_args, **call_kw)
     stdout, stderr = proc.communicate()
     if proc.returncode != 0:
-        raise UserError(message.format(proc.returncode, '%s\n\n%s' % (stdout, stderr)))
-    return stdout
+        raise UserError(message.format(proc.returncode, '%s\n\n%s' % (stdout.decode(), stderr.decode())))
+    return stdout.decode()
 
 
 if os.name == 'nt':
@@ -80,7 +84,10 @@ if os.name == 'nt':
         def getInfo(self):
             return SmallThreadInfo(self.th32ThreadID, self.th32OwnerProcessID)
 
-    from _subprocess import WaitForSingleObject
+
+    WaitForSingleObject = ctypes.windll.kernel32.WaitForSingleObject
+    WaitForSingleObject.restype = DWORD
+    WaitForSingleObject.argtypes = (HANDLE, DWORD)
 
     CloseHandle = ctypes.windll.kernel32.CloseHandle
     CloseHandle.restype = BOOL
@@ -134,9 +141,18 @@ if os.name == 'nt':
     GetProcessTimes.argtypes = (HANDLE, LPFILETIME, LPFILETIME, LPFILETIME, LPFILETIME)
     GetProcessTimes.restype = BOOL
 
+
+    def int_to_handle(value):
+        '''
+        Casts Python integer to ctypes.wintypes.HANDLE
+        '''
+        return ctypes.cast(
+            ctypes.pointer(ctypes.c_size_t(value)),
+            ctypes.POINTER(ctypes.wintypes.HANDLE)).contents
+
     def __waitForProcess(process, timeout):
         # WaitForSingleObject expects timeout in milliseconds, so we convert it
-        WaitForSingleObject(process._handle, int(timeout * 1000))
+        WaitForSingleObject(int_to_handle(process._handle), int(timeout * 1000))
 
     def _traverseWinStructures(snapFlags, entryClass, traverseFirst, traverseNext):
         snapHandle = CreateToolhelp32Snapshot(snapFlags, 0)
@@ -311,7 +327,6 @@ def waitForProcess(process, timeout=None):
         __waitForProcess(process, timeout)
 
 
-import unittest
 
 
 class TestKillProcessTree(unittest.TestCase):
@@ -334,7 +349,7 @@ class TestKillProcessTree(unittest.TestCase):
         pid = zombie.pid
         time.sleep(0.1)  # Give zombie time to start
         proclist1 = _getRunningProcesses()[os.getpid()]
-        zombie.stdin.write('\n')
+        zombie.stdin.write('\n'.encode())
         time.sleep(0.5)  # Give zombie time to die
         proclist2 = _getRunningProcesses()[os.getpid()]
         zombie.wait()  # Shoot it!

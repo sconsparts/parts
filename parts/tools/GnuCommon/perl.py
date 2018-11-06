@@ -1,10 +1,12 @@
-from common import GnuInfo
-from parts.tools.Common.Finders import PathFinder, ScriptFinder
+from __future__ import absolute_import, division, print_function
+
 from parts.platform_info import SystemPlatform
+from parts.tools.Common.Finders import PathFinder, ScriptFinder
 from parts.tools.Common.ToolSetting import ToolSetting
 
-perl = ToolSetting('PERL')
+from .common import GnuInfo
 
+perl = ToolSetting('PERL')
 perl.Register(
     hosts=[SystemPlatform('win32', 'any')],
     targets=[SystemPlatform('any', 'any')],

@@ -1,10 +1,14 @@
 
-import sys
-import os
-import glob
-import re
-import SCons.Util
+from __future__ import absolute_import, division, print_function
 
+from builtins import range
+
+import glob
+import os
+import re
+import sys
+
+import SCons.Util
 from SCons.Debug import logInstanceCreation
 
 
@@ -67,7 +71,7 @@ class RegFinder(object):
         self.rel_path = rel_path
 
         if self.keys is None or self.keys == []:
-            print "RegFinder was given not passed any values to find"
+            print("RegFinder was given not passed any values to find")
 
     def read_reg(self, value):
         ret = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE, value)
@@ -149,7 +153,7 @@ if sys.platform == 'win32':
                                 path = os.path.dirname(path)
                                 if state == msi.INSTALLSTATE_LOCAL and os.path.exists(path):
                                     if self.__upDirs is not None:
-                                        for i in xrange(self.__upDirs):
+                                        for i in range(self.__upDirs):
                                             path = os.path.dirname(path)
                                     if self.__subDir:
                                         path = os.path.join(path, self.__subDir)

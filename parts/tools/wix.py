@@ -1,10 +1,12 @@
-import SCons.Defaults
+from __future__ import absolute_import, division, print_function
 
-from parts.api import output
-from parts.tools.MSCommon.wix import wix
-from parts.tools.MSCommon.wix import createWixObjectBuilder
-from parts.tools.MSCommon.wix import createMsiBuilder
+
 import parts.tools.Common
+from parts.api import output
+from parts.tools.MSCommon.wix import (createMsiBuilder, createWixObjectBuilder,
+                                      wix)
+
+import SCons.Defaults
 
 
 def generate(env):

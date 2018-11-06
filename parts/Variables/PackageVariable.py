@@ -1,17 +1,19 @@
-import variable
+from __future__ import absolute_import, division, print_function
+
 import SCons.Errors
+from .variable import Variable
 
 __enable_strings = ('1', 'yes', 'true', 'on', 'enable', 'search')
 __disable_strings = ('0', 'no', 'false', 'off', 'disable')
 
 
-class PackageVariable(variable.Variable):
+class PackageVariable(Variable):
 
     def __init__(self, name, help, default, searchfunc=None, value=None, help_group=None):
         '''
         '''
         help = '\n    '.join(
-            (help, '( yes | no | /path/to/%s )' % key))
+            (help, '( yes | no | /path/to/%s )' % name))
 
         def _converter(val):
             """

@@ -1,5 +1,8 @@
-from .. import glb
-import stored_info
+from __future__ import absolute_import, division, print_function
+
+import parts.pnode.stored_info as stored_info
+import parts.glb as glb
+
 
 
 class section_info(stored_info.stored_info):

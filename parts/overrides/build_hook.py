@@ -1,10 +1,13 @@
 ﻿
-# this code overides scons build targets so we can do some processing before
+
 # Scons tries to build the tree. This is basicaly giving us a call back hook
 # That would be nice to have in SCons.
+from __future__ import absolute_import, division, print_function
 
+# this code overides scons build targets so we can do some processing before
 import SCons.Script.Main
-from .. import glb
+
+import parts.glb as glb
 
 scons_build_targets = SCons.Script.Main._build_targets
 

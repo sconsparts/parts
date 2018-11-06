@@ -4,18 +4,21 @@ matching expressions. Scons just add a Glob function.. need to consider using th
 internal here instead, and then possiblely removing pattern 100%
 '''
 
-# patterns
-import glb
-import common
-import core.util as util
-import api
+from __future__ import absolute_import, division, print_function
 
-
-import SCons.Script
-
-from SCons.Debug import logInstanceCreation
 
 import os
+
+import SCons.Script
+from SCons.Debug import logInstanceCreation
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
+
+import parts.api as api
+import parts.common as common
+import parts.core.util as util
+# patterns
+import parts.glb as glb
 
 
 def Pattern_func(env, sub_dir='', src_dir='', includes=['*'], excludes=[], recursive=True):
@@ -62,7 +65,7 @@ class Pattern(object):
             root_path = SCons.Script.Dir('.').srcnode().abspath
             if self.src_dir.abspath.startswith(root_path) == False:
                 root_path = self.src_dir.abspath
-            for root_dir, src_nodes in self.map.iteritems():
+            for root_dir, src_nodes in self.map.items():
                 for node in src_nodes:
                     fl.append(node)
             fl.sort(key=lambda x: x.ID)
@@ -73,14 +76,14 @@ class Pattern(object):
     def sub_dirs(self):
         if self.map is None:
             self.generate()
-        return self.map.keys()
+        return list(self.map.keys())
 
     def target_source(self, root_target):
         src_list = []
         trg_list = []
         if self.map is None:
             self.generate()
-        for dnode, slist in self.map.items():
+        for dnode, slist in list(self.map.items()):
             for node in slist:
                 if util.isSymLink(node):
                     target_node = root_target.FileSymbolicLink(self.src_dir.rel_path(node))
@@ -268,8 +271,6 @@ class _Pattern(object):
         return Pattern(sub_dir=sub_dir, src_dir=src_dir, includes=includes, excludes=excludes, recursive=recursive, env=self.env)
 
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
 SConsEnvironment.Pattern = Pattern_func

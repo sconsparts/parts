@@ -1,17 +1,22 @@
-import os
-import zipfile
-import tarfile
-import errno
-import contextlib
+from __future__ import absolute_import, division, print_function
 
-import SCons.Builder
+
+
+import contextlib
+import ctypes
+import errno
+import os
+import tarfile
+import zipfile
+
+from parts import api
+from parts.common import matches
+from parts.overrides import symlinks
+
 import SCons.Action
+import SCons.Builder
 import SCons.Environment
 import SCons.Node.FS
-import ctypes
-from parts.common import matches
-from parts import api
-from parts.overrides import symlinks
 
 try:
     os_link = os.link
@@ -19,7 +24,7 @@ except AttributeError:
     try:
         CreateHardLinkW = ctypes.windll.kernel32.CreateHardLinkW
 
-        def os_link(src, dst): return CreateHardLinkW(unicode(src), unicode(dst), None)
+        def os_link(src, dst): return CreateHardLinkW(str(src), str(dst), None)
     except AttributeError:
         def os_link(src, dst):
             raise OSError("Don't know how to make hard link on Windows NT")
@@ -63,7 +68,7 @@ def getNodesFromCache(fileNode, generator, env):
     if not excludes:
         excludes = []
 
-    for nodeName, (index, isdir, issym) in nodeNames.iteritems():
+    for nodeName, (index, isdir, issym) in nodeNames.items():
         if (not isdir) and matches(nodeName, includes, excludes):
             node = env.Entry(nodeName)
             if issym:
@@ -76,9 +81,7 @@ def getNodesFromCache(fileNode, generator, env):
 
 
 class _ArcInfoProxy(object):
-    __slots__ = ['_index', '_item', '_arc', '__init__', '__str__', 'open',
-                 '_extract_file', '_extract_dir', '_extract_symlink', 'index',
-                 'isdir', 'islnk', 'issym', 'linkname', 'extract']
+    __slots__ = ['_index', '_item', '_arc',]
 
     def __init__(self, archive, archiveItem, index):
         self._arc = archive
@@ -164,7 +167,7 @@ class _ArcInfoProxy(object):
 
 
 class _TarInfoProxy(_ArcInfoProxy):
-    __slots__ = ['__init__', '__str__', 'open', 'isdir', 'issym', 'extract', 'linkname']
+    __slots__ = []
 
     def __init__(self, tarfile, tarinfo, index):
         super(self.__class__, self).__init__(tarfile, tarinfo, index)
@@ -200,7 +203,7 @@ class _TarInfoProxy(_ArcInfoProxy):
 
 
 class _ZipInfoProxy(_ArcInfoProxy):
-    __slots__ = ['__init__', '__str__', 'open', 'isdir']
+    __slots__ = []
 
     def __init__(self, zipfile, zipinfo, index):
         super(self.__class__, self).__init__(zipfile, zipinfo, index)
@@ -251,15 +254,15 @@ def actionUnpack(generator, target, source, env):
         tgtIter = iter(target)
         arcIter = generator(source[0])
         try:
-            arcItem = arcIter.next()
+            arcItem = next(arcIter)
 
-            tgtItem = tgtIter.next()
+            tgtItem = next(tgtIter)
             while True:
                 while tgtItem.attributes.archive_index < arcItem.index:
-                    tgtItem = tgtIter.next()
+                    tgtItem = next(tgtIter)
                 while tgtItem.attributes.archive_index > arcItem.index:
                     try:
-                        arcItem = arcIter.next()
+                        arcItem = next(arcIter)
                     except StopIteration:
                         # Oops! There are no more items in the archive but we still
                         # have targets to be extracted
@@ -268,7 +271,7 @@ def actionUnpack(generator, target, source, env):
                 while tgtItem.attributes.archive_index == arcItem.index:
                     try:
                         nodes.append(tgtItem)
-                        tgtItem = tgtIter.next()
+                        tgtItem = next(tgtIter)
                     except StopIteration:
                         # We have iterated through all the targets
                         # now extract them and return

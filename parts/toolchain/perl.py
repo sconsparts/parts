@@ -1,3 +1,6 @@
+from __future__ import absolute_import, division, print_function
+
+
 def _setup(env, ver):
     env['PERL_VERSION'] = ver
 

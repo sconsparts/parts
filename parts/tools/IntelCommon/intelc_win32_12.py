@@ -1,10 +1,14 @@
-from common import Intelc, IntelcInfo
-import regscanner
-from parts.tools.Common.ToolInfo import ToolInfo
-from parts.tools.Common.Finders import RegFinder, EnvFinder, PathFinder, ScriptFinder
-from parts.platform_info import SystemPlatform
+from __future__ import absolute_import, division, print_function
+
 import os
 
+from parts.platform_info import SystemPlatform
+from parts.tools.Common.Finders import (EnvFinder, PathFinder, RegFinder,
+                                        ScriptFinder)
+from parts.tools.Common.ToolInfo import ToolInfo
+
+from . import regscanner
+from .common import Intelc, IntelcInfo
 
 # composer (mainstream)
 # 32-bit 12.1

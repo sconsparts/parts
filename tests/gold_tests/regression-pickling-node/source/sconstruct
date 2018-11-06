@@ -3,11 +3,11 @@ import sys
 import SCons.Script
 from parts import *
 
-print "**************** TOOLS ****************"
-print '* Python Version:', string.split(sys.version, " ", 1)[0]
-print '* SCons  Version:', SCons.__version__
-print '* Parts  Version:', PartsExtensionVersion()
-print "***************************************"
+print("**************** TOOLS ****************")
+print('* Python Version:', sys.version.split(" ", 1)[0])
+print('* SCons  Version:', SCons.__version__)
+print('* Parts  Version:', PartsExtensionVersion())
+print("***************************************")
 
 Default("all")  
 Part(parts_file=

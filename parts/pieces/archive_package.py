@@ -2,10 +2,15 @@
     for all the archive builders including "tar","tar.gz","tar.bz2"
     "bz2","zip", "tgz"'''
 
-import parts.errors
+from __future__ import absolute_import, division, print_function
+
+
 import parts.common as common
+import parts.errors
 import parts.glb as glb
+
 from SCons.Debug import logInstanceCreation
+from SCons.Script.SConscript import SConsEnvironment
 
 
 def map_archive_builder(env, target, sources, archive_type, stackframe, **kw):
@@ -33,7 +38,7 @@ def map_archive_builder(env, target, sources, archive_type, stackframe, **kw):
                 return False
             return True
 
-        new_sources = filter(lambda x: is_source_file(x, control_sources), new_sources)
+        new_sources = [x for x in new_sources if is_source_file(x, control_sources)]
 
         # copy source node to build area, have to keep directory structure
         # Following logic will maintain the directory structure, e.g /bin/setup.py
@@ -85,7 +90,6 @@ def ArchivePackage_wrapper(env, target, sources, archive_type, **kw):
 
 
 # This is what we want to be setup in parts'''
-from SCons.Script.SConscript import SConsEnvironment
 
 SConsEnvironment.TarPackage = lambda env, target, sources, **kw: ArchivePackage_wrapper(env, target, sources, 'tar', **kw)
 SConsEnvironment.ZipPackage = lambda env, target, sources, **kw: ArchivePackage_wrapper(env, target, sources, 'zip', **kw)

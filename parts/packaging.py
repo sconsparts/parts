@@ -1,12 +1,15 @@
-import glb
-import common
-import core.util as util
-import api.output
-import settings
-
-import policy
+from __future__ import absolute_import, division, print_function
 
 import SCons.Script
+from SCons.Environment import SubstitutionEnvironment as SubstEnv
+from SCons.Script.SConscript import SConsEnvironment
+
+import parts.api as api
+import parts.common as common
+import parts.core.util as util
+import parts.glb as glb
+import parts.policy as policy
+import parts.settings as settings
 
 # this is the group to part mapping
 # ie this is the unsorted data
@@ -17,7 +20,7 @@ _sorted_groups = dict(), dict()
 
 
 def PackageGroups():
-    return g_package_groups.keys()
+    return list(g_package_groups.keys())
 
 
 def PackageGroup(name, parts=None):
@@ -133,7 +136,7 @@ def def_GetFilesFromPackageGroups(klass):
         duplicates = dict()
         for group in groups:
             files = GetPackageGroupFiles(group)
-            intersection = set(visited.iterkeys()) & set(files)
+            intersection = set(visited.keys()) & set(files)
             for file in intersection:
                 duplicates[file] = (duplicates.get(file) or (visited[file],)) + (group,)
             visited.update((file, group) for file in files)
@@ -145,9 +148,9 @@ def def_GetFilesFromPackageGroups(klass):
                 multigroup_policy = policy.ReportingPolicy.ignore
             api.output.policy_msg(multigroup_policy, 'packaging',
                                   'While forming "{0}" package found files included by multiple groups: \n{1}'.format(target, '\n'.join(
-                                      '\t{0} is included by groups: {1}'.format(file, ', '.join(sorted(groups))) for (file, groups) in sorted(duplicates.iteritems()))),
+                                      '\t{0} is included by groups: {1}'.format(file, ', '.join(sorted(groups))) for (file, groups) in sorted(duplicates.items()))),
                                   stackframe=stackframe)
-        return sorted(visited.iterkeys()), sorted(duplicates.iteritems())
+        return sorted(visited.keys()), sorted(duplicates.items())
     klass.GetFilesFromPackageGroups = GetFilesFromPackageGroups
     return klass
 
@@ -192,7 +195,7 @@ def _clear_sorted_group():
 def _filter_by_criteria(node, filters, metainfo):
     api.output.verbose_msgf(["packaging"], "Filtering node via Group {0}", node.ID)
     no_pkg = metainfo.get('no_package', False)
-    for group, tests in filters.viewitems():
+    for group, tests in filters.items():
         # test if there is a filter to move this to a different group
         for test in tests:
             if test(node):
@@ -235,7 +238,7 @@ def _get_file_entries(node):
     # walk the Dir node to see what nodes it contains
     # return a flat list of file node
     ret = []
-    for k, v in node.entries.viewitems():
+    for k, v in node.entries.items():
         if isinstance(v, SCons.Node.FS.Dir) and k != ".." and k != ".":
             ret.extend(_get_file_entries(v))
         else:  # this is a File node
@@ -329,12 +332,8 @@ def PrependPackageGroupCriteriaEnv_old(env, name, func):
     return env.PrependPackageGroupCriteria(name, func)
 
 
-from SCons.Script.SConscript import SConsEnvironment
-
-
 SConsEnvironment.GetPackageGroupFiles = GetPackageGroupFiles_env
 
-from SCons.Environment import SubstitutionEnvironment as SubstEnv
 def_GetFilesFromPackageGroups(SubstEnv)
 
 SConsEnvironment.ReplacePackageGroupCritera = ReplacePackageGroupCriteriaEnv_old

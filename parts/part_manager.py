@@ -1,32 +1,32 @@
 
-import glb
-import common
-import core.util as util
-import errors
-import pnode.part
-import api.output
-import datacache
-import node_helpers
-import platform_info
-import vcs
-import version
-from target_type import target_type
-import config
-import loadlogic.all
-import loadlogic.nodepends
-import loadlogic.target
-import loadlogic.changed
-import events
+from __future__ import absolute_import, division, print_function
 
-import SCons.Script
-import time
-import os
+
+
 import copy
 import hashlib
+import os
+import time
 
 import SCons.Job
-
+import SCons.Script
 from SCons.Debug import logInstanceCreation
+
+import parts.api as api
+import parts.common as common
+import parts.config as config
+import parts.core.util as util
+import parts.datacache as datacache
+import parts.errors as errors
+import parts.events as events
+import parts.glb as glb
+import parts.loadlogic as loadlogic
+import parts.node_helpers as node_helpers
+import parts.platform_info as platform_info
+import parts.pnode as pnode
+import parts.vcs as vcs
+import parts.version as version
+from parts.target_type import target_type
 
 
 class part_manager(object):
@@ -504,7 +504,7 @@ class part_manager(object):
             self._add_part(tmp)
             self.LoadPart(tmp)
         else:
-            print tmp.ID, "is NOT SETUP!!!!!!!!"
+            print(tmp.ID, "is NOT SETUP!!!!!!!!")
 
         # store setup state if this is a read cache or ignore case, as it might need to load latter as a file
         # and we will not be able to get the orginal state to "reinit" this component
@@ -526,7 +526,7 @@ class part_manager(object):
 
         if tmp.LoadState == glb.load_cache:
             # If this is the case we need to make sure the sections are processed
-            for secid in tmp.Stored.SectionIDs.itervalues():
+            for secid in tmp.Stored.SectionIDs.values():
                 s = glb.pnodes.GetPNode(secid)
                 if s.ReadState == glb.load_cache:
                     s.LoadFromCache()  # load section from cache
@@ -647,7 +647,7 @@ class part_manager(object):
                     # sections that mapped to this
 
                     # for each part with this section we test to see if it has this group
-                    for pobj in self.parts.itervalues():
+                    for pobj in self.parts.values():
                         if pobj.hasSection(tobj.Section):
                             pobj.Section(tobj.Section).groups
                     # if it does add it to the build list, else skip it
@@ -675,7 +675,7 @@ class part_manager(object):
         # if not we need to update it
         if SCons.Script.GetOption('update'):
             api.output.print_msg("Updating disk")
-            self.UpdateOnDisk(self.parts.values())
+            self.UpdateOnDisk(list(self.parts.values()))
             api.output.print_msg("Updating disk - Done")
 
         # self.UpdateStoredState()
@@ -826,7 +826,7 @@ class part_manager(object):
         p_list = vcs.task_master.task_master()
         s_list = vcs.task_master.task_master()
         if part_set is None:
-            part_set = self.parts.values()
+            part_set = list(self.parts.values())
         update_set = set([])
         for p in part_set:
             # if so add to queue for checkout
@@ -879,7 +879,7 @@ class part_manager(object):
 
         md5 = hashlib.md5()
         for i in self.__name_to_alias[name]:
-            md5.update(i)
+            md5.update(i.encode())
         return md5.hexdigest()
 
     def StoredMappingSig(self, name):
@@ -1000,7 +1000,7 @@ class part_manager(object):
         # we loop over all the "properties" and reduce based on values defined at that level
         for pobj in part_lst:
             match = True
-            for key, val in tobj.Properties.iteritems():
+            for key, val in tobj.Properties.items():
                 api.output.trace_msgf("reduce_target_mapping", " Testing Part {0}", pobj.ID)
                 if key == 'version':
                     # normalize string to version_range object
@@ -1112,7 +1112,7 @@ class part_manager(object):
 
         api.output.trace_msgf("stored_reduce_target_mapping",
                               "Reducing list of parts based on target {0}\n set={1}", tobj, part_lst)
-        for k, v in tobj.Properties.iteritems():
+        for k, v in tobj.Properties.items():
             for pobj in part_lst.copy():
                 api.output.trace_msgf("stored_reduce_target_mapping", " Testing Part {0}", pobj.ID)
                 if pobj.Stored is None:
@@ -1203,7 +1203,7 @@ class part_manager(object):
             # this needed to tell if we have a alias target
             # however I may not need all the data that is stored here
             # we can clean this up later
-            for k, v in self.parts.iteritems():
+            for k, v in self.parts.items():
                 format = v.Format
                 if format != 'new':
                     has_old = True
@@ -1222,7 +1222,7 @@ class part_manager(object):
             tmp = stored_data['name_to_alias'] if stored_data else {}
             sigmap = stored_data['sig_mapping'] if stored_data else {}
             # this is needed to help with name targets
-            for name, partIDs in self.__name_to_alias.iteritems():
+            for name, partIDs in self.__name_to_alias.items():
                 # make sure we merge in data correctly
                 # get any stored info we have
                 tmp2 = tmp.get(name, set([])) if self.__hasStored else set([])
@@ -1248,7 +1248,7 @@ class part_manager(object):
         # get node data if any
         if node.Stored and node.Stored.Components:
             # we have parts information to add
-            for partid, sectionids in node.Stored.Components.iteritems():
+            for partid, sectionids in node.Stored.Components.items():
                 for section in sectionids:
                     section = glb.pnodes.GetPNode(section)
                     if node.Stored.AlwaysBuild:
@@ -1333,7 +1333,7 @@ class part_manager(object):
             self.__hasStored = False
             return None        # look to see if any parts we currently know about is not in the list.
 
-        for pobj in self.parts.itervalues():
+        for pobj in self.parts.values():
             if pobj.ID not in known_parts:
                 self.__new_parts.add(pobj)
 
@@ -1352,7 +1352,7 @@ class part_manager(object):
             # get the root parts that changed since the last run
             changedIDs = glb.pnodes.GetChangedRootPartIDsSinceLastRun()
             # for each root part we have did it inputs change
-            for pobj in self.parts.itervalues():
+            for pobj in self.parts.values():
                 if pobj.isRoot and (pobj.ID in changedIDs or self.hasInputChanged(pobj)):
                     ret.add(pobj)
                 if self.__hasStored == False:

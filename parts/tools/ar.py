@@ -1,9 +1,11 @@
 # Stub file to update env for ar tool
 
-import SCons.Tool.ar
+from __future__ import absolute_import, division, print_function
 
-import parts.tools.GnuCommon.common
 import parts.tools.Common
+import parts.tools.GnuCommon.common
+
+import SCons.Tool.ar
 
 
 def generate(env):

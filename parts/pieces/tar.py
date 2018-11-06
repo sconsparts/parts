@@ -1,7 +1,12 @@
+from __future__ import absolute_import, division, print_function
+
+
 import os
 import tarfile
-import SCons.Script
+
 import parts.api as api
+
+import SCons.Script
 
 
 def tar(target, source, env, type):

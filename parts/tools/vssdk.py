@@ -1,11 +1,14 @@
-import os.path
-import os
-import SCons.Util
+from __future__ import absolute_import, division, print_function
 
-import parts.tools.MSCommon.vsx_sdk
-from parts.tools.MSCommon import vssdk
+import os
+import os.path
+
 import parts.api.output as output
 import parts.tools.Common
+import parts.tools.MSCommon.vsx_sdk
+from parts.tools.MSCommon import vssdk
+
+import SCons.Util
 
 ctc_action = SCons.Action.Action('$CTC_COM', '$CTC_COMSTR')
 ctc_builder = SCons.Builder.Builder(action=ctc_action,

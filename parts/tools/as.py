@@ -2,9 +2,11 @@
 
 # import SCons.Tool.as as AS
 AS = getattr(__import__('SCons.Tool.as', globals(), locals(), []).Tool, 'as')
+from __future__ import absolute_import, division, print_function
+
+import parts.tools.Common
 import parts.tools.GnuCommon.binutils
 import parts.tools.GnuCommon.common
-import parts.tools.Common
 
 
 def generate(env):

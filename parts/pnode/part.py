@@ -1,39 +1,32 @@
-from .. import glb
+from __future__ import absolute_import, division, print_function
 
-import pnode
-import section
-import part_info
-import pnode_manager
-from .. import api
-from .. import common
-from ..core import util
-from .. import settings
-from .. import part_logger
-from .. import packaging
+from past.builtins import cmp
+from builtins import zip
 
-#from .. import requirement
-from .. import errors
-from .. import functors
-from ..target_type import target_type
-from .. import datacache
 
-# these imports add stuff we will need to export to the parts file.
-from .. import platform_info
-from .. import version
-from .. import dependson
-from .. import node_helpers
-
-#from pattern import Pattern
-import sys
 import copy
-import pprint
+import hashlib
 import os
+import pprint
+import sys
 import time
 import traceback
-#import SCons.Script
-import SCons.Node
 import types
-import hashlib
+
+import SCons.Node
+
+import parts.pnode.part_info as part_info
+import parts.pnode.pnode as pnode
+import parts.pnode.pnode_manager as pnode_manager
+import parts.pnode.section as section
+
+# these imports add stuff we will need to export to the parts file.
+#from .. import requirement
+from .. import (api, common, datacache, dependson, errors, functors, glb,
+                node_helpers, packaging, part_logger, platform_info, settings,
+                version)
+from ..core import util
+from ..target_type import target_type
 
 
 def safe_visited_call(node):
@@ -375,7 +368,7 @@ class part(pnode.pnode):
 
     @property  # readonly non-mutable
     def SubParts(self):
-        return self.__subparts.values()
+        return list(self.__subparts.values())
 
     @SubParts.setter
     def SubParts(self, obj):
@@ -688,8 +681,9 @@ class part(pnode.pnode):
             # if there is no version difference, we will get an ambigous error message later when we try to build,
             # via same outputs, or via mapper function not having more than one match.
             md5 = hashlib.md5()
-            md5.update(self.__env.subst(self.__file))
-            md5.update(self.__env_diff_sig)
+
+            md5.update(self.__env.subst(self.__file).encode())
+            md5.update(self.__env_diff_sig.encode())
             path_sig = md5.hexdigest()[-4:]
 
         # We need to set to the alias value as this is the unique ID used to map data internally
@@ -803,12 +797,13 @@ class part(pnode.pnode):
             if m == "default":
                 pass
             elif m in self.__mode:
-                if self.isRoot:
-                    api.output.warning_msgf(
-                        'Mode value "{val}" was defined globally and locally. This may cause ambgious dependancy matching',
-                        val=m,
-                        id=self.ID
-                    )
+                #if self.isRoot:
+                    #api.output.warning_msgf(
+                        #'Mode value "{val}" was defined globally and locally. This may cause ambiguous dependency matching',
+                        #val=m,
+                        #id=self.ID
+                    #)
+                pass
             else:
                 self.__mode.append(m)
         self.__env['MODE'] = self.__mode
@@ -991,7 +986,7 @@ class part(pnode.pnode):
         # error on mixed formats??
 
         if self.LoadState == glb.load_file:
-            print "\033[1;32m %s was already read" % self.__alias
+            print("\033[1;32m %s was already read" % self.__alias)
             return
         if self.LoadState == glb.load_cache and self.__classic_section is None:
             # print "promotion state from cache to file"
@@ -1003,14 +998,14 @@ class part(pnode.pnode):
         if self.LoadState < glb.load_file:
             # final set up for environment
             self.__classic_section.Reset()
-            for s in self.__sections.itervalues():
+            for s in self.__sections.values():
                 s.Reset()
             env = self.__classic_section.Env
             # setup what we want to export
             # global objects
             export_map = glb.parts_objs
             # global object that need to be mapped
-            for k, v in glb.parts_objs_env.iteritems():
+            for k, v in glb.parts_objs_env.items():
                 export_map[k] = v(env)
             # add the sections
             # we do this when we read as there might have been new sections dynamically added
@@ -1097,7 +1092,7 @@ class part(pnode.pnode):
         '''
         return False
         # reduce
-        for name, obj in self.__sections.iteritems():
+        for name, obj in self.__sections.items():
             # see if the section was even called
             if obj.isSet():
                 # if so is it valid() in that non optional phases
@@ -1253,7 +1248,7 @@ class part(pnode.pnode):
         info.ForceLoad = self.ForceLoad
 
         # store subpart ID values
-        info.SubPartIDs = self.__subparts.keys()
+        info.SubPartIDs = list(self.__subparts.keys())
 
         tmp = []
         i = self.__parent
@@ -1270,7 +1265,7 @@ class part(pnode.pnode):
         tmp = {'build': self.__classic_section}
         tmp.update(self.__sections)
 
-        for k in tmp.iterkeys():
+        for k in tmp.keys():
             tmp[k] = tmp[k].ID
         info.SectionIDs = tmp
 
@@ -1316,7 +1311,7 @@ class part(pnode.pnode):
 
         # this is config context ( like build but for the config files)
         tmp = {}
-        for k, v in self.__config_context_files.iteritems():
+        for k, v in self.__config_context_files.items():
             tmp[k] = []
             for f in v:
                 i = self.__env.File(f)
@@ -1375,7 +1370,7 @@ class part(pnode.pnode):
         # need to double check logic for this when full new formats section are working
         self.__sections = info.SectionIDs
         tmp = {}
-        for k, v in info.SectionIDs.iteritems():
+        for k, v in info.SectionIDs.items():
             tmp[k] = glb.pnodes.GetPNode(v)
         self.__sections = tmp
 
@@ -1391,12 +1386,11 @@ class part(pnode.pnode):
 
 # some util function
 
-def pcmp(x, y):
-    return cmp(x._order_value, y._order_value)
+#def pcmp(x, y):
+    #return cmp(x._order_value, y._order_value)
 
 
 def complex_compare(v1, v2, env):
-
     if id(v1) == id(v2):  # Equal pointer point to equal objects
         return False
     elif not isinstance(v1, type(v2)):
@@ -1408,25 +1402,25 @@ def complex_compare(v1, v2, env):
         r1 = v1.genstring(["fake_target"], ["fake_source"], env)
         r2 = v1.genstring(["fake_target"], ["fake_source"], env)
         return r1 != r2
-    elif isinstance(v1, types.ClassType):
+    elif isinstance(v1, type):
         return True if (v1.__module__, v1.__name__) != (v2.__module__, v2.__name__) else False
     elif isinstance(v1, types.FunctionType):
         return True if (v1.__module__, v1.__name__) != (v2.__module__, v2.__name__) else False
-    elif isinstance(v1, dict):
+    elif util.isDictionary(v1):
         return v1 != v2
-    elif isinstance(v1, list):
+    elif util.isList(v1) or util.isTuple(v1):
         if len(v1) != len(v2):
             return True
         for i, j in zip(v1, v2):
             if complex_compare(i, j, env):
                 return True
             return False
-    elif isinstance(v1, types.InstanceType):
-        if v1 == v2:
-            return False
-        elif str(v1) == str(v2):
-            return False
-        return True
+    #elif isinstance(v1, types.InstanceType):
+        #if v1 == v2:
+            #return False
+        #elif str(v1) == str(v2):
+            #return False
+        #return True
     elif v1 != v2:
         return True
     return False

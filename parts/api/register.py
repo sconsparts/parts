@@ -1,9 +1,9 @@
-
-from .. import glb
-import output
-
+from __future__ import absolute_import, division, print_function
 
 import SCons.Script
+
+from . import output
+import parts.glb as glb
 
 
 def add_section(section):
@@ -88,5 +88,4 @@ def add_enum_variable(key, default, help, allowed_values, map={}, ignorecase=1):
 def add_list_variable(key, default, help, names=[], map={}):
     '''Generic variable addition'''
     from .. import settings
-    from .. import Variables
     settings.DefaultSettings().ListVariable(key, help=help, default=default, names=names, map=map, value=None, help_group=None)

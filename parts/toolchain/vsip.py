@@ -1,4 +1,7 @@
 # compatibility with 0.8 .. should be removed later
+from __future__ import absolute_import, division, print_function
+
+
 def vssdk_setup(env, ver):
     env['VSSDK_VERSION'] = ver
 

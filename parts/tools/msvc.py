@@ -30,6 +30,7 @@ selection method.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
+from __future__ import absolute_import, division, print_function
 
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
@@ -38,21 +39,20 @@ import re
 import string
 import sys
 
+import parts.api.output as output
+import parts.tools.Common
+#from MSCommon import msvc_exists,setup_env,is_win64
+from parts.tools.MSCommon import msvc, validate_vars
+
 import SCons.Action
 import SCons.Builder
 import SCons.Errors
 import SCons.Platform.win32
+import SCons.Scanner.RC
 import SCons.Tool
 import SCons.Tool.msvs
 import SCons.Util
 import SCons.Warnings
-import SCons.Scanner.RC
-
-#from MSCommon import msvc_exists,setup_env,is_win64
-from parts.tools.MSCommon import msvc, validate_vars
-
-import parts.api.output as output
-import parts.tools.Common
 
 CSuffixes = ['.c', '.C']
 CXXSuffixes = ['.cc', '.cpp', '.cxx', '.c++', '.C++']
@@ -153,7 +153,7 @@ def msvc_output_flag(target, source, env, for_signature):
     we return an /Fo string that just specifies the first target's
     directory (where the Visual C/C++ compiler will put the .obj files).
     """
-    print "called *************"
+
     b = env.subst('$MSVC_BATCH')
     if b in (None, '', '0') or len(source) == 1:
         return '/Fo$TARGET'

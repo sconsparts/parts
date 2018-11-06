@@ -31,17 +31,19 @@ selection method.
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+from __future__ import absolute_import, division, print_function
+
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
+
+import parts.api.output as output
+import parts.tools.Common
+from parts.tools.MSCommon import msvc
 
 import SCons.Defaults
 import SCons.Tool
-import SCons.Tool.msvs
 import SCons.Tool.msvc
+import SCons.Tool.msvs
 import SCons.Util
-
-import parts.api.output as output
-from parts.tools.MSCommon import msvc
-import parts.tools.Common
 
 
 def generate(env):

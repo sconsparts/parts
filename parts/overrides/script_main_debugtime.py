@@ -5,13 +5,14 @@ obscure exception - it's not clear why SCons wanted to hide this statistics in s
 To detect if SCons has already printed the info we also monkey-patch
 SCons.Debug.dump_caller_counts which is only called by main() right before printint the stats
 '''
+from __future__ import absolute_import, division, print_function
 
-import time
 import atexit
+import time
 
+import SCons.Debug
 import SCons.Script
 import SCons.Script.Main as Main
-import SCons.Debug
 
 
 def wrapFunction(targetObj, targetAttrName):
@@ -46,10 +47,10 @@ def printTimingStatistics():
             else:
                 ct = Main.last_command_end - Main.first_command_start
         scons_time = total_time - Main.sconscript_time - ct
-        print "Total build time: %f seconds" % total_time
-        print "Total SConscript file execution time: %f seconds" % Main.sconscript_time
-        print "Total SCons execution time: %f seconds" % scons_time
-        print "Total command execution time: %f seconds" % ct
+        print("Total build time: %f seconds" % total_time)
+        print("Total SConscript file execution time: %f seconds" % Main.sconscript_time)
+        print("Total SCons execution time: %f seconds" % scons_time)
+        print("Total command execution time: %f seconds" % ct)
 
 
 @wrapFunction(SCons.Debug, 'dump_caller_counts')

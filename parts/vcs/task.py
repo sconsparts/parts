@@ -1,8 +1,12 @@
+from __future__ import absolute_import, division, print_function
+
 import sys
-from .. import api
-from ..reporter import PartRuntimeError as PartRuntimeError
+
 
 import SCons.Errors
+
+import parts.api as api
+from parts.reporter import PartRuntimeError as PartRuntimeError
 
 
 class task(object):
@@ -48,7 +52,7 @@ class task(object):
                 #raise buildError
         except:
             import traceback
-            import StringIO
+            import io
             # ec_str=StringIO.StringIO()
             traceback.print_exc()  # file=ec_str)
             raise

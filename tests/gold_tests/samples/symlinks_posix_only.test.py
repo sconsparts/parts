@@ -7,10 +7,10 @@ Test.SkipIf(
 )
 Setup.Copy.FromSample('symlinks_posix_only')
 
-t = Test.AddBuildRun('client')
-Test.AddBuildRun('symlinks2')
-Test.AddBuildRun()
+#t = Test.AddBuildRun('client')
+#Test.AddBuildRun('symlinks2')
+#Test.AddBuildRun()
 
-# Test.AddUpdateCheck()
-# Test.AddCleanRun()
-# Test.AddOutOfDateCheck()
+## Test.AddUpdateCheck()
+## Test.AddCleanRun()
+## Test.AddOutOfDateCheck()

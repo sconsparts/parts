@@ -2,6 +2,7 @@
 # this is ideally used with other tools such
 # as the Intel compiler to setup need tool chains and
 # version of compatibility needed
+from __future__ import absolute_import, division, print_function
 
 
 def cl_setup(env, ver):

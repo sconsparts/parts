@@ -1,39 +1,41 @@
-import gc
-import sys
-import os
-import stat
+from __future__ import absolute_import, division, print_function
+
 import atexit
-import pprint
-import hashlib
 import copy
+import gc
+import hashlib
+import os
+import pprint
+import stat
+import sys
+import time
 
-import SCons.Script
 import SCons.Node.FS
-
-import glb
-import common
-import core.util as util
-import api.output
-import errors
-import logger
-import poptions  # want to remove
-import load_module
-import part_manager
-import datacache
-import target_type
-import events
-import pnode.pnode_manager
-
-import overrides.script_main_debugtime
-
-from SCons.Script.Main import memory_stats
+import SCons.Script
 from SCons.Debug import logInstanceCreation
+from SCons.Script.Main import memory_stats
 from SCons.Util import flatten
 
+import parts.api as api
+import parts.api.output
+import parts.common as common
+import parts.core.util as util
+import parts.datacache as datacache
+import parts.errors as errors
+import parts.events as events
+import parts.glb as glb
+import parts.load_module as load_module
+import parts.logger as logger
+import parts.overrides as overrides
+import parts.part_manager as part_manager
+import parts.pnode as pnode
+import parts.poptions as poptions  # want to remove
+import parts.target_type as target_type
+import parts.version_info as version_info
+import parts.Variables as Variables
 
 ################################################################################
 
-import time
 
 
 def get_Sconstruct_files():
@@ -485,8 +487,6 @@ class parts_addon(object):
 
     def _setup_help_info(self):
         return
-        import version_info
-        import Variables
         api.output.verbose_msg("startup", "In Help mode, setting up Help values")
         starttext = '\n' + version_info.parts_version_text() + '''
 Usage 'scons [scons options] [Parts options] [Targets]
@@ -545,10 +545,10 @@ Use -H or --help-options for a list of scons options
             'USE_CACHE_KEY',
             'SVN_REVISION',
         ]
-        for k, v in vars.iteritems():
+        for k, v in vars.items():
             if k not in white_list:
                 tmp = common.get_content(v)
-                md5.update(k + tmp)
+                md5.update((k).encode() + tmp)
 
         # set of --options
         # list of arguments we want to process as they might effect build state
@@ -568,12 +568,12 @@ Use -H or --help-options for a list of scons options
             v = SCons.Script.Main.OptionsParser.defaults[k]
             if v != getattr(SCons.Script.Main.OptionsParser.values, k):
                 tmp = common.get_content(v)
-                md5.update(k + tmp)
+                md5.update((k).encode() + tmp)
 
                 # print k,v,getattr(SCons.Script.Main.OptionsParser.values,k)
 
         # this stuff makes up the core key
-        md5.update(self.def_env.subst("${CONFIG},${HOST_PLATFORM},${TARGET_PLATFORM}"))
+        md5.update(self.def_env.subst("${CONFIG},${HOST_PLATFORM},${TARGET_PLATFORM}").encode())
         # the thought is that the exact tool path are chached
         # so changes to cli tools are seen as different
         for i in self.def_env['CONFIGURED_TOOLS']:
@@ -581,16 +581,16 @@ Use -H or --help-options for a list of scons options
             if tmp:
                 md5.update(common.get_content(tmp))
             else:
-                md5.update(i)
+                md5.update(i.encode())
         # store the ENV value as this has value that can tell us of differences
         md5.update(common.get_content(self.def_env['ENV']))
 
         # we add information about that parts we have defined.
         # a different set gets a different key
-        for pobj in self.__part_manager.parts.values():
+        for pobj in list(self.__part_manager.parts.values()):
             if pobj.isRoot:
-                md5.update(pobj.ID)
-
+                md5.update(pobj.ID.encode())
+        
         self.__cache_key = md5.hexdigest()
 
     @property

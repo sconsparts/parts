@@ -1,9 +1,12 @@
-from .. import glb
-from .. import common
-from ..core import util
-from ..pnode import part
-from .. import api
-from base import base
+from __future__ import absolute_import, division, print_function
+
+import parts.api as api
+import parts.common as common
+import parts.glb as glb
+from parts.core import util
+from parts.pnode import part
+
+from .base import base
 
 
 class reuse_part_vcs(base):

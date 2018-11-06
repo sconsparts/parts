@@ -1,6 +1,7 @@
 """
 Stub tool file for binutils tool chain. It has to be here for correct tool chain detection.
 """
+from __future__ import absolute_import, division, print_function
 
 import parts.tools.GnuCommon
 

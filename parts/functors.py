@@ -1,14 +1,15 @@
-import glb
-import common
-import core.util
-import api.output
-import requirement
+from __future__ import absolute_import, division, print_function
 
 import SCons.Script
-
-import thread
-
 from SCons.Debug import logInstanceCreation
+
+import _thread
+import parts.api as api
+import parts.common as common
+import parts.core as core
+import parts.glb as glb
+import parts.mappers as mappers
+import parts.requirement as requirement
 
 
 def gen_rpath_link(sec):
@@ -16,7 +17,6 @@ def gen_rpath_link(sec):
     Add the Rlink path that would be added for the component depending on this
     component, Not what this component would depend on
     '''
-    import mappers
 
     dlst = sec.Depends
     env = sec.Env
@@ -27,7 +27,7 @@ def gen_rpath_link(sec):
     # not what it dependents depend on which is what we need for the
     # rpath-link case
     # get the libpath for this component
-    plist = mappers.sub_lst(env, env.get('LIBPATH', []), thread.get_ident(), recurse=False)
+    plist = mappers.sub_lst(env, env.get('LIBPATH', []), _thread.get_ident(), recurse=False)
     plist = env.Flatten(plist)
     for p in plist:
         rp = '-Wl,-rpath-link=' + env.Dir(p).path
@@ -96,8 +96,17 @@ class map_rpath_part(object):
                 quote = '"'
             else:
                 quote = "'"
-            rlst.append(self.env.Literal('{0}$$ORIGIN/{1}{0}'.format(quote, self.env.Dir('$INSTALL_BIN').rel_path(
-                self.env.Dir('$INSTALL_LIB')))))
+            rlst.append(
+                self.env.Literal(
+                    '{0}$$ORIGIN/{1}{0}'.format(
+                        quote,
+                        self.env.Dir('$INSTALL_BIN').rel_path(
+                            self.env.Dir('$INSTALL_LIB')
+                        )
+                    )
+                )
+            )
+            
             self.env['RPATH'] = rlst
 
 

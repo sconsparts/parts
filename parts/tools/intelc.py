@@ -1,7 +1,11 @@
+from __future__ import absolute_import, division, print_function
+
+import os
+
 import parts.tools.IntelCommon
+
 import SCons.Util
 import SCons.Warnings
-import os
 
 
 def generate(env):

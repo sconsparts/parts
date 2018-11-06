@@ -1,12 +1,17 @@
-import glb
-import common
-import core.util as util
-import api.output
-import errors
+from __future__ import absolute_import, division, print_function
 
-import SCons.Script
 
 import re
+
+import SCons.Script
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
+
+import parts.api as api
+import parts.common as common
+import parts.core.util as util
+import parts.errors as errors
+import parts.glb as glb
 
 
 class EXPORT_TYPES(object):
@@ -63,7 +68,7 @@ def export_path(env, target_dirs, source_dirs, pobj, prop, use_src=False, create
     return ret
 
 
-_reg = re.compile('[\w\-\.]*.so.([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)', re.I)
+_reg = re.compile(r'[\w\-\.]*.so.([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)', re.I)
 
 
 def export_file(env, targets, pobj, prop):
@@ -187,7 +192,7 @@ def ExportItem(env, variable, values, create_sdk=True, map_as_depenance=False): 
 
     if map_as_depenance:
         common.append_unique(pobj.DefiningSection.ExportAsDepends, variable)
-        aa = env.Alias("{0}::alias::{1}::{2}".format(env['PART_SECTION'], env['ALIAS'], variable), values)
+        env.Alias("{0}::alias::{1}::{2}".format(env['PART_SECTION'], env['ALIAS'], variable), values)
 
     # set the create SDK value
     if env['CREATE_SDK'] == False and create_sdk == True:
@@ -199,8 +204,6 @@ def ExportItem(env, variable, values, create_sdk=True, map_as_depenance=False): 
     errors.ResetPartStackFrameInfo()
 
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
 

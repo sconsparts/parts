@@ -1,8 +1,13 @@
+from __future__ import absolute_import, division, print_function
+
+
+
 import fnmatch
-import api
-import metatag
 
 from SCons.Debug import logInstanceCreation
+
+import parts.api as api
+import parts.metatag as metatag
 
 
 class hasFileExtension(object):

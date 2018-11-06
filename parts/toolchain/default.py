@@ -1,8 +1,11 @@
 
+from __future__ import absolute_import, division, print_function
+
+import platform
 
 import parts.load_module as load_module
+
 import SCons.Tool
-import platform
 
 # this is a helper function to help with this code until we get a better solution created
 # with the settings object
@@ -72,5 +75,5 @@ def resolve(env, version):
             ('gxx', None)
         ]
     else:
-        print "Defaulting to Scons' default lookup"
+        print("Defaulting to Scons' default lookup")
         return [('default', {})]

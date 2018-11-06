@@ -1,15 +1,18 @@
+from __future__ import absolute_import, division, print_function
+
+from builtins import map
 import SCons.Script
 
-from .. import glb
-from .. import common
-from ..core import util
+import parts.common as common
+import parts.glb as glb
+import parts.core.util as util
 
 # no need to redirect data.. assume it is correct.
 
 
 def error_msg(*lst, **kw):
     glb.engine.HadError = True
-    msg = map(str, lst)
+    msg = list(map(str, lst))
     msg = kw.get('sep', ' ').join(msg) + kw.get('end', '\n')
     glb.rpter.part_error(msg, kw.get('stackframe', None), kw.get('show_stack', True), kw.get('exit', True))
 
@@ -22,7 +25,7 @@ def error_msgf(sfmt, *lst, **kw):
 
 
 def warning_msg(*lst, **kw):
-    msg = map(str, lst)
+    msg = list(map(str, lst))
     msg = kw.get('sep', ' ').join(msg) + kw.get('end', '\n')
     glb.rpter.part_warning(msg, kw.get('print_once', False), kw.get('stackframe', None), kw.get('show_stack', True))
 
@@ -103,5 +106,5 @@ def policy_msg(policy, catagory, *lst, **kw):
 
 
 def console_msg(*lst, **kw):
-    msg = map(str, lst)
+    msg = list(map(str, lst))
     glb.rpter.stdconsole(kw.get('sep', ' ').join(msg) + kw.get('end', '\r'))

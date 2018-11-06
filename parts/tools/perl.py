@@ -1,6 +1,8 @@
 
-import parts.tools.GnuCommon.perl
+from __future__ import absolute_import, division, print_function
+
 import parts.api.output as output
+import parts.tools.GnuCommon.perl
 
 
 def generate(env):

@@ -1,7 +1,8 @@
 # There are for internal usage and should not be used by the users of Parts
+from __future__ import absolute_import, division, print_function
 
-import functools
 import atexit
+import functools
 
 
 def overrideFunction(parent, functionName, returnOriginal=False):

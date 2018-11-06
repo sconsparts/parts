@@ -1,9 +1,15 @@
 
-import subprocess
-import os
+from __future__ import absolute_import, division, print_function
+
 import copy
+import os
 import re
+import subprocess
 import sys
+
+import parts.glb as glb
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 
 def normalize_env(shellenv=None, keys=None):
@@ -28,7 +34,7 @@ def normalize_env(shellenv=None, keys=None):
     # on windows we need to convert unicode text to mbcs
     # because of odd bug with subprocess
     if sys.platform == 'win32':
-        for k in normenv.keys():
+        for k in list(normenv.keys()):
             normenv[k] = copy.deepcopy(normenv[k]).encode('mbcs')
 
     return normenv
@@ -45,6 +51,14 @@ def get_output(script, args=None, shellenv=None):
     else:
         raise Exception("Unsuported OS type: " + sys.platform)
 
+    if shellenv:
+        for k, v in shellenv.items():
+            if not isinstance(k,str):
+                k=k.encode() if glb.isPY2 else k.decode()
+            if not isinstance(v,str):
+                v=v.encode() if glb.isPY2 else v.decode()
+            shellenv[k] = v
+
     #print("Calling '%s %s'" % (script, args))
     popen = subprocess.Popen(cmdLine, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=shellenv)
 
@@ -56,7 +70,7 @@ def get_output(script, args=None, shellenv=None):
         raise IOError(popen.stderr.read())
 
     output = stdout
-    return output
+    return output.decode()
 
 
 def parse_output(output, keep=None):
@@ -107,12 +121,9 @@ def merge_script_vars(env, script, args=None, vars=None):
     vars are var we want to retrieve, if None it will retieve everything found
     '''
     shell_env = get_script_env(env, script, args, vars)
-    for k, v in shell_env.iteritems():
+    for k, v in shell_env.items():
         env.PrependENVPath(k, v, delete_existing=1)
 
-
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
 SConsEnvironment.MergeScriptVariables = merge_script_vars

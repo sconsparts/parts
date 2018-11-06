@@ -16,13 +16,15 @@ This module introduces two environment variables to control binary stripping and
         from the binary. All binaries with separate debug files will be stripped.
 
 """
+from __future__ import absolute_import, division, print_function
 
+import parts.api.output
+import parts.tools.Common
+import parts.tools.GnuCommon
+
+import SCons.Action
 import SCons.Tool.gnulink
 import SCons.Tool.mingw
-import SCons.Action
-import parts.api.output
-import parts.tools.GnuCommon
-import parts.tools.Common
 
 
 def _pdbEmitter(target, source, env):

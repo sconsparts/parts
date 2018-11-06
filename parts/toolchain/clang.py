@@ -1,3 +1,4 @@
+from __future__ import absolute_import, division, print_function
 
 def clang_setup(env, ver):
     if env.get('CLANG_VERSION') is None:

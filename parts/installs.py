@@ -1,17 +1,22 @@
-import glb
-import pattern
-import sdk
-import common
-import core.util as util
-import platform_info
-import exportitem
-import api.output
-import errors
+from __future__ import absolute_import, division, print_function
+
 
 import os
 
 import SCons.Script
 import SCons.Tool.install
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
+
+import parts.api as api
+import parts.common as common
+import parts.core.util as util
+import parts.errors as errors
+import parts.exportitem as exportitem
+import parts.glb as glb
+import parts.pattern as pattern
+import parts.platform_info as platform_info
+import parts.sdk as sdk
 
 # need better configuration control
 # these function will hopfully be replaced later once a better solution shows it self
@@ -552,8 +557,6 @@ def InstallPkgData(env, src_files, sub_dir='', no_pkg=False, create_sdk=True, pa
     return installed_files
 
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
 SConsEnvironment.InstallTarget = InstallTarget
@@ -617,7 +620,7 @@ api.register.add_variable('INSTALL_API_SUBDIR', 'API', '')
 api.register.add_variable('INSTALL_INCLUDE_SUBDIR', 'include', '')
 api.register.add_variable('INSTALL_CONFIG_SUBDIR', 'config', '')
 
-if 'win32' == glb._host_sys:
+if 'win32' == glb._host_platform:
     api.register.add_variable('INSTALL_PRIVATE_BIN_SUBDIR', 'private/bin', '')
     api.register.add_variable('INSTALL_DOC_SUBDIR', 'doc', '')
     api.register.add_variable('INSTALL_HELP_SUBDIR', 'help', '')
@@ -649,7 +652,7 @@ api.register.add_list_variable('INSTALL_API_LIB_PATTERN', ['*.lib', '*.a'], '')
 # api.register.add_list_variable('AUTO_TAG_INSTALL',[('*.pdb',{'no_package':True})],'')
 api.register.add_bool_variable('AUTO_TAG_ON_INSTALL', True, '')
 
-if 'win32' == glb._host_sys:
+if 'win32' == glb._host_platform:
     api.register.add_list_variable('INSTALL_BIN_PATTERN', ['*.dll', '*.DLL',
                                                            '*.exe', '*.EXE', '*.com', '*.COM', '*.pdb', '*.PDB'], '')
 else:

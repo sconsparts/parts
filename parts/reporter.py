@@ -1,23 +1,26 @@
-import sys
-import re
+from __future__ import absolute_import, division, print_function
+
+from builtins import map
+
 import os
+import re
+import sys
 
-
+import SCons.Errors
 import SCons.Script
 # not ideal...
 import SCons.Script.Main
-import SCons.Errors
-import policy as Policy
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
-import glb
-import api.register
-import api.output
-
-import logger
-import common
-import core.util
-import console
-import errors
+import parts.api as api
+import parts.common as common
+import parts.console as console
+import parts.core as core
+import parts.errors as errors
+import parts.glb as glb
+import parts.logger as logger
+import parts.policy as Policy
 
 if 'stacktrace' in (SCons.Script.GetOption('debug') or []):
     class PartRuntimeError(SCons.Errors.StopError):
@@ -184,7 +187,7 @@ class reporter(object):
                 filename, lineno, routine, content = stackframe
             else:
                 filename, lineno, routine, content = errors.GetPartStackFrameInfo()
-            s += ' File: "%s", line: %s, in "%s"\n %s\n' % (filename, lineno, routine, content)
+            s += ' File "%s", line %s, in "%s"\n %s\n' % (filename, lineno, routine, content)
 
         if print_once == True:
             if hash(s) not in self.already_printed:
@@ -211,7 +214,7 @@ class reporter(object):
 
     def part_message(self, msg_lst, show_prefix):
         if self.silent == False:
-            msg = map(str, msg_lst[1:-1])
+            msg = list(map(str, msg_lst[1:-1]))
             msg = msg_lst[0].join(msg) + msg_lst[-1]
             if show_prefix:
                 s = "Parts: " + msg
@@ -223,7 +226,7 @@ class reporter(object):
         tmp = common.make_list(catagory)
         for c in tmp:
             if c.lower() in self.verbose:
-                msg = map(str, msg_lst[1:-1])
+                msg = list(map(str, msg_lst[1:-1]))
                 msg = msg_lst[0].join(msg) + msg_lst[-1]
                 s = 'Verbose: [%s] %s' % (tmp[0], msg)
                 self.stdverbose(s)
@@ -233,7 +236,7 @@ class reporter(object):
         tmp = common.make_list(catagory)
         for c in tmp:
             if c.lower() in self.trace:
-                msg = map(str, msg_lst[1:-1])
+                msg = list(map(str, msg_lst[1:-1]))
                 msg = msg_lst[0].join(msg) + msg_lst[-1]
                 s = 'Trace: [%s] %s' % (tmp[0], msg)
                 self.stdtrace(s)
@@ -362,20 +365,20 @@ def _empty_msg(catagory, *lst, **kw):
 # user level functions
 # global version (for Sconstruct file)
 def user_report_error(*lst, **kw):
-    msg = map(str, lst)
+    msg = list(map(str, lst))
     msg = kw.get('sep', ' ').join(msg) + kw.get('end', '\n')
     glb.rpter.user_error(SCons.Script.DefaultEnvironment(), msg, kw.get('stackframe', None), kw.get('show_stack', False))
 
 
 def user_report_warning(*lst, **kw):
-    msg = map(str, lst)
+    msg = list(map(str, lst))
     msg = kw.get('sep', ' ').join(msg) + kw.get('end', '\n')
     glb.rpter.user_warning(SCons.Script.DefaultEnvironment(), msg, kw.get(
         'print_once', False), kw.get('stackframe', None), kw.get('show_stack', False))
 
 
 def user_print_msg(*lst, **kw):
-    msg = map(str, lst)
+    msg = list(map(str, lst))
     glb.rpter.user_message(SCons.Script.DefaultEnvironment(), kw.get('sep', ' ').join(msg) + kw.get('end', '\n'))
 
 
@@ -393,19 +396,19 @@ def user_verbose(catagory, *lst, **kw):
 
 
 def user_report_error_env(env, *lst, **kw):
-    msg = map(str, lst)
+    msg = list(map(str, lst))
     msg = kw.get('sep', ' ').join(msg) + kw.get('end', '\n')
     glb.rpter.user_error(env, msg, kw.get('stackframe', None), kw.get('show_stack', True))
 
 
 def user_report_warning_env(env, *lst, **kw):
-    msg = map(str, lst)
+    msg = list(map(str, lst))
     msg = kw.get('sep', ' ').join(msg) + kw.get('end', '\n')
     glb.rpter.user_warning(env, msg, kw.get('print_once', False), kw.get('stackframe', None), kw.get('show_stack', False))
 
 
 def user_print_msg_env(env, *lst, **kw):
-    msg = map(str, lst)
+    msg = list(map(str, lst))
     glb.rpter.user_message(env, kw.get('sep', ' ').join(msg) + kw.get('end', '\n'))
 
 
@@ -420,8 +423,6 @@ def user_verbose_env(env, catagory, *lst, **kw):
     glb.rpter.verbose_msg(catagory, [kw.get('sep', ' ')] + list(lst) + [kw.get('end', '\n')])
 
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 api.register.add_bool_variable('STREAM_WARNING_AS_ERROR', False, 'Controls is warning based messages are treated as errors')
 

@@ -1,9 +1,14 @@
-import SCons.Util
-import sys
-import re
-import parts.tools.Common.Finders as Finders
-import common
+from __future__ import absolute_import, division, print_function
 
+
+
+import re
+import sys
+
+import parts.tools.Common.Finders as Finders
+
+from . import common
+import SCons.Util
 from SCons.Debug import logInstanceCreation
 
 # this are primary for finding Intel compilers on windows platforms
@@ -83,7 +88,7 @@ class reg_scanner(object):
         tmp = self.scan()
         if tmp is None:
             return None
-        k = tmp.keys()
+        k = list(tmp.keys())
         # k.reverse()
         for i in k:
             if common.MatchVersionNumbers(version, i):
@@ -94,7 +99,7 @@ class reg_scanner(object):
         tmp = self.scan()
         if tmp is None:
             return None
-        k = tmp.keys()
+        k = list(tmp.keys())
         # k.reverse()
         for i in k:
             if common.MatchVersionNumbers(ver, i):
@@ -193,7 +198,7 @@ class reg_scanner2(object):
         tmp = self.scan()
         if tmp is None:
             return None
-        k = tmp.keys()
+        k = list(tmp.keys())
         # k.reverse()
         for i in k:
             if common.MatchVersionNumbers(version, i):
@@ -204,7 +209,7 @@ class reg_scanner2(object):
         tmp = self.scan()
         if tmp is None:
             return None
-        k = tmp.keys()
+        k = list(tmp.keys())
         # k.reverse()
         for i in k:
             if common.MatchVersionNumbers(ver, i):
@@ -304,7 +309,7 @@ class reg_scanner_v12(object):
         tmp = self.scan()
         if tmp is None:
             return None
-        k = tmp.keys()
+        k = list(tmp.keys())
         # k.reverse()
         for i in k:
             if common.MatchVersionNumbers(version, i):
@@ -315,7 +320,7 @@ class reg_scanner_v12(object):
         tmp = self.scan()
         if tmp is None:
             return None
-        k = tmp.keys()
+        k = list(tmp.keys())
         # k.reverse()
         for i in k:
             if common.MatchVersionNumbers(ver, i):

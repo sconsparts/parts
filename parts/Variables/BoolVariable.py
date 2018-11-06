@@ -1,12 +1,14 @@
 
-import variable
+from __future__ import absolute_import, division, print_function
+
 import SCons.Errors
+from .variable import Variable
 
 _true_strings = ('y', 'yes', 'true', 't', '1', 'on', 'all')
 _false_strings = ('n', 'no', 'false', 'f', '0', 'off', 'none')
 
 
-class BoolVariable(variable.Variable):
+class BoolVariable(Variable):
 
     def __init__(self, name, help, default, value=None, help_group=None):
         ''' Create a variable that deal with common boolean values

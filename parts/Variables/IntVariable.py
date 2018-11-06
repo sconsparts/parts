@@ -1,12 +1,14 @@
 
-import variable
+from __future__ import absolute_import, division, print_function
+
 import SCons.Errors
+from .variable import Variable
 
 __true_strings = ('y', 'yes', 'true', 't', '1', 'on', 'all')
 __false_strings = ('n', 'no', 'false', 'f', '0', 'off', 'none')
 
 
-class IntVariable(variable.Variable):
+class IntVariable(Variable):
 
     def __init__(self, name, help, default, value=None, help_group=None):
         '''
@@ -18,7 +20,7 @@ class IntVariable(variable.Variable):
             try:
                 return int(str_val)
             except:
-                raise ValueError("Invalid value for Int option: %s" % val)
+                raise ValueError("Invalid value for Int option: %s" % str_val)
 
         super(IntVariable, self).__init__(
             help=help,
@@ -29,9 +31,3 @@ class IntVariable(variable.Variable):
             help_group=help_group
         )
 
-
-# Local Variables:
-# tab-width:4
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=4 shiftwidth=4:

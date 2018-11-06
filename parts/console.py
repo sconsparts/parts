@@ -1,18 +1,20 @@
-import ansi_stream
-import color
-import sys
-import thread
+from __future__ import absolute_import, division, print_function
 
-import struct
 import ctypes
+import struct
+import sys
+import _thread
+
+import parts.ansi_stream as ansi_stream
+import parts.color as color
+import SCons.Script
+from SCons.Debug import logInstanceCreation
+
 # for non windows
 if not color.is_win32:
     import fcntl
     import termios
 
-from SCons.Debug import logInstanceCreation
-
-import SCons.Script
 SCons.Script.AddOption("--console-stream",
                        dest='console-stream',
                        default='tty',
@@ -139,7 +141,7 @@ class Console(object):
             logInstanceCreation(self)
 
         self.clearline = False
-        self.__lock = thread.allocate_lock()  # used to sync output cases across streams
+        self.__lock = _thread.allocate_lock()  # used to sync output cases across streams
         try:
             map_console = SCons.Script.GetOption('console-stream')
             if map_console in ['tty', 'con:']:

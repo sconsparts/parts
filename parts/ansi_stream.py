@@ -1,9 +1,13 @@
+from __future__ import absolute_import, division, print_function
+
 import ctypes
-import color
 import sys
-win32 = sys.platform == 'win32'
 
 from SCons.Debug import logInstanceCreation
+
+import parts.color as color
+
+win32 = sys.platform == 'win32'
 
 
 class ColorTextStream(object):
@@ -108,7 +112,7 @@ class ColorTextStream(object):
     if win32:
         def SetColor(self, console_color):
             handle = ctypes.windll.kernel32.GetStdHandle(-11)
-            bool = ctypes.windll.kernel32.SetConsoleTextAttribute(handle, console_color.SystemValue())
+            ctypes.windll.kernel32.SetConsoleTextAttribute(handle, console_color.SystemValue())
 
     def _WriteColor(self, in_str):
         # self.stream.write(in_str)

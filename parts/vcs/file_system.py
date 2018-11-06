@@ -1,9 +1,14 @@
-from base import base
-from .. import common
-from ..core import util
-from .. import api
-import SCons.Defaults
+from __future__ import absolute_import, division, print_function
+
 import os
+
+import SCons.Defaults
+
+import parts.api as api
+import parts.common as common
+from parts.core import util
+
+from .base import base
 
 
 class file_system(base):

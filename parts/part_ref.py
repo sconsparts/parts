@@ -1,17 +1,19 @@
-import glb
-import common
-import core.util as util
-import version
-import target_type
-import policy as policies
+from __future__ import absolute_import, division, print_function
+
 
 from SCons.Debug import logInstanceCreation
+
+import parts.common as common
+import parts.core.util as util
+import parts.glb as glb
+import parts.policy as policies
+import parts.target_type as target_type
+import parts.version as version
 
 
 class part_ref(object):
     """description of class"""
-    __slots__ = [
-        '__weakref__',
+    __slots__ = [        
         '__local_space',
         '__target',
         '__matches',
@@ -95,7 +97,7 @@ class part_ref(object):
     def TargetStr(self):
         ret = ''
         properties = ''
-        for k, v in self.Target.Properties.iteritems():
+        for k, v in self.Target.Properties.items():
             if k == 'version':
                 if util.isString(v):
                     v = version.version_range(v + '.*')
@@ -137,7 +139,7 @@ class part_ref(object):
         for pobj in self.Matches:
             matches += " Part Alias: {0}\n   Name: {1}\n".format(pobj.Alias, pobj.Name)
             stmp = ''
-            for k, v in self.Target.Properties.iteritems():
+            for k, v in self.Target.Properties.items():
                 if k == 'version':
                     if util.isString(v):
                         v = version.version_range(v + '.*')

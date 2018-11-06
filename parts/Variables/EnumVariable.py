@@ -1,9 +1,11 @@
 
-import variable
+from __future__ import absolute_import, division, print_function
+
 import SCons.Errors
+from .variable import Variable
 
 
-class EnumVariable(variable.Variable):
+class EnumVariable(Variable):
 
     def __init__(self, name, help, default, allowed_values, map={}, ignorecase=0, value=None, help_group=None):
         '''

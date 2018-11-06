@@ -1,9 +1,13 @@
+from __future__ import absolute_import, division, print_function
+
 import os
-from common import clang, GnuInfo
-from parts.tools.Common.Finders import PathFinder, ScriptFinder, EnvFinder
+
 from parts.platform_info import SystemPlatform
+from parts.tools.Common.Finders import EnvFinder, PathFinder, ScriptFinder
 from parts.tools.Common.ToolInfo import ToolInfo
-import android
+
+from . import android
+from .common import GnuInfo, clang
 
 # mac
 clang.Register(

@@ -2,22 +2,23 @@
 this file provides the AbsFile wrappers. I have not moved this to pieces area
 yet as i need a way to safely add the global object to parts export statement
 '''
+from __future__ import absolute_import, division, print_function
 
-import glb
-import common
-import core.util as util
-import api.output
-import metatag
 import ctypes
-import exceptions
-
-import SCons.Script
-import SCons.Util
-import SCons.Node.FS
-
 import os
 
+import SCons.Node.FS
+import SCons.Script
+import SCons.Util
 from SCons.Debug import logInstanceCreation
+# import the meta object we will need to add our code to as methods
+from SCons.Script.SConscript import SConsEnvironment
+
+import parts.api as api
+import parts.common as common
+import parts.core.util as util
+import parts.glb as glb
+import parts.metatag as metatag
 
 
 class ninfotmp(object):
@@ -140,8 +141,6 @@ def AbsDirNode(env, path):
     return abs_path_node(env, path, env.Dir)
 
 
-# import the meta object we will need to add our code to as methods
-from SCons.Script.SConscript import SConsEnvironment
 
 # add as global to part scope
 api.register.add_global_parts_object('AbsFile', _AbsFile, True)

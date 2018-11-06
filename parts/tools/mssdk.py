@@ -11,10 +11,12 @@ Note this "Tool" is more of a library. it just adds paths, no builders
 
 """
 
-import parts.tools.MSCommon.sdk
-from parts.tools.MSCommon import mssdk
+from __future__ import absolute_import, division, print_function
+
 import parts.api.output as output
 import parts.tools.Common
+import parts.tools.MSCommon.sdk
+from parts.tools.MSCommon import mssdk
 
 
 def generate(env):

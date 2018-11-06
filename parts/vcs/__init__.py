@@ -1,9 +1,10 @@
-import null
-import base
-import git
-import svn
-import smart_svn
-import task
-import task_master
-import reuse
-import file_system
+from __future__ import absolute_import
+from . import null
+from . import base
+from . import git
+from . import svn
+from . import smart_svn
+from . import task
+from . import task_master
+from . import reuse
+from . import file_system

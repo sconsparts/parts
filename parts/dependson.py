@@ -1,21 +1,25 @@
 
-import glb
-import part_ref
-import dependent_ref
-import version
-import common
-import core.util as util
-import functors
-import api
-import errors
-import target_type
-import api.requirement
+from __future__ import absolute_import, division, print_function
 
-from requirement import REQ
+
 
 import SCons.Script
-
 from SCons.Debug import logInstanceCreation
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
+
+import parts.api as api
+import parts.api.requirement  # this is need to have some data set at start correctly
+import parts.common as common
+import parts.core.util as util
+import parts.dependent_ref as dependent_ref
+import parts.errors as errors
+import parts.functors as functors
+import parts.glb as glb
+import parts.part_ref as part_ref
+import parts.target_type as target_type
+import parts.version as version
+from parts.requirement import REQ
 
 
 def Component(env, name, version_range=None, requires=REQ.DEFAULT, section="build"):
@@ -65,8 +69,19 @@ def Component(env, name, version_range=None, requires=REQ.DEFAULT, section="buil
         # we have a version range define...
         # turn it in to an version_range object
         version_range = version.version_range(env.subst(version_range))
-    # set the version value
 
+    # set the target value
+    if ('target' in trg.Properties) == False:  # ['target','target-platform','target_platform']
+        api.output.trace_msg(
+            ['component'],
+            "Defining default platform_match mapping of:", env['TARGET_PLATFORM'])
+        trg.Properties['platform_match'] = env['TARGET_PLATFORM']
+    else:
+        api.output.trace_msg(
+            ['component'],
+            "Target defined platform_match mapping of:", trg.Properties['target'])
+
+    # set the version value
     if version_range:
         if trg.Properties.get('version'):
             api.output.trace_msg(
@@ -82,17 +97,6 @@ def Component(env, name, version_range=None, requires=REQ.DEFAULT, section="buil
             ['component'],
             "Defining default version range mapping of '*'")
         trg.Properties['version'] = '*'
-
-    # set the target value
-    if ('target' in trg.Properties) == False:  # ['target','target-platform','target_platform']
-        api.output.trace_msg(
-            ['component'],
-            "Defining default platform_match mapping of:", env['TARGET_PLATFORM'])
-        trg.Properties['platform_match'] = env['TARGET_PLATFORM']
-    else:
-        api.output.trace_msg(
-            ['component'],
-            "Target defined platform_match mapping of:", trg.Properties['target'])
 
     # Set the configuration to try to match
     if ('config' in trg.Properties) == False:
@@ -149,6 +153,7 @@ def depends_on_classic(env, depends):
         glb.engine.add_preprocess_logic_queue(
             functors.map_depends(pobj.DefiningSection.Env, comp.PartRef, comp.SectionName, comp.Requires, comp.StackFrame)
         )
+
         for r in comp.Requires:
             ## import logic
             # always map to namespace
@@ -200,7 +205,6 @@ def depends_on_classic(env, depends):
 
     # map up rpath with this.. ( need to fix up the Mac)
     if env['TARGET_PLATFORM'] != 'win32' and env['TARGET_PLATFORM'] != 'darwin':
-        def_env = glb.engine
         glb.engine.add_preprocess_logic_queue(functors.map_rpath_part(env))
         glb.engine.add_preprocess_logic_queue(functors.map_rpath_link_part(env, pobj.DefiningSection))
 
@@ -211,7 +215,7 @@ def depends_on(env, depends):
 
     pobj = glb.engine._part_manager._from_env(env)
     if pobj is None:
-        print "fill me in"
+        print("fill me in")
         return
 
     depends_list = []
@@ -253,9 +257,6 @@ class dependsOnEnv(object):
     def __call__(self, depends):
         return self.env.DependsOn(depends)
 
-
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
 SConsEnvironment.DependsOn = depends_on

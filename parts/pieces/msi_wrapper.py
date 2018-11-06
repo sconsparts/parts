@@ -1,7 +1,14 @@
-import parts.errors
+from __future__ import absolute_import, division, print_function
+
+
+from builtins import filter
 import parts.common as common
+import parts.errors
 import parts.glb as glb
+
 from SCons.Debug import logInstanceCreation
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 
 def map_msi_builder(env, target, sources, stackframe, **kw):
@@ -29,7 +36,7 @@ def map_msi_builder(env, target, sources, stackframe, **kw):
             files = env.GetPackageGroupFiles(g)
             # filter sources and copy to staging area to make a file list off of
             pkg_nodes = []
-            src = filter(control_sources, files)
+            src = list(filter(control_sources, files))
             if not src:
                 continue
             for n in src:
@@ -74,7 +81,5 @@ def MsiPackage_wrapper(_env, target, sources, **kw):
     return target
 
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 SConsEnvironment.MSIPackage = MsiPackage_wrapper

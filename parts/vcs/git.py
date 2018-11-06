@@ -1,12 +1,17 @@
-from .. import common
-from ..core import util
-from .. import datacache
-from .. import api
-from base import base, removeall
-
+from __future__ import absolute_import, division, print_function
 
 import os
 import re
+
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
+
+import parts.api as api
+import parts.common as common
+import parts.datacache as datacache
+from parts.core import util
+
+from .base import base, removeall
 
 
 class git(base):
@@ -463,6 +468,4 @@ api.register.add_variable('VCS_GIT_DIR', '${CHECK_OUT_ROOT}/${PART_ALIAS}', '')
 
 api.register.add_global_object('VcsGit', git)
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 SConsEnvironment.GitInfo = GetGitData

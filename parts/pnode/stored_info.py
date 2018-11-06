@@ -1,10 +1,13 @@
 
+from __future__ import absolute_import, division, print_function
+
+
 from SCons.Debug import logInstanceCreation
 
 
 class stored_info(object):
     """description of class"""
-    __slots__ = ['__weakref__']
+    __slots__ = []
 
     def __init__(self, *args, **kw):
         if __debug__:

@@ -1,13 +1,18 @@
 
-import os
-import sys
-import re
-import parts.tools.Common.Finders as Finders
-import common
-import parts.mappers as mappers
-import parts.version as version
-import parts.api as api
+from __future__ import absolute_import, division, print_function
 
+
+
+import os
+import re
+import sys
+
+import parts.api as api
+import parts.mappers as mappers
+import parts.tools.Common.Finders as Finders
+import parts.version as version
+
+from . import common
 from SCons.Debug import logInstanceCreation
 
 # android scanner for Windows
@@ -78,7 +83,7 @@ class win_scanner(object):
         tmp = self.scan()
         if tmp is None:
             return None
-        k = tmp.keys()
+        k = list(tmp.keys())
         # k.reverse()
         for i in k:
             if common.MatchVersionNumbers(version, i):
@@ -89,7 +94,7 @@ class win_scanner(object):
         tmp = self.scan()
         if tmp is None:
             return None
-        k = tmp.keys()
+        k = list(tmp.keys())
         # k.reverse()
         for i in k:
             if common.MatchVersionNumbers(version, i):
@@ -173,7 +178,7 @@ class posix_scanner(object):
         tmp = self.scan()
         if tmp is None:
             return None
-        k = tmp.keys()
+        k = list(tmp.keys())
         # k.reverse()
         for i in k:
             if common.MatchVersionNumbers(version, i):
@@ -184,7 +189,7 @@ class posix_scanner(object):
         tmp = self.scan()
         if tmp is None:
             return None
-        k = tmp.keys()
+        k = list(tmp.keys())
         # k.reverse()
         for i in k:
             if common.MatchVersionNumbers(version, i):

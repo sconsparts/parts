@@ -1,11 +1,15 @@
-import glb
-import common
-import core.util
-import api.output
+from __future__ import absolute_import, division, print_function
+
+
+from builtins import map
 
 import SCons.Node.FS
-
 from SCons.Debug import logInstanceCreation
+
+import parts.api as api
+import parts.common as common
+import parts.core as core
+import parts.glb as glb
 
 # move to glb once we have new formats working
 __known_concepts = {
@@ -376,7 +380,7 @@ class target_type(object):
             s += "alias::{0}".format(self.Alias)
         elif self.hasName:
             s += "name::{0}".format(self.Name)
-            for key, value in self.Properties.iteritems():
+            for key, value in self.Properties.items():
                 s += "@" + key + ":"
                 s += ",".join(map(str, common.make_list(value)))
         elif not self.hasConcept:

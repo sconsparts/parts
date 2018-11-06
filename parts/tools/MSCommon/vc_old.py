@@ -1,9 +1,14 @@
-from common import msvc, framework_root, framework_root64
-from parts.tools.Common.ToolInfo import ToolInfo
-from parts.tools.Common.Finders import RegFinder, EnvFinder, PathFinder, ScriptFinder
-from parts.platform_info import SystemPlatform
+from __future__ import absolute_import, division, print_function
+
 import os
+
+from parts.platform_info import SystemPlatform
+from parts.tools.Common.Finders import (EnvFinder, PathFinder, RegFinder,
+                                        ScriptFinder)
+from parts.tools.Common.ToolInfo import ToolInfo
+
 import SCons.Platform
+from .common import framework_root, framework_root64, msvc
 
 # version 7.1 2003
 

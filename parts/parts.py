@@ -1,9 +1,13 @@
 
-import glb
-import common
-import core.util
-import pnode.part
-import api
+from __future__ import absolute_import, division, print_function
+
+from SCons.Script.SConscript import SConsEnvironment
+
+import parts.api as api
+import parts.common as common
+import parts.core as core
+import parts.glb as glb
+import parts.pnode as pnode
 
 
 def Part_factory(arg1=None, parts_file=None, mode=[], vcs_type=None, default=False,
@@ -59,7 +63,6 @@ def SubPart_factory(env, arg1=None, parts_file=None, mode=[], vcs_type=None, def
 # This is what we want to be setup in parts
 
 
-from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
 SConsEnvironment.Part = SubPart_factory

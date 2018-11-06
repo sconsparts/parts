@@ -1,12 +1,14 @@
-import SCons.Node.FS
+from __future__ import absolute_import, division, print_function
 
-from SCons.Node.FS import _my_normcase
 import os
 
+import parts.tools.Common
+
+import SCons.Node.FS
 from Common.java import java
+from SCons.Node.FS import _my_normcase
 from SCons.Tool import javac
 from SCons.Tool.JavaCommon import parse_java_file
-import parts.tools.Common
 
 # monkey patch emit_java_classes to do the Right Thing
 # otherwise generated classes have no package name and get rebuilt always

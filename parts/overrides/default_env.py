@@ -1,11 +1,12 @@
 # this fix allows us to share setting with the default environment better
 # this allows for better integration with SCons from the user point of view
-
-from .. import glb
-from .. import settings
-from .. import api
+from __future__ import absolute_import, division, print_function
 
 import SCons.Script
+
+import parts.api as api
+import parts.glb as glb
+import parts.settings as settings
 
 # We are trying to get a path. No need to load any toolchains
 glb.sconstruct_path = SCons.Script.DefaultEnvironment(tools=[]).Dir("#").abspath

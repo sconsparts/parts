@@ -1,28 +1,29 @@
-import base
-from .. import requirement
-from .. import glb
-from ..pnode import section
-from ..pnode import part
-from .. import api
-from .. import config
-from .. import platform_info
-from .. import node_helpers
-from .. import datacache
-from .. import dependent_ref
-from .. import part_ref
-from .. import target_type
+from __future__ import absolute_import, division, print_function
 
-import SCons
+
 
 import os
 import time
 
+import SCons
 from SCons.Debug import logInstanceCreation
+
+import parts.api as api
+import parts.config as config
+import parts.datacache as datacache
+import parts.dependent_ref as dependent_ref
+import parts.glb as glb
+from . import base
+import parts.node_helpers as node_helpers
+import parts.part_ref as part_ref
+import parts.platform_info as platform_info
+import parts.requirement as requirement
+import parts.target_type as target_type
+from parts.pnode import part, section
 
 
 class SectionInfo(object):
     __slots__ = (
-        '__weakref__',
         'section',
         'depend_esig_changed',
         'is_core_section',
@@ -133,7 +134,7 @@ class Changed(base.Base):
             # for each source check to see if that is out of date
             api.output.verbose_msg(['node_check_extra'], '{0} Check Sources for {1}'.format(" " * _indent, nodeid))
             cache_load, file_load, src_out_of_date = set(), set(), set()
-            for srcID, ninfo in src_data.iteritems():
+            for srcID, ninfo in src_data.items():
                 api.output.verbose_msg(['node_check_extra'], '{0} Source "{1}"'.format(" " * _indent, srcID))
                 try:
                     # get the state of node given we have visited it already
@@ -148,7 +149,7 @@ class Changed(base.Base):
                     src_info = glb.pnodes.GetStoredNodeIDInfo(srcID)
                     if src_info:
                         (file_load if tmp else cache_load).update(
-                            secID for secIDs in src_info.Components.itervalues()
+                            secID for secIDs in src_info.Components.values()
                             for secID in secIDs
                             if secID != section_info.section.ID)
                     self._known_nodes[srcID] = tmp
@@ -191,7 +192,7 @@ class Changed(base.Base):
         api.output.verbose_msg(['update_check'], "Started - Nodes checked")
         # get sections list that are still not out of date
         sectionIDs = []
-        for secid, data in self._section_info.iteritems():
+        for secid, data in self._section_info.items():
             if data.changed is None:
                 sectionIDs.append(secid)
 
@@ -411,15 +412,12 @@ class Changed(base.Base):
         targets = SCons.Script.BUILD_TARGETS
         for t in targets:
             tmp = target_type.target_type(t)
-            sep_len = len("::")
             if tmp.Section == 'utest':
                 # if so we want to make see if we have a section utest that matches the build section
                 # given this is a build section.
                 if sec.Name == 'build':
                     if glb.pnodes.isKnownPNodeStored("utest::{0}".format(sec.Stored.PartID)):
                         tsec = glb.pnodes.GetPNode("utest::{0}".format(sec.Stored.PartID))
-                        # if tsec is None:
-                        #    1/0
                         self.ProcessSection(tsec)
 
         # end of hack
@@ -564,7 +562,7 @@ class Changed(base.Base):
             # as we might only need a sub set of the total requirements
             # in the locally defined requirements. for example need to test
             # REQ.Default.. but local requirement is only for REQ.HEADERS
-            if req.key in rsigs.keys():
+            if req.key in list(rsigs.keys()):
                 if dep_sec.Stored.ESigs.get(req.key, '0') != rsigs.get(req.key, '0'):
                     self.SetToLoad(
                         sec, '{0} out-of-date! Dependent values "{1}" from "{2}" changed'.format(sec.ID, req.key, dep_sec.ID))
@@ -585,7 +583,7 @@ class Changed(base.Base):
             return self._knowncfgs[key]
         except KeyError:
             # next we test the build context files
-            for tool, file_list in stored_cfg_data.iteritems():
+            for tool, file_list in stored_cfg_data.items():
                     # get the files we would use in this run for a given tool
                 cfg_files = config.get_defining_config_files(
                     sec.Stored.Part.Stored.Config,

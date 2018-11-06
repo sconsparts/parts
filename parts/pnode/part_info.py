@@ -1,8 +1,10 @@
-import stored_info
-from .. import glb
-from .. import platform_info
-from .. import common
-from ..core import util
+from __future__ import absolute_import, division, print_function
+
+import parts.common as common
+import parts.core as core
+import parts.glb as glb
+import parts.platform_info as platform_info
+import parts.pnode.stored_info as stored_info
 
 
 class part_info(stored_info.stored_info):
@@ -39,7 +41,7 @@ class part_info(stored_info.stored_info):
 
     def __init__(self):
 
-        self.__name = ''
+        self.__name = ''        
         self.__short_name = ''
         self.__ID = ''
         self.__short_alias = ''

@@ -1,12 +1,15 @@
-
-from .. import glb
-import base
-from ..pnode import part
-from .. import api
+from __future__ import absolute_import, division, print_function
 
 import time
 
 from SCons.Debug import logInstanceCreation
+
+
+import parts.api as api
+import parts.errors as errors
+import parts.glb as glb
+from . import base
+from parts.pnode import part
 
 
 class Target(base.Base):  # task_master type
@@ -61,7 +64,7 @@ class Target(base.Base):  # task_master type
             self.pmgr.hasStored = False
             return False
 
-        for pobj in self.pmgr.parts.values():
+        for pobj in list(self.pmgr.parts.values()):
             if pobj.ReadState == glb.load_file:
                 self.__tasks.append(load_parts_task(pobj, self.pmgr, self))
 
@@ -73,7 +76,7 @@ class Target(base.Base):  # task_master type
                 self.pmgr.hasStored = False
                 return False
 
-        parts_to_load = self.pmgr.parts.values()
+        parts_to_load = list(self.pmgr.parts.values())
         parts_to_load.sort(part.pcmp)
         for pobj in parts_to_load:
             if pobj.ReadState == glb.load_file:

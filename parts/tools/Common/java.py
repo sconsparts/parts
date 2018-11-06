@@ -1,7 +1,10 @@
+from __future__ import absolute_import, division, print_function
+
 from parts.platform_info import SystemPlatform
-from ToolSetting import ToolSetting
-from ToolInfo import ToolInfo
-from Finders import MsiFinder, PathFinder
+
+from .Finders import MsiFinder, PathFinder
+from .ToolInfo import ToolInfo
+from .ToolSetting import ToolSetting
 
 java = ToolSetting('java')
 

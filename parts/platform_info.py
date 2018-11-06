@@ -5,21 +5,23 @@ User should not need these much, but it can be useful. With cross plaform suppor
 added some day this will not be needed external, but instead user will use env
 var defined to to tell what has been targeted as the build env.
 '''
+from __future__ import absolute_import, division, print_function
+
+from past.builtins import cmp
+
+import os
+import platform
+import re
+import subprocess
+import sys
 
 import SCons.Platform
-import os
-import sys
-import re
-import platform
-import subprocess
-
-import glb
-import api.output
-import api.register
-import common
-import core.util
-
 from SCons.Debug import logInstanceCreation
+
+import parts.api as api
+import parts.common as common
+import parts.core as core
+import parts.glb as glb
 
 
 def UpdatePlatformRegEx():
@@ -42,18 +44,20 @@ def UpdatePlatformRegEx():
 
 
 def UpdateValidArchList():
-    for k, v in glb.arch_map.iteritems():
+    for k, v in glb.arch_map.items():
         if k not in glb.valid_arch:
             glb.valid_arch.append(k)
-    glb.valid_arch.sort(lambda a, b: cmp(len(b), len(a)))
+    #glb.valid_arch.sort(lambda a, b: cmp(len(b), len(a)))
+    glb.valid_arch.sort(key = lambda x: len(x))
     UpdatePlatformRegEx()
 
 
 def UpdateValidOSList():
-    for k, v in glb.os_map.iteritems():
+    for k, v in glb.os_map.items():
         if k not in glb.valid_os:
             glb.valid_os.append(k)
-    glb.valid_os.sort(lambda a, b: cmp(len(b), len(a)))
+    #glb.valid_os.sort(lambda a, b: cmp(len(b), len(a)))
+    glb.valid_os.sort(key = lambda x: len(x))
     UpdatePlatformRegEx()
 
 
@@ -171,7 +175,7 @@ def ChipArchitecture():
     elif sys.platform.startswith("sunos") and platform.machine() == 'i86pc':
         pipe = subprocess.Popen(['isainfo', '-k'], stdout=subprocess.PIPE)
         pipe.wait()
-        if pipe.stdout.readline().startswith('i386'):
+        if pipe.stdout.readline().decode().startswith('i386'):
             return MapArchitecture('i386')
         else:
             return MapArchitecture('x86_64')
@@ -301,15 +305,15 @@ class SystemPlatform(common.bindable):
 
 
 if glb._host_platform is None:
-    glb._host_sys = SystemPlatform()
+    glb._host_platform = SystemPlatform()
 
 
 def HostSystem():
-    return glb._host_sys
+    return glb._host_platform
 
 
 def target_convert(str_val, raw_val=None, base=None, error=True):
-    host_sys = base is None and glb._host_sys or base
+    host_sys = base is None and glb._host_platform or base
     lst = ValidatePlatform(str_val)
     if not lst:
         if error:
@@ -328,7 +332,7 @@ def target_convert(str_val, raw_val=None, base=None, error=True):
 
 # add configuartion varaible
 #api.register.add_variable('OSBITNESS',str(OSBit()),'to be removed??')
-api.register.add_variable(['TARGET_PLATFORM', 'target_platform', 'target'], SystemPlatform(glb._host_sys.OS, glb._host_sys.ARCH),
+api.register.add_variable(['TARGET_PLATFORM', 'target_platform', 'target'], SystemPlatform(glb._host_platform.OS, glb._host_platform.ARCH),
                           'Value of what to type of system to target build for, used to control cross builds',
                           converter=target_convert)
 

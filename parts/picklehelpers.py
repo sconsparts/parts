@@ -1,17 +1,12 @@
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
+from __future__ import absolute_import, division, print_function
 
-try:
-    import cStringIO as StringIO
-except ImportError:
-    import StringIO
+import io
+import pickle
+
+import SCons.Node.Alias
+import SCons.Node.FS
 
 UnpicklingError, PicklingError = pickle.UnpicklingError, pickle.PicklingError
-
-import SCons.Node.FS
-import SCons.Node.Alias
 
 
 def persistent_id(obj):
@@ -31,8 +26,8 @@ def persistent_id(obj):
             }
 
 
-def dumps(obj, protocol=0):
-    result = StringIO.StringIO()
+def dumps(obj, protocol=pickle.HIGHEST_PROTOCOL):
+    result = io.BytesIO()
     pickler = pickle.Pickler(result, protocol=protocol)
     pickler.persistent_id = persistent_id
     pickler.dump(obj)
@@ -56,7 +51,7 @@ def persistent_load(obj_id):
 
 
 def loads(string):
-    unpickler = pickle.Unpickler(StringIO.StringIO(string))
+    unpickler = pickle.Unpickler(io.StringIO(string))
     unpickler.persistent_load = persistent_load
     return unpickler.load()
 

@@ -1,1 +1,1 @@
-from is_a import *
+from .is_a import *

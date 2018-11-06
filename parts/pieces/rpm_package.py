@@ -1,17 +1,24 @@
-import SCons.Script
-import parts.api as api
-import parts.errors
-import parts.common as common
-import parts.glb as glb
-import shutil
-import os
-import re
+from __future__ import absolute_import, division, print_function
+
+
+from builtins import filter
 import operator
+import os
 import platform
+import re
+import shutil
 import subprocess
 
-rpm_reg = "([\w_.-]+)-([\d.]+)-([\w_.]+)[.](\w+)\.rpm"
+import parts.api as api
+import parts.common as common
+import parts.errors
+import parts.glb as glb
 
+import SCons.Script
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
+
+rpm_reg = "([\w_.-]+)-([\d.]+)-([\w_.]+)[.](\w+)\.rpm"
 
 def rpm_wrapper_mapper(env, target, sources, **kw):
     def rpm_builder():
@@ -38,7 +45,7 @@ def rpm_wrapper_mapper(env, target, sources, **kw):
                 return False
             return True
 
-        src = filter(spec, new_sources)
+        src = list(filter(spec, new_sources))
         grps = re.match(rpm_reg, target[0].name, re.IGNORECASE)
 
         target_name = grps.group(1)
@@ -110,7 +117,7 @@ def rpm_wrapper_mapper(env, target, sources, **kw):
 def rpmarch(env, target_arch):
     arch_map_rpm = {}
     arch_map_rpm.update(glb.arch_map)
-    arch_mapper = dict(env['PKG_ARCH_MAPPER'].items() + env.get('arch_mapper', {}).items())
+    arch_mapper = dict(list(env['PKG_ARCH_MAPPER'].items()) + list(env.get('arch_mapper', {}).items()))
 
     def implicit_rpm_mapping(target_arch):
         rpm_arch = None
@@ -156,13 +163,13 @@ def RpmPackage_wrapper(_env, target, sources, **kw):
 
     # get the dist value
     try:
-        dist = subprocess.check_output(["rpm", "--eval", "%{?dist}"]).strip()
+        dist = subprocess.check_output(["rpm", "--eval", "%{?dist}"]).strip().decode()
     except:
         api.output.error_msg("rpm was not found")
-
+    
     if ("DIST" in env and env.subst('$DIST') == "%{?dist}") or ("DIST" not in env):
         env["DIST"] = dist
-
+    
     # map arch to value the RPM will want to use
     env['TARGET_ARCH'] = rpmarch(env, env['TARGET_ARCH'])
     api.output.verbose_msgf(['rpm'], "mapping architecture to rpm value of: {0}", env['TARGET_ARCH'])
@@ -204,7 +211,5 @@ def RpmPackage_wrapper(_env, target, sources, **kw):
 
 api.register.add_variable('PKG_ARCH_MAPPER', {}, '')
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 SConsEnvironment.RPMPackage = RpmPackage_wrapper

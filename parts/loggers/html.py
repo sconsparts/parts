@@ -1,12 +1,13 @@
 # simple HTML logger
+from __future__ import absolute_import, division, print_function
 
-
-import SCons.Script
-import parts.logger as logger
-import parts.color as color
 import os
 import sys
 
+import parts.color as color
+import parts.logger as logger
+
+import SCons.Script
 
 # html Simple logger. Probally needs more work.
 

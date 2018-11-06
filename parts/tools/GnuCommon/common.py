@@ -1,11 +1,16 @@
-from parts.tools.Common.ToolSetting import ToolSetting
-from parts.tools.Common.ToolInfo import ToolInfo
-from parts.version import version_range
-import parts.common
-import SCons.Util
-import subprocess
+from __future__ import absolute_import, division, print_function
+
 import os
 import re
+import subprocess
+
+import SCons.Util
+
+import parts.common
+import parts.api as api
+from parts.tools.Common.ToolInfo import ToolInfo
+from parts.tools.Common.ToolSetting import ToolSetting
+from parts.version import version_range
 
 
 def makeStdBinutilsTool(env, name, compareNames):
@@ -73,7 +78,7 @@ class GnuInfo(ToolInfo):
                     line = pipe.stdout.readline()
             except:
                 pass
-            match = re.search(r'[vV ]([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+)', line)
+            match = re.search(r'[vV ]([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+)', line.decode())
             if match:
                 line = match.group(1)
                 return line
@@ -83,7 +88,7 @@ class GnuInfo(ToolInfo):
     def resolve_version(self, version):
         if self.found is None:
             return None
-        k = self.found.keys()
+        k = list(self.found.keys())
         k.sort(reverse=True)
         for i in k:
             if MatchVersionNumbers(version, i):
@@ -144,7 +149,7 @@ class GnuInfo(ToolInfo):
             return None
 
         ret = {}
-        for v, p in found.iteritems():
+        for v, p in found.items():
             #print "testing",v,p[0],p[1]
             tmp = self.exists(env, namespace, v, p[0], use_script, p[1])
             if tmp is not None:
@@ -153,6 +158,7 @@ class GnuInfo(ToolInfo):
         return ret
 
     def scan_query(self, install_root, opt_scan=True):
+        api.output.verbose_msgf(['gnu_info',"tool_info"],"query scan install_root={root}",root=install_root)
         if self.found is None:
             ret = {}
             reg = re.compile(self.test_file.replace('+', r'\+') + r'\-?([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)', re.I)

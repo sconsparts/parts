@@ -1,4 +1,7 @@
+from __future__ import absolute_import, division, print_function
+
 from SCons.Debug import logInstanceCreation
+
 # simple event class
 # need to look at extending this or
 # finding a usable existing solution

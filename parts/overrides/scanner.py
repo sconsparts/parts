@@ -9,74 +9,53 @@ the list seperatly, we "pre expand the values" to allow the scanner to work as e
 speed boost as we fill in the values as at this point it is not going to change. This prevents extra subst()
 processing later on the same environment for the same variable.
 '''
+from __future__ import absolute_import, division, print_function
+
+import _thread
 
 import SCons.Scanner
-from .. import mappers
-import thread
 
-try:
-    SCons.Scanner.Prog._subst_libs
-except:
-    def wrap_Prog_scan(func):
-        '''
-        this deal with issue with the program scanner for stuff that has .a/.lib./dylib/.so files
-        '''
-        def _scan(node, env, libpath=()):
-            pass
-        _scan.__code__ = func.__code__
-        _scan.__globals__.update(print_find_libs=SCons.Scanner.Prog.print_find_libs)
-        #_scan.__globals__.update(_subst_libs = SCons.Scanner.Prog._subst_libs)
+import parts.mappers as mappers
 
-        def scan(node, env, libpath=()):
-            global _scan
-            prop_lst = env.get('LIBS', []) + env.get('LIBEXS', [])
-            if prop_lst:
-                mappers.sub_lst(env, prop_lst, thread.get_ident(), recurse=False)
-            return _scan(node, env.Override(dict(LIBS=prop_lst)), libpath)
-        func.__code__ = scan.__code__
-        func.__globals__.update(
-            _scan=_scan,
-            mappers=mappers,
-            thread=thread,
-        )
-else:
-    def wrap_Prog_scan(func):
-        def _scan(node, env, libpath=()):
-            pass
-        _scan.__code__ = func.__code__
-        _scan.__globals__.update(**func.__globals__)
+def wrap_Prog_scan(func):
+    def _scan(node, env, libpath=()):
+        pass
+    _scan.__code__ = func.__code__
+    _scan.__globals__.update(**func.__globals__)
 
-        def scan(node, env, libpath=()):
-            global _scan
-            if not 'LIBS' in env and not 'LIBEXS' in env:
-                return []
-            return _scan(node, env.Override(dict(LIBS=env.get('LIBS', []) + env.get('LIBEXS', []))), libpath)
-        func.__code__ = scan.__code__
-        func.__globals__.update(_scan=_scan)
+    def scan(node, env, libpath=()):
+        global _scan
+        if not 'LIBS' in env and not 'LIBEXS' in env:
+            return []
+        return _scan(node, env.Override(dict(LIBS=env.get('LIBS', []) + env.get('LIBEXS', []))), libpath)
+    func.__code__ = scan.__code__
+    func.__globals__.update(_scan=_scan)
+
 wrap_Prog_scan(SCons.Scanner.Prog.scan)
 
 
 def wrap_FindPathDirs(klass):
     def _call(self, env, dir, target=None, source=None, argument=None):
         pass
-
-    func = klass.__call__.__func__
+    try:
+        func = klass.__call__.__func__
+    except:
+        func = klass.__call__
     _call.__code__ = func.__code__
 
     def call(self, env, dir, target=None, source=None, argument=None):
         global _call
         prop_lst = env.get(self.variable)
         if prop_lst:
-            mappers.sub_lst(env, prop_lst, thread.get_ident(), recurse=False)
+            mappers.sub_lst(env, prop_lst, _thread.get_ident(), recurse=False)
         return _call(self, env, dir, target, source, argument)
 
     func.__code__ = call.__code__
     func.__globals__.update(
         _call=_call,
         mappers=mappers,
-        thread=thread,
+        _thread=_thread,
     )
-
 
 wrap_FindPathDirs(SCons.Scanner.FindPathDirs)
 

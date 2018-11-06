@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import itertools
 import os
 import shutil
@@ -119,8 +121,7 @@ def rpm_spec(env, target, source):
 
     # If BuildArch exists in specfile, delete the line
     # It will take host architecture as the build architecture by default
-    file_contents = filter(lambda x: not x.startswith('BuildArch'),
-                           file_contents)
+    file_contents = [x for x in file_contents if not x.startswith('BuildArch')]
 
     # override some value to match name of out rpm files.
     found_install = False
@@ -194,7 +195,7 @@ def rpm_spec(env, target, source):
         file_contents = rpm_vals + file_contents
     file_contents = "\n".join(file_contents) + '\n'
     with open(target[0].abspath, 'wb') as out_file:
-        out_file.write(file_contents)
+        out_file.write(file_contents.encode())
 
 
 rpmspec_action = SCons.Action.Action(rpm_spec)

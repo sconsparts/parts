@@ -1,22 +1,26 @@
-from .. import glb
-from .. import common
-from ..core import util
-from .. import datacache
-from .. import api
-from .. import target_type
-from .. import functors
-from .. import mappers
-
-import pnode
-import pnode_manager
-import section_info
-import dependent_info
-
-import SCons.Node
+from __future__ import absolute_import, division, print_function
 
 import hashlib
 import itertools
-import thread
+import sys
+from builtins import filter
+
+import SCons.Node
+from past.builtins import cmp
+
+import _thread
+import parts.api as api
+import parts.common as common
+import parts.core.util as util
+import parts.datacache as datacache
+import parts.functors as functors
+import parts.glb as glb
+import parts.mappers as mappers
+import parts.pnode.dependent_info as dependent_info
+import parts.pnode.pnode as pnode
+import parts.pnode.pnode_manager as pnode_manager
+import parts.pnode.section_info as section_info
+import parts.target_type as target_type
 
 
 class section(pnode.pnode):
@@ -210,7 +214,7 @@ class section(pnode.pnode):
                 obj.ID != alias_str and\
                 obj.ID != alias_str_r
 
-        a = self.__env.Alias(alias_str, filter(map_alias, self.Targets))
+        a = self.__env.Alias(alias_str, list(filter(map_alias, self.Targets)))
 
         # build::alias::foo -> build::alias::foo::
         a1 = self.__env.Alias(alias_str_r, a)
@@ -250,11 +254,11 @@ class section(pnode.pnode):
             # or cases in which the user added such value to be exported
 
             export_csig = {}
-            for key, value in self.Exports.items():
+            for key, value in list(self.Exports.items()):
                 if util.isList(value):
                     # We want to modify self.Exports but leave the Env intact
                     # so we call subst list with recurse == True
-                    mappers.sub_lst(self.Env, value, thread.get_ident(), recurse=True)
+                    mappers.sub_lst(self.Env, value, _thread.get_ident(), recurse=True)
                     # mappers.sub_lst call may modify exports therefore we cannot use 'value' here
                     if not any(self.Exports[key]):
                         del self.__exports[key]
@@ -272,7 +276,7 @@ class section(pnode.pnode):
 
                     md5 = hashlib.md5()
                     md5.update(common.get_content(self.__exports[key]))
-                    tmp = md5.hexdigest()
+                    tmp = md5.hexdigest().encode()
                     esig.update(tmp)
                     export_csig[key] = tmp
                 except KeyError:
@@ -430,7 +434,7 @@ class section(pnode.pnode):
         try:
             return self._ID
         except AttributeError:
-            self._ID = result = intern("{1}::{0}".format(self.Part.ID, self.Name))
+            self._ID = result = sys.intern("{1}::{0}".format(self.Part.ID, self.Name))
             return result
 
 

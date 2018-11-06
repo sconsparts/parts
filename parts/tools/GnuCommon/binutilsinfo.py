@@ -1,11 +1,14 @@
-from common import binutils, GnuInfo
-from parts.tools.Common.Finders import PathFinder, ScriptFinder, EnvFinder
-from parts.platform_info import SystemPlatform
-from parts.tools.Common.ToolInfo import ToolInfo
-import parts.tools.Common
-import SCons.Util
-import android
+from __future__ import absolute_import, division, print_function
 
+
+import parts.tools.Common
+from parts.platform_info import SystemPlatform
+from parts.tools.Common.Finders import EnvFinder, PathFinder, ScriptFinder
+from parts.tools.Common.ToolInfo import ToolInfo
+
+from . import android
+import SCons.Util
+from .common import GnuInfo, binutils
 from SCons.Debug import logInstanceCreation
 
 

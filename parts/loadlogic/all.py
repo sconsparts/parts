@@ -1,11 +1,13 @@
-from .. import glb
-import base
-from ..pnode import part
-from .. import api
+from __future__ import absolute_import, division, print_function
+
+import time
 
 from SCons.Debug import logInstanceCreation
 
-import time
+import parts.api as api
+import parts.glb as glb
+from . import base
+from parts.pnode import part
 
 
 class All(base.Base):  # task_master type
@@ -43,12 +45,12 @@ class All(base.Base):  # task_master type
 
     def DefineTasksList(self):
 
-        for v in self.pmgr.parts.values():
+        for v in list(self.pmgr.parts.values()):
             self.__tasks.append(load_parts_task(v, self.pmgr, self))
 
     def __call__(self):
-        parts_to_load = self.pmgr.parts.values()
-        parts_to_load.sort(part.pcmp)
+        parts_to_load = list(self.pmgr.parts.values())
+        parts_to_load.sort(key = lambda x: x._order_value)
 
         total = len(parts_to_load) * 1.0
         cnt = 0

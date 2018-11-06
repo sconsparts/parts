@@ -1,5 +1,7 @@
-import gxx
-import gcc
-import binutilsinfo
-import clang
-from common import gxx, gcc, binutils, clang
+from __future__ import absolute_import, division, print_function
+
+from . import binutilsinfo
+from . import clang
+from . import gcc
+from . import gxx
+from .common import binutils, clang, gcc, gxx

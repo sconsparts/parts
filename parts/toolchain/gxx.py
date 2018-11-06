@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 
 def gxx_setup(env, ver):
     if env.get('GXX_VERSION') is None:

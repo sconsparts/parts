@@ -2,14 +2,23 @@
 version and version_range implementation to make life easier when dealing with
 version strings.
 '''
+from __future__ import absolute_import, division, print_function
+
+
+from builtins import map
+from builtins import range
+
 import re
-import string
+
+
+import parts.api as api
+from SCons.Debug import logInstanceCreation
+from SCons.Script.SConscript import SConsEnvironment
 
 __all__ = [
     'version',
     'version_range',
 ]
-from SCons.Debug import logInstanceCreation
 
 
 class VersionPart(object):
@@ -17,7 +26,7 @@ class VersionPart(object):
     Gives a part of a version number a way to store the string value and a
     weight associated with that string.
     '''
-    __slots__ = ["ver", "alwaysMatch", "weight", '__weakref__']
+    __slots__ = ["ver", "alwaysMatch", "weight"]
 
     _matchSet = ['*', 'x', 'X']
 
@@ -113,9 +122,9 @@ class version(object):
         'final': -700,
     }
 
-    __slots__ = ["ver", "parts", "matches", '__weakref__']
+    __slots__ = ["ver", "parts", "matches"]
 
-    __re = re.compile("(\d*)(\D*)(.*)")
+    __re = re.compile(r"(\d*)(\D*)(.*)")
 
     def __init__(self, ver=None, *args):
         '''
@@ -330,7 +339,7 @@ class version(object):
 
     def __getitem__(self, key):
         if isinstance(key, slice):
-            return ".".join(map(lambda x: isinstance(x, tuple) and "".join(map(str, x)) or str(x), self.parts[key]))
+            return ".".join([isinstance(x, tuple) and "".join(map(str, x)) or str(x) for x in self.parts[key]])
         else:
             tmp = self.parts[key]
             return isinstance(tmp, tuple) and "".join(map(str, tmp))or str(tmp)
@@ -392,7 +401,7 @@ class version_range(object):
             else:
                 # remove any whitespace so that the range can be given more
                 # naturally
-                self.range = range.translate(string.maketrans("", ""), string.whitespace)
+                self.range = "".join(range.split())
                 self._parseRanges(self.range)
 
     def _parseRanges(self, range):
@@ -537,8 +546,6 @@ class version_range(object):
         return str(self.range)
 
 
-from SCons.Script.SConscript import SConsEnvironment
-import api
 
 SConsEnvironment.Version = version
 SConsEnvironment.VersionRange = version_range

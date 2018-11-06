@@ -1,11 +1,15 @@
+from __future__ import absolute_import, division, print_function
+
+
+
 from SCons.Debug import logInstanceCreation
-from .. import glb
+
+import parts.glb as glb
 
 
 class dependent_info(object):
     ''' this class defines state we need for the section when we store dependancy information'''
     __slots__ = [
-        '__weakref__',
         '__part_ref_str',
         '__section_name',
         '__requires',

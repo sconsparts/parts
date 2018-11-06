@@ -2,7 +2,7 @@ from parts import *
 
 SetOptionDefault('LOGGER', 'TEXT_LOGGER')
 
-if DefaultEnvironment()['TARGET_OS'] <> 'win32':
+if DefaultEnvironment()['TARGET_OS'] != 'win32':
     SetOptionDefault('CCFLAGS', ['-g'])
 
 Part(

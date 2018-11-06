@@ -1,14 +1,16 @@
 
-import SCons.Util
-import SCons.Tool
-import SCons.Tool.mingw as mingw
-import parts.tools.GnuCommon
-from parts.tools.GnuCommon.android import GetLatestNDKAPI
-import parts.tools.Common
-
-cplusplus = __import__('c++', globals(), locals(), [])
+from __future__ import absolute_import, division, print_function
 
 import parts.api.output as output
+import parts.tools.Common
+import parts.tools.GnuCommon
+from parts.tools.GnuCommon.android import GetLatestNDKAPI
+
+import SCons.Tool
+import SCons.Tool.mingw as mingw
+import SCons.Util
+
+cplusplus = __import__('c++', globals(), locals(), [])
 
 
 # this are builders for making resources for mingw based builds on windows

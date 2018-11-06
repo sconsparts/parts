@@ -1,10 +1,15 @@
-from common import Intelc, IntelcInfo
-import common
-import filescanner
-from parts.tools.Common.Finders import RegFinder, EnvFinder, PathFinder, ScriptFinder
-from parts.platform_info import SystemPlatform
+from __future__ import absolute_import, division, print_function
+
+from builtins import range
 import os
 
+from parts.platform_info import SystemPlatform
+from parts.tools.Common.Finders import (EnvFinder, PathFinder, RegFinder,
+                                        ScriptFinder)
+
+from . import common
+from . import filescanner
+from .common import Intelc, IntelcInfo
 
 # 32-bit 13.0
 Intelc.Register(
@@ -17,7 +22,7 @@ Intelc.Register(
                 '/opt/intel',
                 common.intel_13_plus_posix,
                 'ia32',
-                ['ICPP_COMPILER{0}'.format(x) for x in xrange(15, 12, -1)]),
+                ['ICPP_COMPILER{0}'.format(x) for x in range(15, 12, -1)]),
             script=ScriptFinder('${INTELC.INSTALL_ROOT}/bin/ia32/iclvars_ia32.bat'),  # huh?
             subst_vars={
 
@@ -43,7 +48,7 @@ Intelc.Register(
                 '/opt/intel',
                 common.intel_13_plus_posix,
                 'intel64',
-                ['ICPP_COMPILER{0}'.format(x) for x in xrange(15, 12, -1)]),
+                ['ICPP_COMPILER{0}'.format(x) for x in range(15, 12, -1)]),
             script=ScriptFinder('${INTELC.INSTALL_ROOT}/bin/Intel64/intel64.sh'),  # huh?
             subst_vars={
 
@@ -69,7 +74,7 @@ Intelc.Register(
                 '/opt/intel',
                 common.intel_13_plus_posix,
                 'intel64_mic',
-                ['ICPP_COMPILER{0}'.format(x) for x in xrange(15, 12, -1)]),
+                ['ICPP_COMPILER{0}'.format(x) for x in range(15, 12, -1)]),
             script=None,
             subst_vars={
             },

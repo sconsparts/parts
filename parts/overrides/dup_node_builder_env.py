@@ -3,12 +3,14 @@
 # Parts are the issues, which helps a lot when this happens across parts, as the SCons
 # message is hard to deal with by default and it does not know of "part/components"
 # We also make what Component "owns" these node for faster checks latter.
+from __future__ import absolute_import, division, print_function
 
-from .. import api
-from .. import glb
-from .. import errors
-from .. import metatag
 import SCons.Builder
+
+import parts.api as api
+import parts.errors as errors
+import parts.glb as glb
+import parts.metatag as metatag
 
 scons_node_errors = SCons.Builder._node_errors
 

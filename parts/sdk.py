@@ -1,16 +1,21 @@
-import glb
-import pattern
-import common
-import core.util as util
-import exportitem as Xp
-import node_helpers
-import api.output
-import api.requirement
-import errors
+from __future__ import absolute_import, division, print_function
 
+
+import datetime
 import os
 
 import SCons.Script
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
+
+import parts.api as api
+import parts.common as common
+import parts.core.util as util
+import parts.errors as errors
+import parts.exportitem as Xp
+import parts.glb as glb
+import parts.node_helpers as node_helpers
+import parts.pattern as pattern
 
 g_sdked_files = set([])
 
@@ -450,8 +455,6 @@ def CreateSDK_Emit(target, source, env):
     return (tout, source)
 
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
 SConsEnvironment.SdkInclude = SdkInclude
@@ -485,7 +488,6 @@ api.register.add_builder('__CreateSDKBuilder__', SCons.Builder.Builder(
     emitter=CreateSDK_Emit,
     target_scanner=SCons.Scanner.Base(CreateSDK_SF)
 ))
-import datetime
 # add configuartion varaible
 api.register.add_variable("DATE_STAMP", datetime.datetime.now().strftime('%Y%m%d%H%M'), '')
 
@@ -499,7 +501,7 @@ api.register.add_variable('SDK_LIB', '$SDK_LIB_ROOT', 'Full SDK directory for th
 api.register.add_variable('SDK_BIN', '$SDK_BIN_ROOT', 'Full SDK directory for the bin concept')
 
 
-if 'win32' == glb._host_sys:
+if 'win32' == glb._host_platform:
     api.register.add_variable('SDK_PRIVATE_BIN', '$SDK_ROOT/private/bin', '')
     api.register.add_variable('SDK_DOC', '$SDK_ROOT/share/doc', 'Full SDK directory for the documenation concept')
     api.register.add_variable('SDK_HELP', '$SDK_ROOT/help', 'Full SDK directory for the help concept')
@@ -540,7 +542,7 @@ api.register.add_bool_variable('CREATE_SDK', True, 'Controls if the SDK should b
 
 api.register.add_list_variable('SDK_LIB_PATTERN', ['*.lib', '*.LIB', '*.a', '*.A', '*.so', '*.sl',
                                                    '*.so.*', '*.sl.*', '*.so-gz', '*.dylib'], 'filter of file patterns use to match lib type files')
-if 'win32' == glb._host_sys:
+if 'win32' == glb._host_platform:
     api.register.add_list_variable('SDK_BIN_PATTERN', [
                                    '*.dll', '*.DLL', '*.exe', '*.EXE', '*.com', '*.COM', '*.pdb', '*.PDB'], 'filter of file patterns use to match bin type files')
 else:

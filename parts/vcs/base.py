@@ -1,29 +1,31 @@
+from __future__ import absolute_import, division, print_function
 
 import os
 import re
-import sys
 import stat
 import subprocess
+import sys
 import traceback
 
+import parts.api as api
+import parts.common as common
+import parts.datacache as datacache
+import parts.part_ref as part_ref
+import parts.target_type as target_type
+from parts.core import util
+from parts.reporter import PartRuntimeError as PartRuntimeError
+
 try:
-    import urlparse
+    import urllib.parse
 except ImportError:
     import urllib.parse as urlparse
 
-from .. import common
-from ..core import util
-from .. import datacache
-from .. import api
-from .. import part_ref
-from .. import target_type
-from ..reporter import PartRuntimeError as PartRuntimeError
 
 
 def normalize_url(url):
     # Combine and normalize the URL
-    schema, netloc, path, query, fragment = urlparse.urlsplit(url)
-    return urlparse.urlunsplit((schema, netloc, re.sub(r'/+', '/', path),
+    schema, netloc, path, query, fragment = urllib.parse.urlsplit(url)
+    return urllib.parse.urlunsplit((schema, netloc, re.sub(r'/+', '/', path),
                                 query, fragment)).rstrip('/')
 
 
@@ -482,11 +484,12 @@ class base(object):
             cmd_output += tmp
         # when command is done get the rest of the output
         for last_output in proc.stdout.readlines():
+            last_output=last_output.decode()
             if echo:
                 sys.stdout.write(last_output)
             cmd_output += last_output
         if echo:  # print out a new line
-            print
+            print()
         # get return codes
         ret = proc.returncode
         api.output.verbose_msgf('vcs_command', "output={0}", cmd_output)

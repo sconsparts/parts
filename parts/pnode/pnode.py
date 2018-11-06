@@ -1,15 +1,17 @@
 
-from .. import glb
-from .. import errors
+from __future__ import absolute_import, division, print_function
+
 
 from SCons.Debug import logInstanceCreation
+
+import parts.errors as errors
+import parts.glb as glb
 
 
 class pnode(object):
     """description of class"""
     __slots__ = [
         # Some internal magic
-        '__weakref__',
         '__load_state',
         '_remove_cache',
         '__is_loading',

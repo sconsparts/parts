@@ -1,7 +1,15 @@
 '''
 Defines a builder for .deb packages
 '''
+from __future__ import absolute_import, division, print_function
+
+
 import re
+
+import parts.api as api
+import parts.packaging as packaging
+from parts.errors import (GetPartStackFrameInfo, ResetPartStackFrameInfo,
+                          SetPartStackFrameInfo)
 
 import SCons.Action
 import SCons.Builder
@@ -10,13 +18,7 @@ import SCons.Node.FS
 import SCons.Node.Python
 import SCons.Script
 
-import parts.api as api
-import parts.packaging as packaging
-
-from parts.errors import GetPartStackFrameInfo, ResetPartStackFrameInfo, SetPartStackFrameInfo
-
 DEB_REG = r"(\w+)\_([\d.]+)(\-([\w.]+))?\_(\w+)\.deb"
-
 
 def dep_target_scanner(node, env, _):
     '''

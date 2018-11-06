@@ -1,9 +1,14 @@
-import parts.api as api
-import SCons.Script
-
 #################################################################
 # PYTHON script builder
 #################################################################
+from __future__ import absolute_import, division, print_function
+
+
+import parts.api as api
+
+import SCons.Script
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 
 def py_bld_str(target=None, source=None, env=None):
@@ -17,7 +22,7 @@ def py_bld(target, source, env):
     mod_name = source[0].srcnode().abspath[:-3].replace('.', '<dot>')
     m = sys.modules[mod_name]
     m.__dict__[env['__PYTHONSCRIPT_FUNC_']['build']](**env['__PYTHONSCRIPT_ARGS_'])
-    print 'Finished calling', source[0].srcnode().abspath
+    print('Finished calling', source[0].srcnode().abspath)
     return None
 
 
@@ -42,8 +47,6 @@ def PythonScript(env, file, emit_func='emit', build_func='build', func_args={}, 
     return env._PyScriptBuilder_(target=[], source=file, __PYTHONSCRIPT_FUNC_=f, __PYTHONSCRIPT_ARGS_=func_args, **kw)
 
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 # adding logic to Scons Enviroment object
 SConsEnvironment.PythonScript = PythonScript

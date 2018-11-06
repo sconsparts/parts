@@ -2,23 +2,26 @@
 # Common code and general objects
 ##########
 
+from __future__ import absolute_import, division, print_function
+
 import fnmatch
-import string
-import os
+import getpass
 import imp
+import os
+import string
 import sys
 import types
-import getpass
+from builtins import range
 
-import glb
-import core.util as util
+import SCons.Errors
 # import Scons stuff
 import SCons.Script
-import SCons.Errors
 import SCons.Tool
 import SCons.Util
-
 from SCons.Debug import logInstanceCreation
+
+import parts.core.util as util
+import parts.glb as glb
 
 
 def GetUserName(env):
@@ -45,7 +48,7 @@ class DelayVariable(object):
     The class will reset the value in the SCons Environment with the delayed value
     once it is evaluated
     '''
-    __slots__ = ['__func', '__weakref__']
+    __slots__ = ['__func']
 
     def __init__(self, func):
         if __debug__:
@@ -128,14 +131,14 @@ def process_tool_arg(lst):
     tmplst = []
     for i in lst:
         if util.isString(i):
-            tmp = string.split(i, '_', 2)
+            tmp = i.split('_', 2)
         else:
             tmp = i
         if len(tmp) == 1:
             tmp.append(None)
         elif len(tmp) != 2:
             # error
-            print "Invalid tool defined [", tmp, ']'
+            print("Invalid tool defined [", tmp, ']')
             Exit(1)
         elif tmp[1] == '':
             tmp[1] = None
@@ -150,20 +153,17 @@ def get_content(obj):
     if isinstance(obj, types.LambdaType) or \
             isinstance(obj, types.MethodType) or \
             isinstance(obj, types.FunctionType) or\
-            isinstance(obj, types.InstanceType) or \
-            isinstance(obj, types.ClassType) or \
-            isinstance(obj, types.FunctionType) or\
             isinstance(obj, types.CodeType):
         return SCons.Action._object_contents(obj)
 
-    elif isinstance(obj, types.DictionaryType):
+    elif util.isDictionary(obj):
         ret = '{'
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             ret += "%s:%s," % (k, get_content(v))
         ret += '}'
-    elif isinstance(obj, types.TupleType) or\
+    elif util.isTuple(obj) or\
             isinstance(obj, types.GeneratorType) or\
-            isinstance(obj, types.ListType):
+            util.isList(obj):
         ret = '['
         for i in obj:
             ret += "%s," % get_content(i)
@@ -171,7 +171,7 @@ def get_content(obj):
     else:
         ret = str(obj)
 
-    return ret
+    return ret.encode()
 
 
 def matches(value, includes, excludes=None):
@@ -313,18 +313,15 @@ def _wrap_to_string(obj, knownObjIds):
     knownObjIds.add(id(obj))
     if util.isDictionary(obj):
         return dict([[_wrap_to_string(k, knownObjIds),
-                      _wrap_to_string(v, knownObjIds)] for k, v in obj.iteritems()])
+                      _wrap_to_string(v, knownObjIds)] for k, v in obj.items()])
     elif util.isList(obj):
         return [_wrap_to_string(i, knownObjIds) for i in obj]
     elif isinstance(obj, tuple):
         return tuple([_wrap_to_string(i, knownObjIds) for i in obj])
     elif isinstance(obj, types.FunctionType):
         return 'function %s (%s)' % (str(obj.__name__),
-                                     ','.join(_wrap_to_string(obj.func_code.co_varnames, knownObjIds)))
-    elif isinstance(obj, types.InstanceType):
-        return 'instance of %s with %s' % (str(obj.__class__.__name__),
-                                           str(_wrap_to_string(obj.__dict__, knownObjIds)))
-    elif isinstance(obj, types.ClassType):
+                                     ','.join(_wrap_to_string(obj.__code__.co_varnames, knownObjIds)))
+    elif isinstance(obj, type):
         return 'class %s %s' % (str(obj.__name__), _wrap_to_string(obj.__dict__, knownObjIds))
     else:
         return str(obj)
@@ -350,7 +347,7 @@ def option_bool(val, option, default=False):
         elif val.lower() == 'false':
             return False
         else:
-            print 'Parts:', option, 'set to invalid value of [', val, '], using default of value of [', default, ']'
+            print('Parts:', option, 'set to invalid value of [', val, '], using default of value of [', default, ']')
             return default
     return bool(val)
 
@@ -403,7 +400,7 @@ def relpath(to_dir, from_dir=os.curdir):
 # error_msg is an empty string if there is no error.
 # ---------------------------------------------------------------------
 def parseVersionNumber(versionNumber):
-    fields = string.split(versionNumber, '.')
+    fields = versionNumber.split('.')
     fieldValues = [-1, -1, -1]		# default values
 
     for i in range(len(fields)):
@@ -468,13 +465,6 @@ def parseVersionNumber(versionNumber):
 #    return 0
 
 
-def get_version_from_list(v, vlist):
-    for vi in vlist:
-        if CompareVersionNumbers(vi, v) == 0:
-            return vi
-    return False
-
-
 # help objects
 class _make_rel(object):
 
@@ -490,7 +480,7 @@ class _make_rel(object):
             if isinstance(i, SCons.Node.FS.Dir):
                 ret += "env.Dir('" + relpath(env.Dir(i).srcnode().abspath, path) + "')"
             elif isinstance(i, pattern.Pattern):
-                t, sr = i.target_source(path)
+                _, sr = i.target_source(path)
                 inc = []
                 for s in sr:
                     inc.append(relpath(s, path).replace('\\', '/'))
@@ -534,7 +524,7 @@ class named_parms(object):
     def string_it(self, env, path):
         ret = ""
         i = len(self.kw)
-        for k, v in self.kw.iteritems():
+        for k, v in self.kw.items():
             i = i - 1
             ret += str(k) + "=" + gen_arg(env, path, v)
             if i > 0:
