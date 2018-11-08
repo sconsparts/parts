@@ -6,10 +6,6 @@ name = "pypi"
 [packages]
 scons = "*"
 future = "*"
-parts = {editable = true, path = "."}
-autest = "*"
 
 [dev-packages]
-
-[requires]
-python_version = "3.7"
+autest = "*"
