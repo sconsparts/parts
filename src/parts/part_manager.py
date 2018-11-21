@@ -1008,7 +1008,7 @@ class part_manager(object):
                         val = version.version_range(val + '.*')
                     api.output.trace_msgf(
                         "reduce_target_mapping",
-                        "  Matching Attibute: {key} Values:{val} with {tval}",
+                        "  Matching Attibute: {key} Values: {val} with {tval}",
                         key=key,
                         val=val,
                         tval=pobj.Version
@@ -1021,7 +1021,7 @@ class part_manager(object):
 
                     api.output.trace_msgf(
                         "reduce_target_mapping",
-                        "  Matching Attibute: {key} Values:{val} Based on {tval}",
+                        "  Matching Attibute: {key} Values: {val} Based on {tval}",
                         key=key,
                         val=val,
                         tval=pobj.Env["CONFIG"]
@@ -1036,7 +1036,7 @@ class part_manager(object):
                 elif key in ['platform_match', 'target', 'target-platform', 'target_platform']:
                     api.output.trace_msgf(
                         "reduce_target_mapping",
-                        "  Matching Attibute: {key} Values:{val} with {tval}",
+                        "  Matching Attibute: {key} Values: {val} with {tval}",
                         key=key,
                         val=val,
                         tval=pobj.PlatformMatch
@@ -1048,7 +1048,7 @@ class part_manager(object):
                     val_list = val.split(',')
                     api.output.trace_msgf(
                         "reduce_target_mapping",
-                        "  Matching Attibute: {key} Values:{val} with {tval}",
+                        "  Matching Attibute: {key} Values: {val} with {tval}",
                         key=key,
                         val=val_list,
                         tval=pobj.Mode
@@ -1074,7 +1074,7 @@ class part_manager(object):
                     try:
                         api.output.trace_msgf(
                             "reduce_target_mapping",
-                            "  Matching Emvironment Variable: {key} Values:{val} with {tval}",
+                            "  Matching Emvironment Variable: {key} Values: {val} with {tval}",
                             key=key,
                             val=val,
                             tval=pobj.Env[key]

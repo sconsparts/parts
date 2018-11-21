@@ -6,3 +6,5 @@ parts.egg-info/
 .*.swp
 *.pdb
 *.o
+.tox/
+_sandbox/

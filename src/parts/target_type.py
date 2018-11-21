@@ -380,7 +380,9 @@ class target_type(object):
             s += "alias::{0}".format(self.Alias)
         elif self.hasName:
             s += "name::{0}".format(self.Name)
-            for key, value in self.Properties.items():
+            # sorted by key value to help with testing
+            for key in sorted(self.Properties):
+                value = self.Properties[key]
                 s += "@" + key + ":"
                 s += ",".join(map(str, common.make_list(value)))
         elif not self.hasConcept:

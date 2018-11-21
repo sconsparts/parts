@@ -11,7 +11,7 @@ import subprocess
 
 import parts.api as api
 import parts.common as common
-import parts.errors
+import parts.errors as errors
 import parts.glb as glb
 
 import SCons.Script
@@ -19,6 +19,7 @@ import SCons.Script
 from SCons.Script.SConscript import SConsEnvironment
 
 rpm_reg = "([\w_.-]+)-([\d.]+)-([\w_.]+)[.](\w+)\.rpm"
+
 
 def rpm_wrapper_mapper(env, target, sources, **kw):
     def rpm_builder():
@@ -33,13 +34,13 @@ def rpm_wrapper_mapper(env, target, sources, **kw):
 
         #############################################
         # Sort files in to source group and to control group
+        spec_in = []
 
         def spec(node):
-            global spec_in
             if env.MetaTagValue(node, 'category', 'package') == 'PKGDATA':
                 if 'rpm' in env.MetaTagValue(node, 'types', 'package', ['rpm']):
                     if node.ID.endswith(".spec"):
-                        spec_in = node
+                        spec_in.append(node)
                     else:
                         env.CCopy('${{BUILD_DIR}}/SPECS/{0}'.format(target[0].name[:-4]), node)
                 return False
@@ -61,13 +62,16 @@ def rpm_wrapper_mapper(env, target, sources, **kw):
         # create the source gz file
         # Replace source with the name and version  from the specfile for proper formatting of build of the tar.gz file
         # and building the rpm
-        try:
-            spec_in
-        except:
-            api.output.error_msgf("No rpm spec file defined for RPM: {0}\n try adding a call to env.InstallPkgData('<yourRPM>.spec', packagetype = ['rpm'])",
-                                  target[0].name, show_stack=False)
-        # This depends statement seems to help address issues with getting symlink.linkto data
-        env.Depends(spec_in, src)
+
+        if spec_in:
+            spec_in = spec_in[0]
+            env.Depends(spec_in, src)
+            spec_out = '${{BUILD_DIR}}/SPECS/{0}/{1}'.format(target[0].name[:-4], spec_in.name)
+        else:
+            spec_in = []
+            spec_out = '${{BUILD_DIR}}/SPECS/{0}/{0}.spec'.format(target[0].name[:-4])
+            env.Depends(spec_out, src)
+            pass
 
         # copy the source files to be archived... this has to match how it would be installed
         # make note of meta values so we correctly copy to correct place in our fake root
@@ -89,7 +93,7 @@ def rpm_wrapper_mapper(env, target, sources, **kw):
             pkg_nodes.append(tmp_node)
 
         spec_file = env._rpmspec(
-            '${{BUILD_DIR}}/SPECS/{0}/{1}'.format(target[0].name[:-4], spec_in.name),
+            spec_out,
             spec_in,
             NAME=target_name,
             VERSION=target_version,
@@ -160,16 +164,16 @@ def RpmPackage_wrapper(_env, target, sources, **kw):
     # clone the KWS to the env to change the filename
 
     env = _env.Clone(**kw)
-
+    env['_parts_user_stack'] = errors.GetPartStackFrameInfo()
     # get the dist value
     try:
         dist = subprocess.check_output(["rpm", "--eval", "%{?dist}"]).strip().decode()
     except:
         api.output.error_msg("rpm was not found")
-    
+
     if ("DIST" in env and env.subst('$DIST') == "%{?dist}") or ("DIST" not in env):
         env["DIST"] = dist
-    
+
     # map arch to value the RPM will want to use
     env['TARGET_ARCH'] = rpmarch(env, env['TARGET_ARCH'])
     api.output.verbose_msgf(['rpm'], "mapping architecture to rpm value of: {0}", env['TARGET_ARCH'])
