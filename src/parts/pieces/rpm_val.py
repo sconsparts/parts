@@ -228,7 +228,7 @@ def generate_spec(env, rpm_vals):
         out_str = "\n".join(rpm_vals)+"\n"
 
     # output headers
-    out_str = generate_values(headers, env)
+    out_str += generate_values(headers, env)
     # output sections
     out_str += generate_values(sections, env)
 
