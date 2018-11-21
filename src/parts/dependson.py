@@ -25,6 +25,7 @@ from parts.requirement import REQ
 def Component(env, name, version_range=None, requires=REQ.DEFAULT, section="build"):
 
     # fix up the name string.
+    name = env.subst(name)
     # if this start with alias. we want to us it not name::
     # If it does not start with name we want to add it
     if name.startswith("name::") == False and name.startswith("alais::") == False:
@@ -60,11 +61,12 @@ def Component(env, name, version_range=None, requires=REQ.DEFAULT, section="buil
     # check to see if this is a subpart and if so we want to
     # auto define the version range to be that of the parent
     # this allow subparts to easily depend on there part "group"
+    
     if version_range is None:
         # check to see if the name we dependon match
         # TODO validate this test....
-        if pobj.Root.Name == name.split('.')[0]:
-            version_range = pobj.Version
+        if pobj.Root.Name == trg.Name:
+            version_range = version.version_range(pobj.Version)
     else:
         # we have a version range define...
         # turn it in to an version_range object

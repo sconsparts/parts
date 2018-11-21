@@ -1,3 +1,3 @@
-Verbose: [gtest] ${PARTIDEXPORTS('name::part1@platform_match:{}-{}@version:*@config:debug','build','foo',3)} False
-Verbose: [gtest] ${PARTIDEXPORTS('name::part1@platform_match:{}-{}@version:*@config:debug','build','foo_list',3)} False
-Verbose: [gtest] ${PARTIDEXPORTS('name::part1@platform_match:{}-{}@version:*@config:debug','build','dict_test',3)} False
+Verbose: [gtest] ${PARTIDEXPORTS('name::part1@config:debug@platform_match:{}-{}@version:*','build','foo',3)} False
+Verbose: [gtest] ${PARTIDEXPORTS('name::part1@config:debug@platform_match:{}-{}@version:*','build','foo_list',3)} False
+Verbose: [gtest] ${PARTIDEXPORTS('name::part1@config:debug@platform_match:{}-{}@version:*','build','dict_test',3)} False

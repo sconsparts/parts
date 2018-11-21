@@ -48,7 +48,7 @@ def SubPart_factory(env, arg1=None, parts_file=None, mode=[], vcs_type=None, def
     return glb.engine._part_manager._define_sub_part(
         env,
         alias,
-        parts_file,
+        env.subst(parts_file),
         mode,
         vcs_type,
         default,

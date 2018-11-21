@@ -1,1 +1,1 @@
-Verbose: [gtest] ["${PARTIDEXPORTS('name::part1@platform_match:{}-{}@version:*@config:debug','build','CPPPATH',0)}"] True
+Verbose: [gtest] ["${PARTIDEXPORTS('name::part1@config:debug@platform_match:{}-{}@version:*','build','CPPPATH',0)}"] True
