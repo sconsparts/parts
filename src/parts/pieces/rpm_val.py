@@ -27,8 +27,8 @@ def rpm_list_mapper(env, key, value):
     return ",".join(value)
 
 
-    # these value must exists
-    # if one is missing we have a bad spec file
+# dictionary of all values needed or might be needed
+# assume the "subst() happens before format() call"
 headers = [
     # required
     dict(key='Name', value='{key}: {value}\n', required=True),
@@ -173,12 +173,14 @@ def add_if(env, tmpl, keylst, value_mapper, default, required, lookup):
                 i = i[1:]
             if i.lower() in env and not callable(env[i.lower()]) and env[i.lower()]:
                 value = value_mapper(env, key, env[i.lower()])
+                value = env.subst(value)
                 return tmpl.format(
                     key=key,
                     value=value,
                 )
             elif i.upper() in env and not callable(env[i.upper()]) and env[i.upper()]:
                 value = value_mapper(env, key, env[i.upper()])
+                value = env.subst(value)
                 return tmpl.format(
                     key=key,
                     value=value,
