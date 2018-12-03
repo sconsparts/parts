@@ -101,6 +101,7 @@ class base(object):
         self._allow_parallel = True
         self._pobj = None
         self._env = None
+        self._full_path = None
 
     @property
     def Server(self):
@@ -141,13 +142,11 @@ class base(object):
     @property
     def FullPath(self):
         ''' returns the full path'''
-        try:
-            return self._full_path
-        except AttributeError:
+        if not self._full_path:
             # Combine and normalize the URL
-            self._full_path = result = normalize_url(
+            self._full_path = normalize_url(
                 '/'.join((self.Server.rstrip('\\/'), self.Repository)))
-            return result
+        return self._full_path
 
     def AllowParallelAction(self):
         # change this latter to get value of
@@ -227,6 +226,7 @@ class base(object):
             if ret:
                 # get policy for how to handle a positive reponse
                 pol = self._env.GetOption('vcs_policy')
+                api.output.verbose_msgf('vcs_update', "update policy is '{0}'",pol)
                 if pol == 'warning':
                     ret_val = False
                     # report the warning
@@ -249,7 +249,7 @@ class base(object):
                     if self.do_exist_logic():
                         api.output.verbose_msg('vcs_update', ret)
                     else:
-                        # report the warning
+                        # report the error
                         api.output.error_msg(ret, show_stack=False, exit=False)
                         api.output.error_msg(
                             "Add --update to force update for merge and potential loss of local changes", show_stack=False)

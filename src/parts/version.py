@@ -354,6 +354,12 @@ class version(object):
         '''
         return str(self.ver)
 
+    def __repr__(self):
+        '''
+        Prints the string version.  It basically returns the passed in string.
+        '''
+        return "<class {} value={}>".format(self.__class__.__name__,str(self))
+
     # compatiblity functions.. to remove in forms at least
     def Major(self):
         return self[0]

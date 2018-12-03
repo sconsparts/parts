@@ -64,6 +64,9 @@ class DelayVariable(object):
     def __repr__(self):
         return str(self.__eval__())
 
+    def __getitem__(self, key):
+        return self.__func()[key]
+
 
 class dformat(DelayVariable):
 

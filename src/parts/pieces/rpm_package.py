@@ -18,7 +18,7 @@ import SCons.Script
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
 
-rpm_reg = "([\w_.-]+)-([\d.]+)-([\w_.]+)[.](\w+)\.rpm"
+rpm_reg = "([\w_.-]+)-([\w.]+)-([\w_.]+)[.](\w+)\.rpm"
 
 
 def rpm_wrapper_mapper(env, target, sources, **kw):

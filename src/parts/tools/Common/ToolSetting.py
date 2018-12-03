@@ -296,7 +296,7 @@ class ToolSetting(object):
         use_script = env.get(self.script_tag, False)
         api.output.verbose_msgf(
             ['toolsettings'],
-            "query logic root_path={root} use_script={script}",
+            "query logic root_path={root} use_script={use_script}",
             root=root_path,
             use_script=use_script
         )

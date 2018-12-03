@@ -1093,7 +1093,7 @@ class part_manager(object):
                             api.output.trace_msgf("reduce_target_mapping",
                                                   "  Variable is not a list in the environment Environment")
                             # if both cases are false then we have a failure
-                            if pobj.Env[key] != val and str(pobj.Env[key]) != v:
+                            if pobj.Env[key] != val and str(pobj.Env[key]) != val:
                                 api.output.trace_msgf("reduce_target_mapping", "   Removing Part {0}", pobj.ID)
                                 match = False
                     except KeyError:

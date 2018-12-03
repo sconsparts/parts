@@ -548,6 +548,7 @@ class part_id_export_mapper(mapper):
             api.output.trace_msg(['partexport_mapper', 'mapper'], spacer,
                                  'Failed to find Part that matches name: {0}'.format(self.part_name))
             self.name_to_alias_failed(env, match, policy=self.policy)
+            return ''
 
         api.output.trace_msg(['partexport_mapper', 'mapper'], spacer,
                              'Found matching part! name: {0} -> alias: {1}'.format(pobj.Name, pobj.Alias))

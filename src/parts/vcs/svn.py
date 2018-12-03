@@ -267,6 +267,7 @@ class svn(base):
         }
 
         datacache.StoreData(name=self._cache_filename, data=tmp, key='vcs')
+        self._disk_data = None
 
     def is_modified(self):
         return self.get_svn_data()['modified']

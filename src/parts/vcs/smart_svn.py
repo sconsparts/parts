@@ -255,6 +255,7 @@ class smart_svn(svn.svn):
         }
 
         datacache.StoreData(name=self._cache_filename, data=tmp, key='vcs')
+        self._disk_data = None
 
 
 api.register.add_global_object('VcsSmartSvn', smart_svn)
