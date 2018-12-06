@@ -179,14 +179,14 @@ class git(base):
                 api.output.error_msg(
                     'Directory "{0}" already exists with no .git directory.\n Manually remove directory or\n update with --vcs-retry or --vcs-clean'.format(out_dir), show_stack=False)
         else:
-            if data['modified']:
+            if data['modified'] and not do_clean:
                 # check that we don't have modification locally. if we do complain to be safe
                 api.output.error_msg(
                     'Local modification found in "{0}".\n Manually commit and push changes or\n update with --vcs-clean'.format(
                         out_dir),
                     show_stack=False
                 )
-            if data['untracked'] and self._env['GIT_IGNORE_UNTRACKED'] == False:
+            if data['untracked'] and self._env['GIT_IGNORE_UNTRACKED'] == False and not do_clean:
                  # check that we don't have untracked files locally. if we do complain to be safe.
                 api.output.error_msg(
                     'Untracked files found in "{0}".\n Manually commit and push changes\n or set variable GIT_IGNORE_UNTRACKED to True\n or update with --vcs-clean'.format(
@@ -426,7 +426,7 @@ class git(base):
                 api.output.verbose_msg(["vcs_update", "vcs_git"], " Disk revision does not match")
                 return 'revision on disk is different than the one requested for Parts "%s"\n On disk: %s\n requested: %s' % (self._pobj.Alias, data[
                     'revision'], self.__revision)
-            else:
+            elif not self.__revision:
                 # if branch was not set default branch to be checked
                 branch = self.__branch if self.__branch else self._env["GIT_DEFAULT_BRANCH"]
                 if branch and data['branch'] != "{0}...origin/{0}".format(branch) and branch not in data['tags']:
@@ -505,15 +505,17 @@ class git(base):
 class version_from_tag(object):
     def __init__(self, env):
         self.env = env
-    def __call__(self,default,regex = None, converter=None):
+    def __call__(self,default,prefix='' ,regex = None, converter=None):
         '''
         util function to get version for tag value we are currently checkout on
         @parm default - the value to use if we are not on a tag or a tag that matches expected values
+        @parm prefix - match prefix of tag value to be a match. Often cleaner than making a regex
         @parm regex - Optional expression to use for matching the Tag version value
         @parm converter - optional function that takes and environment object that will convert the version to a correct value
         '''
         # get tags
         tags = list(self.env["VCS"]["TAGS"])
+        prefix = self.env.subst(prefix)
         # default set expression
         if regex:
             regex = re.compile(regex)
@@ -530,7 +532,7 @@ class version_from_tag(object):
         versions = []
         for t in tags:
             result = regex.search(t)
-            if result:
+            if result and t.startswith(prefix):
                 ver = converter(result.group(),self.env)
                 if ver:
                     versions.append(version.version(ver))
