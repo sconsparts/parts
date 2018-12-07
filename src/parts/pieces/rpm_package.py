@@ -204,6 +204,14 @@ def RpmPackage_wrapper(_env, target, sources, **kw):
         api.output.error_msg(
             "RPM target files must be in format of <name>-<version>-<release>.<arch>.rpm\n current format of value of target file is '{0}'".format(target[0].name))
 
+    # export the values
+    # to help with more automated depends mapping
+    target_name = env.subst(grps.group(1))
+    if target_name.endswith(env.subst("${RPM_DEVEL_EXT}")):
+        env.ExportItem("PKG_RPM_DEVEL", target_name)
+    else:
+        env.ExportItem("PKG_RPM", target_name)
+
     # subst all source values to get finial package group names
     sources = [env.subst(s) for s in sources]
 
@@ -214,6 +222,6 @@ def RpmPackage_wrapper(_env, target, sources, **kw):
 
 
 api.register.add_variable('PKG_ARCH_MAPPER', {}, '')
-
+api.register.add_variable('RPM_DEVEL_EXT', "-devel", "")
 
 SConsEnvironment.RPMPackage = RpmPackage_wrapper

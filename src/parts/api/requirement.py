@@ -99,6 +99,13 @@ DefineRequirementSet('INSTALLFILES', [
 
 DefineRequirementSet('EXISTS', ['INSTALLFILES'])
 
+# Packaging
+DefineRequirementSet('PKG_RPM', [requirement('PKG_RPM', public=True, listtype=True, policy=REQ.Policy.ignore, internal=True)])
+DefineRequirementSet('PKG_RPM_DEVEL', [requirement('PKG_RPM_DEVEL', public=True,
+                                                   listtype=True, policy=REQ.Policy.ignore, internal=True)])
+
+DefineRequirementSet('PKG_DEFAULTS', ['PKG_RPM', 'PKG_RPM_DEVEL'], weight=-5000)
+
 # C/C++ like
 DefineRequirementSet('CPPPATH', [requirement('CPPPATH', public=True, policy=REQ.Policy.ignore)])
 DefineRequirementSet('CPPDEFINES', [requirement('CPPDEFINES', public=True, policy=REQ.Policy.ignore)])
@@ -115,7 +122,7 @@ DefineRequirementSet('CPP_DEFAULTS', ['LIBS', 'HEADERS'], weight=-9000)
 DefineRequirementSet('C_DEFAULTS', ['LIBS', 'HEADERS'], weight=-9000)
 
 # defaults
-DefineRequirementSet('DEFAULT', ['CPP_DEFAULTS', 'C_DEFAULTS', 'INSTALLFILES', 'SDKLIB', 'SDKBIN'], weight=-10000)
+DefineRequirementSet('DEFAULT', ['CPP_DEFAULTS', 'C_DEFAULTS', 'INSTALLFILES', 'SDKLIB', 'SDKBIN', "PKG_DEFAULTS"], weight=-10000)
 
 # stuff to remove don't use this.. really don't use it.
 DefineRequirementSet('ALL_DEFAULT', ['LIBS', 'HEADERS', 'CCFLAGS', 'CFLAGS', 'CXXFLAGS'],

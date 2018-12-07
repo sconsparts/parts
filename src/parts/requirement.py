@@ -141,19 +141,19 @@ class requirement(object):
 
     def __ne__(self, other):
         return self.key != self.key
-        
+
     def __lt__(self, other):
         return self.key < self.key
-        
+
     def __le__(self, other):
         return self.key <= self.key
-        
+
     def __gt__(self, other):
         return self.key > self.key
-        
+
     def __ge__(self, other):
         return self.key >= self.key
-        
+
     def Serialize(self):
         return {'key': self._key,
                 'internal': self._internal,
@@ -242,7 +242,7 @@ def DefineRequirementSet(name, lst, policy=ReportingPolicy.ignore, weight=-1000)
                 api.output.policy_msg(_added_types[i][1], 'REQ',
                                       "REQ option {0} is deprecated and will be removed, please remove usage.".format(i))
             except KeyError:
-                api.output.warning_msg(i, "not found when mapping requirments")
+                api.output.warning_msg(i, "not found when mapping requirments", name)
     _added_types[name] = (requirement_set(tmplst, weight), policy)
 
 
