@@ -720,12 +720,16 @@ class part(pnode.pnode):
         else:
             dir_tmp = self.__env.Dir(self.__parent.__src_path)
         if self.__vcs is None:
-            # we have no vcs object.. so we take file name as is
+            # we have no vcs object 
+            # so we take file name as is
             self.__file = dir_tmp.File(self.__env.subst(self.__file))  # the Parts file to read in
         else:
             # we have a vcs object.. ask vcs object for resolved file name
             self.__vcs._setup_(self)  # update env with vcs level defines
-            self.__file = dir_tmp.File(self.__vcs.PartFileName)
+            if self.isRoot:
+                self.__file = dir_tmp.File(self.__vcs.PartFileName)
+            else:
+                self.__file = dir_tmp.File(self.__env.subst(self.__file))  # the Parts file to read in
 
         # the src_path we need to make sure SCons as no issues when loading the Part file
         self.__src_path = os.path.split(self.__file.srcnode().abspath)[0]
