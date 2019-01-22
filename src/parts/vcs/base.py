@@ -484,7 +484,6 @@ class base(object):
             cmd_output += tmp
         # when command is done get the rest of the output
         for last_output in proc.stdout.readlines():
-            last_output=last_output.decode()
             if echo:
                 sys.stdout.write(last_output)
             cmd_output += last_output
