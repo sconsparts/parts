@@ -1,0 +1,21 @@
+from parts import *
+import os
+import re
+#mode = re.split("[, ]", DefaultEnvironment().subst('$mode'))
+SetOptionDefault('mode', 'install_lib')
+
+############################################################################
+mode = re.split("[, ]", DefaultEnvironment().subst('$mode'))
+def include_parts(part_list, **kwargs):
+    for parts_file in part_list:
+        if os.path.isfile(DefaultEnvironment().subst(parts_file)):
+            Part(parts_file=parts_file, mode=mode, **kwargs)
+
+sdk_parts = [
+    # deps
+    'print_msg/print_msg.parts',
+    'print_msg2/print_msg2.parts',
+    'hello2/hello2.parts',
+]
+include_parts(sdk_parts)
+Default('build::')

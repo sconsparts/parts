@@ -140,7 +140,7 @@ def depends_on_classic(env, depends):
     # the dependancy mapping logic for the classic case stays unchanged
     glb.engine._part_manager.Loader.process_depends(pobj, depends)
 
-    api.output.verbose_msg('dependson', "Mapping data to Part", pobj.Name)
+    api.output.verbose_msg('dependson', "Mapping data to Part", pobj.Name,pobj.DefiningSection.Name)
     # depends that get passed on
     if util.isList(depends) == False:
         depends = [depends]

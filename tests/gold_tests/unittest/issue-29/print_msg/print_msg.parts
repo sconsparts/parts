@@ -1,0 +1,13 @@
+Import('*')
+
+env.PartVersion('1.0.0')
+env.PartName('print_msg')
+
+#files
+cpp_files=['print_msg.c']           
+
+outputs=env.Library('print_msg',cpp_files)
+
+env.InstallTarget(outputs)
+
+env.SdkInclude(['print_msg.h'])

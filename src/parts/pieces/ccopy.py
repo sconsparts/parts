@@ -493,6 +493,8 @@ def generateCopyBuilder(description):
                 return copyFunc(dest, source)
             except CCopyException:
                 pass
+            except Exception:
+                pass
         try:
             return copy_copy(dest, source)
         except CCopyException as err:

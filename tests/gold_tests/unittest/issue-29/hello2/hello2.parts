@@ -1,0 +1,10 @@
+Import('*')
+import os
+PartVersion('1.0.0')
+PartName('hello2')
+DependsOn([Component('print_msg')])
+if os.path.exists('hello1'):
+    DependsOn([Component('print_msg2')])
+
+env.Append(CPPPATH='#')
+ret=env.UnitTest("hello2", ["hello2.c", "hello1/hello1.c"])

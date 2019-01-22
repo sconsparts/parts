@@ -1,0 +1,16 @@
+Import('*')
+
+env.PartVersion('1.0.0')
+env.PartName('print_msg2')
+
+#files
+api_headers = Pattern(src_dir='.', includes=['*.h'], recursive=False).files()
+cpp_files=['print_msg2.c']
+
+outputs=env.Library('print_msg2',cpp_files)
+
+sdk_outs = env.Sdk(outputs)
+env.SdkInclude(api_headers, sub_dir='print_msg2')
+
+env.InstallTarget(outputs)
+

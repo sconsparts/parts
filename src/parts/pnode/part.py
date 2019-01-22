@@ -602,9 +602,6 @@ class part(pnode.pnode):
     def _AddSection(self, name, obj):
         self.__sections[name] = obj
 
-    def SectionName(self):
-        return None
-
     # re look at this function when we add new format
     def _hasTargetFiles(self):
         return self.__classic_section.Targets != set([])
@@ -1026,7 +1023,7 @@ class part(pnode.pnode):
             except KeyError:
                 pass
             bdir = env.Dir(env.subst('$BUILD_DIR'))
-            env['BUILD_DIR'] = bdir
+            env['BUILD_DIR_NODE'] = bdir
             st = time.time()
             sdir = env.Dir(self.__src_path)
             bk_path = sys.path[:]

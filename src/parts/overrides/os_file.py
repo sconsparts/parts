@@ -222,61 +222,61 @@ if sys.platform == 'win32':
             _SConscript.open = _original_open
             _SConscript.file = _original_file
 
-        # at this level these call replace the os.<file calls> that may be called
-        # by the user
-        # as for some reason some of these call lock the files in the python imple
-        # ideally this should be done with a reimpl of SCons.Node.FS.LocalFS as
-        # all uses will use
-        # the File or Dir nodes to do all file operation in SCon someday
-        # this will then change to allow help in that migration
+    # at this level these call replace the os.<file calls> that may be called
+    # by the user
+    # as for some reason some of these call lock the files in the python imple
+    # ideally this should be done with a reimpl of SCons.Node.FS.LocalFS as
+    # all uses will use
+    # the File or Dir nodes to do all file operation in SCon someday
+    # this will then change to allow help in that migration
 
-        def win32_rm(path):
-            if len(path) >= 200 and not path.startswith("\\\\?\\"):
-                path = str("\\\\?\\" + os.path.abspath(path))
-            else:
-                path = str(path)
-            if not DeleteFileW(path):
-                raise WindowsError(ctypes.GetLastError(), ctypes.FormatError(ctypes.GetLastError()),
-                                path)
+    def win32_rm(path):
+        if len(path) >= 200 and not path.startswith("\\\\?\\"):
+            path = str("\\\\?\\" + os.path.abspath(path))
+        else:
+            path = str(path)
+        if not DeleteFileW(path):
+            raise WindowsError(ctypes.GetLastError(), ctypes.FormatError(ctypes.GetLastError()),
+                            path)
 
-        os.remove = win32_rm
-        os.unlink = win32_rm
+    os.remove = win32_rm
+    os.unlink = win32_rm
 
-        _orginal_listdir = os.listdir
+    _orginal_listdir = os.listdir
 
-        def listdir(dir):
-            if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
-                dir = str("\\\\?\\" + os.path.abspath(dir))
-            return _orginal_listdir(dir)
-        os.listdir = listdir
+    def listdir(dir):
+        if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
+            dir = str("\\\\?\\" + os.path.abspath(dir))
+        return _orginal_listdir(dir)
+    os.listdir = listdir
 
-        _orginal_stat = os.stat
+    _orginal_stat = os.stat
 
-        def stat(dir):
-            if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
-                dir = str("\\\\?\\" + os.path.abspath(dir))
-            return _orginal_stat(dir)
-        os.stat = stat
+    def stat(dir):
+        if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
+            dir = str("\\\\?\\" + os.path.abspath(dir))
+        return _orginal_stat(dir)
+    os.stat = stat
 
-        _orginal_mkdir = os.mkdir
+    _orginal_mkdir = os.mkdir
 
-        def mkdir(dir, mode=0o777):
-            if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
-                dir = str("\\\\?\\" + os.path.abspath(dir))
-            return _orginal_mkdir(dir, mode)
-        os.mkdir = mkdir
+    def mkdir(dir, mode=0o777):
+        if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
+            dir = str("\\\\?\\" + os.path.abspath(dir))
+        return _orginal_mkdir(dir, mode)
+    os.mkdir = mkdir
 
-        def abspath(dir):
-            buf = ctypes.create_unicode_buffer(1024)
+    def abspath(dir):
+        buf = ctypes.create_unicode_buffer(1024)
+        ret = GetFullPathNameW(dir, 1024, buf, 0)
+        if ret > 1024:
+            buf = ctypes.create_unicode_buffer(ret)
             ret = GetFullPathNameW(dir, 1024, buf, 0)
-            if ret > 1024:
-                buf = ctypes.create_unicode_buffer(ret)
-                ret = GetFullPathNameW(dir, 1024, buf, 0)
-            if ret == 0:
-                # we have an error
-                raise WindowsError(ctypes.GetLastError(), ctypes.FormatError(ctypes.GetLastError()), dir)
-            return buf.value
-        os.path.abspath = abspath
+        if ret == 0:
+            # we have an error
+            raise WindowsError(ctypes.GetLastError(), ctypes.FormatError(ctypes.GetLastError()), dir)
+        return buf.value
+    os.path.abspath = abspath
 
 
 # vim: set et ts=4 sw=4 ai :
