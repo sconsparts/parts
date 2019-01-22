@@ -21,6 +21,7 @@ class task(object):
         self.__vcs = vcs
         self.__failed = False
         self.__taskmaster = taskmaster
+        self.__orginial_part_log_name = None
 
     @property
     def Vcs(self):
@@ -32,7 +33,8 @@ class task(object):
 
         Set up any logic or to figure out if anything should execute.
         '''
-        pass
+        self.___orginial_part_log_name = self.__vcs._env["LOG_PART_FILE_NAME"]
+        self.__vcs._env["LOG_PART_FILE_NAME"]="${VCS_LOG_PART_FILE_NAME}"
 
     def needs_execute(self):
         ''' reports if anything should execute'''
@@ -53,16 +55,14 @@ class task(object):
         except:
             import traceback
             import io
-            # ec_str=StringIO.StringIO()
-            traceback.print_exc()  # file=ec_str)
+            traceback.print_exc() 
             raise
 
     def exception_set(self, exception=None):
         self.__failed = True
 
     def failed(self):
-        # if self.__failed:
-        api.output.error_msg("Vcs task failed for Part %s" % self.__vcs._env.get('ALIAS'), show_stack=False, exit=False)
+        api.output.error_msgf("Vcs task failed for Part {0}", self.__vcs._env.get('ALIAS'), show_stack=False, exit=False)
         self.__taskmaster.stop()
 
     def executed(self):
@@ -71,5 +71,10 @@ class task(object):
 
     def postprocess(self):
         ''' this always gets called after the task ran, failed or not'''
+        self.__vcs._env["LOG_PART_FILE_NAME"]=self.___orginial_part_log_name
         self.__vcs.ProcessResult(not self.__failed)
         pass
+
+
+# this is the logic file for per part logging we want to use when we are getting source
+api.register.add_variable('VCS_LOG_PART_FILE_NAME', 'VCS-${PART_ALIAS}.log', '')
