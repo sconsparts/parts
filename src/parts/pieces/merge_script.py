@@ -8,6 +8,7 @@ import subprocess
 import sys
 
 import parts.glb as glb
+import parts.api as api
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
 
@@ -46,28 +47,30 @@ def get_output(script, args=None, shellenv=None):
         cmdLine = '"%s" %s & set' % (script, (args if args else ''))
         shell = False
     elif sys.platform.startswith('linux') or sys.platform.startswith('darwin'):
-        cmdLine = 'source "%s" %s ; set' % (script, (args if args else ''))
+        cmdLine = '. {script} {args} ; set'.format(script=script, args=args if args else '')
         shell = True
     else:
         raise Exception("Unsuported OS type: " + sys.platform)
 
     if shellenv:
         for k, v in shellenv.items():
-            if not isinstance(k,str):
-                k=k.encode() if glb.isPY2 else k.decode()
-            if not isinstance(v,str):
-                v=v.encode() if glb.isPY2 else v.decode()
+            if not isinstance(k, str):
+                k = k.encode() if glb.isPY2 else k.decode()
+            if not isinstance(v, str):
+                v = v.encode() if glb.isPY2 else v.decode()
             shellenv[k] = v
 
-    #print("Calling '%s %s'" % (script, args))
+    api.output.verbose_msg(["merge_script"], "Calling '{}'".format(cmdLine))
     popen = subprocess.Popen(cmdLine, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=shellenv)
 
     # Use the .stdout and .stderr attributes directly because the
     # .communicate() method uses the threading module on Windows
     # and won't work under Pythons not built with threading.
+    popen.wait()
     stdout = popen.stdout.read()
     if popen.wait() != 0:
-        raise IOError(popen.stderr.read())
+        api.output.error_msg(
+            "Getting values of environment values of '{}' failed because of return code not equal to 0".format(script))
 
     output = stdout
     return output.decode()
@@ -107,9 +110,9 @@ def get_script_env(env, script, args=None, vars=None):
         nenv = normalize_env(env['ENV'], ['COMSPEC'])
     else:
         nenv = normalize_env(env['ENV'], [])
-    output = get_output(script, args, nenv)
-    vars = parse_output(output, vars)
 
+    output = get_output(env.File(script).abspath, args, nenv)
+    vars = parse_output(output, vars)
     return vars
 
 

@@ -269,6 +269,15 @@ class Settings(object):
 
     # user define modification to the "shell" environment
 
+    def MergeScriptVariables(self, script, args=None, vars=None, env=None):
+        # have to create a default environment to run the script
+        # given one is not provided
+        if not env:
+            env= self.DefaultEnvironment()
+        shell_env = env.GetScriptVariables(script, args, vars)
+        for k, v in shell_env.items():
+            self.PrependENVPath(k, v)
+
     def ReplaceENV(self, name, value):
         self.__env_replace[name] = value
         self._handle_var_change()

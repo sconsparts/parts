@@ -102,7 +102,7 @@ def load_module(pathlst, name, type):
             api.output.verbose_msg("load_module", "Failed to load module!")
             api.output.verbose_msg(["load_module_failure", "load_module"],
                                    "Stack:\n{0}".format(traceback.format_exc()))
-            raise SCons.Errors.UserError("No module named '{name}'".format(name=name))
+            raise SCons.Errors.UserError("Module named '{name}' failed to load!".format(name=name))
         finally:
             sys.path = oldPath
             if file:
