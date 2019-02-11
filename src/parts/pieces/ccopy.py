@@ -504,12 +504,21 @@ def generateCopyBuilder(description):
         tmp = CCopyFunc(target, source, env, doCopy)
         return tmp
 
-    api.register.add_builder(description.builderName,
-                             SCons.Builder.Builder(action=SCons.Action.Action(lambda target, source, env: doAction(target, source, env), CCopyStringFunc),
-                                                   target_factory=SCons.Node.FS.Entry,
-                                                   source_factory=SCons.Node.FS.Entry,
-                                                   emitter=CCopyEmit, target_scanner=symlinks.source_scanner,
-                                                   name='CCOPY'))
+    api.register.add_builder(
+        description.builderName,
+        SCons.Builder.Builder(
+            action=SCons.Action.Action(
+                lambda target, source, env: doAction(
+                    target, source, env
+                ),
+                CCopyStringFunc),
+            target_factory=SCons.Node.FS.Entry,
+            source_factory=SCons.Node.FS.Entry,
+            emitter=CCopyEmit,
+            target_scanner=symlinks.source_scanner,
+            name='CCOPY'
+        )
+    )
 
 
 class copyfunctions(object):

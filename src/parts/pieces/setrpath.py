@@ -7,7 +7,7 @@ import subprocess
 import parts.api as api
 import parts.common as common
 import parts.core.util as util
-
+import parts.overrides.symlinks as symlinks
 import SCons.Defaults
 import SCons.Script
 
@@ -52,7 +52,7 @@ def _is_binary(node):
 
 def set_rpath_func(target, source, env):
     dynamic_actions = None
-    source[0].disambiguate()
+
     rpath = common.make_list(
         env.get("PACKAGE_RUNPATH", [])
     )
@@ -81,9 +81,12 @@ def set_rpath_func(target, source, env):
 set_runpath_action = SCons.Action.Action(set_rpath_func, None)
 
 # internal rpm package builder... meant to be called by RPMPackage function internally
-api.register.add_builder('SetRPath', SCons.Builder.Builder(
-    emitter=rpath_emit,
-    action=set_runpath_action,
-    single_source=True
-)
+api.register.add_builder(
+    'SetRPath',
+    SCons.Builder.Builder(
+        emitter=rpath_emit,
+        action=set_runpath_action,
+        single_source=True,
+        target_scanner=symlinks.source_scanner
+    )
 )

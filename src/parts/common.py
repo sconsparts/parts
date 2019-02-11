@@ -158,19 +158,25 @@ def get_content(obj):
             isinstance(obj, types.FunctionType) or\
             isinstance(obj, types.CodeType):
         return SCons.Action._object_contents(obj)
-
     elif util.isDictionary(obj):
         ret = '{'
-        for k, v in obj.items():
-            ret += "%s:%s," % (k, get_content(v))
+        # having cases in which the key are not comping in same order
+        # to fix this we sort the keys as a list and iter over that 
+        # sorted list
+        key_list = list(obj.keys())
+        key_list.sort()
+        for k in key_list:
+            ret += "{key}:{val},".format(key=k, val=get_content(obj[k]))
         ret += '}'
     elif util.isTuple(obj) or\
             isinstance(obj, types.GeneratorType) or\
             util.isList(obj):
         ret = '['
         for i in obj:
-            ret += "%s," % get_content(i)
+            ret += "{0},".format(get_content(i))
         ret += ']'
+    elif util.isString(obj):
+        ret=obj
     else:
         ret = str(obj)
 

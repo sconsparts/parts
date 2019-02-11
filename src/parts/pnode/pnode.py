@@ -126,6 +126,8 @@ def pnode_factory(klass, *lst, **kw):
         # so we make a tmp node and call setup
         # to get an ID
         ret = klass(*lst, **kw)
+        # tell the node we only need to have the ID generated
+        # should seperate this to a setup_id and setup
         ret._setup_(gen_ID=True, *lst, **kw)
         id = ret.ID
         # see if this is a known ID
