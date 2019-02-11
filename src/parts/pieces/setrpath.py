@@ -52,6 +52,7 @@ def _is_binary(node):
 
 def set_rpath_func(target, source, env):
     dynamic_actions = None
+    source[0].disambiguate()
     rpath = common.make_list(
         env.get("PACKAGE_RUNPATH", [])
     )

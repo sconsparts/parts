@@ -408,6 +408,7 @@ def ensure_node_is_symlink(node, template=None):
         if not isinstance(node, SCons.Node.FS.FileSymbolicLink):
             node.__class__ = SCons.Node.FS.FileSymbolicLink
             node._morph()
+            
             if template is not None:
                 node.linkto = template.linkto
     return node
@@ -466,10 +467,17 @@ metatag.MetaTag = _wrap_MetaTag(metatag.MetaTag)
 
 def _wrap_SCons_Node_FS_Entry_disambiguate(disambiguate):
     def call(self, must_exist=None):
-        if self.islink():
+        if self.islink() and self.__class__ != FileSymbolicLink:
+            is_file = self.__class__ == SCons.Node.FS.File
             self.__class__ = FileSymbolicLink
             self._morph()
-            self.clear()
+            if not is_file:
+                self.clear()
+            else:
+                if "exists" in self._memo:
+                    del self._memo["exists"]
+                if "stat" in self._memo:
+                    del self._memo["stat"]                
             return self
         else:
             return disambiguate(self, must_exist)
@@ -509,9 +517,14 @@ def _source_scanner():
 
         source = path[0]
         target = node
-        if not isinstance(target, FileSymbolicLink) or not isinstance(source, FileSymbolicLink):
-            # Don't know how to handle non-symlink nodes
+                
+        if not isinstance(source, FileSymbolicLink):
+            # This source is not a symlink. So nothing needs to be done
             return []
+        elif not isinstance(target, FileSymbolicLink):
+            # if the source is a symlink and the target is a file
+            # the target really is a symlink to the "source". Elavate the target
+            ensure_node_is_symlink(target)
 
         linkto = source.linkto
         if linkto:
@@ -540,7 +553,7 @@ def _source_scanner():
         Scanner path_function. We don't make a real path_function here we use
         it as the way to pass target into Scanner function.
         '''
-        return tuple(node for node in source if isinstance(node, FileSymbolicLink))
+        return tuple(node for node in source if isinstance(node.disambiguate(), FileSymbolicLink))
 
     return Scanner(function, path_function=path_function)
 

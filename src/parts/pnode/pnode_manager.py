@@ -65,7 +65,7 @@ class manager(object):
         # map the events
         glb.engine.CacheDataEvent += self.Store
         glb.engine.PostProcessEvent += self._set_store_state
-        glb.engine.PostProcessEvent += self.StoreAllPNodes
+        #glb.engine.PostProcessEvent += self.StoreAllPNodes
 
     def _set_store_state(self, mode):
         from ..loadlogic import all
