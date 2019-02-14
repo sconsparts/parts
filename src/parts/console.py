@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import ctypes
 import struct
 import sys
-import _thread
+import threading
 
 import parts.ansi_stream as ansi_stream
 import parts.color as color
@@ -141,7 +141,7 @@ class Console(object):
             logInstanceCreation(self)
 
         self.clearline = False
-        self.__lock = _thread.allocate_lock()  # used to sync output cases across streams
+        self.__lock = threading.Lock()  # used to sync output cases across streams
         try:
             map_console = SCons.Script.GetOption('console-stream')
             if map_console in ['tty', 'con:']:

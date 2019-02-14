@@ -13,7 +13,6 @@ from SCons.Debug import logInstanceCreation
 from SCons.Environment import SubstitutionEnvironment as SConsEnvironment
 from SCons.Errors import UserError
 
-import _thread
 import parts.api as api
 import parts.common as common
 import parts.console as console
@@ -291,7 +290,7 @@ class log_file_writer(object):
     log file.
     '''
     __slots__ = ('nodepath', 'file', 'lock')
-    __lock__ = _thread.allocate_lock()
+    __lock__ = threading.Lock()
 
     def __new__(cls, name, env):
         with cls.__lock__:
@@ -309,7 +308,7 @@ class log_file_writer(object):
                         pass
                 node.attributes.log_file_writer = result = super(log_file_writer, cls).__new__(cls)
                 result.nodepath = node.abspath
-                result.lock = _thread.allocate_lock()
+                result.lock = threading.Lock()
                 if __debug__:
                     logInstanceCreation(result)
                 return result

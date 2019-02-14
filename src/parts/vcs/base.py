@@ -21,12 +21,11 @@ except ImportError:
     import urllib.parse as urlparse
 
 
-
 def normalize_url(url):
     # Combine and normalize the URL
     schema, netloc, path, query, fragment = urllib.parse.urlsplit(url)
     return urllib.parse.urlunsplit((schema, netloc, re.sub(r'/+', '/', path),
-                                query, fragment)).rstrip('/')
+                                    query, fragment)).rstrip('/')
 
 
 def removeall(path):
@@ -226,7 +225,7 @@ class base(object):
             if ret:
                 # get policy for how to handle a positive reponse
                 pol = self._env.GetOption('vcs_policy')
-                api.output.verbose_msgf('vcs_update', "update policy is '{0}'",pol)
+                api.output.verbose_msgf('vcs_update', "update policy is '{0}'", pol)
                 if pol == 'warning':
                     ret_val = False
                     # report the warning
@@ -492,6 +491,7 @@ class base(object):
         # get return codes
         ret = proc.returncode
         api.output.verbose_msgf('vcs_command', "output={0}", cmd_output)
+        proc.stdout.close()
         return (ret, cmd_output)
         # except KeyError:
         #    raise

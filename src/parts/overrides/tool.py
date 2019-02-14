@@ -3,7 +3,6 @@
 from __future__ import absolute_import, division, print_function
 
 
-
 import imp
 import sys
 import traceback
@@ -52,6 +51,8 @@ class Parts_Tool(object):
                     except KeyError:
                         pass
                     else:
+                        if file:
+                            file.close()
                         return result
                     try:
                         Parts_Tool._cache[path_key][self.name] = result = imp.load_module(full_name, file, path, desc)
@@ -62,7 +63,7 @@ class Parts_Tool(object):
                 except ImportError as e:
                     api.output.verbose_msg("tools", "Failed to load module!")
                     api.output.verbose_msg(["tools_failure", "load_module"], "Stack:\n{0}".format(traceback.format_exc()))
-                    
+
                     if str(e) != "No module named {0}".format(self.name) and str(e) != "No module named '{0}'".format(self.name):
                         raise SCons.Errors.EnvironmentError(e)
                     try:

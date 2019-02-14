@@ -17,6 +17,7 @@ import SCons.Scanner
 
 import parts.mappers as mappers
 
+
 def wrap_Prog_scan(func):
     def _scan(node, env, libpath=()):
         pass
@@ -30,6 +31,7 @@ def wrap_Prog_scan(func):
         return _scan(node, env.Override(dict(LIBS=env.get('LIBS', []) + env.get('LIBEXS', []))), libpath)
     func.__code__ = scan.__code__
     func.__globals__.update(_scan=_scan)
+
 
 wrap_Prog_scan(SCons.Scanner.Prog.scan)
 
@@ -56,6 +58,7 @@ def wrap_FindPathDirs(klass):
         mappers=mappers,
         _thread=_thread,
     )
+
 
 wrap_FindPathDirs(SCons.Scanner.FindPathDirs)
 

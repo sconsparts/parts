@@ -106,7 +106,7 @@ class map_rpath_part(object):
                     )
                 )
             )
-            
+
             self.env['RPATH'] = rlst
 
 

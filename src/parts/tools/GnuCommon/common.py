@@ -79,6 +79,7 @@ class GnuInfo(ToolInfo):
             except:
                 pass
             match = re.search(r'[vV ]([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+)', line.decode())
+            pipe.stdout.close()
             if match:
                 line = match.group(1)
                 return line
@@ -158,7 +159,7 @@ class GnuInfo(ToolInfo):
         return ret
 
     def scan_query(self, install_root, opt_scan=True):
-        api.output.verbose_msgf(['gnu_info',"tool_info"],"query scan install_root={root}",root=install_root)
+        api.output.verbose_msgf(['gnu_info', "tool_info"], "query scan install_root={root}", root=install_root)
         if self.found is None:
             ret = {}
             reg = re.compile(self.test_file.replace('+', r'\+') + r'\-?([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)', re.I)
