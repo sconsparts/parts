@@ -36,7 +36,7 @@ class streamer(object):
         self.outfunc = outfunc
 
     def write(self, str):
-        self.outfunc(msg=str)
+        return self.outfunc(msg=str)
 
     def flush(self):
         pass
@@ -309,6 +309,7 @@ class reporter(object):
         else:
             self.console.write(msg)
             self.logger.logout(msg)
+        return len(msg)
 
     def stderr(self, msg, remap=True):
         '''This will gets any stderr text in scons via a print>>stderr usage'''
@@ -320,6 +321,7 @@ class reporter(object):
         else:
             self.console.Error.write(msg)
             self.logger.logerr(msg)
+        return len(msg)
 
     def stdwrn(self, msg, remap=True):
         '''Unlike stdout and stderr, stdwrn doesn't really exist.. but we use

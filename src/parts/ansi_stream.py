@@ -1,14 +1,15 @@
 from __future__ import absolute_import, division, print_function
 
 import ctypes
+import os
 import sys
 
-from SCons.Debug import logInstanceCreation
-
 import parts.color as color
+from SCons.Debug import logInstanceCreation
 
 win32 = sys.platform == 'win32'
 
+import _thread
 
 class ColorTextStream(object):
     '''Basically is an object that wraps a stream and process color ansi
@@ -128,9 +129,7 @@ class ColorTextStream(object):
                 if s == '\033':
                     state = 1
                     if tmp_str != '':
-                        self.__stream.write(tmp_str)
-                        if self.__force_flush:
-                            self.__stream.flush()
+                        self.safe_write(tmp_str)
                         tmp_str = ''
                 elif s == '[' and state == 1:
                     state = 2
@@ -194,13 +193,10 @@ class ColorTextStream(object):
                 else:
                     tmp_str += s
             if tmp_str != '':
-                self.__stream.write(tmp_str)
-                if self.__force_flush:
-                    self.__stream.flush()
+                self.safe_write(tmp_str)
         else:
-            self.__stream.write(in_str)
-            if self.__force_flush:
-                self.__stream.flush()
+            #in_str = "Thread->{0}\n{1}\nThreadend->{0}\n".format(_thread.get_ident(),in_str)
+            self.safe_write(in_str)
 
     def _WriteNoColor(self, in_str):
         '''Will just strip the codes'''
@@ -211,9 +207,7 @@ class ColorTextStream(object):
         for s in in_str:
             if s == '\033':
                 state = 1
-                self.__stream.write(tmp_str)
-                if self.__force_flush:
-                    self.__stream.flush()
+                self.safe_write(tmp_str)
                 tmp_str = ''
             elif s == '[' and state == 1:
                 state = 2
@@ -234,6 +228,16 @@ class ColorTextStream(object):
             else:
                 tmp_str += s
         if tmp_str != '':
-            self.__stream.write(tmp_str)
-            if self.__force_flush:
-                self.__stream.flush()
+            self.safe_write(tmp_str)
+
+    def safe_write(self, data_str):
+        written = 0
+        #data_str=data_str.encode()
+        while written < len(data_str):
+            try:
+                #written = written + os.write(self.__stream.fileno(), data_str[written:])
+                written = written + self.__stream.write(data_str[written:])
+                if self.__force_flush:
+                    self.__stream.flush()
+            except OSError as e:
+                pass

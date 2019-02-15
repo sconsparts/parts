@@ -69,7 +69,7 @@ class NullStream(object):
         pass
 
     def write(self, s):
-        pass
+        return len(s)
 
     def writeLines(self, str_list):
         pass

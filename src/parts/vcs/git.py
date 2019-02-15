@@ -521,7 +521,7 @@ class version_from_tag(object):
             regex = re.compile(regex)
         else:
             # use default
-            regex = re.compile(r'\d+\.\d+\.\d+(?:\.\d+)*')
+            regex = re.compile(r'\d+\.\d+(?:\.\d+)*')
             
         if not tags:
             return default
