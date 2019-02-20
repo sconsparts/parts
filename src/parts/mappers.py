@@ -174,6 +174,7 @@ class mapper(object):
             # will throw if env does not have this key mapped
             api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "Before env value: {0}".format(env[prop]))
         except KeyError:
+            api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "value '{0}' was not found, skipping ".format(prop))
             return
         api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "Value to set: {0}".format(value))
         try:
@@ -213,13 +214,11 @@ def _sub_lst(env, obj, thread_id):
             tmp = _sub_lst(env, i, thread_id)
             if util.isList(tmp):
                 common.extend_unique(ret, tmp)
-            else:
-                common.append_unique(ret, tmp)
+
     elif isinstance(obj, (SCons.Node.FS.Base, SCons.Subst.Literal, SCons.Subst.CmdStringHolder)):
         ret = [obj]
     else:
         if obj.startswith("$"):
-            # this value might be an list in the environment
             if obj.startswith("${") and obj.endswith('}'):
                 tmpval = obj[2:-1]
             else:
@@ -235,6 +234,8 @@ def _sub_lst(env, obj, thread_id):
 
         if util.isList(tmp):
             with env_guard(thread_id):
+                # todo add fix to not call _sub_list of item
+                # is not a string with $ in it. This reduce stack depth stress
                 for j in tmp:
                     r = _sub_lst(env, j, thread_id)
                     if r:
@@ -356,7 +357,7 @@ class part_mapper(mapper):
         self.ignore = ignore
 
     def __repr__(self):
-        return '${{{0}("{1}","{2}",{3})}}'.format(self.name, self.part_alias, self.part_prop, self.ignore)
+        return "${{{0}('{1}','{2}',{3})}}".format(self.name, self.part_alias, self.part_prop, self.ignore)
 
     def _guarded_call(self, target, source, env, for_signature):
         thread_id = _thread.get_ident()
@@ -437,7 +438,7 @@ class part_id_mapper(mapper):
         self.ignore = ignore
 
     def __repr__(self):
-        return '${{{0}("{1}","{2}","{3}",{4})}}'.format(self.name, self.part_name, self.ver_range, self.part_prop, self.ignore)
+        return "${{{0}('{1}','{2}','{3}',{4})}}".format(self.name, self.part_name, self.ver_range, self.part_prop, self.ignore)
 
     def _guarded_call(self, target, source, env, for_signature):
         thread_id = _thread.get_ident()
@@ -528,7 +529,7 @@ class part_id_export_mapper(mapper):
         self.section = section
 
     def __repr__(self):
-        return '${{{0}("{1}","{2}","{3}",{4})}}'.format(self.name, self.part_name, self.section, self.part_prop, self.policy)
+        return "${{{0}('{1}','{2}','{3}',{4})}}".format(self.name, self.part_name, self.section, self.part_prop, self.policy)
 
     def _guarded_call(self, target, source, env, for_signature):
         thread_id = _thread.get_ident()
@@ -615,7 +616,7 @@ class part_sub_mapper(mapper):
         self.section = section
 
     def __repr__(self):
-        return '${{{0}("{1}","{2}","{3}")}}'.format(self.name, self.part_alias, self.substr, self.section)
+        return "${{{0}('{1}','{2}','{3}')}}".format(self.name, self.part_alias, self.substr, self.section)
 
     def _guarded_call(self, target, source, env, for_signature):
         pobj = glb.engine._part_manager._from_alias(self.part_alias)
@@ -647,7 +648,7 @@ class part_subst_mapper(mapper):
         self.policy = policy
 
     def __repr__(self):
-        return '${{{0}("{1}","{2}","{3}", {4})}}'.format(self.name, self.target_str, self.substr, self.section, self.policy)
+        return "${{{0}('{1}','{2}','{3}', {4})}}".format(self.name, self.target_str, self.substr, self.section, self.policy)
 
     def _guarded_call(self, target, source, env, for_signature):
         thread_id = _thread.get_ident()
@@ -680,8 +681,8 @@ class part_name_mapper(mapper):
         self.env_var = env_var
 
     def __repr__(self):
-        return '${{{0}("{1}",{2})}}'.format(self.name, self.part_alias,
-                                            (self.env_var and '"{0}"'.format(self.env_var) or None))
+        return "${{{0}('{1}',{2})}}".format(self.name, self.part_alias,
+                                            (self.env_var and "'{0}'".format(self.env_var) or None))
 
     def _guarded_call(self, target, source, env, for_signature):
         pobj = glb.engine._part_manager._from_alias(self.part_alias)
@@ -710,7 +711,7 @@ class part_shortname_mapper(mapper):
         self.part_alias = part_alias
 
     def __repr__(self):
-        return '${{{0}("{1}")}}'.format(self.name, self.part_alias)
+        return "${{{0}('{1}')}}".format(self.name, self.part_alias)
 
     def _guarded_call(self, target, source, env, for_signature):
         pobj = glb.engine._part_manager._from_alias(self.part_alias)
@@ -752,7 +753,7 @@ class normpath_mapper(mapper):
         self.value = value
 
     def __repr__(self):
-        return '${{{0}("{1}")}}'.format(self.name, self.value)
+        return "${{{0}('{1}')}}".format(self.name, self.value)
 
     def _guarded_call(self, target, source, env, for_signature):
         if self.value[0] == '$':
@@ -772,7 +773,7 @@ class relpath_mapper(mapper):
         self._from = _from
 
     def __repr__(self):
-        return '${{{0}("{1}","{2}")}}'.format(self.name, self._to, self._from)
+        return "${{{0}('{1}','{2}')}}".format(self.name, self._to, self._from)
 
     def _guarded_call(self, target, source, env, for_signature):
         if self._to[0] == '$':
@@ -923,6 +924,6 @@ api.register.add_mapper(normpath_mapper)
 api.register.add_mapper(relpath_mapper)
 
 # seems to be fixed in Scons
-#api.register.add_mapper(TempFileMunge)
+# api.register.add_mapper(TempFileMunge)
 
 api.register.add_bool_variable('MAPPER_BAD_ALIAS_AS_WARNING', True, 'Controls if a missing alias is an error or a warning')

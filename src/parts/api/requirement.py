@@ -100,9 +100,9 @@ DefineRequirementSet('INSTALLFILES', [
 DefineRequirementSet('EXISTS', ['INSTALLFILES'])
 
 # Packaging
-DefineRequirementSet('PKG_RPM', [requirement('PKG_RPM', public=True, listtype=True, policy=REQ.Policy.ignore, internal=True)])
-DefineRequirementSet('PKG_RPM_DEVEL', [requirement('PKG_RPM_DEVEL', public=True,
-                                                   listtype=True, policy=REQ.Policy.ignore, internal=True)])
+DefineRequirementSet('PKG_RPM', [requirement('PKG_RPM', public=False, listtype=False, policy=REQ.Policy.ignore, internal=True)])
+DefineRequirementSet('PKG_RPM_DEVEL', [requirement('PKG_RPM_DEVEL', public=False,
+                                                   listtype=False, policy=REQ.Policy.ignore, internal=True)])
 
 DefineRequirementSet('PKG_DEFAULTS', ['PKG_RPM', 'PKG_RPM_DEVEL'], weight=-5000)
 

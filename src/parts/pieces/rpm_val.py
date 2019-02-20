@@ -206,7 +206,7 @@ def generate_values(items, env):
     out_str = ''
     for item in items:
         keys = (item['key'],)+item.get('extra_keys', ())
-        out_str += add_if(
+        tmp = add_if(
             env,
             item.get('value'),
             keys,
@@ -215,6 +215,9 @@ def generate_values(items, env):
             item.get("required", False),
             item.get("lookup", True)
         )
+        if tmp:
+            api.output.verbose_msg(['rpm-spec'], "Adding value:\n",tmp[:-1])
+            out_str+=tmp
 
     return out_str
 
