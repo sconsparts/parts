@@ -1,12 +1,13 @@
 from __future__ import absolute_import, division, print_function
+
+import parts.tools.Common
+
 # equivalent to "import SCons.Tool.c++ as cplusplus"
 cplusplus = getattr(__import__('SCons.Tool.c++', globals(), locals(), []).Tool, 'c++')
 
 # "inherit" almost everything except generate() from SCons.Tool.c++ module
 for name in ('compilers', 'CXXSuffixes', 'iscplusplus', 'exists'):
     globals()[name] = getattr(cplusplus, name)
-
-import parts.tools.Common
 
 
 def generate(env):

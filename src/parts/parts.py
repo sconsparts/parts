@@ -1,13 +1,12 @@
 
 from __future__ import absolute_import, division, print_function
 
-from SCons.Script.SConscript import SConsEnvironment
-
 import parts.api as api
 import parts.common as common
 import parts.core as core
 import parts.glb as glb
 import parts.pnode as pnode
+from SCons.Script.SConscript import SConsEnvironment
 
 
 def Part_factory(arg1=None, parts_file=None, mode=[], vcs_type=None, default=False,
@@ -63,7 +62,6 @@ def SubPart_factory(env, arg1=None, parts_file=None, mode=[], vcs_type=None, def
 # This is what we want to be setup in parts
 
 
-
 # adding logic to Scons Enviroment object
 SConsEnvironment.Part = SubPart_factory
 
@@ -77,13 +75,17 @@ api.register.add_variable('PART_ALIAS_CONCEPT', 'alias${ALIAS_SEPARATOR}', 'Name
 api.register.add_variable('PART_NAME_CONCEPT', 'name${ALIAS_SEPARATOR}',
                           'Namespace to express building via a Part Name and possible version')
 api.register.add_variable('BUILD_DIR_ROOT', '#_build', 'Root directory for building a given build configuration/variant')
-api.register.add_variable('BUILD_DIR', '$BUILD_DIR_ROOT/${PART_SECTION}_${CONFIG}_${TARGET_PLATFORM}${"_"+TOOLCHAIN.replace(",","_") if TOOLCHAIN!="default" else ""}/$ALIAS',
-                          'Full path used to for building a given build configuration/variant')
+api.register.add_variable(
+    'BUILD_DIR',
+    '$BUILD_DIR_ROOT/${PART_SECTION}_${CONFIG}_${TARGET_PLATFORM}${"_"+TOOLCHAIN.replace(",","_") if TOOLCHAIN!="default" else ""}/$ALIAS',
+    'Full path used to for building a given build configuration/variant')
 #api.register.add_variable('BUILD_DIR','$BUILD_DIR_ROOT/${CONFIG}_${TARGET_PLATFORM}/$ALIAS', 'Full path used to for building a given build configuration/variant')
-api.register.add_variable('OUTOFTREE_BUILD_DIR', '$BUILD_DIR/__oot',
-                          'Full path used to for building a given build configuration/variant for files outside the part directory tree')
-api.register.add_variable('ROOT_BUILD_DIR', '$BUILD_DIR/__rt',
-                          'Full path used to for building a given build configuration/variant for files outside the part directory tree')
+api.register.add_variable(
+    'OUTOFTREE_BUILD_DIR', '$BUILD_DIR/__oot',
+    'Full path used to for building a given build configuration/variant for files outside the part directory tree')
+api.register.add_variable(
+    'ROOT_BUILD_DIR', '$BUILD_DIR/__rt',
+    'Full path used to for building a given build configuration/variant for files outside the part directory tree')
 
 api.register.add_global_object('Part', Part_factory)
 api.register.add_global_object('part', Part_factory)

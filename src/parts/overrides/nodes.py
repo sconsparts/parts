@@ -1,21 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
-from builtins import zip
-
 import hashlib
 import itertools
 import os
 import pprint
 import stat
 import sys
-
-import SCons.Node
-import SCons.Util
-# Import symlinks to make sure it patches SCons.Node.FS and SCons.Environment before
-# we refer it
-from . import symlinks
-from SCons.Debug import logInstanceCreation
-from SCons.Util import silent_intern
+from builtins import zip
 
 import parts.api as api
 import parts.common as common
@@ -24,11 +15,18 @@ import parts.errors as errors
 import parts.glb as glb
 import parts.metatag as metatag
 import parts.node_helpers as node_helpers
+import SCons.Node
+import SCons.Util
 from parts.core import util
 from parts.pnode import pnode_manager, scons_node_info
+from SCons.Debug import logInstanceCreation
+from SCons.Util import silent_intern
+
+# Import symlinks to make sure it patches SCons.Node.FS and SCons.Environment before
+# we refer it
+from . import symlinks
 
 SCons.Node.NodeList = SCons.Util.NodeList
-
 
 
 Node = SCons.Node.Node
@@ -386,13 +384,13 @@ def GenerateStoredInfo(self):
         try:
             if self.ID != self.srcnode().ID and not self.exists() and self.srcnode().exists():
                 info.SrcNodeID = self.srcnode().ID
-        except:
+        except BaseException:
             pass
 
     if self.has_builder() or self.side_effect:
         binfo = self.get_binfo()
         nodes = list(zip(getattr(binfo, 'bsources', []) + getattr(binfo, 'bdepends', []) + getattr(binfo, 'bimplicit', []),
-                    binfo.bsourcesigs + binfo.bdependsigs + binfo.bimplicitsigs))
+                         binfo.bsourcesigs + binfo.bdependsigs + binfo.bimplicitsigs))
     else:
         nodes = []
 
@@ -402,7 +400,7 @@ def GenerateStoredInfo(self):
         # some time the node info is a string not a Node object
         try:
             key = node.ID
-        except:
+        except BaseException:
             # for some reason SCons will store the Alias "children" values as strings
             # not Nodes. This mean that the children of File nodes may not be normalized to
             # the expected value

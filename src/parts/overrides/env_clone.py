@@ -34,7 +34,6 @@ except AttributeError:
     pass
 
 
-
 # override Clone to deepcopy bindable objects
 SConsEnvironment._orig_Clone = SConsEnvironment.Clone
 SConsEnvironment.Clone = PartsClone

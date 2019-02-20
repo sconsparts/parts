@@ -7,7 +7,7 @@ import SCons.SConf
 # this is needed to support any version pre-Scons 2.4
 try:
     SCons.SConf.NeedConfigHBuilder
-except:
+except BaseException:
 
     def NeedConfigBuilder():
         return len(SCons.SConf._ac_config_hs) != 0

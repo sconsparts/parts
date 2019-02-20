@@ -1,16 +1,13 @@
 
 from __future__ import absolute_import, division, print_function
 
-
-
 import types
-
-import SCons.Environment
-import SCons.Util
-from SCons.Debug import logInstanceCreation
 
 import parts.api as api
 import parts.events as events
+import SCons.Environment
+import SCons.Util
+from SCons.Debug import logInstanceCreation
 
 # remove to use common version once we clean up code a bit more
 
@@ -54,7 +51,7 @@ class Variable(object):
         self.__help_group = help_group
 
         self._on_change = events.Event()
-        self.__env=None
+        self.__env = None
 
     def _changeable(self, obj):
         # if it is one of these guys we feel that
@@ -99,7 +96,7 @@ class Variable(object):
 
         try:
             self.Update(env.Clone())
-        except:
+        except BaseException:
             return False
 
         return True

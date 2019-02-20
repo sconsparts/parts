@@ -4,10 +4,9 @@ import os
 import re
 import subprocess
 
-import SCons.Util
-
-import parts.common
 import parts.api as api
+import parts.common
+import SCons.Util
 from parts.tools.Common.ToolInfo import ToolInfo
 from parts.tools.Common.ToolSetting import ToolSetting
 from parts.version import version_range
@@ -76,7 +75,7 @@ class GnuInfo(ToolInfo):
             try:
                 while line == '\r\n' or line == '\n':
                     line = pipe.stdout.readline()
-            except:
+            except BaseException:
                 pass
             match = re.search(r'[vV ]([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+)', line.decode())
             pipe.stdout.close()

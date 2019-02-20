@@ -12,11 +12,11 @@ import os
 import sys
 import time
 
+import _thread
+
 import SCons.Script
 import SCons.Script.Main as Main
 import SCons.Taskmaster
-
-import _thread
 
 EVENT_START, EVENT_STOP = 'start', 'stop'
 

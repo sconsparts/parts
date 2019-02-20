@@ -19,7 +19,7 @@ if sys.platform == 'win32':
 
     try:
         _original_file = builtins.file
-    except:
+    except BaseException:
         pass
     _original_open = builtins.open
 
@@ -133,7 +133,7 @@ if sys.platform == 'win32':
             if handle == -1:
                 # we have some error, return it in a python compatible way
                 raise IOError(ctypes.GetLastError(), ctypes.FormatError(ctypes.GetLastError()),
-                            filename)
+                              filename)
 
             fd = msvcrt.open_osfhandle(handle, intmode)
             return fd
@@ -142,7 +142,7 @@ if sys.platform == 'win32':
                 # don't want to worry about changes to the open function.. so just pass generic args
                 # the only case we worry about is if they pass there own opener ( should be *VERY* rare)
                 # but just in case we will check and use theres if it exists
-                if "opener" in kw and kw["opener"] != None:
+                if "opener" in kw and kw["opener"] is not None:
                     return _original_open(*lst, **kw)
                 return _original_open(*lst, opener=shared_open, **kw)
 
@@ -189,17 +189,17 @@ if sys.platform == 'win32':
             shared_mode = get_win32_shared_mode(mode)
             creation_disposition = get_win32_creation_disposition(mode)
             handle = CreateFileW(filename,  # the file
-                                desired_access,  # read, write modes
-                                shared_mode,  # add share delete
-                                None,  # default security
-                                creation_disposition,  # If we create the file or not
-                                FILE_ATTRIBUTE_TEMPORARY,  # normal attribute..  FILE_ATTRIBUTE_NORMAL
-                                0  # no Template
-                                )
+                                 desired_access,  # read, write modes
+                                 shared_mode,  # add share delete
+                                 None,  # default security
+                                 creation_disposition,  # If we create the file or not
+                                 FILE_ATTRIBUTE_TEMPORARY,  # normal attribute..  FILE_ATTRIBUTE_NORMAL
+                                 0  # no Template
+                                 )
             if handle == -1:
                 # we have some error, return it in a python compatible way
                 raise IOError(ctypes.GetLastError(), ctypes.FormatError(ctypes.GetLastError()),
-                            filename)
+                              filename)
 
             # not sure if I should modify flags passed here,
             # as the next call will get them
@@ -237,7 +237,7 @@ if sys.platform == 'win32':
             path = str(path)
         if not DeleteFileW(path):
             raise WindowsError(ctypes.GetLastError(), ctypes.FormatError(ctypes.GetLastError()),
-                            path)
+                               path)
 
     os.remove = win32_rm
     os.unlink = win32_rm

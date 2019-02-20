@@ -7,20 +7,17 @@ There is also env.SymLink builder is introduced here
 '''
 from __future__ import absolute_import, division, print_function
 
-
-
 import ctypes
 import os
-
-import SCons.Node.FS
-from SCons.Debug import logInstanceCreation
-from SCons.Scanner import Scanner
-from SCons.Script.SConscript import SConsEnvironment
 
 import parts.api as api
 import parts.common as common
 import parts.metatag as metatag
+import SCons.Node.FS
 from parts.core import util
+from SCons.Debug import logInstanceCreation
+from SCons.Scanner import Scanner
+from SCons.Script.SConscript import SConsEnvironment
 
 # Begin OS level support for symbolic links
 try:
@@ -408,7 +405,7 @@ def ensure_node_is_symlink(node, template=None):
         if not isinstance(node, SCons.Node.FS.FileSymbolicLink):
             node.__class__ = SCons.Node.FS.FileSymbolicLink
             node._morph()
-            
+
             if template is not None:
                 node.linkto = template.linkto
     return node
@@ -477,7 +474,7 @@ def _wrap_SCons_Node_FS_Entry_disambiguate(disambiguate):
                 if "exists" in self._memo:
                     del self._memo["exists"]
                 if "stat" in self._memo:
-                    del self._memo["stat"]                
+                    del self._memo["stat"]
             return self
         else:
             return disambiguate(self, must_exist)
@@ -517,7 +514,7 @@ def _source_scanner():
 
         source = path[0]
         target = node
-                
+
         if not isinstance(source, FileSymbolicLink):
             # This source is not a symlink. So nothing needs to be done
             return []

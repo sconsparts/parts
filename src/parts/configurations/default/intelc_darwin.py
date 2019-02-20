@@ -3,8 +3,9 @@
 ######################################
 from __future__ import absolute_import, division, print_function
 
-from past.builtins import basestring
 import os
+
+from past.builtins import basestring
 
 from parts.config import *
 

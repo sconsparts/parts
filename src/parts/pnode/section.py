@@ -5,10 +5,9 @@ import itertools
 import sys
 from builtins import filter
 
-import SCons.Node
+import _thread
 from past.builtins import cmp
 
-import _thread
 import parts.api as api
 import parts.common as common
 import parts.core.util as util
@@ -21,6 +20,7 @@ import parts.pnode.pnode as pnode
 import parts.pnode.pnode_manager as pnode_manager
 import parts.pnode.section_info as section_info
 import parts.target_type as target_type
+import SCons.Node
 
 
 class section(pnode.pnode):

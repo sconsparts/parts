@@ -1,17 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
-from builtins import map
-
 import os
 import re
 import sys
-
-import SCons.Errors
-import SCons.Script
-# not ideal...
-import SCons.Script.Main
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
+from builtins import map
 
 import parts.api as api
 import parts.common as common
@@ -21,6 +13,12 @@ import parts.errors as errors
 import parts.glb as glb
 import parts.logger as logger
 import parts.policy as Policy
+import SCons.Errors
+import SCons.Script
+# not ideal...
+import SCons.Script.Main
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 if 'stacktrace' in (SCons.Script.GetOption('debug') or []):
     class PartRuntimeError(SCons.Errors.StopError):
@@ -43,11 +41,11 @@ class streamer(object):
 
 
 warning_tests = [
-    re.compile('(\A|\s)warning?\s?(([?!: ])|(\.\s))\D', re.IGNORECASE).search
+    re.compile(r'(\A|\s)warning?\s?(([?!: ])|(\.\s))\D', re.IGNORECASE).search
 ]
 
 error_tests = [
-    re.compile('(\A|\s)error?\s?(([?!: ])|(\.\s))\D', re.IGNORECASE).search,
+    re.compile(r'(\A|\s)error?\s?(([?!: ])|(\.\s))\D', re.IGNORECASE).search,
     re.compile('fail$', re.IGNORECASE).match
 ]
 
@@ -428,7 +426,6 @@ def user_verbose_env(env, catagory, *lst, **kw):
         if glb.rpter.verbose is None:
             glb.rpter.verbose = []
     glb.rpter.verbose_msg(catagory, [kw.get('sep', ' ')] + list(lst) + [kw.get('end', '\n')])
-
 
 
 api.register.add_bool_variable('STREAM_WARNING_AS_ERROR', False, 'Controls is warning based messages are treated as errors')

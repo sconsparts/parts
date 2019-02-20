@@ -1,12 +1,13 @@
 # Stub file to update env for ar tool
 
-# import SCons.Tool.as as AS
-AS = getattr(__import__('SCons.Tool.as', globals(), locals(), []).Tool, 'as')
 from __future__ import absolute_import, division, print_function
 
 import parts.tools.Common
 import parts.tools.GnuCommon.binutils
+# import SCons.Tool.as as AS
 import parts.tools.GnuCommon.common
+
+AS = getattr(__import__('SCons.Tool.as', globals(), locals(), []).Tool, 'as')
 
 
 def generate(env):

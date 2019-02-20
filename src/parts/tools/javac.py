@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function
 import os
 
 import parts.tools.Common
-
 import SCons.Node.FS
 from Common.java import java
 from SCons.Node.FS import _my_normcase

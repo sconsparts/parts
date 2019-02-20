@@ -10,12 +10,6 @@ import stat
 import sys
 import time
 
-import SCons.Node.FS
-import SCons.Script
-from SCons.Debug import logInstanceCreation
-from SCons.Script.Main import memory_stats
-from SCons.Util import flatten
-
 import parts.api as api
 import parts.api.output
 import parts.common as common
@@ -31,11 +25,15 @@ import parts.part_manager as part_manager
 import parts.pnode as pnode
 import parts.poptions as poptions  # want to remove
 import parts.target_type as target_type
-import parts.version_info as version_info
 import parts.Variables as Variables
+import parts.version_info as version_info
+import SCons.Node.FS
+import SCons.Script
+from SCons.Debug import logInstanceCreation
+from SCons.Script.Main import memory_stats
+from SCons.Util import flatten
 
 ################################################################################
-
 
 
 def get_Sconstruct_files():
@@ -129,11 +127,11 @@ class parts_addon(object):
         log_obj = log_obj('', '')
         try:
             verbose = [i.lower() for i in SCons.Script.GetOption('verbose')]
-        except:
+        except BaseException:
             verbose = []
         try:
             trace = [i.lower() for i in SCons.Script.GetOption('trace')]
-        except:
+        except BaseException:
             trace = []
 
         glb.rpter.Setup(
@@ -291,7 +289,7 @@ class parts_addon(object):
 
                 # reset our stack info for error reporting.. (todo. double check this again)
                 # errors.ResetPartStackFrameInfo()
-            except:
+            except BaseException:
                 self.__had_error = True
                 raise
         finally:
@@ -590,7 +588,7 @@ Use -H or --help-options for a list of scons options
         for pobj in list(self.__part_manager.parts.values()):
             if pobj.isRoot:
                 md5.update(pobj.ID.encode())
-        
+
         self.__cache_key = md5.hexdigest()
 
     @property

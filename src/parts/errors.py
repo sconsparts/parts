@@ -92,5 +92,5 @@ def GetPartStackFrameInfo():
 
     if ret is []:
         return ("unknown", "unknown", "unknown", "unknown")
-    
+
     return ret

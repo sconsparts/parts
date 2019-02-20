@@ -1,15 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
-import SCons.Script
-from SCons.Environment import SubstitutionEnvironment as SubstEnv
-from SCons.Script.SConscript import SConsEnvironment
-
 import parts.api as api
 import parts.common as common
 import parts.core.util as util
 import parts.glb as glb
 import parts.policy as policy
 import parts.settings as settings
+import SCons.Script
+from SCons.Environment import SubstitutionEnvironment as SubstEnv
+from SCons.Script.SConscript import SConsEnvironment
 
 # this is the group to part mapping
 # ie this is the unsorted data
@@ -61,7 +60,7 @@ def PackageGroup(name, parts=None):
 def AddPackageNodeFilter(callbacks):
     try:
         settings.DefaultSettings().vars['PACKAGE_NODE_FILTER'].Default.extend(common.make_list(callbacks))
-    except:
+    except BaseException:
         settings.DefaultSettings().vars['PACKAGE_NODE_FILTER'] = common.make_list(callbacks)
 
 
@@ -75,7 +74,7 @@ def AppendPackageGroupCriteria(name, func):
     name = SCons.Script.DefaultEnvironment().subst(name)
     try:
         settings.DefaultSettings().vars['PACKAGE_GROUP_FILTER'].Default[name].extend(common.make_list(func))
-    except:
+    except BaseException:
         settings.DefaultSettings().vars['PACKAGE_GROUP_FILTER'].Default[name] = common.make_list(func)
     return PackageGroup(name)
 
@@ -85,7 +84,7 @@ def PrependPackageGroupCriteria(name, func):
     try:
         settings.DefaultSettings().vars['PACKAGE_GROUP_FILTER'].Default[name] = common.make_list(
             func) + settings.DefaultSettings().vars['PACKAGE_GROUP_FILTER'].Default[name]
-    except:
+    except BaseException:
         settings.DefaultSettings().vars['PACKAGE_GROUP_FILTER'].Default[name] = common.make_list(func)
     return PackageGroup(name)
 
@@ -101,7 +100,7 @@ def AppendPackageGroupCriteriaEnv(env, name, func):
     name = env.subst(name)
     try:
         env['PACKAGE_GROUP_FILTER'][name].extend(common.make_list(func))
-    except:
+    except BaseException:
         env['PACKAGE_GROUP_FILTER'][name] = common.make_list(func)
     return PackageGroup(name)
 
@@ -110,7 +109,7 @@ def PrependPackageGroupCriteriaEnv(env, name, func):
     name = env.subst(name)
     try:
         env['PACKAGE_GROUP_FILTER'][name] = common.make_list(func) + env['PACKAGE_GROUP_FILTER'][name]
-    except:
+    except BaseException:
         env['PACKAGE_GROUP_FILTER'][name] = common.make_list(func)
     return PackageGroup(name)
 
@@ -146,10 +145,20 @@ def def_GetFilesFromPackageGroups(klass):
                                             env.get('PACKAGE_DUPLICATE_FILES_HANDLING'))
             except (TypeError, AttributeError):
                 multigroup_policy = policy.ReportingPolicy.ignore
-            api.output.policy_msg(multigroup_policy, 'packaging',
-                                  'While forming "{0}" package found files included by multiple groups: \n{1}'.format(target, '\n'.join(
-                                      '\t{0} is included by groups: {1}'.format(file, ', '.join(sorted(groups))) for (file, groups) in sorted(duplicates.items()))),
-                                  stackframe=stackframe)
+            api.output.policy_msg(
+                multigroup_policy,
+                'packaging',
+                'While forming "{0}" package found files included by multiple groups: \n{1}'.format(
+                    target,
+                    '\n'.join(
+                        '\t{0} is included by groups: {1}'.format(
+                            file,
+                            ', '.join(
+                                sorted(groups))) for (
+                            file,
+                            groups) in sorted(
+                            duplicates.items()))),
+                stackframe=stackframe)
         return sorted(visited.keys()), sorted(duplicates.items())
     klass.GetFilesFromPackageGroups = GetFilesFromPackageGroups
     return klass
@@ -212,7 +221,7 @@ def _filter_by_criteria(node, filters, metainfo):
 def _filter_node(node, filters, metainfo):
     '''
     call each filter on the node
-    the returned value from the filter may be a string or (string,Boolean) 
+    the returned value from the filter may be a string or (string,Boolean)
     in which the boolean is if the node should be 'no_pkg'ed for the group
     '''
 

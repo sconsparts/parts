@@ -3,14 +3,13 @@ from __future__ import absolute_import, division, print_function
 import os
 import re
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
-
 import parts.api as api
 import parts.common as common
 import parts.datacache as datacache
-from parts.core import util
 import parts.version as version
+from parts.core import util
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 from .base import base, removeall
 
@@ -64,8 +63,7 @@ class git(base):
                 "Only one argument of 'branch', 'tag' or 'revision' can be set at a time. \n tag={tag}\n branch={branch}\n revision={revision}",
                 branch=branch,
                 tag=tag,
-                revision=revision
-            )
+                revision=revision)
 
         if tag:
             self.__branch = tag
@@ -177,7 +175,8 @@ class git(base):
             else:
                 # if it they are not set we want to say something is up.. give me the power to fix it, or do something about it
                 api.output.error_msg(
-                    'Directory "{0}" already exists with no .git directory.\n Manually remove directory or\n update with --vcs-retry or --vcs-clean'.format(out_dir), show_stack=False)
+                    'Directory "{0}" already exists with no .git directory.\n Manually remove directory or\n update with --vcs-retry or --vcs-clean'.format(out_dir),
+                    show_stack=False)
         else:
             if data['modified'] and not do_clean:
                 # check that we don't have modification locally. if we do complain to be safe
@@ -189,10 +188,8 @@ class git(base):
             if data['untracked'] and self._env['GIT_IGNORE_UNTRACKED'] == False and not do_clean:
                  # check that we don't have untracked files locally. if we do complain to be safe.
                 api.output.error_msg(
-                    'Untracked files found in "{0}".\n Manually commit and push changes\n or set variable GIT_IGNORE_UNTRACKED to True\n or update with --vcs-clean'.format(
-                        out_dir),
-                    show_stack=False
-                )
+                    'Untracked files found in "{0}".\n Manually commit and push changes\n or set variable GIT_IGNORE_UNTRACKED to True\n or update with --vcs-clean'.format(out_dir),
+                    show_stack=False)
 
             server_disk = data['server']
             server_changed = self._server_changed(data)
@@ -222,10 +219,8 @@ class git(base):
                 # we cannot change if we are modified and not cleaning
                 if self.is_modified() and not do_clean:
                     api.output.error_msg(
-                        'Cannot change remote origin. Local modification found in "{0}".\n Manually commit and push changes or\n update with --vcs-clean'.format(
-                            out_dir),
-                        show_stack=False
-                    )
+                        'Cannot change remote origin. Local modification found in "{0}".\n Manually commit and push changes or\n update with --vcs-clean'.format(out_dir),
+                        show_stack=False)
                 # change origin
                 ret += orgin_change_action
                 # do fetch to get data
@@ -341,12 +336,12 @@ class git(base):
         return "{0} needs to be updated on disk" .format(self._pobj.Alias)
 
     def do_check_logic(self):
-        ''' 
+        '''
         Check that the value we have in the cache matches what was passed in
         This is faster than having forced git checks for larger builds
         Will check that something exists on disk
-        Will fallback to a diskchecks if cache sees mismatches to verify it is really 
-        out of date. 
+        Will fallback to a diskchecks if cache sees mismatches to verify it is really
+        out of date.
 
         returns None if it passes, returns a string to possible print tell why it failed
         '''
@@ -418,22 +413,22 @@ class git(base):
         if data:
             if data['server'] != self.FullPath:
                 api.output.verbose_msg(["vcs_update", "vcs_git"], " Disk checked failed")
-                return 'Server on disk is different than the one requested for Parts "%s"\n On disk: %s\n requested: %s' % (self._pobj.Alias, data[
-                    'server'], self.FullPath)
+                return 'Server on disk is different than the one requested for Parts "%s"\n On disk: %s\n requested: %s' % (
+                    self._pobj.Alias, data['server'], self.FullPath)
 
             # check the revision is it was set
             if self.__revision and data['revision'] != self.__revision and data['short_revision'] != self.__revision:
                 api.output.verbose_msg(["vcs_update", "vcs_git"], " Disk revision does not match")
-                return 'revision on disk is different than the one requested for Parts "%s"\n On disk: %s\n requested: %s' % (self._pobj.Alias, data[
-                    'revision'], self.__revision)
+                return 'revision on disk is different than the one requested for Parts "%s"\n On disk: %s\n requested: %s' % (
+                    self._pobj.Alias, data['revision'], self.__revision)
             elif not self.__revision:
                 # if branch was not set default branch to be checked
                 branch = self.__branch if self.__branch else self._env["GIT_DEFAULT_BRANCH"]
                 if branch and data['branch'] != "{0}...origin/{0}".format(branch) and branch not in data['tags']:
                     # check branch or tag
                     api.output.verbose_msg(["vcs_update", "vcs_git"], " Disk branch does not match")
-                    return 'Branch on disk is different than the one requested for Parts "%s"\n On disk: %s\n requested: %s' % (self._pobj.Alias, data[
-                        'branch'], branch)
+                    return 'Branch on disk is different than the one requested for Parts "%s"\n On disk: %s\n requested: %s' % (
+                        self._pobj.Alias, data['branch'], branch)
 
     def UpdateEnv(self):
         '''
@@ -502,10 +497,12 @@ class git(base):
     def _cache_filename(self):
         return self._env['ALIAS']
 
+
 class version_from_tag(object):
     def __init__(self, env):
         self.env = env
-    def __call__(self,default,prefix='' ,regex = None, converter=None):
+
+    def __call__(self, default, prefix='', regex=None, converter=None):
         '''
         util function to get version for tag value we are currently checkout on
         @parm default - the value to use if we are not on a tag or a tag that matches expected values
@@ -522,18 +519,18 @@ class version_from_tag(object):
         else:
             # use default
             regex = re.compile(r'\d+\.\d+(?:\.\d+)*')
-            
+
         if not tags:
             return default
-        
+
         if not converter:
-            converter = lambda ver,env: ver
+            def converter(ver, env): return ver
 
         versions = []
         for t in tags:
             result = regex.search(t)
             if result and t.startswith(prefix):
-                ver = converter(result.group(),self.env)
+                ver = converter(result.group(), self.env)
                 if ver:
                     versions.append(version.version(ver))
         versions.sort()
@@ -630,10 +627,10 @@ api.register.add_variable('GIT_USER', '$PART_USER', '')
 api.register.add_variable('VCS_GIT_DIR', '${CHECK_OUT_ROOT}/${PART_ALIAS}', '')
 api.register.add_variable('GIT_DEFAULT_BRANCH', 'master', '')
 api.register.add_bool_variable('GIT_IGNORE_UNTRACKED', False, 'Controls if we should care about untracked files when updating')
-api.register.add_enum_variable('GIT_PROTOCOL','https','',['https','git'])
+api.register.add_enum_variable('GIT_PROTOCOL', 'https', '', ['https', 'git'])
 
 api.register.add_global_object('VcsGit', git)
-api.register.add_global_parts_object("GitVersionFromTag",version_from_tag,True)
+api.register.add_global_parts_object("GitVersionFromTag", version_from_tag, True)
 
 SConsEnvironment.GitInfo = GetGitData
 SConsEnvironment.GitVersionFromTag = version_from_tag

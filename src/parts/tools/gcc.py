@@ -4,11 +4,10 @@ import parts.api.output as output
 import parts.tools.cc
 import parts.tools.Common
 import parts.tools.GnuCommon
-from parts.tools.GnuCommon.android import GetLatestNDKAPI
-
 import SCons.Tool.cc
 import SCons.Tool.mingw as mingw
 import SCons.Util
+from parts.tools.GnuCommon.android import GetLatestNDKAPI
 
 
 def generate(env):

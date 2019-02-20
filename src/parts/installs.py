@@ -1,12 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
-
 import os
-
-import SCons.Script
-import SCons.Tool.install
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 import parts.api as api
 import parts.common as common
@@ -17,6 +11,10 @@ import parts.glb as glb
 import parts.pattern as pattern
 import parts.platform_info as platform_info
 import parts.sdk as sdk
+import SCons.Script
+import SCons.Tool.install
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 # need better configuration control
 # these function will hopfully be replaced later once a better solution shows it self
@@ -43,7 +41,7 @@ def get_args(cat, **kw):
     args.update(kw)
     try:
         args['tags']['category'] = cat
-    except:
+    except BaseException:
         args['tags'] = {'category': cat}
     return args
 
@@ -88,12 +86,11 @@ def ProcessInstall(env, target, sources, sub_dir, create_sdk, sdk_dir='', no_pkg
             if isinstance(s, pattern.Pattern):
                 if s not in sdk.g_sdked_files:
                     if target == target_lib:
-                        ret = env.SdkItem('$SDK_LIB', [s], sub_dir, '', [(exportitem.EXPORT_TYPES.FILE, 'LIBS'), (exportitem.EXPORT_TYPES.PATH, 'LIBPATH')],
-                                          add_to_path=kw.get('add_to_path', True),
-                                          auto_add_file=kw.get('auto_add_libs', True),
-                                          use_build_dir=True,
-                                          create_sdk=create_sdk
-                                          )
+                        ret = env.SdkItem(
+                            '$SDK_LIB', [s], sub_dir, '', [
+                                (exportitem.EXPORT_TYPES.FILE, 'LIBS'), (exportitem.EXPORT_TYPES.PATH, 'LIBPATH')], add_to_path=kw.get(
+                                'add_to_path', True), auto_add_file=kw.get(
+                                'auto_add_libs', True), use_build_dir=True, create_sdk=create_sdk)
 
                     elif target == target_include:
                         ret = env.SdkItem('$SDK_INCLUDE', sources, sub_dir, '', [(exportitem.EXPORT_TYPES.PATH, 'CPPPATH')],
@@ -129,12 +126,11 @@ def ProcessInstall(env, target, sources, sub_dir, create_sdk, sdk_dir='', no_pkg
             elif isinstance(s, SCons.Node.FS.Dir):
                 if s not in sdk.g_sdked_files:
                     if target == target_lib:
-                        ret = env.SdkItem('$SDK_LIB', [s], sub_dir, '', [(exportitem.EXPORT_TYPES.FILE, 'LIBS'), (exportitem.EXPORT_TYPES.PATH, 'LIBPATH')],
-                                          add_to_path=kw.get('add_to_path', True),
-                                          auto_add_file=kw.get('auto_add_libs', True),
-                                          use_build_dir=True,
-                                          create_sdk=create_sdk
-                                          )
+                        ret = env.SdkItem(
+                            '$SDK_LIB', [s], sub_dir, '', [
+                                (exportitem.EXPORT_TYPES.FILE, 'LIBS'), (exportitem.EXPORT_TYPES.PATH, 'LIBPATH')], add_to_path=kw.get(
+                                'add_to_path', True), auto_add_file=kw.get(
+                                'auto_add_libs', True), use_build_dir=True, create_sdk=create_sdk)
                     elif target == target_include:
                         ret = env.SdkItem('$SDK_INCLUDE', [s], sub_dir, '', [(exportitem.EXPORT_TYPES.PATH, 'CPPPATH')],
                                           add_to_path=kw.get('add_to_path', None),
@@ -157,12 +153,11 @@ def ProcessInstall(env, target, sources, sub_dir, create_sdk, sdk_dir='', no_pkg
             elif isinstance(s, SCons.Node.FS.File):
                 if s not in sdk.g_sdked_files:
                     if target == target_lib:
-                        ret = env.SdkItem('$SDK_LIB', [s], sub_dir, '', [(exportitem.EXPORT_TYPES.FILE, 'LIBS'), (exportitem.EXPORT_TYPES.PATH, 'LIBPATH')],
-                                          add_to_path=kw.get('add_to_path', True),
-                                          auto_add_file=kw.get('auto_add_libs', True),
-                                          use_build_dir=True,
-                                          create_sdk=create_sdk
-                                          )
+                        ret = env.SdkItem(
+                            '$SDK_LIB', [s], sub_dir, '', [
+                                (exportitem.EXPORT_TYPES.FILE, 'LIBS'), (exportitem.EXPORT_TYPES.PATH, 'LIBPATH')], add_to_path=kw.get(
+                                'add_to_path', True), auto_add_file=kw.get(
+                                'auto_add_libs', True), use_build_dir=True, create_sdk=create_sdk)
                     elif target == target_include:
                         ret = env.SdkItem('$SDK_INCLUDE', [s], sub_dir, '', [(exportitem.EXPORT_TYPES.PATH, 'CPPPATH')],
                                           add_to_path=kw.get('add_to_path', None),
@@ -187,12 +182,11 @@ def ProcessInstall(env, target, sources, sub_dir, create_sdk, sdk_dir='', no_pkg
             elif isinstance(s, SCons.Node.Node) or util.isString(s):
                 if s not in sdk.g_sdked_files:
                     if target == target_lib:
-                        ret = env.SdkItem('$SDK_LIB', [s], sub_dir, '', [(exportitem.EXPORT_TYPES.FILE, 'LIBS'), (exportitem.EXPORT_TYPES.PATH, 'LIBPATH')],
-                                          add_to_path=kw.get('add_to_path', True),
-                                          auto_add_file=kw.get('auto_add_libs', True),
-                                          use_build_dir=True,
-                                          create_sdk=create_sdk
-                                          )
+                        ret = env.SdkItem(
+                            '$SDK_LIB', [s], sub_dir, '', [
+                                (exportitem.EXPORT_TYPES.FILE, 'LIBS'), (exportitem.EXPORT_TYPES.PATH, 'LIBPATH')], add_to_path=kw.get(
+                                'add_to_path', True), auto_add_file=kw.get(
+                                'auto_add_libs', True), use_build_dir=True, create_sdk=create_sdk)
                     elif target == target_include:
                         ret = env.SdkItem('$SDK_INCLUDE', [s], sub_dir, '', [(exportitem.EXPORT_TYPES.PATH, 'CPPPATH')],
                                           add_to_path=kw.get('add_to_path', None),
@@ -555,7 +549,6 @@ def InstallPkgData(env, src_files, sub_dir='', no_pkg=False, create_sdk=True, pa
         env.MetaTag(installed_files, 'package', types=packagetype)
     env.ExportItem('INSTALLPKGDATA', installed_files, create_sdk, True)
     return installed_files
-
 
 
 # adding logic to Scons Enviroment object

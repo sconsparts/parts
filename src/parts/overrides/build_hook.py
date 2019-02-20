@@ -4,10 +4,9 @@
 # That would be nice to have in SCons.
 from __future__ import absolute_import, division, print_function
 
+import parts.glb as glb
 # this code overides scons build targets so we can do some processing before
 import SCons.Script.Main
-
-import parts.glb as glb
 
 scons_build_targets = SCons.Script.Main._build_targets
 

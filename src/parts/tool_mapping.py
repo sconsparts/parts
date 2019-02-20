@@ -3,15 +3,14 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-import SCons.Tool
-from SCons.Errors import UserError
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
-
 import parts.api as api
 import parts.common as common
 import parts.core.util as util
 import parts.load_module as load_module
+import SCons.Tool
+from SCons.Errors import UserError
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 
 def get_tlset_module(tlchain, version):
@@ -57,7 +56,7 @@ def get_tools(env, tlset):
         __tools_dirs = load_module.get_site_directories('tools')
     new_list = []
     repeat = False
-    for tool in tlset:        
+    for tool in tlset:
         try:
             tool, configuration = tool
         except ValueError:
@@ -77,7 +76,7 @@ def get_tools(env, tlset):
                 # see if this is a tool that is loadable
                 try:
                     SCons.Tool.Tool(tool, toolpath=__tools_dirs)
-                except:
+                except BaseException:
                     api.output.error_msg("Failed to load Unknown ToolChain or Tool:", tool, show_stack=False)
                 else:
                     new_list.extend([(tool, {}, configured)])
@@ -136,9 +135,7 @@ def tool_converter(str_val, raw_val):
     raise "Invalid tool value '%s'" % raw_val
 
 
-
 # adding logic to Scons Enviroment object
-
 SConsEnvironment.ToolChain = _ToolChain
 
 

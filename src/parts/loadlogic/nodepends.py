@@ -2,11 +2,11 @@ from __future__ import absolute_import, division, print_function
 
 import time
 
-from SCons.Debug import logInstanceCreation
-
 import parts.api as api
 import parts.errors as errors
 import parts.glb as glb
+from SCons.Debug import logInstanceCreation
+
 from . import base
 
 

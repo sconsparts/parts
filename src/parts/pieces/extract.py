@@ -1,7 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-
-
 import contextlib
 import ctypes
 import errno
@@ -9,14 +7,13 @@ import os
 import tarfile
 import zipfile
 
-from parts import api
-from parts.common import matches
-from parts.overrides import symlinks
-
 import SCons.Action
 import SCons.Builder
 import SCons.Environment
 import SCons.Node.FS
+from parts import api
+from parts.common import matches
+from parts.overrides import symlinks
 
 try:
     os_link = os.link
@@ -81,7 +78,7 @@ def getNodesFromCache(fileNode, generator, env):
 
 
 class _ArcInfoProxy(object):
-    __slots__ = ['_index', '_item', '_arc',]
+    __slots__ = ['_index', '_item', '_arc', ]
 
     def __init__(self, archive, archiveItem, index):
         self._arc = archive

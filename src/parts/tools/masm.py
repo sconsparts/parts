@@ -32,15 +32,16 @@ selection method.
 #
 from __future__ import absolute_import, division, print_function
 
-__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
-
 import parts.api.output as output
 import parts.tools.Common
-from parts.tools.MSCommon import is_win64, msvc
-
 import SCons.Defaults
 import SCons.Tool
 import SCons.Util
+from parts.tools.MSCommon import is_win64, msvc
+
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
+
+
 
 ASSuffixes = ['.s', '.asm', '.ASM']
 ASPPSuffixes = ['.spp', '.SPP', '.sx']

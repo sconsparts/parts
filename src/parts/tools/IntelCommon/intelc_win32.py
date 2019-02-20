@@ -6,8 +6,7 @@ from parts.platform_info import SystemPlatform
 from parts.tools.Common.Finders import (EnvFinder, PathFinder, RegFinder,
                                         ScriptFinder)
 
-from . import common
-from . import regscanner
+from . import common, regscanner
 from .common import Intelc, IntelcInfo
 
 # 32-bit 11.1 ( composer mainstream)

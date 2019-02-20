@@ -1,15 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
-
-
 import re
 import sys
 
 import parts.tools.Common.Finders as Finders
-
-from . import common
 import SCons.Util
 from SCons.Debug import logInstanceCreation
+
+from . import common
 
 # this are primary for finding Intel compilers on windows platforms
 # file_scanner is for finding files on Posix/Linux systems

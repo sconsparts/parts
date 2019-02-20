@@ -1,21 +1,17 @@
 from __future__ import absolute_import, division, print_function
 
-from builtins import map
-
-from builtins import range
-
 import os
+from builtins import map, range
 
 import parts.api.output as output
 import parts.tools.Common
 import parts.tools.mslink
+import SCons.Util
 from parts.platform_info import SystemPlatform
 from parts.tools.Common.Finders import PathFinder
 from parts.tools.Common.ToolInfo import ToolInfo
 from parts.tools.Common.ToolSetting import MatchVersionNumbers, ToolSetting
 from parts.tools.MSCommon import validate_vars
-
-import SCons.Util
 from SCons.Scanner.Prog import print_find_libs
 
 WDK = ToolSetting('WDK')
@@ -38,17 +34,17 @@ if SCons.Util.can_read_reg:
 
         try:
             return SCons.Util.RegOpenKeyEx(key, subkey, 0, SCons.Util.hkey_mod.KEY_READ)
-        except:
+        except BaseException:
             pass
 
         try:
             return SCons.Util.RegOpenKeyEx(key, subkey, 0, SCons.Util.hkey_mod.KEY_READ | 0x0100)
-        except:
+        except BaseException:
             pass
 
         try:
             return SCons.Util.RegOpenKeyEx(key, subkey, 0, SCons.Util.hkey_mod.KEY_READ | 0x0200)
-        except:
+        except BaseException:
             pass
 
         return None
@@ -56,13 +52,13 @@ if SCons.Util.can_read_reg:
     def enumRegistryKey(key, i):
         try:
             return SCons.Util.RegEnumKey(key, i)
-        except:
+        except BaseException:
             return None
 
     def readRegistryValue(key, value):
         try:
             return SCons.Util.RegQueryValueEx(key, value)[0]
-        except:
+        except BaseException:
             return None
 
     class WdkScanner(object):
@@ -184,7 +180,7 @@ if SCons.Util.can_read_reg:
             for v in version.split('.'):
                 value = value[v]
             return value
-        except:
+        except BaseException:
             return None
 
     class WdkInfo(ToolInfo):
@@ -229,7 +225,7 @@ def _ddkplatform(platform):
             'x86_64': 'amd64',
             'ia64': 'ia64',
         }[platform]
-    except:
+    except BaseException:
         return platform
 
 
@@ -240,7 +236,7 @@ def _ddklibplatform(platform):
             'x86_64': 'amd64',
             'ia64': 'ia64',
         }[platform]
-    except:
+    except BaseException:
         return platform
 
 
@@ -524,8 +520,11 @@ def generate(env):
         [r'${DDKHOSTDIR}\cl.exe', r'${DDKHOSTTARGETDIR}\cl.exe']), ('cl',), env=env))
     env.SetDefault(DDKLINK=parts.tools.Common.toolvar(env.Detect(
         [r'${DDKHOSTDIR}\link.exe', r'${DDKHOSTTARGETDIR}\link.exe']), ('link',), env=env))
-    env.SetDefault(DDKAS=parts.tools.Common.toolvar(env.Detect([r'${DDKHOSTDIR}\ml.exe', r'${DDKHOSTTARGETDIR}\ml.exe']) if env['TARGET_ARCH'] == 'x86'
-                                                    else env.Detect([r'${DDKHOSTTARGETDIR}\ml64.exe']), ('ml', 'ml64'), env=env))
+    env.SetDefault(
+        DDKAS=parts.tools.Common.toolvar(
+            env.Detect([r'${DDKHOSTDIR}\ml.exe', r'${DDKHOSTTARGETDIR}\ml.exe'])
+            if env['TARGET_ARCH'] == 'x86' else env.Detect([r'${DDKHOSTTARGETDIR}\ml64.exe']), ('ml', 'ml64'),
+            env=env))
 
     env.SetDefault(LIBS=[])
     env.SetDefault(DDKLIBS=[])

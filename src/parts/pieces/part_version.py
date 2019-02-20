@@ -1,11 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
-
 import parts.api as api
 import parts.api.output as output
 import parts.glb as glb
 import parts.version as version
-
 import SCons.Script
 from SCons.Debug import logInstanceCreation
 # This is what we want to be setup in parts
@@ -56,7 +54,6 @@ class _PartVersion(object):
 
     def __call__(self, ver=None):
         return part_version(self.env, ver, _warn=False)
-
 
 
 # add global for new format

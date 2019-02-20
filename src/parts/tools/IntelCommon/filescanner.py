@@ -1,17 +1,16 @@
 from __future__ import absolute_import, division, print_function
 
-
 import os
 import re
 import subprocess
 import sys
 
 import parts.tools.Common.Finders as Finders
+import SCons.Util
 from parts.common import make_list
+from SCons.Debug import logInstanceCreation
 
 from . import common
-import SCons.Util
-from SCons.Debug import logInstanceCreation
 
 # for version 12.x
 

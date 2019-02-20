@@ -5,12 +5,11 @@
 # We also make what Component "owns" these node for faster checks latter.
 from __future__ import absolute_import, division, print_function
 
-import SCons.Builder
-
 import parts.api as api
 import parts.errors as errors
 import parts.glb as glb
 import parts.metatag as metatag
+import SCons.Builder
 
 scons_node_errors = SCons.Builder._node_errors
 
@@ -60,11 +59,17 @@ def parts_node_errors(builder, env, tlist, slist):
 
         if error:
             tenv = {} if t.env is None else t.env
-            api.output.error_msg('{0} is ambiguous because it is defined with two different Environments\n One environment was defined in Part "{1}"\n The other was defined in Part "{2}"'.format(
-                t, tenv.get('PART_ALIAS', "<unknown>"), env.get('PART_ALIAS', "<unknown>")), show_stack=False, exit=False)
+            api.output.error_msg(
+                '{0} is ambiguous because it is defined with two different Environments\n One environment was defined in Part "{1}"\n The other was defined in Part "{2}"'.format(
+                    t, tenv.get(
+                        'PART_ALIAS', "<unknown>"), env.get(
+                        'PART_ALIAS', "<unknown>")), show_stack=False, exit=False)
         elif warn:
-            api.output.warning_msg('Build issue found with two different Environments\n One environment was defined in Part "%s"\n The other was defined in Part "%s"' % (
-                t.env.get('PART_ALIAS', "<unknown>"), env.get('PART_ALIAS', "<unknown>")), show_stack=False)
+            api.output.warning_msg(
+                'Build issue found with two different Environments\n One environment was defined in Part "%s"\n The other was defined in Part "%s"' %
+                (t.env.get(
+                    'PART_ALIAS', "<unknown>"), env.get(
+                    'PART_ALIAS', "<unknown>")), show_stack=False)
 
     # call the SCons code
     scons_node_errors(builder, env, tlist, slist)

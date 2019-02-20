@@ -4,12 +4,8 @@ version strings.
 '''
 from __future__ import absolute_import, division, print_function
 
-
-from builtins import map
-from builtins import range
-
 import re
-
+from builtins import map, range
 
 import parts.api as api
 from SCons.Debug import logInstanceCreation
@@ -358,7 +354,7 @@ class version(object):
         '''
         Prints the string version.  It basically returns the passed in string.
         '''
-        return "<class {} value={}>".format(self.__class__.__name__,str(self))
+        return "<class {} value={}>".format(self.__class__.__name__, str(self))
 
     # compatiblity functions.. to remove in forms at least
     def Major(self):
@@ -550,7 +546,6 @@ class version_range(object):
         range string from construction.
         '''
         return str(self.range)
-
 
 
 SConsEnvironment.Version = version

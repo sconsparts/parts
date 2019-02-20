@@ -1,18 +1,16 @@
 
 from __future__ import absolute_import, division, print_function
 
-
-from builtins import range
-
 import os
+from builtins import range
 
 import parts.api as api
 import parts.common
+import SCons.Util
 from parts.version import version_range
+from SCons.Debug import logInstanceCreation
 
 from . import Finders
-import SCons.Util
-from SCons.Debug import logInstanceCreation
 
 
 class ToolInfo(object):
@@ -132,7 +130,12 @@ class ToolInfo(object):
                         # try to warn if we have an install root
                         if install_root is not None:
                             api.output.verbose_msgf(
-                                "toolinfo", "Script '{0}' not found, needed to setup tool '{1}', version '{2}'", self.script.name, tool, version, show_stack=False)
+                                "toolinfo",
+                                "Script '{0}' not found, needed to setup tool '{1}', version '{2}'",
+                                self.script.name,
+                                tool,
+                                version,
+                                show_stack=False)
                         ret = {}
                     else:
                         ret = env.GetScriptVariables(script_data, self.script.args)

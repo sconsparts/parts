@@ -21,7 +21,6 @@ from __future__ import absolute_import, division, print_function
 import parts.api.output
 import parts.tools.Common
 import parts.tools.GnuCommon
-
 import SCons.Action
 import SCons.Tool.gnulink
 import SCons.Tool.mingw

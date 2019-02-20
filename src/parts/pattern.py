@@ -6,19 +6,17 @@ internal here instead, and then possiblely removing pattern 100%
 
 from __future__ import absolute_import, division, print_function
 
-
 import os
-
-import SCons.Script
-from SCons.Debug import logInstanceCreation
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 import parts.api as api
 import parts.common as common
 import parts.core.util as util
 # patterns
 import parts.glb as glb
+import SCons.Script
+from SCons.Debug import logInstanceCreation
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 
 def Pattern_func(env, sub_dir='', src_dir='', includes=['*'], excludes=[], recursive=True):
@@ -269,7 +267,6 @@ class _Pattern(object):
 
     def __call__(self, sub_dir='', src_dir='', includes=['*'], excludes=[], recursive=True):
         return Pattern(sub_dir=sub_dir, src_dir=src_dir, includes=includes, excludes=excludes, recursive=recursive, env=self.env)
-
 
 
 # adding logic to Scons Enviroment object

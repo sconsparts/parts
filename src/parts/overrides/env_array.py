@@ -1,11 +1,10 @@
 # this handle overrides to the env [] operators
 from __future__ import absolute_import, division, print_function
 
-from SCons.Script.SConscript import SConsEnvironment
-
 import parts.common as common
 import parts.glb as glb
 from parts.core import util
+from SCons.Script.SConscript import SConsEnvironment
 
 
 def Parts__setitem__(self, key, val):
@@ -21,7 +20,7 @@ def Parts__setitem__(self, key, val):
     if isinstance(val, common.bindable):
         try:
             self._bindable_vars.add(key)
-        except:
+        except BaseException:
             self._bindable_vars = set([key])
         val._bind(self, key)
     elif key in getattr(self, '_bindable_vars', set([])):
@@ -37,7 +36,6 @@ def Parts__getitem__(self, key):
         tmp = tmp.__eval__()
         self._orig__setitem__(key, tmp)
     return tmp
-
 
 
 # override __setitem__ bind env with bindable objects when set

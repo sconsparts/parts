@@ -1,8 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
-from . import output
 import parts.glb as glb
 import parts.platform_info as platform_info
+
+from . import output
 
 
 def AddArchitecture(arch_alias, arch='', change_arch_map=False):

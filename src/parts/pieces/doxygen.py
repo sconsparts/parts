@@ -3,7 +3,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-
 import fnmatch
 import os
 import re
@@ -16,6 +15,7 @@ import SCons.Util
 from SCons.Debug import Trace
 
 t = 0
+
 
 def DetectDot(env):
     res = env.Detect('dot')
@@ -34,7 +34,7 @@ def DetectDot(env):
                 env.PrependENVPath('PATH', os.path.split(res)[0])
             else:
                 res = None
-        except:
+        except BaseException:
             if t:
                 Trace('An error occured during reading DOT from the registry\n')
             res = None
@@ -53,8 +53,7 @@ def DetectDoxygen(env):
     if res is None and SCons.Util.can_read_reg:
         try:
             (res, tmp) = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE,
-                                                r'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\doxygen_is1\\InstallLocation'
-                                                )
+                                                r'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\doxygen_is1\\InstallLocation')
             res = os.path.join(res, 'bin', 'doxygen.exe')
             if os.path.exists(res):
                 if t:
@@ -63,7 +62,7 @@ def DetectDoxygen(env):
                 res = 'doxygen'
             else:
                 res = None
-        except:
+        except BaseException:
             if t:
                 Trace('An error occured during reading DOXYGEN from the registry\n')
             res = None
@@ -73,7 +72,7 @@ def DetectDoxygen(env):
 
 def parseDoxyFile(f):
     res = {}
-    r = re.compile("^\s*(\w+)\s*=\s*(\w*.*\w*)\s*")
+    r = re.compile(r"^\s*(\w+)\s*=\s*(\w*.*\w*)\s*")
     ss = f.readlines()
     if ss is None:
         return res
@@ -323,7 +322,7 @@ def doxyEmitter(target, source, env):
 def createDoxygenBuilder(env):
     try:
         doxygen = env['BUILDERS']['Doxygen']
-    except:
+    except BaseException:
         doxygen = SCons.Builder.Builder(
             action="$DOXYGEN $DOXYFILE",
             emitter=doxyEmitter,

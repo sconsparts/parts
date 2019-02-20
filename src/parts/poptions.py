@@ -4,8 +4,6 @@ import os
 import sys
 from optparse import OptionValueError
 
-import SCons.Script
-
 import parts.api as api
 import parts.color as color
 import parts.common as common
@@ -15,10 +13,13 @@ import parts.load_module as load_module
 import parts.logger as logger
 import parts.platform_info as platform_info
 import parts.settings as settings
+import SCons.Script
 
 # used to help scripts set defaults when there is no config script
+
+
 def SetOptionDefault(key, value):
-    
+
     args = sys.argv[1:]
 
     # special logger logic
@@ -190,7 +191,7 @@ def opt_color(option, opt, value, parser):
             try:
                 # need better lgic to validate arguments.. but this will do for now
                 k, v = t.split('=')
-            except:
+            except BaseException:
                 raise OptionValueError('Error: Invalid stream type to set color for: "%s" valid stream types are:\n\
  console, con, tty\n\
  stdout, out, o\n\
@@ -332,14 +333,21 @@ SCons.Script.AddOption("--disable-parts-cache",
                        action="store_true",
                        help='Disable Parts data cache from being used')
 
-SCons.Script.AddOption("--load-logic", "--ll",
-                       dest='load_logic',
-                       default='default',
-                       nargs=1,
-                       type='choice',
-                       choices=['all', 'target', 'min', 'unsafe', 'default'],
-                       action='store',
-                       help='Tells Parts what logic to use when loading files. Options are "all", "target", "min", "unsafe", "default"')
+SCons.Script.AddOption(
+    "--load-logic",
+    "--ll",
+    dest='load_logic',
+    default='default',
+    nargs=1,
+    type='choice',
+    choices=[
+        'all',
+        'target',
+        'min',
+        'unsafe',
+        'default'],
+    action='store',
+    help='Tells Parts what logic to use when loading files. Options are "all", "target", "min", "unsafe", "default"')
 
 SCons.Script.AddOption("--disable-color",
                        dest='use_color',
@@ -394,23 +402,38 @@ SCons.Script.AddOption("--enable-vcs-clean", "--vcs-clean",
                        action='callback',
                        help='Controls if VCS update should ensure a clean, unmodifed, factory defaults update.')
 
-SCons.Script.AddOption("--enable-vcs-retry", "--vcs-retry",
-                       dest='vcs_retry',
-                       default=False,
-                       nargs='?',
-                       callback=lambda option, opt, value, parser: opt_bool(option, opt, value, parser, 'vcs_retry'),
-                       type='string',
-                       action='callback',
-                       help='Controls if an failure with a VCS update or checkout is allow to retry the update by removing the existing code')
+SCons.Script.AddOption(
+    "--enable-vcs-retry",
+    "--vcs-retry",
+    dest='vcs_retry',
+    default=False,
+    nargs='?',
+    callback=lambda option,
+    opt,
+    value,
+    parser: opt_bool(
+        option,
+        opt,
+        value,
+        parser,
+        'vcs_retry'),
+    type='string',
+    action='callback',
+    help='Controls if an failure with a VCS update or checkout is allow to retry the update by removing the existing code')
 
-SCons.Script.AddOption("--vcs-logic",
-                       dest='vcs_logic',
-                       default='check',
-                       nargs=1,
-                       type='choice',
-                       choices=['none', 'exists', 'check', 'force'],
-                       action='store',
-                       help='Control logic of how Parts will automatically do vcs up date checks. Values must be none, exists, check, force')
+SCons.Script.AddOption(
+    "--vcs-logic",
+    dest='vcs_logic',
+    default='check',
+    nargs=1,
+    type='choice',
+    choices=[
+        'none',
+        'exists',
+        'check',
+        'force'],
+    action='store',
+    help='Control logic of how Parts will automatically do vcs up date checks. Values must be none, exists, check, force')
 
 SCons.Script.AddOption("--vcs-job", '--vcsj', '--vj',
                        dest='vcs_jobs',

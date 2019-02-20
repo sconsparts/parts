@@ -1,14 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
-from builtins import zip
-
 import os
 import re
 import sys
+from builtins import zip
 
 import parts.api as api
 import parts.api.output as output
-
 import SCons.Builder
 import SCons.Script
 # This is what we want to be setup in parts
@@ -63,7 +61,6 @@ def AddXmlHeaderAs(env, target, source, **kw):
         target_path = os.path.split(str(target_i))[0]
         output += AddXmlHeader(env, target_path, source_i)
     return output
-
 
 
 # adding logic to Scons Enviroment object

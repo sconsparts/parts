@@ -4,7 +4,6 @@ from __future__ import absolute_import, division, print_function
 import platform
 
 import parts.load_module as load_module
-
 import SCons.Tool
 
 # this is a helper function to help with this code until we get a better solution created

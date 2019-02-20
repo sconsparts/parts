@@ -2,12 +2,12 @@ from __future__ import absolute_import, division, print_function
 
 import time
 
-from SCons.Debug import logInstanceCreation
-
 import parts.api as api
 import parts.glb as glb
-from . import base
 from parts.pnode import part
+from SCons.Debug import logInstanceCreation
+
+from . import base
 
 
 class All(base.Base):  # task_master type
@@ -50,7 +50,7 @@ class All(base.Base):  # task_master type
 
     def __call__(self):
         parts_to_load = list(self.pmgr.parts.values())
-        parts_to_load.sort(key = lambda x: x._order_value)
+        parts_to_load.sort(key=lambda x: x._order_value)
 
         total = len(parts_to_load) * 1.0
         cnt = 0

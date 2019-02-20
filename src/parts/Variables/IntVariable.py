@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function
 
 import SCons.Errors
+
 from .variable import Variable
 
 __true_strings = ('y', 'yes', 'true', 't', '1', 'on', 'all')
@@ -19,7 +20,7 @@ class IntVariable(Variable):
             """
             try:
                 return int(str_val)
-            except:
+            except BaseException:
                 raise ValueError("Invalid value for Int option: %s" % str_val)
 
         super(IntVariable, self).__init__(
@@ -30,4 +31,3 @@ class IntVariable(Variable):
             value=value,
             help_group=help_group
         )
-

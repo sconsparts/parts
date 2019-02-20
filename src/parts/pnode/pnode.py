@@ -1,11 +1,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-
-from SCons.Debug import logInstanceCreation
-
 import parts.errors as errors
 import parts.glb as glb
+from SCons.Debug import logInstanceCreation
 
 
 class pnode(object):

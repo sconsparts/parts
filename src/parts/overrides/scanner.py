@@ -13,9 +13,8 @@ from __future__ import absolute_import, division, print_function
 
 import _thread
 
-import SCons.Scanner
-
 import parts.mappers as mappers
+import SCons.Scanner
 
 
 def wrap_Prog_scan(func):
@@ -41,7 +40,7 @@ def wrap_FindPathDirs(klass):
         pass
     try:
         func = klass.__call__.__func__
-    except:
+    except BaseException:
         func = klass.__call__
     _call.__code__ = func.__code__
 

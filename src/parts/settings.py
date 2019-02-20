@@ -5,14 +5,9 @@
 # a set of setting used to define a Environment contect to build within
 from __future__ import absolute_import, division, print_function
 
-
-
 import copy
 import os
 import sys
-
-import SCons.Script
-from SCons.Debug import logInstanceCreation
 
 import parts.api as api
 import parts.common as common
@@ -20,6 +15,8 @@ import parts.core.util as util
 import parts.glb as glb
 import parts.load_module as load_module
 import parts.Variables as Variables
+import SCons.Script
+from SCons.Debug import logInstanceCreation
 
 
 def normalize_map(m):
@@ -273,7 +270,7 @@ class Settings(object):
         # have to create a default environment to run the script
         # given one is not provided
         if not env:
-            env= self.DefaultEnvironment()
+            env = self.DefaultEnvironment()
         shell_env = env.GetScriptVariables(script, args, vars)
         for k, v in shell_env.items():
             self.PrependENVPath(k, v)
@@ -421,7 +418,7 @@ class Settings(object):
         return self.Config_Set.Configuration(default_ver_func, post_process_func)
 
     def __apply_tools_and_config(self, env, pre=[], post=[]):
-         # apply tool chain        
+         # apply tool chain
         env.ToolChain(pre + env['toolchain'] + post)
         # apply the configuration for the tool
         env.Configuration()
@@ -491,7 +488,7 @@ class Settings(object):
         # normalize_map(glb.defaultoverides))
         try:
             env = self.__env_cache[cache_key]
-        except KeyError:            
+        except KeyError:
             # check to see if the user set their own tools up in the old way
             user_tools = kw.get('tools')
             if user_tools is None:
@@ -643,7 +640,7 @@ class Settings(object):
         try:
             tool_path = common.make_list(kw['toolpath'])
             del kw['toolpath']
-        except:
+        except BaseException:
             tool_path = []
         # add the Parts toolpaths
         tool_path += load_module.get_site_directories('tools')

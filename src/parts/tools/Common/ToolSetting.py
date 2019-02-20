@@ -1,19 +1,17 @@
 from __future__ import absolute_import, division, print_function
 
-from past.builtins import cmp
-
-
 import copy
+
+from past.builtins import cmp
 
 import parts.api as api
 import parts.api.output as output
 import parts.common as common
 import parts.platform_info as platform_info
-from parts.version import version_range
 import parts.version
-
 import SCons.Errors
 import SCons.Util
+from parts.version import version_range
 from SCons.Debug import logInstanceCreation
 
 
@@ -185,7 +183,7 @@ class ToolSetting(object):
             if self.not_found[key] is None:
                 # this combo was fully queried
                 return
-        except:
+        except BaseException:
             pass
         api.output.verbose_msgf(['toolsettings'], "query for known")
         # don't have it, so we setup to get it added to cache
@@ -217,16 +215,16 @@ class ToolSetting(object):
         # make sure we have a target key
         if target not in self.found:
             self.found[key] = []
-            
+
         # test raw target
-        
+
         def query_logic(_target):
-            api.output.verbose_msgf(['toolsettings'],"Query based on:{0}",_target)
-            for k, vl in self.tools[_target].items():                
+            api.output.verbose_msgf(['toolsettings'], "Query based on:{0}", _target)
+            for k, vl in self.tools[_target].items():
                 swap = False
                 for v in vl:
                     tmp = v.query(env, self.name, root_path, use_script)
-                    
+
                     # if we find anything
                     if tmp is not None:
                         # go through all items and store needed information
@@ -272,7 +270,7 @@ class ToolSetting(object):
                 api.output.verbose_msgf(['toolsettings'], "not_found : {}", key)
                 # this combo was fully queried
                 return
-        except:
+        except BaseException:
             pass
         api.output.verbose_msgf(['toolsettings'], "query for Exact version '{0}'", version)
         # don't have it, so we setup to get it added to cache
@@ -375,7 +373,7 @@ class ToolSetting(object):
 
                 if tmp is not None:
                     found = True
-            except:
+            except BaseException:
                 found = False
 
         # test to see if it was found
@@ -429,13 +427,17 @@ class ToolSetting(object):
             items = self.tools[target]
         except KeyError:
             # not defined so we just add the set and return
-            api.output.verbose_msgf("toolsettings", "For tool: '{0}' host: '{3}' adding info for target:{1} verions:{2}", self.name, target, [
-                                    str(i) for i in list(tools.keys())], host)
+            api.output.verbose_msgf(
+                "toolsettings", "For tool: '{0}' host: '{3}' adding info for target:{1} verions:{2}", self.name, target, [
+                    str(i) for i in list(
+                        tools.keys())], host)
             self.tools[target] = tools
             return
 
-        api.output.verbose_msgf("toolsettings", "For tool: '{0}' host: '{3}' adding info for target:{1} verions:{2}", self.name, target, [
-                                str(i) for i in list(tools.keys())], host)
+        api.output.verbose_msgf(
+            "toolsettings", "For tool: '{0}' host: '{3}' adding info for target:{1} verions:{2}", self.name, target, [
+                str(i) for i in list(
+                    tools.keys())], host)
         for key, val in tools.items():
             # if we have this version already
             if key in items:
@@ -497,13 +499,14 @@ class ToolSetting(object):
             target = _env['TARGET_PLATFORM']
             config = env.subst("$CONFIG")
 
-            api.output.verbose_msgf(['toolsettings'], "Getting environment for tool: {0}\n version: {1}\n use_script: {2}\n target: {3}\n config: {4}",
-                                    self.name,
-                                    "latest" if version is None else version,
-                                    use_script,
-                                    target,
-                                    config
-                                    )
+            api.output.verbose_msgf(
+                ['toolsettings'],
+                "Getting environment for tool: {0}\n version: {1}\n use_script: {2}\n target: {3}\n config: {4}",
+                self.name,
+                "latest" if version is None else version,
+                use_script,
+                target,
+                config)
             # query data
             if version is not None:
                 self.query_for_exact(_env, key, version)
@@ -534,8 +537,9 @@ class ToolSetting(object):
                                      (version, self.name, target, self.found[key]))
 
             if tinfo is None:
-                raise ToolSetupError('ToolSettings failed to load infomation about tool {0} with version: {1} and target: {2}'.format(
-                    self.name, version, target))
+                raise ToolSetupError(
+                    'ToolSettings failed to load infomation about tool {0} with version: {1} and target: {2}'.format(
+                        self.name, version, target))
             # got the tool info now get the data
 
             # get the shell environment

@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 import parts.api as api
-
 import SCons.Script
 
 # TODO need to add package group to scan directory

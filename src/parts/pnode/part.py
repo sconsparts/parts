@@ -1,9 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-from past.builtins import cmp
-from builtins import zip
-
-
 import copy
 import hashlib
 import os
@@ -12,13 +8,15 @@ import sys
 import time
 import traceback
 import types
+from builtins import zip
 
-import SCons.Node
+from past.builtins import cmp
 
 import parts.pnode.part_info as part_info
 import parts.pnode.pnode as pnode
 import parts.pnode.pnode_manager as pnode_manager
 import parts.pnode.section as section
+import SCons.Node
 
 # these imports add stuff we will need to export to the parts file.
 #from .. import requirement
@@ -226,7 +224,7 @@ class part(pnode.pnode):
         # some state stuff
         try:
             self.__read_state = self.__read_state
-        except:
+        except BaseException:
             self.__read_state = glb.load_none
         super(part, self).__init__()
 
@@ -717,7 +715,7 @@ class part(pnode.pnode):
         else:
             dir_tmp = self.__env.Dir(self.__parent.__src_path)
         if self.__vcs is None:
-            # we have no vcs object 
+            # we have no vcs object
             # so we take file name as is
             self.__file = dir_tmp.File(self.__env.subst(self.__file))  # the Parts file to read in
         else:
@@ -798,12 +796,12 @@ class part(pnode.pnode):
             if m == "default":
                 pass
             elif m in self.__mode:
-                #if self.isRoot:
-                    #api.output.warning_msgf(
+                # if self.isRoot:
+                    # api.output.warning_msgf(
                         #'Mode value "{val}" was defined globally and locally. This may cause ambiguous dependency matching',
-                        #val=m,
-                        #id=self.ID
-                    #)
+                        # val=m,
+                        # id=self.ID
+                    # )
                 pass
             else:
                 self.__mode.append(m)
@@ -857,10 +855,15 @@ class part(pnode.pnode):
 
             if self.__parent is not None:
                 sdkname = "%s_%s.sdk.parts" % (self.__name, self.Version)
-                args = {'alias': self.__short_alias, 'parts_file': sdkname,
-                        'mode': self.__mode,
-                        'vcs_type': None, 'default': self.__set_as_default_target, 'append': self.__append, 'prepend': self.__prepend,
-                        'create_sdk': False}
+                args = {
+                    'alias': self.__short_alias,
+                    'parts_file': sdkname,
+                    'mode': self.__mode,
+                    'vcs_type': None,
+                    'default': self.__set_as_default_target,
+                    'append': self.__append,
+                    'prepend': self.__prepend,
+                    'create_sdk': False}
                 self.__parent._create_sdk_data.append(('Part', [common.named_parms(args),
                                                                 common.named_parms(self.__kw)]))
 
@@ -993,7 +996,7 @@ class part(pnode.pnode):
             # print "promotion state from cache to file"
             try:
                 glb.pnodes.Create(part, **self._cache['init_state'])
-            except:
+            except BaseException:
                 pass
 
         if self.LoadState < glb.load_file:
@@ -1100,8 +1103,11 @@ class part(pnode.pnode):
                 # have been called
                 if not obj.isValid():
                     # We have an error
-                    api.output.error_msg("Section %s did not define all required phases!\n Define phases are:%s\n Required Phases are:%s" %
-                                         [name, obj.FoundPhases(), RequiredPhases()])
+                    api.output.error_msg(
+                        "Section %s did not define all required phases!\n Define phases are:%s\n Required Phases are:%s" % [
+                            name,
+                            obj.FoundPhases(),
+                            RequiredPhases()])
             else:
                 # we don't have anything in the section as it was not called
                 # in this case remove it
@@ -1329,7 +1335,7 @@ class part(pnode.pnode):
         try:
             vcs_obj = self.__vcs if self.__vcs else self.__root.__vcs
             info.vcs_cache_filename = vcs_obj._cache_filename
-        except:
+        except BaseException:
             pass
         info.BuildTargets = self.BuildTargets
         return info
@@ -1387,8 +1393,8 @@ class part(pnode.pnode):
 
 # some util function
 
-#def pcmp(x, y):
-    #return cmp(x._order_value, y._order_value)
+# def pcmp(x, y):
+    # return cmp(x._order_value, y._order_value)
 
 
 def complex_compare(v1, v2, env):
@@ -1416,12 +1422,12 @@ def complex_compare(v1, v2, env):
             if complex_compare(i, j, env):
                 return True
             return False
-    #elif isinstance(v1, types.InstanceType):
-        #if v1 == v2:
-            #return False
-        #elif str(v1) == str(v2):
-            #return False
-        #return True
+    # elif isinstance(v1, types.InstanceType):
+        # if v1 == v2:
+            # return False
+        # elif str(v1) == str(v2):
+            # return False
+        # return True
     elif v1 != v2:
         return True
     return False

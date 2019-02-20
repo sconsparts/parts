@@ -1,15 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
-import pickle
 import fnmatch
 import os
-
-import SCons.Script
+import pickle
 
 import parts.api as api
 import parts.common as common
 import parts.errors as errors
 import parts.glb as glb
+import SCons.Script
 
 __cache = {}
 __dirty_cache = set()

@@ -4,11 +4,9 @@
 
 from __future__ import absolute_import, division, print_function
 
-
 import parts.common as common
 import parts.errors
 import parts.glb as glb
-
 from SCons.Debug import logInstanceCreation
 from SCons.Script.SConscript import SConsEnvironment
 

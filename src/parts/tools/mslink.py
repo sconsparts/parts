@@ -32,21 +32,23 @@ selection method.
 #
 from __future__ import absolute_import, division, print_function
 
-__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
-
 import os.path
 
 import parts.api.output as output
 import parts.common as common
 import parts.tools.Common
-from parts.tools.MSCommon import msvc, validate_vars
-
 import SCons.Action
 import SCons.Defaults
 import SCons.Errors
 import SCons.Platform.win32
 import SCons.Tool
 import SCons.Util
+from parts.tools.MSCommon import msvc, validate_vars
+
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
+
+
+
 
 
 def pdbGenerator(env, target, source, for_signature):

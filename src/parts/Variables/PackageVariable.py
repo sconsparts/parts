@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import SCons.Errors
+
 from .variable import Variable
 
 __enable_strings = ('1', 'yes', 'true', 'on', 'enable', 'search')

@@ -2,14 +2,13 @@ from __future__ import absolute_import, division, print_function
 
 import time
 
-from SCons.Debug import logInstanceCreation
-
-
 import parts.api as api
 import parts.errors as errors
 import parts.glb as glb
-from . import base
 from parts.pnode import part
+from SCons.Debug import logInstanceCreation
+
+from . import base
 
 
 class Target(base.Base):  # task_master type

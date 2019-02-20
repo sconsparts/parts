@@ -1,17 +1,15 @@
 from __future__ import absolute_import, division, print_function
 
-
 import re
-
-import SCons.Script
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 import parts.api as api
 import parts.common as common
 import parts.core.util as util
 import parts.errors as errors
 import parts.glb as glb
+import SCons.Script
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 
 class EXPORT_TYPES(object):
@@ -186,7 +184,10 @@ def ExportItem(env, variable, values, create_sdk=True, map_as_depenance=False): 
     else:
         if variable in pobj.DefiningSection.Exports:
             api.output.verbose_msg(
-                ['export'], 'Part "{0}" already as variable "{1}" in export table, overriding with new value'.format(pobj.Name, variable))
+                ['export'],
+                'Part "{0}" already as variable "{1}" in export table, overriding with new value'.format(
+                    pobj.Name,
+                    variable))
         pobj.DefiningSection.Exports[variable] = values
         api.output.verbose_msgf(['export'], "Exporting from part {0}:\n {1} = {2}", pobj.Name, variable, values)
 
@@ -204,9 +205,7 @@ def ExportItem(env, variable, values, create_sdk=True, map_as_depenance=False): 
     errors.ResetPartStackFrameInfo()
 
 
-
 # adding logic to Scons Enviroment object
-
 SConsEnvironment.ExportCPPPATH = ExportCPPPATH
 SConsEnvironment.ExportLIBPATH = ExportLIBPATH
 SConsEnvironment.ExportCPPDEFINES = ExportCPPDEFINES

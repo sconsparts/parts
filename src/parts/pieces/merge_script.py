@@ -7,8 +7,8 @@ import re
 import subprocess
 import sys
 
-import parts.glb as glb
 import parts.api as api
+import parts.glb as glb
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
 

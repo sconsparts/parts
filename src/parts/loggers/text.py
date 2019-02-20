@@ -46,5 +46,5 @@ class text(logger.Logger):
     def __del__(self):
         try:
             self.m_file.close()
-        except:
+        except BaseException:
             pass

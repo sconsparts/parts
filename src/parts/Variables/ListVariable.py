@@ -1,11 +1,12 @@
 
 from __future__ import absolute_import, division, print_function
 
-from builtins import map
-from builtins import filter
+from builtins import filter, map
+
 import SCons.Errors
-from .variable import Variable
 from parts.common import make_unique
+
+from .variable import Variable
 
 # define converter
 
@@ -51,7 +52,7 @@ class ListVariable2(Variable):
             (help, '(comma-separated list of names)', names_str)
         )
 
-        converter = lambda str_val, raw_val, elems=names, m=map: _converter(str_val, raw_val, elems, m)
+        def converter(str_val, raw_val, elems=names, m=map): return _converter(str_val, raw_val, elems, m)
 
         super(ListVariable2, self).__init__(
             name,

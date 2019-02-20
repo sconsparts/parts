@@ -4,11 +4,10 @@ from __future__ import absolute_import, division, print_function
 import parts.api.output as output
 import parts.tools.Common
 import parts.tools.GnuCommon
-from parts.tools.GnuCommon.android import GetLatestNDKAPI
-
 import SCons.Tool
 import SCons.Tool.mingw as mingw
 import SCons.Util
+from parts.tools.GnuCommon.android import GetLatestNDKAPI
 
 cplusplus = __import__('c++', globals(), locals(), [])
 

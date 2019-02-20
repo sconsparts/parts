@@ -5,9 +5,8 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 
-import SCons.Builder
-
 import parts.glb as glb
+import SCons.Builder
 
 scons_builder = SCons.Builder.Builder
 

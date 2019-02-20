@@ -1,12 +1,10 @@
 
 from __future__ import absolute_import, division, print_function
 
-
 import os
 import zipfile
 
 import parts.api as api
-
 import SCons.Script
 
 

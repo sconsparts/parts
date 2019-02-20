@@ -4,14 +4,11 @@
 
 from __future__ import absolute_import, division, print_function
 
-
 import os
 
 import parts.api.output as output
 import parts.common as common
 import parts.tools.Common
-from parts.tools.MSCommon import msvc, validate_vars
-
 import SCons.Action
 import SCons.Defaults
 import SCons.Errors
@@ -19,6 +16,7 @@ import SCons.Platform.win32
 import SCons.Script
 import SCons.Tool
 import SCons.Util
+from parts.tools.MSCommon import msvc, validate_vars
 
 
 def signEmit(target, source, env):

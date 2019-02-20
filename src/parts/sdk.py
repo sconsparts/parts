@@ -1,12 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
-
 import datetime
 import os
-
-import SCons.Script
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 import parts.api as api
 import parts.common as common
@@ -16,6 +11,9 @@ import parts.exportitem as Xp
 import parts.glb as glb
 import parts.node_helpers as node_helpers
 import parts.pattern as pattern
+import SCons.Script
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 g_sdked_files = set([])
 
@@ -455,7 +453,6 @@ def CreateSDK_Emit(target, source, env):
     return (tout, source)
 
 
-
 # adding logic to Scons Enviroment object
 SConsEnvironment.SdkInclude = SdkInclude
 SConsEnvironment.SdkLib = SdkLib
@@ -491,9 +488,10 @@ api.register.add_builder('__CreateSDKBuilder__', SCons.Builder.Builder(
 # add configuartion varaible
 api.register.add_variable("DATE_STAMP", datetime.datetime.now().strftime('%Y%m%d%H%M'), '')
 
-api.register.add_variable('SDK_ROOT',
-                          '#_sdks/${CONFIG}_${TARGET_PLATFORM}_${TOOLCHAIN.replace(",", "_")}/${PART_ROOT_NAME}_${PART_VERSION}${"_%s"%PART_ROOT_MINI_SIG if PART_ROOT_MINI_SIG!="" else ""}',
-                          'Root Directory used for copy SDKs to')
+api.register.add_variable(
+    'SDK_ROOT',
+    '#_sdks/${CONFIG}_${TARGET_PLATFORM}_${TOOLCHAIN.replace(",", "_")}/${PART_ROOT_NAME}_${PART_VERSION}${"_%s"%PART_ROOT_MINI_SIG if PART_ROOT_MINI_SIG!="" else ""}',
+    'Root Directory used for copy SDKs to')
 api.register.add_variable('SDK_LIB_ROOT', '$SDK_ROOT/lib', 'Full SDK directory for the lib concept')
 api.register.add_variable('SDK_BIN_ROOT', '$SDK_ROOT/bin', 'Full SDK directory for the bin concept')
 api.register.add_variable('SDK_INCLUDE_ROOT', '$SDK_ROOT/include', 'Full SDK directory for the include or header concept')
@@ -540,11 +538,13 @@ api.register.add_bool_variable(
     'USE_SRC_DIR', False, 'Controls is the SDK or Src directory of the Part is passed to dependent parts, useful for debug builds')
 api.register.add_bool_variable('CREATE_SDK', True, 'Controls if the SDK should be created and used')
 
-api.register.add_list_variable('SDK_LIB_PATTERN', ['*.lib', '*.LIB', '*.a', '*.A', '*.so', '*.sl',
-                                                   '*.so.*', '*.sl.*', '*.so-gz', '*.dylib'], 'filter of file patterns use to match lib type files')
+api.register.add_list_variable(
+    'SDK_LIB_PATTERN', ['*.lib', '*.LIB', '*.a', '*.A', '*.so', '*.sl', '*.so.*', '*.sl.*', '*.so-gz', '*.dylib'],
+    'filter of file patterns use to match lib type files')
 if 'win32' == glb._host_platform:
-    api.register.add_list_variable('SDK_BIN_PATTERN', [
-                                   '*.dll', '*.DLL', '*.exe', '*.EXE', '*.com', '*.COM', '*.pdb', '*.PDB'], 'filter of file patterns use to match bin type files')
+    api.register.add_list_variable(
+        'SDK_BIN_PATTERN', ['*.dll', '*.DLL', '*.exe', '*.EXE', '*.com', '*.COM', '*.pdb', '*.PDB'],
+        'filter of file patterns use to match bin type files')
 else:
     api.register.add_list_variable('SDK_BIN_PATTERN', ['*'], 'filter of file patterns use to match lib type files')
 

@@ -39,7 +39,7 @@ def removeall(path):
             st = os.lstat(p)
             # should exist in 2.6, does not seem to be on some distros of 2.7??
             os.lchmod(p, stat.S_IMODE(st[stat.ST_MODE]) | stat.S_IWRITE)
-        except:
+        except BaseException:
             pass
         os.unlink(p)
 
@@ -189,10 +189,16 @@ class base(object):
                     # this is a little bit of a hack.. will want to refactor this later
                     if datacache.GetCache("part_map") is None:
                         api.output.warning_msgf(
-                            "Skipping the update of {0} because there is no part cache for mapping the value '{0}' to the Part", i, print_once=True, show_stack=False)
+                            "Skipping the update of {0} because there is no part cache for mapping the value '{0}' to the Part",
+                            i,
+                            print_once=True,
+                            show_stack=False)
                     else:
                         api.output.warning_msgf(
-                            "Skipping the update of {0} as it is not a known part to update. Is this a type-o?", i, print_once=True, show_stack=False)
+                            "Skipping the update of {0} as it is not a known part to update. Is this a type-o?",
+                            i,
+                            print_once=True,
+                            show_stack=False)
 
         return False
 
@@ -350,7 +356,7 @@ class base(object):
                     ret = self.Update()
                 except PartRuntimeError as e:
                     ret = True
-            except:
+            except BaseException:
                 api.output.error_msg("Unexpected exception when doing Update actions for {0}. Stopping build!".format(
                     self._pobj.Alias), show_stack=False, exit=False)
                 traceback.print_exc()
@@ -360,7 +366,7 @@ class base(object):
         else:
             try:
                 ret = self.CheckOut()
-            except:
+            except BaseException:
                 api.output.error_msg("Unexpected exception when Checkout actions for {0}. Stopping build!".format(
                     self._pobj.Alias), show_stack=False, exit=False)
                 traceback.print_exc()

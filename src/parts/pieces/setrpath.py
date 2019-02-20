@@ -34,7 +34,7 @@ def _is_text(node):
         text = subprocess.check_output(['file', node.abspath]).decode()
         if "text" in text:
             return True
-    except:
+    except BaseException:
         pass
     return False
 

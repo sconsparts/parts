@@ -55,7 +55,6 @@ def Tag_wrapper(env, nodes, ns='meta', **metakv):
     return MetaTag(nodes, ns, **metakv)
 
 
-
 # adding logic to Scons Enviroment object
 SConsEnvironment.MetaTag = MetaTag_method
 SConsEnvironment.Tag = Tag_wrapper  # to work around existing tag usage

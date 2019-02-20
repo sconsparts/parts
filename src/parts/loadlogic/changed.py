@@ -1,25 +1,23 @@
 from __future__ import absolute_import, division, print_function
 
-
-
 import os
 import time
-
-import SCons
-from SCons.Debug import logInstanceCreation
 
 import parts.api as api
 import parts.config as config
 import parts.datacache as datacache
 import parts.dependent_ref as dependent_ref
 import parts.glb as glb
-from . import base
 import parts.node_helpers as node_helpers
 import parts.part_ref as part_ref
 import parts.platform_info as platform_info
 import parts.requirement as requirement
 import parts.target_type as target_type
+import SCons
 from parts.pnode import part, section
+from SCons.Debug import logInstanceCreation
+
+from . import base
 
 
 class SectionInfo(object):
@@ -351,7 +349,10 @@ class Changed(base.Base):
                 self.sections_to_load.add(dep_sec)
                 if dep_sec.ReadState == glb.load_cache:
                     api.output.verbose_msg(
-                        ['update_check'], '{0} is set to be loaded from cache because it is a dependent of {1} which is out of date'.format(dep_sec.ID, sec.ID))
+                        ['update_check'],
+                        '{0} is set to be loaded from cache because it is a dependent of {1} which is out of date'.format(
+                            dep_sec.ID,
+                            sec.ID))
 
     def ProcessSections(self, sections):
         ''' Process all the sections to see if the context is out of date,
@@ -607,16 +608,21 @@ class Changed(base.Base):
                         # check if file has changed
                         if not node_helpers.node_up_to_date(file['name']):
                             api.output.verbose_msgf(
-                                "update_check", '{0} is out of data because the file "{1}" that defines the configuration has changed', sec.ID, file['name'])
+                                "update_check",
+                                '{0} is out of data because the file "{1}" that defines the configuration has changed',
+                                sec.ID,
+                                file['name'])
                             self._knowncfgs[key] = True
                             return True
                     else:
                         api.output.verbose_msgf(
                             "update_check",
                             '{0} is out of date because the set of files defining configuration "{1}" for tool "{2}" are different.\n The file "{3}" was not in set of: {4}',
-                            sec.ID, sec.Stored.Part.Stored.Config, tool, file['name'], cfg_files
-
-                        )
+                            sec.ID,
+                            sec.Stored.Part.Stored.Config,
+                            tool,
+                            file['name'],
+                            cfg_files)
                         self._knowncfgs[key] = True
                         return True
         self._knowncfgs[key] = False

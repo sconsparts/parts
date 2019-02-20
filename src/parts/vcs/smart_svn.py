@@ -1,12 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
-
 import os
 from optparse import OptionValueError
-
-import SCons.Script
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 import parts.api as api
 import parts.common as common
@@ -14,7 +9,10 @@ import parts.datacache as datacache
 import parts.glb as glb
 import parts.target_type as target_type
 import parts.version as version
+import SCons.Script
 from parts.core import util
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 from . import svn
 from .base import normalize_url
@@ -149,7 +147,10 @@ class smart_svn(svn.svn):
                 api.output.verbose_msgf("smart_svn", "looking for stored state of {0}", self._env.subst('${VCS.NAME}'))
                 if self._stored_version != self._vars['STABLE_VERSION']:
                     api.output.verbose_msgf(
-                        "smart_svn", "Stable version does not match: {0} != {1}", self._stored_version, self._vars['STABLE_VERSION'])
+                        "smart_svn",
+                        "Stable version does not match: {0} != {1}",
+                        self._stored_version,
+                        self._vars['STABLE_VERSION'])
                 elif self._stored_uid != self._env.subst('${VCS.USER}'):
                     api.output.verbose_msg("smart_svn", "user (UID) does not match {0}!={1}".format(
                         self._stored_uid, self._env.subst('${VCS.USER}')))
@@ -275,7 +276,7 @@ def opt_branch(option, opt, value, parser):
         try:
             # need better logic to validate arguments.. but this will do for now
             k, v = t.rsplit(':', 1)
-        except:
+        except BaseException:
             fvalue['default'] = t
             continue
 

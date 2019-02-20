@@ -1,12 +1,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-from builtins import map
-
 import os
-
-import SCons.Node
-from SCons.Debug import logInstanceCreation
+from builtins import map
 
 import parts.api as api
 import parts.datacache as datacache
@@ -15,6 +11,8 @@ import parts.metatag as metatag
 import parts.picklehelpers as picklehelpers
 import parts.pnode.part_info as part_info  # needed for a type type
 import parts.pnode.pnode as pnode
+import SCons.Node
+from SCons.Debug import logInstanceCreation
 
 
 class _node_info(object):
@@ -480,7 +478,10 @@ class manager(object):
             # if this node has changed
             if self.hasNodeRelationChanged(snode, ninfo):
                 api.output.verbose_msg(
-                    ['node_check'], "{0} is out of date because the state of source {1} is different from what is stored".format(nodeid, snode))
+                    ['node_check'],
+                    "{0} is out of date because the state of source {1} is different from what is stored".format(
+                        nodeid,
+                        snode))
                 return True
 
         return False
@@ -512,8 +513,6 @@ class manager(object):
                 if self.hasNodeRelationChanged(tmp['name'], tmp):
                     ret.add(pinfo.RootID)
         return ret
-
-
 
 
 def node_to_str(node):

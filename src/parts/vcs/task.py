@@ -2,10 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import sys
 
-
-import SCons.Errors
-
 import parts.api as api
+import SCons.Errors
 from parts.reporter import PartRuntimeError as PartRuntimeError
 
 
@@ -34,7 +32,7 @@ class task(object):
         Set up any logic or to figure out if anything should execute.
         '''
         self.___orginial_part_log_name = self.__vcs._env["LOG_PART_FILE_NAME"]
-        self.__vcs._env["LOG_PART_FILE_NAME"]="${VCS_LOG_PART_FILE_NAME}"
+        self.__vcs._env["LOG_PART_FILE_NAME"] = "${VCS_LOG_PART_FILE_NAME}"
 
     def needs_execute(self):
         ''' reports if anything should execute'''
@@ -52,10 +50,10 @@ class task(object):
                 #buildError.node = self.__vcs.CheckOutDir
                 #buildError.exc_info = sys.exc_info()
                 #raise buildError
-        except:
+        except BaseException:
             import traceback
             import io
-            traceback.print_exc() 
+            traceback.print_exc()
             raise
 
     def exception_set(self, exception=None):
@@ -71,7 +69,7 @@ class task(object):
 
     def postprocess(self):
         ''' this always gets called after the task ran, failed or not'''
-        self.__vcs._env["LOG_PART_FILE_NAME"]=self.___orginial_part_log_name
+        self.__vcs._env["LOG_PART_FILE_NAME"] = self.___orginial_part_log_name
         self.__vcs.ProcessResult(not self.__failed)
         pass
 

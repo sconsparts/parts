@@ -19,7 +19,7 @@ def def_UserList___init__(klass):
     klass.__init__ = __init__
 
 
-#def_UserList___init__(UserList)
+# def_UserList___init__(UserList)
 
 ##from SCons.Util import UniqueList
 # def def_UniqueList___iter__(klass):

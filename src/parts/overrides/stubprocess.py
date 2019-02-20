@@ -47,7 +47,7 @@ if sys.platform in ('linux2', 'darwin'):
     if __name__ == '__main__':
         try:
             MAXFD = os.sysconf("SC_OPEN_MAX")
-        except:
+        except BaseException:
             MAXFD = 256
 
         try:
@@ -61,7 +61,7 @@ if sys.platform in ('linux2', 'darwin'):
                     try:
                         if i != but:
                             os.close(i)
-                    except:
+                    except BaseException:
                         pass
         else:
             def _close_fds(but):
@@ -141,7 +141,7 @@ if sys.platform in ('linux2', 'darwin'):
                     os.execvp(executable, args)
                 else:
                     os.execvpe(executable, args, env)
-            except:
+            except BaseException:
                 report_exception(errpipe_write)
 
             # This exitcode won't be reported to applications, so it
@@ -158,7 +158,7 @@ if sys.platform in ('linux2', 'darwin'):
                 data = sys.argv[2]
             params = pickle.loads(base64.decodestring(data))
             do_execv(**params)
-        except:
+        except BaseException:
             report_exception(errpipe_write)
 
     else:
@@ -167,7 +167,7 @@ if sys.platform in ('linux2', 'darwin'):
 
         try:
             ARG_MAX = os.sysconf('SC_ARG_MAX')
-        except:
+        except BaseException:
             ARG_MAX = 32768
 
         try:
@@ -332,7 +332,7 @@ if sys.platform in ('linux2', 'darwin'):
                         if use_file:
                             try:
                                 os.unlink(the_file.name)
-                            except:
+                            except BaseException:
                                 pass
                         os.close(errpipe_read)
                         if p2cread is not None and p2cwrite is not None:

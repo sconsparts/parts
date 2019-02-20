@@ -1,19 +1,17 @@
 from __future__ import absolute_import, division, print_function
 
-
-from SCons.Debug import logInstanceCreation
-
 import parts.common as common
 import parts.core.util as util
 import parts.glb as glb
 import parts.policy as policies
 import parts.target_type as target_type
 import parts.version as version
+from SCons.Debug import logInstanceCreation
 
 
 class part_ref(object):
     """description of class"""
-    __slots__ = [        
+    __slots__ = [
         '__local_space',
         '__target',
         '__matches',

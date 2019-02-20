@@ -1,24 +1,22 @@
 from __future__ import absolute_import, division, print_function
 
-
-from builtins import filter
 import operator
 import os
 import platform
 import re
 import shutil
 import subprocess
+from builtins import filter
 
 import parts.api as api
 import parts.common as common
 import parts.errors as errors
 import parts.glb as glb
-
 import SCons.Script
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
 
-rpm_reg = "([\w_.-]+)-([\w.]+)-([\w_.]+)[.](\w+)\.rpm"
+rpm_reg = r"([\w_.-]+)-([\w.]+)-([\w_.]+)[.](\w+)\.rpm"
 
 
 def rpm_wrapper_mapper(env, target, sources, **kw):
@@ -107,8 +105,9 @@ def rpm_wrapper_mapper(env, target, sources, **kw):
         d1 = env.TarGzFile(('${{BUILD_DIR}}/_rpm/{0}/SOURCES/{1}.tar.gz').format(target[0].name[:-4], filename), ret)
 
         # copy the processed spec file to correct location for RPM build to work
-        d2 = env.CCopyAs(env.Dir(
-            '${{BUILD_DIR}}/_rpm/{0}/SPECS'.format(target[0].name[:-4])), env.Dir('${{BUILD_DIR}}/SPECS/{0}'.format(target[0].name[:-4])))
+        d2 = env.CCopyAs(
+            env.Dir('${{BUILD_DIR}}/_rpm/{0}/SPECS'.format(target[0].name[: -4])),
+            env.Dir('${{BUILD_DIR}}/SPECS/{0}'.format(target[0].name[: -4])))
         env._rpm(target, d1 + d2)
 
     return rpm_builder
@@ -168,7 +167,7 @@ def RpmPackage_wrapper(_env, target, sources, **kw):
     # get the dist value
     try:
         dist = subprocess.check_output(["rpm", "--eval", "%{?dist}"]).strip().decode()
-    except:
+    except BaseException:
         api.output.error_msg("rpm was not found")
 
     if ("DIST" in env and env.subst('$DIST') == "%{?dist}") or ("DIST" not in env):

@@ -6,13 +6,8 @@ import traceback
 from builtins import map
 from collections import defaultdict
 
-import SCons.Script
-import SCons.Script.Main
-import SCons.Subst
-from SCons.Debug import logInstanceCreation
-from SCons.Subst import CmdStringHolder
-
 import _thread
+
 import parts.api as api
 import parts.common as common
 import parts.core.util as util
@@ -22,6 +17,11 @@ import parts.part_ref as part_ref
 import parts.policy as Policy
 import parts.target_type as target_type
 import parts.version as version
+import SCons.Script
+import SCons.Script.Main
+import SCons.Subst
+from SCons.Debug import logInstanceCreation
+from SCons.Subst import CmdStringHolder
 
 
 class env_guard(object):
@@ -196,7 +196,7 @@ class mapper(object):
             return self._guarded_call(target, source, env, for_signature)
         except SystemExit:
             raise
-        except:
+        except BaseException:
             api.output.error_msg(
                 "Unexpected exception in {0} mapping happened\n mapper: \"{1!r}\"\n{2}".format(
                     self.name, self, traceback.format_exc()),
@@ -457,8 +457,9 @@ class part_id_mapper(mapper):
                                  'Failed to find Part that matches name: {0}'.format(self.part_name))
             self.name_to_alias_failed(env, match, policy=Policy.REQPolicy.error)
 
-        api.output.trace_msg(['partid_mapper', 'mapper'], spacer,
-                             'Found matching part! name: {0} version:{1} -> alias: {2}'.format(self.part_name, self.ver_range, pobj.Alias))
+        api.output.trace_msg(
+            ['partid_mapper', 'mapper'],
+            spacer, 'Found matching part! name: {0} version:{1} -> alias: {2}'.format(self.part_name, self.ver_range, pobj.Alias))
 
         ret = getattr(pobj, self.part_prop, None)
         if ret is None:

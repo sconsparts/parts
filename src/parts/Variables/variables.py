@@ -4,15 +4,14 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 
-import SCons.Environment
-import SCons.Util
-from SCons.Debug import logInstanceCreation
-
 import parts.api as api
 import parts.events as events
+import SCons.Environment
+import SCons.Util
 from parts.common import make_list
-from .variable import Variable
+from SCons.Debug import logInstanceCreation
 
+from .variable import Variable
 
 
 class Variables(dict, object):

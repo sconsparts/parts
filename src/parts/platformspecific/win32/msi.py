@@ -1,9 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
-
-from builtins import range
-
 import ctypes
+from builtins import range
 from ctypes import windll
 
 # From winerror.h
@@ -213,7 +211,7 @@ if __name__ == '__main__':
     import re
     for product in allProducts():
         print('\t'.join(((product.ProductName or
-                           product.ProductGuid).encode('mbcs', errors='ignore'),
-                          getattr(product, 'VersionString',
-                                  'No version info').encode('mbcs', errors='ignore'))))
+                          product.ProductGuid).encode('mbcs', errors='ignore'),
+                         getattr(product, 'VersionString',
+                                 'No version info').encode('mbcs', errors='ignore'))))
 # vim: set et ts=4 sw=4 ft=python :

@@ -1,12 +1,11 @@
 
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
-
 import glob
 import os
 import re
 import sys
+from builtins import range
 
 import SCons.Util
 from SCons.Debug import logInstanceCreation

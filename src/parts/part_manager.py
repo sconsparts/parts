@@ -1,16 +1,10 @@
 
 from __future__ import absolute_import, division, print_function
 
-
-
 import copy
 import hashlib
 import os
 import time
-
-import SCons.Job
-import SCons.Script
-from SCons.Debug import logInstanceCreation
 
 import parts.api as api
 import parts.common as common
@@ -26,7 +20,10 @@ import parts.platform_info as platform_info
 import parts.pnode as pnode
 import parts.vcs as vcs
 import parts.version as version
+import SCons.Job
+import SCons.Script
 from parts.target_type import target_type
+from SCons.Debug import logInstanceCreation
 
 
 class part_manager(object):
@@ -241,7 +238,8 @@ class part_manager(object):
                             # did we find a section.. if not error and exist
                             if tmp is None:
                                 api.output.verbose_msg(['warning', 'target_mapping'],
-                                                       'Part {0} does not define a {1} section'.format(pobj.Stored.Name, tobj.Section))
+                                                       'Part {0} does not define a {1} section'.format(
+                                                           pobj.Stored.Name, tobj.Section))
                             else:
                                 ret.append(tmp)
 
@@ -402,7 +400,10 @@ class part_manager(object):
             if parent._remove_cache:
                 pobj._remove_cache = True
                 api.output.verbose_msgf(
-                    ['loading'], "{0} being ignored as {1} seems to not exist in the SConstruct anymore", pobj.ID, pobj.Stored.RootID)
+                    ['loading'],
+                    "{0} being ignored as {1} seems to not exist in the SConstruct anymore",
+                    pobj.ID,
+                    pobj.Stored.RootID)
                 return
 
             # Given that it is read at this point. we need to check to see if we are read
@@ -864,7 +865,7 @@ class part_manager(object):
                 p_list.append(None)
                 jobs = SCons.Job.Jobs(1, s_list)
                 jobs.run(postfunc=lambda: post_vcs_func(jobs, s_list))
-        except:
+        except BaseException:
             if p_list.ReturnCode:
                 glb.engine.def_env.Exit(p_list.ReturnCode)
             if s_list.ReturnCode:
@@ -1134,8 +1135,15 @@ class part_manager(object):
                         api.output.trace_msgf("stored_reduce_target_mapping", "  Removing Part {0}", pobj.ID)
                         part_lst.remove(pobj)
                 elif k in ['platform_match']:
-                    api.output.trace_msgf("stored_reduce_target_mapping", "  Matching Attibute: {0} Values:{1} {2} Types:{3} {4}", k, v, pobj.Stored.PlatformMatch, type(
-                        v), type(pobj.Stored.PlatformMatch))
+                    api.output.trace_msgf(
+                        "stored_reduce_target_mapping",
+                        "  Matching Attibute: {0} Values:{1} {2} Types:{3} {4}",
+                        k,
+                        v,
+                        pobj.Stored.PlatformMatch,
+                        type(v),
+                        type(
+                            pobj.Stored.PlatformMatch))
                     if pobj.Stored.PlatformMatch != v:
                         api.output.trace_msgf("stored_reduce_target_mapping", "  Removing Part {0}", pobj.ID)
                         part_lst.remove(pobj)

@@ -1,17 +1,16 @@
 
 from __future__ import absolute_import, division, print_function
 
-from past.builtins import cmp
-
 import copy
 
-from SCons.Debug import logInstanceCreation
+from future.utils import with_metaclass
+from past.builtins import cmp
 
 import parts.api as api
 import parts.common as common
 import parts.core.util as util
 from parts.policy import ReportingPolicy, REQPolicy
-from future.utils import with_metaclass
+from SCons.Debug import logInstanceCreation
 
 _added_types = {}
 
@@ -186,7 +185,9 @@ class requirement_set(object):
                         tmp._weight = weight
                         self._values.extend(tmp)
                     api.output.policy_msg(
-                        _added_types[i][1], 'REQ', "REQ option {0} is deprecated and will be removed, please remove usage.".format(i))
+                        _added_types[i][1],
+                        'REQ',
+                        "REQ option {0} is deprecated and will be removed, please remove usage.".format(i))
                 else:
                     api.output.warning_msg("{0} is not a registered REQ type. Skipping...".format(i))
             else:

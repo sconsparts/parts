@@ -1,12 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-from builtins import zip
-
 import os
 import re
+from builtins import zip
 
 import parts.api as api
-
 import SCons.Script
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
@@ -112,7 +110,6 @@ def StripXMLCommentsAs(env, target, source, **kw):
         target_path = os.path.split(str(target_i))[0]
         output += StripXMLComments(env, target_path, source_i, **kw)
     return output
-
 
 
 # adding logic to Scons Enviroment object

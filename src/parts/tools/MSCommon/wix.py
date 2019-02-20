@@ -5,26 +5,23 @@ import technique so its uniqueness is supported by python.
 """
 from __future__ import absolute_import, division, print_function
 
-
-
 import os
 import re
 import xml
 import xml.sax
 from xml.dom.pulldom import PullDOM
 
+import SCons.Builder
+import SCons.Node.FS
+import SCons.Scanner
+import SCons.Tool
+import SCons.Util
 from parts import api
 from parts.platform_info import SystemPlatform
 from parts.tools.Common.Finders import EnvFinder, PathFinder
 from parts.tools.Common.ToolInfo import ToolInfo
 from parts.tools.Common.ToolSetting import ToolSetting
 from parts.tools.MSCommon.MsiFinder import MsiFinder
-
-import SCons.Builder
-import SCons.Node.FS
-import SCons.Scanner
-import SCons.Tool
-import SCons.Util
 
 wix = ToolSetting('WIX')
 

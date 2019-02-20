@@ -5,14 +5,11 @@
 
 from __future__ import absolute_import, division, print_function
 
-from builtins import zip
-
-from builtins import map
 import codecs
+from builtins import map, zip
 
 import parts.api as api
 import parts.common as common
-
 import SCons.Action
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
@@ -49,7 +46,6 @@ def _EncodeFile(env, target, source, target_encoding, source_encoding='utf-8'):
                             ENCODE_SOURCE=source_encoding,
                             ENCODE_TARGET=target_encoding
                             )
-
 
 
 # adding logic to Scons Enviroment object

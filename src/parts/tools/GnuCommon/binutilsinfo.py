@@ -1,15 +1,14 @@
 from __future__ import absolute_import, division, print_function
 
-
 import parts.tools.Common
+import SCons.Util
 from parts.platform_info import SystemPlatform
 from parts.tools.Common.Finders import EnvFinder, PathFinder, ScriptFinder
 from parts.tools.Common.ToolInfo import ToolInfo
+from SCons.Debug import logInstanceCreation
 
 from . import android
-import SCons.Util
 from .common import GnuInfo, binutils
-from SCons.Debug import logInstanceCreation
 
 
 class BinutilInfo(GnuInfo):

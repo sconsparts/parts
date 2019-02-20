@@ -3,10 +3,10 @@ from __future__ import absolute_import, division, print_function
 
 import parts.api.output as output
 import parts.api.register as register
-import parts.version as version
 import parts.common as common
 import parts.core.util as util
 import parts.section as section
+import parts.version as version
 
 
 def resolve_dependents(manager, part):

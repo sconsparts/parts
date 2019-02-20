@@ -2,10 +2,9 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
-import SCons.Defaults
-
 import parts.api as api
 import parts.common as common
+import SCons.Defaults
 from parts.core import util
 
 from .base import base

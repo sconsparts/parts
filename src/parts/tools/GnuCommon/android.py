@@ -1,8 +1,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-
-
 import os
 import re
 import sys
@@ -11,9 +9,9 @@ import parts.api as api
 import parts.mappers as mappers
 import parts.tools.Common.Finders as Finders
 import parts.version as version
+from SCons.Debug import logInstanceCreation
 
 from . import common
-from SCons.Debug import logInstanceCreation
 
 # android scanner for Windows
 
@@ -38,7 +36,7 @@ class win_scanner(object):
             # being a home directory,program files and c drive
             # we will also look at an environment variable NDK_ROOT
             ndk_root = self.env_var()
-            paths = [os.path.expanduser('~'), 'C:\Program Files (x86)\Android', 'C:\Program Files\Android', "c:\\", "\\"]
+            paths = [os.path.expanduser('~'), r'C:\Program Files (x86)\Android', r'C:\Program Files\Android', "c:\\", "\\"]
             if ndk_root:
                 paths = [ndk_root] + paths
 

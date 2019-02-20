@@ -10,7 +10,6 @@ import parts.common as common
 import parts.core.util as util
 import parts.errors
 import parts.glb as glb
-
 import SCons.Script
 
 
@@ -76,6 +75,7 @@ sections = [
     dict(key='%postrun', value='{key}\n{value}\n\n'),
     dict(key='%verify', value='{key}\n{value}\n\n'),
 ]
+
 
 def add_files_content(env, file_contents, pkg_files, prefix, idx=-1):
     # add all content in archive file
@@ -146,7 +146,7 @@ def rpm_spec(env, target, source):
         for v in rpm_vals:
             try:
                 new_vals.append(env.subst(v))
-            except:
+            except BaseException:
                 api.output.warning_msgf("Failed to subst() value:\n {0}\n passing orginal value instead.", v)
                 new_vals.append(v)
         rpm_vals = new_vals
@@ -205,7 +205,7 @@ def add_if(env, tmpl, keylst, value_mapper, default, required, lookup):
 def generate_values(items, env):
     out_str = ''
     for item in items:
-        keys = (item['key'],)+item.get('extra_keys', ())
+        keys = (item['key'],) + item.get('extra_keys', ())
         tmp = add_if(
             env,
             item.get('value'),
@@ -216,8 +216,8 @@ def generate_values(items, env):
             item.get("lookup", True)
         )
         if tmp:
-            api.output.verbose_msg(['rpm-spec'], "Adding value:\n",tmp[:-1])
-            out_str+=tmp
+            api.output.verbose_msg(['rpm-spec'], "Adding value:\n", tmp[:-1])
+            out_str += tmp
 
     return out_str
 
@@ -230,7 +230,7 @@ def generate_spec(env, rpm_vals):
 
     out_str = ''
     if rpm_vals:
-        out_str = "\n".join(rpm_vals)+"\n"
+        out_str = "\n".join(rpm_vals) + "\n"
 
     # output headers
     out_str += generate_values(headers, env)
@@ -248,7 +248,7 @@ def process_existing_spec(env, file_contents, rpm_vals):
     work correctly. We want to in general do not touch or change anything.
 
     Known issue would be not handling sections well... ideally we want to move away from this
-    The best way to handle this case is to not overide sections in the spec file when calling 
+    The best way to handle this case is to not overide sections in the spec file when calling
     RpmPackage and let this code add only required stuff or missing items
     '''
     headers_not_found = headers[:]
@@ -278,7 +278,7 @@ def process_existing_spec(env, file_contents, rpm_vals):
             if line.startswith(item['key']):
                 # update line
                 header_indx = idx
-                keys = (item['key'],)+item.get("extra_keys", ())
+                keys = (item['key'],) + item.get("extra_keys", ())
                 # do we have an override for this value
                 tmp = add_if(
                     env,
@@ -317,7 +317,7 @@ def process_existing_spec(env, file_contents, rpm_vals):
 
     # check for missing headers items that we can set
     for item in headers_not_found:
-        keys = (item['key'],)+item.get("extra_keys", ())
+        keys = (item['key'],) + item.get("extra_keys", ())
         tmp = add_if(
             env,
             item['value'],
@@ -358,7 +358,7 @@ def process_existing_spec(env, file_contents, rpm_vals):
                 required_sections_not_found.remove(item['key'])
 
         else:
-            keys = (item['key'],)+item.get("extra_keys", ())
+            keys = (item['key'],) + item.get("extra_keys", ())
             tmp = add_if(
                 env,
                 item['value'],

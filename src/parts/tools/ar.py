@@ -4,7 +4,6 @@ from __future__ import absolute_import, division, print_function
 
 import parts.tools.Common
 import parts.tools.GnuCommon.common
-
 import SCons.Tool.ar
 
 

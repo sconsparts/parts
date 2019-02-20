@@ -7,21 +7,20 @@ var defined to to tell what has been targeted as the build env.
 '''
 from __future__ import absolute_import, division, print_function
 
-from past.builtins import cmp
-
 import os
 import platform
 import re
 import subprocess
 import sys
 
-import SCons.Platform
-from SCons.Debug import logInstanceCreation
+from past.builtins import cmp
 
 import parts.api as api
 import parts.common as common
 import parts.core as core
 import parts.glb as glb
+import SCons.Platform
+from SCons.Debug import logInstanceCreation
 
 
 def UpdatePlatformRegEx():
@@ -48,7 +47,7 @@ def UpdateValidArchList():
         if k not in glb.valid_arch:
             glb.valid_arch.append(k)
     #glb.valid_arch.sort(lambda a, b: cmp(len(b), len(a)))
-    glb.valid_arch.sort(key = lambda x: len(x))
+    glb.valid_arch.sort(key=lambda x: len(x))
     UpdatePlatformRegEx()
 
 
@@ -57,7 +56,7 @@ def UpdateValidOSList():
         if k not in glb.valid_os:
             glb.valid_os.append(k)
     #glb.valid_os.sort(lambda a, b: cmp(len(b), len(a)))
-    glb.valid_os.sort(key = lambda x: len(x))
+    glb.valid_os.sort(key=lambda x: len(x))
     UpdatePlatformRegEx()
 
 
@@ -136,11 +135,11 @@ def OSBit():
     if sys.platform == 'win32':
         # this test fails on server 2008
         # may fail on window 7 ( don't know yet)
-        value = "Software\Wow6432Node"
+        value = r"Software\Wow6432Node"
         ret = None
         try:
             ret = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE, value)
-        except:
+        except BaseException:
             pass
         if ret is None and os.environ.get('PROCESSOR_ARCHITEW6432', None) is None:
             return 32
@@ -332,7 +331,8 @@ def target_convert(str_val, raw_val=None, base=None, error=True):
 
 # add configuartion varaible
 #api.register.add_variable('OSBITNESS',str(OSBit()),'to be removed??')
-api.register.add_variable(['TARGET_PLATFORM', 'target_platform', 'target'], SystemPlatform(glb._host_platform.OS, glb._host_platform.ARCH),
+api.register.add_variable(['TARGET_PLATFORM', 'target_platform', 'target'],
+                          SystemPlatform(glb._host_platform.OS, glb._host_platform.ARCH),
                           'Value of what to type of system to target build for, used to control cross builds',
                           converter=target_convert)
 

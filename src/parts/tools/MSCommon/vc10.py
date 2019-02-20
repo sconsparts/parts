@@ -2,12 +2,12 @@ from __future__ import absolute_import, division, print_function
 
 import os
 
+import SCons.Platform
 from parts.platform_info import SystemPlatform
 from parts.tools.Common.Finders import (EnvFinder, PathFinder, RegFinder,
                                         ScriptFinder)
 from parts.tools.Common.ToolInfo import ToolInfo
 
-import SCons.Platform
 from .common import framework_root, framework_root64, get_current_sdk, msvc
 
 # Need to verify the paths, but this seems to work well enough.

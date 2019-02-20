@@ -4,13 +4,12 @@ from __future__ import absolute_import, division, print_function
 import os
 import re
 
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
-
 import parts.api as api
 import parts.common as common
 import parts.datacache as datacache
 from parts.core import util
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 from .base import base, removeall
 
@@ -100,7 +99,8 @@ class svn(base):
                     out_dir), "Cleaning up checkout area for {0}".format(out_dir))] + self.CheckOutAction(out_dir)
             else:
                 api.platforms.output.error_msg(
-                    'Directory "{0}" already exists with no .svn directory. Manually remove directory or update with --vcs-retry or --vcs-clean'.format(out_dir), show_stack=False)
+                    'Directory "{0}" already exists with no .svn directory. Manually remove directory or update with --vcs-retry or --vcs-clean'.format(out_dir),
+                    show_stack=False)
         else:
             strval = '%s switch $SVN_FLAGS %s%s "%s"' % ('svn', update_path, self.Revision, out_dir)
             cmd = '"%s" switch $SVN_FLAGS %s%s "%s"' % (svn.svnpath, update_path, self.Revision, out_dir)
@@ -117,7 +117,7 @@ class svn(base):
         return [self._env.Action(cmd, strval)]
 
     def remove_unversioned(self, path):
-        unver_re = re.compile('^ ?[\?ID] *[1-9 ]*[a-zA-Z]* +(.*)')
+        unver_re = re.compile(r'^ ?[\?ID] *[1-9 ]*[a-zA-Z]* +(.*)')
         lines = self.command_output('svn status --no-ignore -v {0}'.format(path))[1].split('\n')
         for i in lines:
             tmp = unver_re.match(i)

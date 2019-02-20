@@ -52,7 +52,7 @@ def wrap_logInstanceCreation(func):
         def remove(x):
             try:
                 list_instance.remove(x)
-            except:
+            except BaseException:
                 pass
         return remove
 

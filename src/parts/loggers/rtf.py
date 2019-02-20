@@ -5,7 +5,6 @@ import sys
 
 import parts.color as color
 import parts.logger as logger
-
 import SCons.Script
 
 # rtf Simple logger. Probally needs more work.
@@ -122,5 +121,5 @@ class rtf(logger.Logger):
     def __del__(self):
         try:
             self.m_file.close()
-        except:
+        except BaseException:
             pass

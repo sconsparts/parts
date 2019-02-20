@@ -1,13 +1,15 @@
 # import c++ core toolchain
-cplusplus = __import__('c++', globals(), locals(), [])
 from __future__ import absolute_import, division, print_function
 
 import parts.tools.cc
 import parts.tools.Common
 import parts.tools.GnuCommon
+import SCons.Tool.cc
+
+cplusplus = __import__('c++', globals(), locals(), [])
+
 
 # import c core toolchain
-import SCons.Tool.cc
 
 
 def generate(env):

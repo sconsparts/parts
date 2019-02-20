@@ -3,9 +3,7 @@
 #################################################################
 from __future__ import absolute_import, division, print_function
 
-
 import parts.api as api
-
 import SCons.Script
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
@@ -45,7 +43,6 @@ def py_blde(target, source, env):
 def PythonScript(env, file, emit_func='emit', build_func='build', func_args={}, **kw):
     f = {'emit': emit_func, 'build': build_func}
     return env._PyScriptBuilder_(target=[], source=file, __PYTHONSCRIPT_FUNC_=f, __PYTHONSCRIPT_ARGS_=func_args, **kw)
-
 
 
 # adding logic to Scons Enviroment object

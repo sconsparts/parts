@@ -10,15 +10,13 @@
 # deal with that latter
 from __future__ import absolute_import, division, print_function
 
-
 import os
-
-import SCons.Builder
-# we used lists as a dictionary can't take a tuple as a key
-import SCons.Environment
 
 import parts.errors as errors
 import parts.glb as glb
+import SCons.Builder
+# we used lists as a dictionary can't take a tuple as a key
+import SCons.Environment
 
 key_list = []
 value_list = []

@@ -1,6 +1,5 @@
 from __future__ import absolute_import, division, print_function
 
-
 import collections
 import errno
 import os
@@ -84,7 +83,6 @@ if os.name == 'nt':
         def getInfo(self):
             return SmallThreadInfo(self.th32ThreadID, self.th32OwnerProcessID)
 
-
     WaitForSingleObject = ctypes.windll.kernel32.WaitForSingleObject
     WaitForSingleObject.restype = DWORD
     WaitForSingleObject.argtypes = (HANDLE, DWORD)
@@ -140,7 +138,6 @@ if os.name == 'nt':
     GetProcessTimes = ctypes.windll.kernel32.GetProcessTimes
     GetProcessTimes.argtypes = (HANDLE, LPFILETIME, LPFILETIME, LPFILETIME, LPFILETIME)
     GetProcessTimes.restype = BOOL
-
 
     def int_to_handle(value):
         '''
@@ -325,8 +322,6 @@ def waitForProcess(process, timeout=None):
                 raise
     else:
         __waitForProcess(process, timeout)
-
-
 
 
 class TestKillProcessTree(unittest.TestCase):

@@ -1,13 +1,12 @@
 
 from __future__ import absolute_import, division, print_function
 
-import SCons.Environment
-import SCons.Node
-from SCons.Script.SConscript import SConsEnvironment
-
 import parts.common as common
 import parts.glb as glb
+import SCons.Environment
+import SCons.Node
 from parts.core import util
+from SCons.Script.SConscript import SConsEnvironment
 
 #
 
@@ -39,7 +38,6 @@ def alias_source_node(name, **kw):
         return glb.pnodes.GetNode(name)
 
     return glb.pnodes.Create(SCons.Node.FS.Entry, name, kw)
-
 
 
 SCons.Environment.AliasBuilder = SCons.Builder.Builder(action=SCons.Environment.alias_builder,

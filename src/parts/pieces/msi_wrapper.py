@@ -1,11 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-
 from builtins import filter
+
 import parts.common as common
 import parts.errors
 import parts.glb as glb
-
 from SCons.Debug import logInstanceCreation
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
@@ -79,7 +78,6 @@ def MsiPackage_wrapper(_env, target, sources, **kw):
     glb.engine.add_preprocess_logic_queue(map_msi_builder(env, target[0], sources,
                                                           parts.errors.GetPartStackFrameInfo(), **kw))
     return target
-
 
 
 SConsEnvironment.MSIPackage = MsiPackage_wrapper

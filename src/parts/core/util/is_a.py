@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from future.utils import native_str
+
 import SCons.Node
 import SCons.Util
 

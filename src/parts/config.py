@@ -9,18 +9,17 @@ import copy
 import os
 import traceback
 
-import SCons.Script
-from SCons.Debug import logInstanceCreation
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
-
 import parts.api as api
 import parts.common as common
 import parts.configurations as configurations
 import parts.core.util as util
 import parts.load_module as load_module
 import parts.version as version
+import SCons.Script
 from parts.platform_info import SystemPlatform
+from SCons.Debug import logInstanceCreation
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 
 def null_ver_mapper(env):
@@ -451,7 +450,7 @@ def found_config_files(name, tool, host, target):
                     break
                 except ImportError:
                     pass
-                except:
+                except BaseException:
                     api.output.verbose_msg("configuration", "Unexpected failure:\n",
                                            traceback.format_exc())
 
@@ -512,7 +511,7 @@ def load_tool_config(env, name, tool, host, target):
                     continue
                 except SyntaxError:
                     raise
-                except:
+                except BaseException:
                     api.output.verbose_msg("configuration", "Unexpected failure:\n",
                                            traceback.format_exc())
                     continue
@@ -615,12 +614,14 @@ class config_type_wrapper(str, common.bindable):
 
     def __eq__(self, rhs):
         api.output.warning_msg(
-            "Please use isConfigBasedOn() to test if configuration is based on debug or release, next drop will match exact configuration for == test", env=self.env)
+            "Please use isConfigBasedOn() to test if configuration is based on debug or release, next drop will match exact configuration for == test",
+            env=self.env)
         return self.env.isConfigBasedOn(rhs)
 
     def __ne__(self, rhs):
         api.output.warning_msg(
-            "Please use isConfigBasedOn() to test if configuration is based on debug or release, next drop will match exact configuration for != test", env=self.env)
+            "Please use isConfigBasedOn() to test if configuration is based on debug or release, next drop will match exact configuration for != test",
+            env=self.env)
         return self.env.isConfigBasedOn(rhs) == False
 
     def _rebind(self, env, key):
@@ -711,7 +712,6 @@ def _isconfigbasedon(env, name, config):
 
 def isConfigBasedOn(env, name):
     return _isconfigbasedon(env, name, env.subst('$CONFIG'))
-
 
 
 # adding logic to Scons Enviroment object

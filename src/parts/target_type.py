@@ -1,15 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
-
 from builtins import map
-
-import SCons.Node.FS
-from SCons.Debug import logInstanceCreation
 
 import parts.api as api
 import parts.common as common
 import parts.core as core
 import parts.glb as glb
+import SCons.Node.FS
+from SCons.Debug import logInstanceCreation
 
 # move to glb once we have new formats working
 __known_concepts = {

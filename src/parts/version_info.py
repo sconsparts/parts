@@ -55,5 +55,5 @@ try:
     SConsEnvironment.PartVersionString = parts_version_text_env
     SConsEnvironment.IsPartsExtensionVersionBeta = is_parts_version_beta_env
     SConsEnvironment.PartsExtensionVersion = PartsExtensionVersion_env
-except:
+except BaseException:
     pass

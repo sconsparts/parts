@@ -1,9 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
+import parts.glb as glb
 import SCons.Script
 
 from . import output
-import parts.glb as glb
 
 
 def add_section(section):

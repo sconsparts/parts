@@ -1,7 +1,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-
 import os
 import stat
 import sys
@@ -17,9 +16,8 @@ import parts.node_helpers as node_helpers
 import parts.parts as parts
 import parts.pattern as pattern
 import parts.pnode as pnode
-from parts.target_type import target_type
-
 import SCons.Script
+from parts.target_type import target_type
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
 
@@ -28,6 +26,8 @@ from SCons.Script.SConscript import SConsEnvironment
 ###########################################
 # unit test script file writer
 ###########################################
+
+
 def unit_test_script_bf_str(target=None, source=None, env=None):
     return "PARTS: Writing unit test launch scripts"
 
@@ -77,7 +77,7 @@ sys.exit(proc.returncode)
         f.write(command.encode())
     with open(target_cmd.path, 'wb') as f:
         f.write(("@pushd %~dp0\r\n@python " + target_py.name +
-                " %*\r\nset ERROR_LEVEL=%ERRORLEVEL%\r\n@popd\r\nexit %ERROR_LEVEL%").encode())
+                 " %*\r\nset ERROR_LEVEL=%ERRORLEVEL%\r\n@popd\r\nexit %ERROR_LEVEL%").encode())
     st = os.stat(target_py.path)
     os.chmod(target_py.path, stat.S_IMODE(st[stat.ST_MODE]) | stat.S_IEXEC)
     st = os.stat(target_cmd.path)
@@ -382,7 +382,6 @@ def run_utest_return_default(code, env=None, stackframe=None):
     return code
 
 
-
 # adding logic to Scons Enviroment object
 SConsEnvironment.UnitTest = unit_test
 
@@ -420,9 +419,10 @@ api.register.add_variable('UNIT_TEST_TARGET_NAME',
 api.register.add_variable('UNIT_TEST_SCRIPT_NAME',
                           '${UNIT_TEST_TARGET}',
                           'Default value of a given unit test executable')
-api.register.add_variable('UNIT_TEST_RUN_SCRIPT_COMMAND',
-                          'cd ${NORMPATH("$UNIT_TEST_DIR")} && ${RELPATH("INSTALL_BIN", "UNIT_TEST_DIR")}${UNIT_TEST_TARGET_NAME} ${UTEST_CMDARGS}',
-                          'Command action used to run a unit test script in SCons run_utest::')
+api.register.add_variable(
+    'UNIT_TEST_RUN_SCRIPT_COMMAND',
+    'cd ${NORMPATH("$UNIT_TEST_DIR")} && ${RELPATH("INSTALL_BIN", "UNIT_TEST_DIR")}${UNIT_TEST_TARGET_NAME} ${UTEST_CMDARGS}',
+    'Command action used to run a unit test script in SCons run_utest::')
 api.register.add_variable('UNIT_TEST_RUN_COMMAND',
                           '${RELPATH("INSTALL_BIN","UNIT_TEST_DIR")}${UNIT_TEST_TARGET_NAME} ${UTEST_CMDARGS}',
                           'Command action used to run a unit test in the script')

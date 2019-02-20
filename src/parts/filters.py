@@ -1,13 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-
-
 import fnmatch
-
-from SCons.Debug import logInstanceCreation
 
 import parts.api as api
 import parts.metatag as metatag
+from SCons.Debug import logInstanceCreation
 
 
 class hasFileExtension(object):

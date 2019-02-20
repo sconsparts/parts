@@ -3,7 +3,6 @@
 from __future__ import absolute_import, division, print_function
 
 import parts.api as api
-
 import SCons.Builder
 import SCons.Scanner.Prog
 # This is what we want to be setup in parts

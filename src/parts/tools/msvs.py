@@ -33,15 +33,6 @@ selection method.
 
 from __future__ import absolute_import, division, print_function
 
-__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
-
-from past.builtins import cmp
-from builtins import zip
-from builtins import filter
-
-from builtins import map
-from builtins import range
-
 import base64
 import hashlib
 import ntpath
@@ -50,16 +41,25 @@ import pickle
 import re
 import string
 import sys
+from builtins import filter, map, range, zip
+
+from past.builtins import cmp
 
 import parts.tools.Common
-from parts.tools.MSCommon import msvc
-
 import SCons.Builder
 import SCons.Node.FS
 import SCons.Platform.win32
 import SCons.Script.SConscript
 import SCons.Util
 import SCons.Warnings
+from parts.tools.MSCommon import msvc
+
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
+
+
+
+
+
 
 ##############################################################################
 # Below here are the classes and functions for generation of
@@ -336,7 +336,7 @@ class _DSPGenerator(object):
             config.cmdargs = cmdargs
             config.runfile = runfile
 
-            match = re.match('(.*)\|(.*)', variant)
+            match = re.match(r'(.*)\|(.*)', variant)
             if match:
                 config.variant = match.group(1)
                 config.platform = match.group(2)
@@ -530,7 +530,7 @@ class _GenerateV6DSP(_DSPGenerator):
             data = pickle.loads(datas)
         except KeyboardInterrupt:
             raise
-        except:
+        except BaseException:
             return  # unable to unpickle any data for some reason
 
         self.configs.update(data)
@@ -549,7 +549,7 @@ class _GenerateV6DSP(_DSPGenerator):
             data = pickle.loads(datas)
         except KeyboardInterrupt:
             raise
-        except:
+        except BaseException:
             return  # unable to unpickle any data for some reason
 
         self.sources.update(data)
@@ -836,7 +836,7 @@ class _GenerateV7DSP(_DSPGenerator):
             data = pickle.loads(datas)
         except KeyboardInterrupt:
             raise
-        except:
+        except BaseException:
             return  # unable to unpickle any data for some reason
 
         self.configs.update(data)
@@ -854,7 +854,7 @@ class _GenerateV7DSP(_DSPGenerator):
             data = pickle.loads(datas)
         except KeyboardInterrupt:
             raise
-        except:
+        except BaseException:
             return  # unable to unpickle any data for some reason
 
         self.sources.update(data)
@@ -931,7 +931,7 @@ class _GenerateV7DSW(_DSWGenerator):
         def AddConfig(self, variant, dswfile=dswfile):
             config = Config()
 
-            match = re.match('(.*)\|(.*)', variant)
+            match = re.match(r'(.*)\|(.*)', variant)
             if match:
                 config.variant = match.group(1)
                 config.platform = match.group(2)
@@ -981,7 +981,7 @@ class _GenerateV7DSW(_DSWGenerator):
             data = pickle.loads(datas)
         except KeyboardInterrupt:
             raise
-        except:
+        except BaseException:
             return  # unable to unpickle any data for some reason
 
         self.configs.update(data)
@@ -1062,13 +1062,13 @@ class _GenerateV7DSW(_DSWGenerator):
             if self.version_num >= 8.0:
                 for p in self.dspfiles:
                     guid = _generateGUID(p, '')
-                    self.file.write('\t\t%s.%s|%s.ActiveCfg = %s|%s\n'
-                                    '\t\t%s.%s|%s.Build.0 = %s|%s\n' % (guid, variant, platform, variant, platform, guid, variant, platform, variant, platform))
+                    self.file.write('\t\t%s.%s|%s.ActiveCfg = %s|%s\n' '\t\t%s.%s|%s.Build.0 = %s|%s\n' %
+                                    (guid, variant, platform, variant, platform, guid, variant, platform, variant, platform))
             else:
                 for p in self.dspfiles:
                     guid = _generateGUID(p, '')
-                    self.file.write('\t\t%s.%s.ActiveCfg = %s|%s\n'
-                                    '\t\t%s.%s.Build.0 = %s|%s\n' % (guid, variant, variant, platform, guid, variant, variant, platform))
+                    self.file.write('\t\t%s.%s.ActiveCfg = %s|%s\n' '\t\t%s.%s.Build.0 = %s|%s\n' %
+                                    (guid, variant, variant, platform, guid, variant, variant, platform))
 
         self.file.write('\tEndGlobalSection\n')
 

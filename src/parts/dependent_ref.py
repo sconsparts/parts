@@ -3,13 +3,12 @@ from __future__ import absolute_import, division, print_function
 
 import hashlib
 
-from SCons.Debug import logInstanceCreation
-
 import parts.api as api
 import parts.errors as errors
 import parts.glb as glb
 import parts.policy as policies
 import parts.requirement as requirement
+from SCons.Debug import logInstanceCreation
 
 
 class dependent_ref(object):

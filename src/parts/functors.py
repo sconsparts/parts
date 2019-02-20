@@ -1,15 +1,15 @@
 from __future__ import absolute_import, division, print_function
 
-import SCons.Script
-from SCons.Debug import logInstanceCreation
-
 import _thread
+
 import parts.api as api
 import parts.common as common
 import parts.core as core
 import parts.glb as glb
 import parts.mappers as mappers
 import parts.requirement as requirement
+import SCons.Script
+from SCons.Debug import logInstanceCreation
 
 
 def gen_rpath_link(sec):

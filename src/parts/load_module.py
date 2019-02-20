@@ -7,11 +7,10 @@ import re
 import sys
 import traceback
 
-import SCons.Errors
-import SCons.Script
-
 import parts.api as api
 import parts.glb as glb
+import SCons.Errors
+import SCons.Script
 
 g_site_dir_cache = {}
 

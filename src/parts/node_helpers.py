@@ -7,18 +7,17 @@ from __future__ import absolute_import, division, print_function
 import ctypes
 import os
 
+import parts.api as api
+import parts.common as common
+import parts.core.util as util
+import parts.glb as glb
+import parts.metatag as metatag
 import SCons.Node.FS
 import SCons.Script
 import SCons.Util
 from SCons.Debug import logInstanceCreation
 # import the meta object we will need to add our code to as methods
 from SCons.Script.SConscript import SConsEnvironment
-
-import parts.api as api
-import parts.common as common
-import parts.core.util as util
-import parts.glb as glb
-import parts.metatag as metatag
 
 
 class ninfotmp(object):
@@ -139,7 +138,6 @@ def AbsFileNode(env, path):
 
 def AbsDirNode(env, path):
     return abs_path_node(env, path, env.Dir)
-
 
 
 # add as global to part scope

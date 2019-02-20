@@ -33,19 +33,21 @@ selection method.
 
 from __future__ import absolute_import, division, print_function
 
-__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
-
 import string
 
 import parts.api.output as output
 import parts.tools.Common
-from parts.tools.MSCommon import msvc
-
 import SCons.Action
 import SCons.Builder
 import SCons.Defaults
 import SCons.Scanner.IDL
 import SCons.Util
+from parts.tools.MSCommon import msvc
+
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
+
+
+
 
 
 def midl_emitter(target, source, env):

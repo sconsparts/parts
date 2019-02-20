@@ -1,5 +1,4 @@
 import parts.api as api
-
 import SCons.Script
 
 rpm_action = SCons.Action.Action([

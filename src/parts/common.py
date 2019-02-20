@@ -13,15 +13,14 @@ import sys
 import types
 from builtins import range
 
+import parts.core.util as util
+import parts.glb as glb
 import SCons.Errors
 # import Scons stuff
 import SCons.Script
 import SCons.Tool
 import SCons.Util
 from SCons.Debug import logInstanceCreation
-
-import parts.core.util as util
-import parts.glb as glb
 
 
 def GetUserName(env):
@@ -161,10 +160,9 @@ def get_content(obj):
     elif util.isDictionary(obj):
         ret = '{'
         # having cases in which the key are not comping in same order
-        # to fix this we sort the keys as a list and iter over that 
+        # to fix this we sort the keys as a list and iter over that
         # sorted list
-        key_list = list(obj.keys())
-        key_list.sort()
+        key_list = sorted(obj.keys())
         for k in key_list:
             ret += "{key}:{val},".format(key=k, val=get_content(obj[k]))
         ret += '}'
@@ -176,7 +174,7 @@ def get_content(obj):
             ret += "{0},".format(get_content(i))
         ret += ']'
     elif util.isString(obj):
-        ret=obj
+        ret = obj
     else:
         ret = str(obj)
 

@@ -3,9 +3,8 @@ from __future__ import absolute_import, division, print_function
 import os
 
 import parts.platform_info
-from parts.tools.Common.ToolSetting import ToolSetting
-
 import SCons.Util
+from parts.tools.Common.ToolSetting import ToolSetting
 
 logfile = os.environ.get('SCONS_MSCOMMON_DEBUG')
 if logfile:
@@ -34,7 +33,7 @@ def get_current_sdk():
     # note this key is used for both 32-bit and 64-bit systems
     # this mean the that default path will always be program file/xxx
     # even on 64-bit systems
-    key = 'SOFTWARE\Microsoft\Microsoft SDKs\Windows\CurrentInstallFolder'
+    key = r'SOFTWARE\Microsoft\Microsoft SDKs\Windows\CurrentInstallFolder'
     dir = ''
     try:
         dir = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE, key)[0]
@@ -50,7 +49,7 @@ def get_current_sdk11():
     # note this key is used for both 32-bit and 64-bit systems
     # this mean the that default path will always be program file/xxx
     # even on 64-bit systems
-    key = 'SOFTWARE\Microsoft\Microsoft SDKs\Windows\v8.0\CurrentInstallFolder'
+    key = r'SOFTWARE\Microsoft\Microsoft SDKs\Windows\v8.0\CurrentInstallFolder'
     dir = ''
     try:
         dir = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE, key)[0]

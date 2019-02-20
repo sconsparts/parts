@@ -2,16 +2,14 @@
 # and imporve report handling when a tools fails
 from __future__ import absolute_import, division, print_function
 
-
 import imp
 import sys
 import traceback
 from collections import defaultdict
 
+import parts.api as api
 import SCons.Tool
 from SCons.Debug import logInstanceCreation
-
-import parts.api as api
 
 
 class Parts_Tool(object):

@@ -8,18 +8,17 @@ import threading
 import time
 import traceback
 
-import SCons.Script
-from SCons.Debug import logInstanceCreation
-from SCons.Environment import SubstitutionEnvironment as SConsEnvironment
-from SCons.Errors import UserError
-
 import parts.api as api
 import parts.common as common
 import parts.console as console
 import parts.core.util as util
 import parts.glb as glb
 import parts.version as version
+import SCons.Script
 from parts.process_tools import killProcessTree, waitForProcess
+from SCons.Debug import logInstanceCreation
+from SCons.Environment import SubstitutionEnvironment as SConsEnvironment
+from SCons.Errors import UserError
 
 # We need to close file descriptors on POSIX systems which have fork() mechanism right after
 # the fork, otherwise all descriptors get inherited, and some files are being open much longer
@@ -37,11 +36,11 @@ class pipeRedirector(object):
                 line = self.pipein.readline()
                 try:
                     line = line.decode()
-                except:
+                except BaseException:
                     pass
                 if line:
                     self.output.WriteStream(self.taskId, self.streamId, line)
-        except:
+        except BaseException:
             # There was an error... that shouldn't happen, but still it did. So we report it
             # to the caller and close our pipe end so that spawned program won't block
             self.error = traceback.format_exc()

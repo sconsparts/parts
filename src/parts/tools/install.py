@@ -5,21 +5,17 @@ on copy... hopefully this can be dropped soon once i get time to make a better s
 """
 from __future__ import absolute_import, division, print_function
 
-from builtins import zip
-from builtins import map
-
-
 import fnmatch
 import os
+from builtins import map, zip
 
 import parts.core.util as util
 import parts.overrides.symlinks as symlinks
-from parts.common import make_list
-
 import SCons.Action
 import SCons.Errors
 # We keep track of *all* installed files.
 import SCons.Tool.install
+from parts.common import make_list
 from SCons.Debug import logInstanceCreation
 from SCons.Util import make_path_relative
 

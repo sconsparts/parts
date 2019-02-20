@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 import os
+from builtins import range
 
 from parts.platform_info import SystemPlatform
 from parts.tools.Common.Finders import EnvFinder, PathFinder, ScriptFinder
@@ -25,7 +25,7 @@ gxx.Register(
             ],
             opt_dirs=[
                 '/opt/'
-            ]+['/opt/rh/devtoolset-{0}/root/usr/bin/'.format(i) for i in range(3, 10)],
+            ] + ['/opt/rh/devtoolset-{0}/root/usr/bin/'.format(i) for i in range(3, 10)],
             script=None,
             subst_vars={},
             shell_vars={'PATH': '${GXX.INSTALL_ROOT}'},

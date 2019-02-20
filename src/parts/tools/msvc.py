@@ -32,8 +32,6 @@ selection method.
 #
 from __future__ import absolute_import, division, print_function
 
-__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
-
 import os.path
 import re
 import string
@@ -41,9 +39,6 @@ import sys
 
 import parts.api.output as output
 import parts.tools.Common
-#from MSCommon import msvc_exists,setup_env,is_win64
-from parts.tools.MSCommon import msvc, validate_vars
-
 import SCons.Action
 import SCons.Builder
 import SCons.Errors
@@ -53,6 +48,13 @@ import SCons.Tool
 import SCons.Tool.msvs
 import SCons.Util
 import SCons.Warnings
+#from MSCommon import msvc_exists,setup_env,is_win64
+from parts.tools.MSCommon import msvc, validate_vars
+
+__revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
+
+
+
 
 CSuffixes = ['.c', '.C']
 CXXSuffixes = ['.cc', '.cpp', '.cxx', '.c++', '.C++']

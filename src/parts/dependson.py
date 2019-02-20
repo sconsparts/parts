@@ -1,13 +1,6 @@
 
 from __future__ import absolute_import, division, print_function
 
-
-
-import SCons.Script
-from SCons.Debug import logInstanceCreation
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
-
 import parts.api as api
 import parts.api.requirement  # this is need to have some data set at start correctly
 import parts.common as common
@@ -19,7 +12,11 @@ import parts.glb as glb
 import parts.part_ref as part_ref
 import parts.target_type as target_type
 import parts.version as version
+import SCons.Script
 from parts.requirement import REQ
+from SCons.Debug import logInstanceCreation
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 
 def Component(env, name, version_range=None, requires=REQ.DEFAULT, section="build"):
@@ -61,7 +58,7 @@ def Component(env, name, version_range=None, requires=REQ.DEFAULT, section="buil
     # check to see if this is a subpart and if so we want to
     # auto define the version range to be that of the parent
     # this allow subparts to easily depend on there part "group"
-    
+
     if version_range is None:
         # check to see if the name we dependon match
         # TODO validate this test....
@@ -140,7 +137,7 @@ def depends_on_classic(env, depends):
     # the dependancy mapping logic for the classic case stays unchanged
     glb.engine._part_manager.Loader.process_depends(pobj, depends)
 
-    api.output.verbose_msg('dependson', "Mapping data to Part", pobj.Name,pobj.DefiningSection.Name)
+    api.output.verbose_msg('dependson', "Mapping data to Part", pobj.Name, pobj.DefiningSection.Name)
     # depends that get passed on
     if util.isList(depends) == False:
         depends = [depends]

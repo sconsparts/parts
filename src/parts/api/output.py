@@ -1,11 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
 from builtins import map
-import SCons.Script
 
 import parts.common as common
-import parts.glb as glb
 import parts.core.util as util
+import parts.glb as glb
+import SCons.Script
 
 # no need to redirect data.. assume it is correct.
 

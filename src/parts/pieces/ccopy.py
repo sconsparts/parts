@@ -2,16 +2,13 @@
 
 from __future__ import absolute_import, division, print_function
 
-from builtins import zip
-from builtins import map
-
-
 import copy
 import errno
 import os
 import shutil
 import stat
 import sys
+from builtins import map, zip
 from collections import deque, namedtuple
 
 import parts.api as api
@@ -19,7 +16,6 @@ import parts.common as common
 import parts.core.util as util
 import parts.overrides.symlinks as symlinks
 import parts.pattern as pattern
-
 import SCons.Script
 from SCons.Script.SConscript import SConsEnvironment
 
@@ -355,7 +351,7 @@ def CCopyWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw):
                 # symlinks.ensure_node_is_symlink(e)
                 try:
                     e = dnode.FileSymbolicLink(os.sep.join(['.', src.name]))
-                except:
+                except BaseException:
                     # this is a hack to deal with some backward compatibility issue
                     # with deal with symlinks in old code
                     e = dnode.Entry(os.sep.join(['.', src.name]))

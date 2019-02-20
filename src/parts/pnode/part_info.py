@@ -41,7 +41,7 @@ class part_info(stored_info.stored_info):
 
     def __init__(self):
 
-        self.__name = ''        
+        self.__name = ''
         self.__short_name = ''
         self.__ID = ''
         self.__short_alias = ''

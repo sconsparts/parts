@@ -1,14 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
-from builtins import range
 import os
+from builtins import range
 
 from parts.platform_info import SystemPlatform
 from parts.tools.Common.Finders import (EnvFinder, PathFinder, RegFinder,
                                         ScriptFinder)
 
-from . import common
-from . import filescanner
+from . import common, filescanner
 from .common import Intelc, IntelcInfo
 
 # 32-bit 13.0

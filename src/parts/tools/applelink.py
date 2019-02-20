@@ -1,10 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
-from parts.tools.Common import toolvar
-from parts.tools.gnulink import _pdbResolveString
-
 import SCons.Action
 import SCons.Tool.applelink as applelink
+from parts.tools.Common import toolvar
+from parts.tools.gnulink import _pdbResolveString
 
 
 def _pdbEmitter(target, source, env):
