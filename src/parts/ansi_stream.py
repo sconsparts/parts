@@ -4,12 +4,13 @@ import ctypes
 import os
 import sys
 
+import _thread
+
 import parts.color as color
 from SCons.Debug import logInstanceCreation
 
 win32 = sys.platform == 'win32'
 
-import _thread
 
 class ColorTextStream(object):
     '''Basically is an object that wraps a stream and process color ansi
@@ -116,7 +117,6 @@ class ColorTextStream(object):
             ctypes.windll.kernel32.SetConsoleTextAttribute(handle, console_color.SystemValue())
 
     def _WriteColor(self, in_str):
-        # self.stream.write(in_str)
         if win32:
             tmp_str = ''
             state = 0
@@ -195,7 +195,6 @@ class ColorTextStream(object):
             if tmp_str != '':
                 self.safe_write(tmp_str)
         else:
-            #in_str = "Thread->{0}\n{1}\nThreadend->{0}\n".format(_thread.get_ident(),in_str)
             self.safe_write(in_str)
 
     def _WriteNoColor(self, in_str):
@@ -232,11 +231,12 @@ class ColorTextStream(object):
 
     def safe_write(self, data_str):
         written = 0
-        #data_str=data_str.encode()
+        total_len = len(data_str)
         while written < len(data_str):
             try:
-                #written = written + os.write(self.__stream.fileno(), data_str[written:])
-                written = written + self.__stream.write(data_str[written:])
+                # python2 returns none while python3 returns bytes written
+                tmp_write = self.__stream.write(data_str[written:])
+                written = written + (tmp_write if tmp_write else total_len)
                 if self.__force_flush:
                     self.__stream.flush()
             except OSError as e:

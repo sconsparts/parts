@@ -333,6 +333,7 @@ class reporter(object):
         else:
             self.console.Warning.write(msg)
             self.logger.logwrn(msg)
+        return len(msg)
 
     def stdmsg(self, msg, remap=True):
         '''Unlike stdout and stderr, stdmsg doesn't really exist.. but we use
@@ -344,20 +345,24 @@ class reporter(object):
         else:
             self.console.Message.write(msg)
             self.logger.logmsg(msg)
+        return len(msg)
 
     def stdtrace(self, msg, remap=True):
         '''Unlike stdout and stderr, stdtrace doesn't really exist.. '''
         self.console.Trace.write(msg)
         self.logger.logtrace(msg)
+        return len(msg)
 
     def stdverbose(self, msg, remap=True):
         '''Unlike stdout and stderr, stdverbose doesn't really exist.. '''
         self.console.Verbose.write(msg)
         self.logger.logverbose(msg)
+        return len(msg)
 
     def stdconsole(self, msg, remap=True):
         '''writes to the Console directly... nice for progress effects'''
         self.console.write(msg)
+        return len(msg)
 
 
 def _empty_msg(catagory, *lst, **kw):
