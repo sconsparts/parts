@@ -239,5 +239,7 @@ class ColorTextStream(object):
                 written = written + (tmp_write if tmp_write else total_len)
                 if self.__force_flush:
                     self.__stream.flush()
-            except OSError as e:
+            except IOError as e:
+                # python 2 might on linux throw a non-blocking error
+                # ignore it as there is nothing we can do about it
                 pass

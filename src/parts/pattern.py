@@ -79,6 +79,7 @@ class Pattern(object):
     def target_source(self, root_target):
         src_list = []
         trg_list = []
+        root_target = self._env.arg2nodes(root_target,self._env.fs.Dir)[0]
         if self.map is None:
             self.generate()
         for dnode, slist in list(self.map.items()):
