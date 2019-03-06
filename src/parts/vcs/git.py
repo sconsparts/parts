@@ -511,7 +511,11 @@ class version_from_tag(object):
         @parm converter - optional function that takes and environment object that will convert the version to a correct value
         '''
         # get tags
-        tags = list(self.env["VCS"]["TAGS"])
+        try:
+            tags = list(self.env["VCS"]["TAGS"])
+        except KeyError:
+            # this code was not checkout... fallback
+            return default
         prefix = self.env.subst(prefix)
         # default set expression
         if regex:
