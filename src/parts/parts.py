@@ -6,10 +6,11 @@ import parts.common as common
 import parts.core as core
 import parts.glb as glb
 import parts.pnode as pnode
+import parts.vcs as vcs
 from SCons.Script.SConscript import SConsEnvironment
 
 
-def Part_factory(arg1=None, parts_file=None, mode=[], vcs_type=None, default=False,
+def Part_factory(arg1=None, parts_file=None, mode=[], vcs_type=vcs.null.null_t("#"), default=False,
                  append={}, prepend={}, create_sdk=True, package_group=None,
                  alias=None, name=None, *lst, **kw):
     ''' This  function acts a factory to help with Part creation.
