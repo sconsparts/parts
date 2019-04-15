@@ -16,7 +16,7 @@ def Parts_Alias(self, target, source=[], action=None, **kw):
         self["PART_SECTION"]  # checks that this is a "part" else we don't want to do this
         t = self.subst(target)
         # check that we want to modify this target
-        if not t.startswith(self.subst("${PART_SECTION}::")) and not t.startswith("run_utest::"):
+        if not t.startswith(self.subst("${PART_SECTION}::")) and not t.startswith("run_utest::") and not t.startswith("build::"):
             return self._orig_Alias("${{PART_SECTION}}::alias::${{PART_ALIAS}}::{0}".format(target), source, action, **kw)
     except KeyError:
         pass
