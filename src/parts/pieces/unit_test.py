@@ -17,6 +17,7 @@ import parts.parts as parts
 import parts.pattern as pattern
 import parts.pnode as pnode
 import SCons.Script
+from parts.requirement import REQ
 from parts.target_type import target_type
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
@@ -46,9 +47,9 @@ def unit_test_script_bf(target, source, env):
 
         cmd = env.subst("$UNIT_TEST_RUN_COMMAND")
         # UNIT_TEST_ENV may be a dict or a list of (key, value) tuples
-        command_env = dict(
-            (key, env.subst(value)) for (key, value) in dict(env.get(
-                'UNIT_TEST_ENV', {})).items())
+        command_env = {}
+        for (key, value) in dict(env.get('UNIT_TEST_ENV', {})).items():
+            command_env[key] = env.subst(value)
 
         command = '''#! /usr/bin/env python
 from __future__ import absolute_import, division, print_function
@@ -193,7 +194,8 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
 
         # map autodepends stuff
         if depends is None:
-            sec.Env.DependsOn([sec.Env.Component(env.PartName(), env.PartVersion(), section='build')])
+            sec.Env.DependsOn([sec.Env.Component(env.PartName(), env.PartVersion(),
+                                                 section='build', requires=REQ.DEFAULT(internal=False))])
         else:
             sec.Env.DependsOn(depends)
 
@@ -239,7 +241,7 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
 
         # process any data files
         out = []
-        dest_dir = "$UNIT_TEST_DIR"
+        dest_dir = sec.Env.Dir("$UNIT_TEST_DIR")
         for s in data_src:
             if isinstance(s, pattern.Pattern):
                 t, sr = s.target_source(dest_dir)
@@ -411,7 +413,7 @@ api.register.add_variable('UNIT_TEST_DIR',
                           )
 api.register.add_list_variable('UTEST_CMDARGS', [], '')
 api.register.add_variable('UNIT_TEST_ENV',
-                          {'UNIT_TEST_DIR': '${ABSPATH("UNIT_TEST_DIR")}'},
+                          {'UNIT_TEST_DIR': '${ABSPATH("$UNIT_TEST_DIR")}'},
                           'Default values add to default environment when running unit tests')
 api.register.add_variable('UNIT_TEST_TARGET_NAME',
                           '${PART_NAME}-${UNIT_TEST_TARGET}_${PART_VERSION}',
