@@ -12,6 +12,10 @@ Help make SCons better: Strive to help show new ideas that can be moved into SCo
 
 pip install scons-parts
 
+## Release Notes
+
+On the Wiki: [Here](https://bitbucket.org/sconsparts/parts/wiki/Home)
+
 ## License
 
 This project is licensed under the terms of the [MIT](LICENSE-MIT) open source license. Please refer to [LICENSE](LICENSE) for the full terms.
