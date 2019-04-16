@@ -66,8 +66,8 @@ def get_output(script, args=None, shellenv=None):
     # Use the .stdout and .stderr attributes directly because the
     # .communicate() method uses the threading module on Windows
     # and won't work under Pythons not built with threading.
-    popen.wait()
     stdout = popen.stdout.read()
+
     if popen.wait() != 0:
         api.output.error_msg(
             "Getting values of environment values of '{}' failed because of return code not equal to 0".format(script))
