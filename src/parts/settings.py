@@ -506,7 +506,7 @@ class Settings(object):
                 # some tools I would not view as "tools"
                 # that would be part of a tool chain but stuff that
                 # would always exist
-                post_tools.extend(['install', 'zip'])
+                post_tools.extend(['install', 'zip', 'textfile'])
 
             # get base Environment
             env = self.BasicEnvironment()
