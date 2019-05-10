@@ -71,8 +71,8 @@ sections = [
     dict(key='%changelog', value='{key}\n{value}\n\n'),
     dict(key='%pre', value='{key}\n{value}\n\n'),
     dict(key='%post', value='{key}\n{value}\n\n'),
-    dict(key='%prerun', value='{key}\n{value}\n\n'),
-    dict(key='%postrun', value='{key}\n{value}\n\n'),
+    dict(key='%preun', value='{key}\n{value}\n\n'),
+    dict(key='%postun', value='{key}\n{value}\n\n'),
     dict(key='%verify', value='{key}\n{value}\n\n'),
 ]
 
