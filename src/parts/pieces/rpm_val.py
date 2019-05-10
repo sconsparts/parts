@@ -18,7 +18,7 @@ def file_section_wrapper(env, key):
     prefix = add_if(env, "{value}", ('Prefix', 'X_RPM_PREFIX', 'PACKAGE_ROOT'), lambda env, key, value: value, None, True, True)
     items = []
     add_files_content(env, items, pkg_files, prefix)
-    return "\n".join(items)
+    return "\n".join(items)+"\n\n"
 
 
 def rpm_list_mapper(env, key, value):
