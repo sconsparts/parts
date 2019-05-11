@@ -73,7 +73,9 @@ sections = [
     dict(key='%post', value='{key}\n{value}\n\n'),
     dict(key='%preun', value='{key}\n{value}\n\n'),
     dict(key='%postun', value='{key}\n{value}\n\n'),
-    dict(key='%verify', value='{key}\n{value}\n\n'),
+    dict(key='%pretrans', value='{key}\n{value}\n\n'),
+    dict(key='%posttrans', value='{key}\n{value}\n\n'),
+    dict(key='%verify', value='{key}\n{value}\n\n'),    
 ]
 
 
@@ -90,6 +92,10 @@ def add_files_content(env, file_contents, pkg_files, prefix, idx=-1):
     for node in pkg_files:
         tmp = node.ID.replace(repstr, '')
         if util.isFile(node):
+            # this is a file node
+            # check if this node should be prefix with a special value
+            if env.hasMetaTag(node,"RPM_NODE_PREFIX"):
+                tmp = "{prefix}/{node}".format(prefix=env.MetaTagValue(node,"RPM_NODE_PREFIX"), node=node)
             dir_tmp = '%dir {0}'.format(os.path.split(tmp)[0])
             directories.add(dir_tmp)
             if env.hasMetaTag(node, 'POSIX_ATTR') or env.hasMetaTag(node, 'POSIX_USER') or env.hasMetaTag(node, 'POSIX_GROUP'):
@@ -99,6 +105,7 @@ def add_files_content(env, file_contents, pkg_files, prefix, idx=-1):
                 tmp = '%attr({attr},{user},{group}) {node}'.format(attr=attr, user=user, group=group, node=tmp)
             files.append(tmp)
         else:
+            # this is directory node
             if env.hasMetaTag(node, 'POSIX_ATTR') or env.hasMetaTag(node, 'POSIX_USER') or env.hasMetaTag(node, 'POSIX_GROUP'):
                 attr = env.MetaTagValue(node, 'POSIX_ATTR', default="-")
                 user = env.MetaTagValue(node, 'POSIX_USER', default="-")

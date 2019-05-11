@@ -167,7 +167,8 @@ gcc.Register(
             # some posix offshoot that might tweak this directory
             # so we allow this to be set
             install_scanner=[
-                PathFinder(['/usr/bin'])
+                PathFinder(['/usr/local/bin']),
+                PathFinder(['/usr/bin']),
             ],
             opt_dirs=[
                 '/opt/'
