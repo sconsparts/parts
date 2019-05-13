@@ -75,7 +75,7 @@ sections = [
     dict(key='%postun', value='{key}\n{value}\n\n'),
     dict(key='%pretrans', value='{key}\n{value}\n\n'),
     dict(key='%posttrans', value='{key}\n{value}\n\n'),
-    dict(key='%verify', value='{key}\n{value}\n\n'),    
+    dict(key='%verify', value='{key}\n{value}\n\n'),
 ]
 
 
@@ -94,8 +94,15 @@ def add_files_content(env, file_contents, pkg_files, prefix, idx=-1):
         if util.isFile(node):
             # this is a file node
             # check if this node should be prefix with a special value
-            if env.hasMetaTag(node,"RPM_NODE_PREFIX"):
-                tmp = "{prefix}/{node}".format(prefix=env.MetaTagValue(node,"RPM_NODE_PREFIX"), node=node)
+            # if so we need to remove the normal PACKAGE prefix and replace it with the custom prefix
+            # imple details... This logic is mapped with the rpm_package code that generates the 
+            # tar file that is created for the rpm build. It cached the resolved value on the node
+            # we want to make sure the orginial uncached value is what is stored in the spec file
+            if env.hasMetaTag(node, "RPM_NODE_PREFIX_CACHED"):
+                node_prefix = env.MetaTagValue(node, "RPM_NODE_PREFIX_CACHED")
+                # remove any special value we might have as ${NAME} that might exists
+                rpm_prefix = env.subst(env.MetaTagValue(node, "RPM_NODE_PREFIX"))
+                tmp = tmp.replace(node_prefix, rpm_prefix)
             dir_tmp = '%dir {0}'.format(os.path.split(tmp)[0])
             directories.add(dir_tmp)
             if env.hasMetaTag(node, 'POSIX_ATTR') or env.hasMetaTag(node, 'POSIX_USER') or env.hasMetaTag(node, 'POSIX_GROUP'):

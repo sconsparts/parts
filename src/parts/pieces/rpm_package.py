@@ -78,7 +78,18 @@ def rpm_wrapper_mapper(env, target, sources, **kw):
         for n in src:
             # get Package directory for node
             pk_type = env.MetaTagValue(n, 'category', 'package')
-            pkg_dir = "${{PACKAGE_{0}}}".format(pk_type)
+
+            if env.hasMetaTag(n, "RPM_NODE_PREFIX"):
+                prefix_value = env.MetaTagValue(n, "RPM_NODE_PREFIX")
+                # call rpm to get the value this would map to
+                try:
+                    pkg_dir = subprocess.check_output(["rpm", "--eval", prefix_value]).strip().decode()
+                    # set value on node to avoid looking this up again later
+                    env.MetaTag(n, RPM_NODE_PREFIX_CACHED=pkg_dir)
+                except BaseException:
+                    api.output.error_msg("rpm was not found")
+            else:
+                pkg_dir = "${{PACKAGE_{0}}}".format(pk_type)
             tmp_node = env.Entry(
                 '${{BUILD_DIR}}/{0}/{1}/{2}'.format(
                     filename,
