@@ -1033,7 +1033,7 @@ class part(pnode.pnode):
             sys.path = [sdir.abspath] + bk_path
 
             # variant dir for file out of parts tree but under Sconstruct
-            env.VariantDir(env.Dir(env.subst('$OUTOFTREE_BUILD_DIR')), ".", self.__env['duplicate_build'])
+            env.VariantDir(env.Dir(env.subst('$OUTOFTREE_BUILD_DIR')), "#", self.__env['duplicate_build'])
             # variant dir for file out of Sconstruct tree but under the root
             # this does not cover windows drives that are different from the current drive c:\
             env.VariantDir(env.Dir(env.subst('$ROOT_BUILD_DIR')), "/", self.__env['duplicate_build'])

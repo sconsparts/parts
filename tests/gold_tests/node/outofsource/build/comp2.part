@@ -1,0 +1,12 @@
+Import('*')
+PartName("comp2")
+
+env.DependsOn([Component('comp2.sub')])
+env.Part("comp2.sub.part")
+
+ret=env.Program(
+    "hello2",
+    env.AbsFileNode("${CHECK_OUT_DIR}/src/hello/hello.c")
+)
+
+env.InstallTarget(ret)

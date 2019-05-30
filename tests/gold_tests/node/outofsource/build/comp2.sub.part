@@ -1,0 +1,14 @@
+Import('*')
+PartName("sub")
+
+if env['TARGET_PLATFORM']['OS']=='win32':
+    env.Append(CPPDEFINES= ['WINDOW_OS'])
+env.Append(CPPDEFINES= ['PRINT_EXPORTS'])
+
+ret=env.SharedLibrary(
+    "sub",
+    env.AbsFileNode("${CHECK_OUT_DIR}/src/print_msg/print_msg.c")
+)
+env.InstallTarget(ret)
+
+env.SdkInclude([env.AbsFileNode("${CHECK_OUT_DIR}/src/print_msg/print_msg.h")])
