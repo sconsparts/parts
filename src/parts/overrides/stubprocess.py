@@ -19,7 +19,7 @@ from __future__ import absolute_import, division, print_function
 import sys
 from builtins import range
 
-if sys.platform in ('linux2', 'darwin'):
+if sys.platform in ('linux2',): # 'darwin'): #Fix me later..
     import types
     import time
     import os
