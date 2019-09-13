@@ -133,61 +133,7 @@ class mapper(object):
         if policy == Policy.ReportingPolicy.error:
             # because the exception thrown will not get thrown the try catch in subst()
             env.Exit(1)
-
-    @staticmethod
-    def map_export_table(sec, prop, rvalue, value, spacer, recursed):
-        try:
-            export_table = sec.Exports[prop]
-        except KeyError:
-            if recursed:
-                return []
-            return value
-        api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "Trying to replace value in export table")
-        api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "Before Export value: {0}".format(export_table))
-
-        try:
-            result = replace_list_items(export_table, rvalue, value, wrap=lambda x: [x])
-
-            def recurse_list(container):
-                for item in container:
-                    if util.isList(item):
-                        replace_list_items(item, rvalue, value)
-                        recurse_list(item)
-            recurse_list(result)
-            if not result:
-                del sec.Exports[prop]
-            return result if recursed else value
-        except (TypeError, KeyError):
-            # This means export_table is a string or the value is a dictionary
-            if util.isString(value):
-                sec.Exports[prop] = export_table.replace(rvalue, value)
-            else:
-                sec.Exports[prop] = value
-            api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "After export value: {0}".format(export_table))
-            return sec.Exports[prop]
-
-    @staticmethod
-    def map_global_var(env, prop, rvalue, value, spacer):
-        api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "Trying to replace value in env[{0}]".format(prop))
-        try:
-            # see if we even have a key here to map
-            # will throw if env does not have this key mapped
-            api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "Before env value: {0}".format(env[prop]))
-        except KeyError:
-            api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "value '{0}' was not found, skipping ".format(prop))
-            return
-        api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "Value to set: {0}".format(value))
-        try:
-            if util.isList(env[prop]):
-                replace_list_items(env[prop], rvalue, value)
-            else:
-                env[prop] = value
-        except KeyError as e:
-            api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "KeyError", e)
-        except ValueError as e:
-            api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "ValueError", e)
-        api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "After env value: {0}".format(env[prop]))
-
+       
     def _guarded_call(self, target, source, env, for_signature=False):
         raise NotImplementedError
 
@@ -279,23 +225,27 @@ def sub_lst(env, lst, thread_id, recurse=True):
     return do_sub_lst()
 
 
-def _concat(prefix, list, suffix, env, f=lambda x: x, target=None, source=None):
-    if not list:
-        return list
-    elif util.isString(list):
-        list = [list]
+def _concat(prefix, _list, suffix, env, f=lambda x: x, target=None, source=None):
+    # this is generally the same as the SCons version
+    # it differs in that we call a different subst list function
+    # that will append unqiue items.
+    if not _list:
+        return _list
+    elif util.isString(_list):
+        _list = [_list]
     # fully expand the list
 
     # this does a append_unique of the items, so it should be
     # a unique list with everything in correct order
-    tmp = sub_lst(env, list, _thread.get_ident(), recurse=False)
-    list = env.Flatten(tmp)
+    tmp = sub_lst(env, _list, _thread.get_ident(), recurse=False)
+    _list = env.Flatten(tmp)
 
-    l = f(SCons.PathList.PathList(list).subst_path(env, target, source))
+    l = f(SCons.PathList.PathList(_list).subst_path(env, target, source))
+
     if l is not None:
-        list = l
+        _list = l
 
-    return env['_concat_ixes'](prefix, list, suffix, env)
+    return _concat_ixes(prefix, _list, suffix, env)
 
 
 _concat.name = "_concat"
@@ -303,7 +253,7 @@ _concat.name = "_concat"
 
 def _concat_ixes(prefix, list, suffix, env):
     """
-    Redo of the same logic in SCons...
+    Redo of the same logic in SCons... We just add it to the environment
     The functions adds a prefix and or suffix to the string value
     equals of the list
     """
@@ -371,11 +321,14 @@ class part_mapper(mapper):
             self.alias_missing(env)
             return ''
         api.output.trace_msg(['parts_mapper', 'mapper'], spacer, 'Found Part with Alias: {0}'.format(self.part_alias))
+        # try to map the part property
         ret = getattr(pobj, self.part_prop, None)
         if ret is None:
+            # try again if that failed as lower case
             tmp = self.part_prop[0] + self.part_prop[1:].lower()
             ret = getattr(pobj, tmp, None)
         if ret is None:
+            # error out if we still failed
             if self.ignore == False:
                 api.output.warning_msg(self.name, "mapper: Property ",
                                        self.part_alias + '.' + self.part_prop, " was not defined",
@@ -384,39 +337,10 @@ class part_mapper(mapper):
             return ''
         api.output.trace_msg(['parts_mapper', 'mapper'], spacer, 'Property {0} = {1} '.format(self.part_prop, ret))
         penv = pobj.Env
+
         if util.isList(ret):
-            if len(ret) > 1:
-                ret = sub_lst(penv, ret, thread_id)
-
-            setattr(pobj, self.part_prop, ret)
-            if env_guard.can_modify(thread_id):
-                api.output.trace_msg(['parts_mapper', 'mapper'], spacer,
-                                     "Trying to replace value in env[{0}]".format(self.part_prop))
-                api.output.trace_msg(['parts_mapper', 'mapper'], spacer, "Before env value: {0}".format(env[self.part_prop]))
-                api.output.trace_msg(['parts_mapper', 'mapper'], spacer, "Value to set: {0}".format(ret))
-                if util.isList(env[self.part_prop]):
-                    if ret:
-                        rvalue = "${{{name}('{part_alias}','{part_prop}')}}".format(**self.__dict__)
-                        replace_list_items(env[self.part_prop], rvalue, ret)
-                else:
-                    env[self.part_prop] = [ret]
-                api.output.trace_msg(['parts_mapper', 'mapper'], spacer, "After env value: {0}".format(env[self.part_prop]))
-                if not ret:
-                    api.output.trace_msg(['parts_mapper', 'mapper'], spacer, "Returning (1) value of {0}".format("''"))
-                    return ""
-                else:
-                    api.output.trace_msg(['parts_mapper', 'mapper'], spacer, "Returning (2) value of {0}".format(ret[0]))
-                    return ret[0]
-            else:
-                tmp = ret
-                api.output.trace_msg(['parts_mapper', 'mapper'], spacer, "Returning (3) value of '{0}'".format(ret))
-                return tmp
-        else:
-            tmp = penv.subst(ret, conv=lambda x: x)
-            api.output.trace_msg(['parts_mapper', 'mapper'], spacer, "Returning (4) value of {0}".format(tmp))
-            return tmp
-
-        return ret
+            return penv.subst_list(ret)
+        return penv.subst(ret)
 
 
 class part_id_mapper(mapper):
@@ -470,44 +394,11 @@ class part_id_mapper(mapper):
                                        )
             return ''
         api.output.trace_msg(['partid_mapper', 'mapper'], spacer, 'Property {0} = {1} '.format(self.part_prop, ret))
-
         penv = pobj.Env
 
         if util.isList(ret):
-            if ret:
-                ret = sub_lst(penv, ret, thread_id)
-            if env_guard.can_modify(thread_id):
-                api.output.trace_msg(['partid_mapper', 'mapper'], spacer,
-                                     "Trying to replace value in env[{0}]".format(self.part_prop))
-                api.output.trace_msg(['partid_mapper', 'mapper'], spacer, "Before env value: {0}".format(env[self.part_prop]))
-                api.output.trace_msg(['partid_mapper', 'mapper'], spacer, "Value to set: {0}".format(ret))
-
-                if util.isList(env[self.part_prop]):
-                    if ret:
-                        if self.ignore:
-                            rvalue = "${{{name}('{part_name}','{ver_range}','{part_prop}',{ignore})}}"
-                        else:
-                            rvalue = "${{{name}('{part_name}','{ver_range}','{part_prop}')}}}"
-                        replace_list_items(env[self.part_prop], rvalue.format(**self.__dict__), ret)
-                else:
-                    env[self.part_prop] = [ret]
-                api.output.trace_msg(['partid_mapper', 'mapper'], spacer, "After env value: {0}".format(env[self.part_prop]))
-                if not ret:
-                    api.output.trace_msg(['partid_mapper', 'mapper'], spacer, "Returning (1) value of {0}".format("''"))
-                    return ""
-                else:
-                    api.output.trace_msg(['partid_mapper', 'mapper'], spacer, "Returning (2) value of {0}".format(ret[0]))
-                    return ret[0]
-            else:
-                tmp = ret
-                api.output.trace_msg(['partid_mapper', 'mapper'], spacer, "Returning (3) value of '{0}'".format(ret))
-                return tmp
-        else:
-            tmp = penv.subst(ret, conv=lambda x: x)
-            api.output.trace_msg(['partid_mapper', 'mapper'], spacer, "Returning (4) value of {0}".format(tmp))
-            return tmp
-
-        return ret
+            return penv.subst_list(ret)
+        return penv.subst(ret)
 
 
 class part_id_export_mapper(mapper):
@@ -556,45 +447,16 @@ class part_id_export_mapper(mapper):
                              'Found matching part! name: {0} -> alias: {1}'.format(pobj.Name, pobj.Alias))
 
         psec = pobj.Section(self.section)
-        penv = psec.Env
-
+        # the question here is if the export table it up-to-date
+        # normally this is probally the case. However if a build has a scanner that
+        # add items to the export table dynamically this might not be true. Given no broken caching logic
+        # all we want to do here it do an update check to unsure scanner went off that would have added
+        # item to the export table. Given that this should be called again once the export table is updated
+        # if
         ret = psec.Exports.get(self.part_prop, [])
         api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, 'Property {0} = {1} '.format(self.part_prop, ret))
 
-        # if we get back a list, we want to fill in the data in the list
-        if util.isList(ret):
-            ret = sub_lst(penv, ret, thread_id)
-
-        # update the export table
-        str_val = "${{{0}('{1}','{2}','{3}',{4})}}".format(self.name, self.part_name, self.section, self.part_prop, self.policy)
-
-        # update export table
-        ret = self.map_export_table(sec, self.part_prop, str_val, ret, spacer,
-                                    not env_guard.can_modify(thread_id))
-
-        # only update the environment of the item that started the subst call.
-        if env_guard.can_modify(thread_id):
-            # we have data.. but we need to tweak the data to not piss SCons off
-            # scons does not expect a list back or a list of lists.. only a string
-            # Here we need to flatten the list
-            ret = [_f for _f in env.Flatten(ret) if _f]
-            self.map_global_var(env, self.part_prop, str_val, ret, spacer)
-            if ret == []:
-                api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "Returning (1) value of {0}".format("''"))
-                return ''
-            else:
-                api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "Returning (2) value of {0}".format(ret[0]))
-                return ret[0]
-        else:
-            # this case we have a list of stuff. we pickle it to get it throught the SCons subst engine
-            pret = ret
-            api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "Returning (3) value of '{0}'".format(ret))
-            return pret
-
-        # we don't have list so we just return the whole value
-        tmp = penv.subst(ret, conv=lambda x: x)
-        api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, "Returning (4) value of {0}".format(tmp))
-        return tmp
+        return ret
 
 
 # deprecated .. better to use PARTSUBST()
@@ -724,8 +586,29 @@ class part_shortname_mapper(mapper):
         return pobj.ShortName
 
 
+class define_if(mapper):
+    '''if var is defined (ie positive bool value) return value '''
+    name = 'define_if'
+
+    def __init__(self, var, value):
+        if __debug__:
+            logInstanceCreation(self, 'parts.mappers.abspath_mapper')
+        mapper.__init__(self)
+        self.var = var  # var to subst
+        self.value = value  # return if var is bool positive
+
+    def __repr__(self):
+        return '${{{0}("{1}")}}'.format(self.name, self.var, self.value)
+
+    def _guarded_call(self, target, source, env, for_signature):
+        subvalue = env.subst(self.var)
+        if subvalue:
+            return self.value
+        return ""
+
+
 class abspath_mapper(mapper):
-    ''' Allows for an easy expanding value as directory or files'''
+    ''' Allows for an easy expanding value as directory or file'''
     name = 'ABSPATH'
 
     def __init__(self, value):
@@ -738,9 +621,85 @@ class abspath_mapper(mapper):
         return '${{{0}("{1}")}}'.format(self.name, self.value)
 
     def _guarded_call(self, target, source, env, for_signature):
-        # if self.value[0] == '$':
         return env.Entry(env.subst(self.value)).abspath
-        # return env.Entry(env.subst("${" + self.value + "}")).abspath
+
+
+class make_path(mapper):
+    '''
+    This class takes a list of values and constucts a PATH like string seperated via : or ;
+    passes value in to a Dir() node to help normalize the "path"
+    '''
+    name = 'MAKEPATH'
+
+    def __init__(self, varlist, pathsep=None, makeabs=True):
+        # sep == None means use system
+        mapper.__init__(self)
+        self.value = varlist
+        self.pathsep = pathsep
+        self.makeabs = makeabs
+
+    def __repr__(self):
+        return '${{{0}("{1}","{2}","{3}")}}'.format(self.name, self.value, self.pathsep, self.makeabs)
+
+    def _guarded_call(self, target, source, env, for_signature):
+        vals = env.Flatten(env.subst_list(self.value))
+        ret = ""
+        pathsep = self.pathsep if self.pathsep else os.pathsep
+
+        for val in vals:
+            # scons barfs on it own CmdStringHolder
+            if self.makeabs:
+                ret += "{}{}".format(env.Dir(str(val)).abspath, pathsep)
+            else:
+                ret += "{}{}".format(env.Dir(str(val)), pathsep)
+        if ret.endswith(pathsep):
+            ret = ret[:-1]
+        return ret
+
+
+class join(mapper):
+    '''
+    This class takes a list of values a string joined via the token
+    '''
+    name = 'JOIN'
+
+    def __init__(self, varlist, sep):
+        # sep == None means use system
+        mapper.__init__(self)
+        self.value = varlist
+        self.sep = sep
+
+    def __repr__(self):
+        return '${{{0}("{1}","{2}")}}'.format(self.name, self.value, self.sep)
+
+    def _guarded_call(self, target, source, env, for_signature):
+        vals = env.Flatten(env.subst_list(self.value))
+        ret = self.sep.join([str(i) for i in vals])
+        return ret
+
+
+class abspaths_mapper(mapper):
+    ''' 
+    Allows for an easy expanding value as a list directorys or files
+    returns a list of values.
+    '''
+    name = 'ABSPATHS'
+
+    def __init__(self, value):
+        if __debug__:
+            logInstanceCreation(self, 'parts.mappers.abspaths_mapper')
+        mapper.__init__(self)
+        self.value = value
+
+    def __repr__(self):
+        return '${{{0}("{1}")}}'.format(self.name, self.value)
+
+    def _guarded_call(self, target, source, env, for_signature):
+        vals = env.Flatten(env.subst_list(self.value))
+        ret = []
+        for val in vals:
+            ret.append(env.Entry(str(val)).abspath)
+        return ret
 
 
 class normpath_mapper(mapper):
@@ -784,6 +743,154 @@ class relpath_mapper(mapper):
             f = env.Entry(env.subst(self._from)).abspath
         f = env.Entry(env.subst("${" + self._from + "}")).abspath
         return common.relpath(t, f) + os.sep
+
+
+class runpath_mapper(mapper):
+
+    name = 'GENRUNPATHS'
+
+    def __init__(self, origin=r'$$$$$$$$ORIGIN'):
+        self._origin = origin
+        mapper.__init__(self)
+
+    def __repr__(self):
+        return "${{{0}('{1}')}}".format(self.name, self._origin)
+
+    def _guarded_call(self, target, source, env, for_signature):
+
+        # we have a system value given to us by the user
+        # with will be added via RPATH before we get here
+        # we want to leave that alone and just add the needed wrapper
+
+        # we have generated rpaths based on install vs packaging locations
+        # we will have AUTO_RPATH to control both values
+        # we have AUTO_RUNPATH_INSTALL and PACKAGE_RUNPATH
+        # AUTO_RUNPATH_INSTALL can be set at link time based on INSTALL_ROOT locations
+        #   False no addition
+        #   True/1 adds relative  $ORIGIN/../lib
+        #   2 add paths as Absolute locations
+        #   3 add both relative and absolute paths (rel then absolute)
+        # PACKAGE_RUNPATH has to be done at packaging time, could require a relink
+        #   however it is easier/faster to just use patch_elf to reset the value
+        #   this does add to base tool requirements, but getting a relink would
+        #   be very hard and error prone to get correct.
+        # in this case we only worry about add the AUTO_RUNPATH_INSTALL
+        auto_rpath = env.get('AUTO_RUNPATH_INSTALL', True)
+        if env.get('AUTO_RPATH') and auto_rpath:
+            do_rel = auto_rpath & 1
+            do_abs = auto_rpath & 2
+            # get the and values set by the user
+            rlst = env.get('RPATH', [])
+            rel_paths = []
+            abs_paths = []
+            # make a mapping between the bin and lib directories
+            if env['HOST_OS'] == 'win32':
+                quote = '"'
+            else:
+                quote = "'"
+
+            # Apple requires absolute paths to be used
+            # todo add the logic in for darwin
+            if env['TARGET_OS'] != 'darwin':
+                # add the dependent components
+                # go over the depends if any
+                # get the INSTALL_LIB locations for the component
+                # Make a relative path for it and add it to the list
+                # note most of the time these value are all the same
+                # but this is not true all the time...
+                # make a cache to speed up logic on "seen" items
+                cache = set([])
+                sec = glb.engine._part_manager.section_from_env(env)
+
+                if sec:  # and sec.Depends:
+                    # first add ourself first
+                    rlst.append(
+                        env.Literal(
+                            '{0}{origin}/{1}{0}'.format(
+                                quote,
+                                env.Dir('$INSTALL_BIN').rel_path(
+                                    env.Dir('$INSTALL_LIB')
+                                ),
+                                origin=self._origin
+                            )
+                        )
+                    )
+
+                    install_path = env.Dir('$INSTALL_BIN')
+                    for comp in sec.Depends:
+                        libpath = comp.Section.Env.subst("$INSTALL_LIB")
+                        if libpath not in cache:
+                            cache.add(libpath)
+                            if do_rel:
+                                # compute relative value
+                                rel_paths.append(
+                                    env.Literal(
+                                        '{0}{origin}/{1}{0}'.format(
+                                            quote,
+                                            install_path.rel_path(
+                                                env.Dir(libpath)
+                                            ),
+                                            origin=self._origin
+                                        )
+                                    )
+                                )
+
+                            if do_abs:
+                                abs_paths.append(env.Dir(libpath).abspath)
+
+            return common.make_unique(rlst+rel_paths+abs_paths)
+
+
+class pkgrunpath_mapper(mapper):
+
+    name = 'GEN_PKG_RUNPATHS'
+
+    def __init__(self, lib_paths, bin_path="$PACKAGE_BIN", origin=r'$$$$ORIGIN', use_origin=True):
+        self._origin = origin
+        self._lib_paths = lib_paths
+        self._bin_path = bin_path
+        self._use_origin = use_origin
+        
+        super(pkgrunpath_mapper, self).__init__()
+
+    def __repr__(self):
+        return "${{{0}('{1}','{2}','{3}','{4}')}}".format(self.name,self._lib_paths,self._bin_path, self._origin,self._use_origin)
+
+    def _guarded_call(self, target, source, env, for_signature):
+
+        # given the libpath value we make relative paths based on the PKG_BIN location via use of $ORIGIN
+        # if we are to use_origin is false we use absolute path instead
+
+        # do subst to get the list and finial values
+        libpaths = env.Flatten(env.subst_list(self._lib_paths))
+        binpath = env.Dir(self._bin_path)
+        rlst = []
+        # make a mapping between the bin and lib directories
+        if env['HOST_OS'] == 'win32':
+            quote = '"'
+        else:
+            quote = "'"        
+        
+        if self._use_origin:
+            for libpath in libpaths:
+                libpath = env.Dir(str(libpath))
+                rlst.append(
+                    env.Literal(
+                        '{0}{origin}/{1}{0}'.format(
+                            quote,
+                            binpath.rel_path(
+                                libpath
+                            ),
+                            origin=self._origin
+                        )
+                    )
+                )
+        else:
+            for libpath in libpaths:
+                libpath = env.Dir(str(libpath))
+                rlst.append(libpath.abspath)
+        ret = common.make_unique(rlst)
+        return ret
 
 
 class TempFileMunge(mapper):
@@ -911,8 +1018,9 @@ class TempFileMunge(mapper):
 
 
 api.register.add_mapper(_concat)
-api.register.add_mapper(_concat_ixes)
+# api.register.add_mapper(_concat_ixes)
 
+api.register.add_mapper(define_if)
 api.register.add_mapper(part_mapper)
 api.register.add_mapper(part_id_mapper)
 api.register.add_mapper(part_id_export_mapper)
@@ -920,9 +1028,14 @@ api.register.add_mapper(part_sub_mapper)
 api.register.add_mapper(part_subst_mapper)
 api.register.add_mapper(part_name_mapper)
 api.register.add_mapper(part_shortname_mapper)
+api.register.add_mapper(make_path)
+api.register.add_mapper(join)
 api.register.add_mapper(abspath_mapper)
+api.register.add_mapper(abspaths_mapper)
 api.register.add_mapper(normpath_mapper)
 api.register.add_mapper(relpath_mapper)
+api.register.add_mapper(runpath_mapper)
+api.register.add_mapper(pkgrunpath_mapper)
 
 # seems to be fixed in Scons
 # api.register.add_mapper(TempFileMunge)
