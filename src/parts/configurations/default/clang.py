@@ -14,11 +14,6 @@ config = configuration(map_default_version)
 
 config.VersionRange(
     "*",
-    prepend=ConfigValues(
-        CCARCHFLAGS=['-m32'],
-        CCFLAGS=['-m32'],
-        LINKFLAGS=['-m32']
-    ),
     # RUN_PATH setting for this platform toolchain
     replace=ConfigValues(
         _RPATHSTR='${JOIN("$RUNPATHS",":")}',
