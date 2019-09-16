@@ -332,7 +332,7 @@ class FileSymbolicLink(SCons.Node.FS.File):
         """
         Returns C{FileSymbolicLink.linkto} property value.
         """
-        return self.linkto or ''
+        return self.linkto.encode("utf-8") if self.linkto else b''
 
     def srcnode(self):
         """
@@ -399,7 +399,7 @@ _def_SConsEnvironment_FileSymbolicLink(SConsEnvironment)
 
 def ensure_node_is_symlink(node, template=None):
     """
-    Checks if the node is a symilnk, converts it to a symlink based on the template.
+    Checks if the node is a symlink, converts it to a symlink based on the template.
     """
     if isinstance(node, SCons.Node.FS.Base):
         if not isinstance(node, SCons.Node.FS.FileSymbolicLink):
@@ -552,10 +552,10 @@ def _source_scanner():
         '''
         return tuple(node for node in source if isinstance(node.disambiguate(), FileSymbolicLink))
 
-    return Scanner(function, path_function=path_function)
+    return Scanner(function, path_function=path_function, name="symlink-scanner")
 
 
-source_scanner = _source_scanner()
+symlink_scanner = _source_scanner()
 
 
 def SymLinkEnv(env, name, linkto, **kw):
@@ -628,7 +628,7 @@ api.register.add_builder('__make_link__', SCons.Builder.Builder(
     source_factory=SCons.Node.FS.Entry,
     single_source=1,
     emitter=make_link_Emit,
-    target_scanner=source_scanner
+    target_scanner=symlink_scanner
 ))
 
 
