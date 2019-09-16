@@ -4,6 +4,7 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 
+import parts.common as common
 import parts.api as api
 import parts.events as events
 import SCons.Environment
@@ -203,7 +204,7 @@ class Variables(dict, object):
             if os.path.exists(filename):
                 dir = os.path.split(os.path.abspath(filename))[0]
                 if dir:
-                    sys.path.insert(0, dir)
+                    common.prepend_unique(sys.path, dir)
                 try:
                     values['__name__'] = filename
                     with open(filename) as file_obj:
