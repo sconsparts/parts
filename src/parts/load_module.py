@@ -53,6 +53,7 @@ def get_site_directories(subdir):
                 # parts install
                 os.path.join(glb.parts_path, subdir)
             ]
+        # if true don't add global location
         elif SCons.Script.GetOption('global_part_site'):
             sitepaths = [
                 # current directory parts_site or user pointed site
@@ -92,7 +93,7 @@ def load_module(pathlst, name, type):
         api.output.verbose_msg('load_module',
                                'Trying to load module {name} type {type}'.format(name=name, type=type))
         file, path1, desc = imp.find_module(name, pathlst)
-        oldPath = sys.path[:]
+        oldPath = sys.path
         sys.path = pathlst + sys.path
         try:
             mod = imp.load_module(modname, file, path1, desc)
@@ -138,3 +139,12 @@ def get_possible_modules(pathList):
             g_glob_cache[path] = modules
         result |= modules
     return result
+
+def get_path_with_modules(paths):
+    ret = {}
+    for path in paths:
+        tmp=get_possible_modules([path])
+        if tmp:        
+            ret[path]=get_possible_modules([path])
+    return ret
+        
