@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function
 
 import copy
+import hashlib
 
 from future.utils import with_metaclass
 from past.builtins import cmp
@@ -17,7 +18,7 @@ _added_types = {}
 
 class requirement(object):
 
-    def __init__(self, key, internal=False, public=None, policy=None, mapper=None, listtype=None, weight=0):
+    def __init__(self, key, internal=False, public=None, policy=None, mapper=None, listtype=None, weight=0, mapto=None, force_internal=False):
         ''' Sets up the requirment object
 
         @param value The value to import
@@ -26,10 +27,13 @@ class requirement(object):
         @param policy how to handle an item that could not be mapped, can be ignore, warn, or error
         @param mapper The mapper object to use for delayed mapping in classic formats, defaults to PARTIDEXPORTS
         @param listtype Tells if this type is a list type or not..
+        @param mapTo Optional function that given dependent section, and returns a list of subtarget to map values to
+        @param force_internal prevents the ability to overide internal value. Needed in some cases as changing this is always wrong
         '''
         if __debug__:
             logInstanceCreation(self)
         self._key = key
+        self._force_internal=force_internal
         self._internal = internal
         self._weight = weight
         if public is None:
@@ -63,8 +67,14 @@ class requirement(object):
         else:
             self._mapper = 'PARTIDEXPORTS'
 
+        self._map_to = mapto
+
     def value_mapper(self, name, section):
         return "${{{0}('{1}','{2}','{3}',{4})}}".format(self._mapper, name, section, self.key, self.policy)
+
+    @property
+    def mapto(self):
+        return self._map_to
 
     @property
     def is_list(self):
@@ -87,7 +97,7 @@ class requirement(object):
         return self._policy
 
     def __call__(self, internal=None, public=None, policy=None):
-        if internal is not None:
+        if internal is not None and not self._force_internal:
             self._internal = internal
         if public is not None:
             self._public = public
@@ -136,22 +146,22 @@ class requirement(object):
 
     # this is python 3 sort
     def __eq__(self, other):
-        return self.key == self.key
+        return self.key == other.key
 
     def __ne__(self, other):
-        return self.key != self.key
+        return self.key != other.key
 
     def __lt__(self, other):
-        return self.key < self.key
+        return self.key < other.key
 
     def __le__(self, other):
-        return self.key <= self.key
+        return self.key <= other.key
 
     def __gt__(self, other):
-        return self.key > self.key
+        return self.key > other.key
 
     def __ge__(self, other):
-        return self.key >= self.key
+        return self.key >= other.key
 
     def Serialize(self):
         return {'key': self._key,
@@ -268,7 +278,7 @@ class requirement_internal(requirement):
 class metaREQ(type):
 
     def __getattr__(self, name):
-        internal = False
+        internal = None
         if name.lower().endswith('_internal'):
             name = name[:-len('_internal')]
             internal = True
@@ -287,13 +297,13 @@ class REQ(with_metaclass(metaREQ, object)):
     def __init__(self, lst=[], weight=None):
         if __debug__:
             logInstanceCreation(self, 'parts.requirement.REQ')
-        self.__data = {}
+        self.__data = {}        
         for i in lst:
             tmp = copy.copy(i)
             if weight:
                 tmp._weight = weight
             self.__data[tmp.key] = tmp
-
+    
     def __or__(self, rhs):
         tmp = set(self.__data.values())
         for i in rhs:
@@ -360,3 +370,14 @@ class REQ(with_metaclass(metaREQ, object)):
             t = requirement(**i)
             self.__data[t.key] = t
         return self
+
+    def csig(self):
+        try:
+            return self.__csig
+        except AttributeError:
+            md5 = hashlib.md5()
+            values = [str(v).encode() for v in self.__data.values()]
+            values = sorted(values)
+            values = b"".join(values)
+            md5.update(values)
+            return md5.hexdigest()
