@@ -18,6 +18,15 @@ g_package_groups = {}
 _sorted_groups = dict(), dict()
 
 
+def PackageGroupLocal(env, group, state=True):
+    '''
+    Defines if the package group is local or global
+    the group by default is global, this sets it to local be default
+    '''
+    node = env.File("${{PARTS_SYS_DIR}}/package.group.{}.jsn".format(group))
+    env.MetaTag(node, local_group=bool(state), ns='parts')
+
+
 def PackageGroups():
     return list(g_package_groups.keys())
 
@@ -345,6 +354,8 @@ SConsEnvironment.GetPackageGroupFiles = GetPackageGroupFiles_env
 
 def_GetFilesFromPackageGroups(SubstEnv)
 
+SConsEnvironment.PackageGroupLocal = PackageGroupLocal
+
 SConsEnvironment.ReplacePackageGroupCritera = ReplacePackageGroupCriteriaEnv_old
 SConsEnvironment.AppendPackageGroupCritera = AppendPackageGroupCriteriaEnv_old
 SConsEnvironment.PrependPackageGroupCritera = PrependPackageGroupCriteriaEnv_old
@@ -371,6 +382,8 @@ api.register.add_variable('PACKAGE_DOC', '${PACKAGE_ROOT}/$INSTALL_DOC_SUBDIR', 
 api.register.add_variable('PACKAGE_HELP', '${PACKAGE_ROOT}/$INSTALL_HELP_SUBDIR', '')
 api.register.add_variable('PACKAGE_MANPAGE', '${PACKAGE_ROOT}/$INSTALL_MANPAGE_SUBDIR', '')
 api.register.add_variable('PACKAGE_MESSAGE', '${PACKAGE_ROOT}/$INSTALL_MESSAGE_SUBDIR', '')
+api.register.add_variable('PACKAGE_PKG_CONFIG', '${PACKAGE_ROOT}/$INSTALL_PKG_CONFIG_SUBDIR', '')
+
 api.register.add_variable('PACKAGE_RESOURCE', '${PACKAGE_ROOT}/$INSTALL_RESOURCE_SUBDIR', '')
 api.register.add_variable('PACKAGE_SAMPLE', '${PACKAGE_ROOT}/$INSTALL_SAMPLE_SUBDIR', '')
 api.register.add_variable('PACKAGE_DATA', '${PACKAGE_ROOT}/$INSTALL_DATA_SUBDIR', '')
@@ -383,7 +396,6 @@ api.register.add_variable('PACKAGE_VERSION', '0.0.0', '')
 
 api.register.add_variable('PACKAGE_GROUP_FILTER', {}, "")
 api.register.add_variable('PACKAGE_NODE_FILTER', [], "")
-
 
 api.register.add_global_object('PackageGroups', PackageGroups)
 api.register.add_global_object('PackageGroup', PackageGroup)

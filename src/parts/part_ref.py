@@ -182,3 +182,6 @@ class part_ref(object):
             val=value,
             policy=policy
         )
+
+    def str_sig(self):
+        return "{}:{}".format(self.__target.OrignialString,True if self.__local_space else False)

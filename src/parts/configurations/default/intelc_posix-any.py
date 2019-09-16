@@ -52,7 +52,7 @@ config.VersionRange(
         _RUNPATH='${_concat(RPATHPREFIX, _RPATHSTR, RPATHSUFFIX, __env__)}',
         _RPATH='$_RUNPATH $_RPATHLINK',
         _ABSRPATH='$_RUNPATH $_ABSRPATHLINK',
-        RUNPATHS='${GENRUNPATHS()}',
+        RUNPATHS = '${GENRUNPATHS()}',
         RPATHSUFFIX=",--enable-new-dtags",
     ),
 )

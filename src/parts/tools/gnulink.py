@@ -133,19 +133,19 @@ def _setUpPdbActions(env):
 
     env['PDB_CREATE_ACTION'] = SCons.Action.CommandAction(
         '${_pdbResolveString(TARGETS, _pdbAction)}',
-        cmdstr='${_pdbResolveString(TARGETS, _pdbActionString)}'
+        #cmdstr='${_pdbResolveString(TARGETS, _pdbActionString)}'
     )
     env['PDB_CHMOD_ACTION'] = SCons.Action.CommandAction(
         '${_pdbResolveString(TARGETS, _pdbChmodAction)}',
-        cmdstr='${_pdbResolveString(TARGETS, _pdbChmodActionString)}'
+        #cmdstr='${_pdbResolveString(TARGETS, _pdbChmodActionString)}'
     )
     env['STRIP_ACTION'] = SCons.Action.CommandAction(
         '${_stripResolveString(__env__, TARGETS, _pdbStripAction)}',
-        cmdstr='${_stripResolveString(__env__, TARGETS, _pdbStripActionString)}'
+        #cmdstr='${_stripResolveString(__env__, TARGETS, _pdbStripActionString)}'
     )
     env['PDB_GNU_DEBUGLINK_ACTION'] = SCons.Action.CommandAction(
         '${_pdbResolveString(TARGETS, _pdbGnuDebugLinkAction)}',
-        cmdstr='${_pdbResolveString(TARGETS, _pdbGnuDebugLinkActionString)}'
+        #cmdstr='${_pdbResolveString(TARGETS, _pdbGnuDebugLinkActionString)}'
     )
 
     # Actions to be appended to Program and SharedLibrary builders

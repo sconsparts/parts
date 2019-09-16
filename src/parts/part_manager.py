@@ -925,6 +925,15 @@ class part_manager(object):
             return None
         return self._from_alias(env.get('PART_ALIAS'))
 
+    def section_from_env(self,env):
+        if env:
+            section_name = env.get("PART_SECTION")
+            if section_name:
+                pobj = self._from_env(env)
+                return pobj.Section(section_name) if pobj else None
+        return None
+
+
     def _has_name(self, name):
         ''' return True if we have reason to believe this is a Part name that is known
         We return True if We have a 100% match, in the known names. If this is empty

@@ -2,7 +2,6 @@
 #################
 # for easy testing
 import sys
-#sys.path = ['../']+sys.path
 ##############
 
 win32 = sys.platform == 'win32'

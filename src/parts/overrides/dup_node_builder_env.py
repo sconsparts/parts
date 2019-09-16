@@ -19,8 +19,8 @@ def parts_node_errors(builder, env, tlist, slist):
     This function tries to do the same tests, but report more useful stuff given that we have components
     """
 
-    # print "source:", [str(i) for i in slist]
-    # print "target:", [str(i) for i in tlist]
+    #print("source:", [str(i) for i in slist])
+    #print("target:", [str(i) for i in tlist])
     pobj = glb.engine._part_manager._from_env(env)
     if pobj:
         tag_part_info(tlist + slist, pobj)
@@ -48,12 +48,11 @@ def parts_node_errors(builder, env, tlist, slist):
                 else:
                     error = True
             if builder.multi:
-                try:
-                    if t.builder != builder or t.get_executor().targets != tlist:  # scons 1.x version
-                        error = True
-                except AttributeError:
-                    if t.builder != builder or t.get_executor().get_all_targets() != tlist:  # scons 2.x version
-                        error = True
+                if t.get_executor() is None:
+                    api.output.warning_msg("Executor is None for node '{}'.\n This is a sign that there is a order dependancy that is incorrect in the mutli builder used to generate this target".format(t.ID),show_stack=False)
+                    del t.executor
+                if t.get_executor() and (t.builder != builder or t.get_executor().get_all_targets() != tlist):
+                    error = True
             elif t.sources != slist:
                 error = True
 
@@ -70,6 +69,7 @@ def parts_node_errors(builder, env, tlist, slist):
                 (t.env.get(
                     'PART_ALIAS', "<unknown>"), env.get(
                     'PART_ALIAS', "<unknown>")), show_stack=False)
+            1/0
 
     # call the SCons code
     scons_node_errors(builder, env, tlist, slist)

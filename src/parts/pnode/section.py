@@ -188,6 +188,96 @@ class section(pnode.pnode):
             self.__user_env_diff = result = dict()
             return result
 
+    def gen_system_concept_set(self):
+        concept_set = set([])
+
+        for concept in ("build","utest","run_utest"):
+            pobj = self.__pobj
+            while pobj:
+                alias_str = '{0}::alias::{1}'.format(concept, pobj.alias)
+                alias_str_r = '{0}::'.format(alias_str)
+                concept_set.add(alias_str)
+                concept_set.add(alias_str_r)                
+                pobj = pobj.Parent
+            concept_str = '{0}::'.format(concept)
+            concept_set.add(concept_str)
+        
+        return concept_set
+
+    def filter_system_nodes(self, nodes):
+        # a system node:
+        #   needs to be an alias node and
+        #   equal to any known concept mapping values
+        #       alias_str or alias_str_r or equal to the concept
+        #  This is the base Alias for a given Part
+
+        # should be cleaned up once allow users to define there own concepts... 
+        # get "known" concepts and makes expect strings
+        
+        concept_set = self.gen_system_concept_set()        
+        # the startwith runutest:: is a workaround till we deal with sections better
+        def is_system(node):
+            return isinstance(node, SCons.Node.Alias.Alias) and\
+                (node.ID in concept_set or node.ID.startswith("run_utest::") )
+
+        return [n for n in nodes if not is_system(n)]
+
+    @property
+    def Alias(self):
+        try:
+            self._cache["alias"]
+        except KeyError:
+            alias_str = '{0}::alias::{1}'.format(self.Name, self.__pobj.Alias)
+            self._cache["alias"] = self.__env.Alias(alias_str)
+        return self._cache["alias"]
+
+    def TopLevelTargets(self):
+        '''
+        returns the top level targets.. ie the targets that are not children
+        of the other targets 
+        '''
+        top_level = []
+        # make copy
+        test_targets = set(self.filter_system_nodes(self.Targets))
+        targets = set(test_targets)
+        #api.output.verbose_msgf(
+            #['top-level-mapping'],
+            #"Filtered targets nodes for '{}':\n{}", self.ID, common.DelayVariable(lambda: [n.ID for n in targets]))
+        # filter some special targets
+        alias_str = '{0}::alias::{1}'.format(self.Name, self.__pobj.Alias)
+        rm_targets = set(self.__env.Alias(alias_str))
+        
+        # for each target
+        for trg in targets:
+            for test_target in test_targets:
+                # test to see if this target is known to not be a top level
+                if test_target in rm_targets:
+                    # if so continue
+                    continue
+                if trg.is_child(test_target):
+                    rm_targets.add(test_target)
+                if test_target.is_child(trg):
+                    # trg is under the test trg
+                    # add to remove set
+                    rm_targets.add(trg)
+
+        # filter all nodes that are not in rm set
+        ret = [t for t in test_targets if t not in rm_targets]
+        api.output.verbose_msgf(
+            ['top-level-mapping'],
+            "Mapping nodes to '{}':\n{}", self.ID, common.DelayVariable(lambda: [n.ID for n in ret]))
+        return ret
+
+    def _map_target(self, node, subtarget=None):
+
+        # if we have a sub-target, we will want to map it to the top-level target
+        if subtarget:
+            alias_str = '{0}::alias::{1}::{2}'.format(self.Name, self.__pobj.Alias, subtarget)
+            node = self.__env.Alias(alias_str, node)
+
+        alias_str = '{0}::alias::{1}'.format(self.Name, self.__pobj.Alias)
+        self.__env.Alias(alias_str, node)
+
     def _map_targets(self):
         '''
         Here we map all known target files that happen in this component
@@ -200,24 +290,32 @@ class section(pnode.pnode):
         alias_str = '{0}::alias::{1}'.format(self.Name, self.__pobj.Alias)
         alias_str_r = '{0}::'.format(alias_str)
 
-        # This magic here find all Alias targets that got defined, and if there are in a certain format,
-        # they get mapped as a dependancy to the primary alias. This allows us to make "groups" aliases
-        # so we can depend on a set of node, such as all the include file, or lib files of a part without
-        # depending on every piece it would build.
-        # build::alias::foo
-        def map_alias(obj):
-            # needs to be an alias node
-            # and it should start with the alias_str
-            # but it should not equal the alias_str or alias_str_r
-            return isinstance(obj, SCons.Node.Alias.Alias) and\
-                obj.ID.startswith(alias_str) and\
-                obj.ID != alias_str and\
-                obj.ID != alias_str_r
+        ########
+        # This is being done differently via a toplevel target mapping which I think while be better
+        # # This magic here find all Alias targets that got defined, and if there are in a certain format,
+        # # they get mapped as a dependancy to the primary alias. This allows us to make "groups" aliases
+        # # so we can depend on a set of node, such as all the include file, or lib files of a part without
+        # # depending on every piece it would build.
+        # # build::alias::foo
+        # #def map_alias(obj):
+        #     # needs to be an alias node
+        #     # and it should start with the alias_str
+        #     # but it should not equal the alias_str or alias_str_r
+        #     #return isinstance(obj, SCons.Node.Alias.Alias) and\
+        #         #obj.ID.startswith(alias_str) and\
+        #         #obj.ID != alias_str and\
+        #         #obj.ID != alias_str_r
 
-        a = self.__env.Alias(alias_str, list(filter(map_alias, self.Targets)))
+        # #a = self.__env.Alias(alias_str, [n for n in self.Targets if map_alias(n)])
 
+        ####################
+        # current changes has this function only mapping top level alias targets
+        # the alias_str will be mapped via the top level logic after the part is loaded
+        # ideall we could map this after the part load with the top level target mapping
+        a = self.__env.Alias(alias_str)
         # build::alias::foo -> build::alias::foo::
         a1 = self.__env.Alias(alias_str_r, a)
+        
         # map build::alias::foo.sub1:: -> build::alias::foo::
         if not self.Part.isRoot:  # ie we have a parent
             # build::alias::foo.sub:: -> build::alias::foo::
@@ -226,7 +324,6 @@ class section(pnode.pnode):
         # build::alias::foo -> build::alias::foo:: -> build::
         self.__env.Alias("{0}${{ALIAS_SEPARATOR}}".format(self.Name), a1)
         # add call back for latter full mapping of build context
-        # glb.engine.add_preprocess_logic_queue(functors.map_build_context(self.Part))
         functors.map_build_context(self.Part)()
 
     def ESigs(self):

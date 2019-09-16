@@ -9,7 +9,7 @@ class section_info(stored_info.stored_info):
     __slots__ = [
         '__name',                   # name of the section - good after file read
         '__partID',                 # the part ID of the part holding the section - good after file read
-        '__exports',                # all exported data for this sectiond - good after all part files are processed
+        '__exports',                # all exported data for this section - good after all part files are processed
         # sig data for each item we export ( faster to test than testing values of
         # export table) - good after all part files are processed
         '__esigs',

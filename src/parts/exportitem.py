@@ -25,7 +25,11 @@ def export_path(env, target_dirs, source_dirs, pobj, prop, use_src=False, create
     # 2) is the build path for the file
     # 3) is the source path of the file
     ret = []
-    tmp = pobj.DefiningSection.Exports[prop][0]  # we assume that this is only used in cases of list
+    try:
+        tmp = pobj.DefiningSection.Exports[prop][0]  # we assume that this is only used in cases of list
+    except KeyError:
+        pobj.DefiningSection.Exports[prop] = [[]]
+        tmp = pobj.DefiningSection.Exports[prop][0]
     if use_src:  # ie use Raw Source Directories
         for s in source_dirs:
             # setting up the libpaths
@@ -85,8 +89,10 @@ def export_file(env, targets, pobj, prop):
             continue
         elif getattr(target.attributes, 'FilterAs', None):
             continue
-        pobj.DefiningSection.Exports[prop][0] += [file]
-
+        try:
+            pobj.DefiningSection.Exports[prop][0] += [file]
+        except KeyError:
+            pobj.DefiningSection.Exports[prop] = [[file]]
     return ret
 
 
@@ -193,7 +199,11 @@ def ExportItem(env, variable, values, create_sdk=True, map_as_depenance=False): 
 
     if map_as_depenance:
         common.append_unique(pobj.DefiningSection.ExportAsDepends, variable)
-        env.Alias("{0}::alias::{1}::{2}".format(env['PART_SECTION'], env['ALIAS'], variable), values)
+        # remove this as this does not work with "dynamic" builders and requires a post_install_queue
+        # which we want to kill/obsolete
+        #if values:
+            #print("{0}::alias::{1}::{2}".format(env['PART_SECTION'], env['ALIAS'], variable), values)
+            #env.Alias("{0}::alias::{1}::{2}".format(env['PART_SECTION'], env['ALIAS'], variable), values)
 
     # set the create SDK value
     if env['CREATE_SDK'] == False and create_sdk == True:
@@ -201,7 +211,6 @@ def ExportItem(env, variable, values, create_sdk=True, map_as_depenance=False): 
 
     if create_sdk:
         pobj._create_sdk_data.append(('ExportItem', [variable, values, False, map_as_depenance]))
-
     errors.ResetPartStackFrameInfo()
 
 

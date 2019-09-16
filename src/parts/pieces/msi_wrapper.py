@@ -62,9 +62,7 @@ def MsiPackage_wrapper(_env, target, sources, **kw):
     env = _env.Clone(**kw)
     target = common.make_list(target)
     sources = common.make_list(sources)
-    # print sources,23
-    # print env.subst(target),24
-
+    
     if len(target) > 1:
         raise SCons.Errors.UserError('Only one target is allowed.')
 

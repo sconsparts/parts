@@ -1,0 +1,27 @@
+
+AddOption("--destdir",
+          dest='destdir',
+          default='#_install',
+          nargs=1,
+          help='Where to put stuff')
+
+vars = Variables()
+# allows us to overidr values on command line
+env = Environment(DESTDIR=GetOption("destdir"), variables=vars)
+for k, v in vars.UnknownVariables().items():
+    if k in ("CC", "CXX"):
+        env[k] = '"{}"'.format(v)
+    else:
+        env[k] = v.split(" ")
+
+if env['PLATFORM'] == 'win32':
+    env.Append(CPPDEFINES=['WINDOW_OS'])
+env.Append(CPPDEFINES=['PRINT_EXPORTS'])
+
+o = env.SharedLibrary("print_msg1", "print_msg.c")
+
+Alias("install", [
+    env.Install("$DESTDIR/lib", o),
+    env.Install("$DESTDIR/include", "print_msg1.h")
+]
+)

@@ -5,6 +5,7 @@ import parts.api as api
 import parts.api.requirement  # this is need to have some data set at start correctly
 import parts.common as common
 import parts.core.util as util
+import parts.core.builders as builders
 import parts.dependent_ref as dependent_ref
 import parts.errors as errors
 import parts.functors as functors
@@ -149,9 +150,9 @@ def depends_on_classic(env, depends):
             api.output.print_msg("Skipping the definition of dependence to SCons")
             continue
         api.output.verbose_msg('dependson', " Component", comp.PartRef.Target.Name)
-        glb.engine.add_preprocess_logic_queue(
-            functors.map_depends(pobj.DefiningSection.Env, comp.PartRef, comp.SectionName, comp.Requires, comp.StackFrame)
-        )
+        #glb.engine.add_preprocess_logic_queue(
+            #functors.map_depends(pobj.DefiningSection.Env, comp.PartRef, comp.SectionName, comp.Requires, comp.StackFrame)
+        #)
 
         for r in comp.Requires:
             ## import logic
@@ -172,6 +173,7 @@ def depends_on_classic(env, depends):
                     tmpspace[i] = common.namespace()
                     tmpspace = tmpspace[i]
             map_val = r.value_mapper(comp.PartRef.Target, comp.SectionName)
+            #builders.imports.map_imports_depends(env,map_val)
             tmpspace[r.key] = map_val
 
             # if this is a list and is not private we map to global space via an append
@@ -203,9 +205,9 @@ def depends_on_classic(env, depends):
                 api.output.verbose_msg('dependson', "  Exported values", pobj.DefiningSection.Exports[r.key])
 
     # map up rpath with this.. ( need to fix up the Mac)
-    if env['TARGET_PLATFORM'] != 'win32' and env['TARGET_PLATFORM'] != 'darwin':
-        glb.engine.add_preprocess_logic_queue(functors.map_rpath_part(env))
-        glb.engine.add_preprocess_logic_queue(functors.map_rpath_link_part(env, pobj.DefiningSection))
+    #if env['TARGET_PLATFORM'] != 'win32' and env['TARGET_PLATFORM'] != 'darwin':
+        #glb.engine.add_preprocess_logic_queue(functors.map_rpath_part(env))
+        #glb.engine.add_preprocess_logic_queue(functors.map_rpath_link_part(env, pobj.DefiningSection))
 
     errors.ResetPartStackFrameInfo()
 
