@@ -12,6 +12,8 @@ from builtins import zip
 
 from past.builtins import cmp
 
+import parts.core.builders as builders
+import parts.core.util as util
 import parts.pnode.part_info as part_info
 import parts.pnode.pnode as pnode
 import parts.pnode.pnode_manager as pnode_manager
@@ -841,6 +843,10 @@ class part(pnode.pnode):
         # return pp.pformat(self.__dict__)
 
     def _setup_sdk(self):
+        '''
+        This function tried setting up the old generate a SDK part logic
+        '''
+        # do nothing at this time....
         return
         create_sdk = True
         if (self.__env['CREATE_SDK'] == False and self.__create_sdk == True):
@@ -1029,7 +1035,7 @@ class part(pnode.pnode):
             env['BUILD_DIR_NODE'] = bdir
             st = time.time()
             sdir = env.Dir(self.__src_path)
-            bk_path = sys.path[:]
+            bk_path = sys.path
             sys.path = [sdir.abspath] + bk_path
 
             # variant dir for file out of parts tree but under Sconstruct
@@ -1061,6 +1067,46 @@ class part(pnode.pnode):
 
             api.output.verbose_msg(['part_read'], 'Parts file {0} read time: {1}'.format(
                 self.__file.srcnode().abspath, time.time() - st))
+
+            sections = list(self.__sections.values())+[self.__classic_section]
+            
+            # for each section we want to build a ${PART_ALIAS}.${PART_SECTION}.exports.jsn
+            # it has to be built off of the "default" environment
+            for section in sections:                
+                # get the top level targets as we want to map these to the component by default
+                [section._map_target(t) for t in section.TopLevelTargets()]
+                # Add some default values to the export table
+                section.Exports["EXISTS"] = section.Alias
+                # define the import builder for all items that will be imported
+                import_out=builders.imports.map_imports(env,section)[0]
+                dyn_import_out=builders.dyn_imports.map_dyn_imports(env,section)[0]
+                # map targets with a depends on the imports, so they are mapped
+                # in the environment before the target tries to build
+                # ideally I would like to avoid this, but this allows everything to move forward
+                # imporvement that we can make on this are:
+                # 1) have a sec.bottom_level_targets to reduce the set we add to
+                # 2) have a way to force resolution of a node being build/uptodate given
+                #    There are nodes that are dynamically resolved in the task-master logic
+                for target in section.Targets:
+                    # if the target is not the import file and not an
+                    # Alias we want to add a depends on the import
+                    # file so that all "imported" values get resolved
+                    if target != import_out and not util.isAlias(target):
+                        #print("mapping",target,import_out)
+                        section.Env.Depends(target,import_out)
+                # for each section we also want to define a export file
+                # that defines everything we will export from the component
+                # to any component that might depend on it
+                
+                # this need to be dependent on the import file
+                export_jsn = env._map_export_(import_out)
+                env._map_dyn_export_(dyn_import_out)
+                
+                # define the top level aliases mappings
+                section._map_target(export_jsn)
+                # define node for the packages to bind to if needed
+                env.DynamicPackageNodes(export_jsn)
+                
             # we tag the Directory nodes so we can latter sort unknown items faster, by checking the directory ownership
             env._log_keys = False
 

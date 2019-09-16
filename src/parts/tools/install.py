@@ -203,9 +203,16 @@ def generate(env):
     if BaseInstallBuilder is None:
         target_factory = env.fs
 
-        BaseInstallBuilder = SCons.Builder.Builder(action=install_action,
-                                                   target_factory=target_factory.Entry, source_factory=env.fs.Entry, multi=1,
-                                                   emitter=[add_targets_to_INSTALLED_FILES, ], name='InstallBuilder')
+        BaseInstallBuilder = SCons.Builder.Builder(
+            action=install_action,
+            target_factory=target_factory.Entry,
+            source_factory=env.fs.Entry,
+            # don't want the install tool to calling global scanners
+            source_scanner=env.Scanner(lambda node, env, path: []),
+            multi=1,
+            emitter=[add_targets_to_INSTALLED_FILES, ],
+            name='InstallBuilder'
+        )
 
     env['BUILDERS']['_InternalInstall'] = InstallBuilderWrapper
     env['BUILDERS']['_InternalInstallAs'] = InstallAsBuilderWrapper

@@ -65,7 +65,7 @@ def logTaskEvent(task, event, timestamp, duration=-1):
         # cannot log there... raise for now
         raise
 
-
+org_execute = Main.BuildTask.execute
 def patched_execute(self):
     try:
         enabled = logTaskEvent.storeLogsTo
@@ -81,7 +81,8 @@ def patched_execute(self):
         if Main.first_command_start is None:
             Main.first_command_start = startTime
     try:
-        SCons.Taskmaster.OutOfDateTask.execute(self)
+        #SCons.Taskmaster.OutOfDateTask.execute(self)
+        org_execute(self)
     finally:
         finishTime = time.time()
         if enabled:

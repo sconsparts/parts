@@ -18,7 +18,7 @@ from SCons.Script.SConscript import SConsEnvironment
 g_sdked_files = set([])
 
 
-def process_Sdk_Copy(env, target_dir, sources, create_sdk=True, do_clean=False):
+def process_Sdk_Copy(env, target_dir, source, create_sdk=True, do_clean=False):
 
     # make sure inputs are in good format
     target_dir = env.arg2nodes(target_dir)[0]
@@ -27,7 +27,7 @@ def process_Sdk_Copy(env, target_dir, sources, create_sdk=True, do_clean=False):
     src_dir = []
 
     # go through sources to get the source items correctly processed
-    for s in sources:
+    for s in source:
 
         if isinstance(s, pattern.Pattern):
             # print s.sub_dirs()
@@ -90,12 +90,12 @@ def process_Sdk_Copy(env, target_dir, sources, create_sdk=True, do_clean=False):
     return (out, src_dir)
 
 
-def SdkItem(env, target_dir, sources, sub_dir='', post_fix='', export_info=[], add_to_path=True,
+def SdkItem(env, target_dir, source, sub_dir='', post_fix='', export_info=[], add_to_path=True,
             auto_add_file=True, use_src_dir=False, use_build_dir=False, create_sdk=True):
 
     errors.SetPartStackFrameInfo(True)
 
-    sources = SCons.Script.Flatten(sources)
+    source = SCons.Script.Flatten(source)
 
     pobj = glb.engine._part_manager._from_env(env)
 
@@ -122,7 +122,7 @@ def SdkItem(env, target_dir, sources, sub_dir='', post_fix='', export_info=[], a
         create_sdk = False
 
     # Process the SDK COPY part of the SDK Item
-    targets, source_dir = process_Sdk_Copy(env, dest_dir, sources, create_sdk, do_clean)
+    targets, source_dir = process_Sdk_Copy(env, dest_dir, source, create_sdk, do_clean)
 
     if create_sdk == False and use_build_dir == True:
         target_dir = env.Dir('$BUILD_DIR')
@@ -134,8 +134,8 @@ def SdkItem(env, target_dir, sources, sub_dir='', post_fix='', export_info=[], a
         # Process the Export of data values
         for _type, _prop in export_info:
             # add missing properties in map
-            if (_prop in pobj.DefiningSection.Exports) == False:
-                pobj.DefiningSection.Exports[_prop] = [[]]
+            # if (_prop in pobj.DefiningSection.Exports) == False:
+                #pobj.DefiningSection.Exports[_prop] = [[]]
             # might add case that allow export of all directories
             if _type == Xp.EXPORT_TYPES.PATH and add_to_path == True:
                 target_paths += Xp.export_path(env, [dest_dir], source_dir, pobj, _prop, use_src_dir, create_sdk)
@@ -163,142 +163,161 @@ def SdkItem(env, target_dir, sources, sub_dir='', post_fix='', export_info=[], a
 
     tmp = target_dir_name[1:].replace('_', '')
     if create_sdk:
+        # maps the data to the export table
         env.ExportItem(tmp, targets, create_sdk, True)
+
+        # in cases of dynamic scanner.. we want to map some targets
+        if env.get("_PARTS_DYN"):
+            # This maps the data to the section of this part.
+            section = pobj.Section(env["PART_SECTION"])
+            section._map_target(targets, tmp)
 
     errors.ResetPartStackFrameInfo()
     return targets
 
 
-def SdkInclude(env, sources, sub_dir='', add_to_path=None, use_src_dir=False, create_sdk=True):
+def SdkInclude(env, source, sub_dir='', add_to_path=None, use_src_dir=False, create_sdk=True):
 
     if add_to_path is None:
         add_to_path = env.get('SDK_INCLUDE_ADD_TO_PATH', False)
-    ret = SdkItem(env, '$SDK_INCLUDE', sources, sub_dir, '', [(Xp.EXPORT_TYPES.PATH, 'CPPPATH')],
+    ret = SdkItem(env, '$SDK_INCLUDE', source, sub_dir, '', [(Xp.EXPORT_TYPES.PATH, 'CPPPATH')],
                   add_to_path=add_to_path, auto_add_file=True, use_src_dir=use_src_dir,
                   use_build_dir=False, create_sdk=create_sdk)
     return ret
 
 
-def SdkLib(env, sources, sub_dir='', add_to_path=None, auto_add_libs=True, use_src_dir=False, create_sdk=True):
+def SdkLib(env, source, sub_dir='', add_to_path=None, auto_add_libs=True, use_src_dir=False, create_sdk=True):
 
     if add_to_path is None:
         add_to_path = env.get('SDK_LIB_ADD_TO_PATH', True)
-    ret = SdkItem(env, '$SDK_LIB', sources, sub_dir, '', [(Xp.EXPORT_TYPES.FILE, 'LIBS'), (Xp.EXPORT_TYPES.PATH, 'LIBPATH')],
+    ret = SdkItem(env, '$SDK_LIB', source, sub_dir, '',
+                  [
+                      (Xp.EXPORT_TYPES.FILE, 'LIBS'),
+                      (Xp.EXPORT_TYPES.PATH, 'LIBPATH'),
+                      (Xp.EXPORT_TYPES.PATH, 'RPATHLINK')
+                  ],
                   add_to_path=add_to_path, auto_add_file=auto_add_libs, use_src_dir=use_src_dir,
                   use_build_dir=True, create_sdk=create_sdk)
     return ret
 
 
-def SdkBin(env, sources, sub_dir='', create_sdk=True):
+def SdkBin(env, source, sub_dir='', create_sdk=True):
 
-    ret = SdkItem(env, '$SDK_BIN', sources, sub_dir, '', [], create_sdk=create_sdk)
+    ret = SdkItem(env, '$SDK_BIN', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
 
-def SdkPrivateBin(env, sources, sub_dir='', create_sdk=True):
+def SdkPrivateBin(env, source, sub_dir='', create_sdk=True):
 
-    ret = SdkItem(env, '$SDK_PRIVATE_BIN', sources, sub_dir, '', [], create_sdk=create_sdk)
+    ret = SdkItem(env, '$SDK_PRIVATE_BIN', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
 
-def SdkConfig(env, sources, sub_dir='', create_sdk=True):
+def SdkConfig(env, source, sub_dir='', create_sdk=True):
 
-    ret = SdkItem(env, '$SDK_CONFIG', sources, sub_dir, '', [], create_sdk=create_sdk)
+    ret = SdkItem(env, '$SDK_CONFIG', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
 
-def SdkDoc(env, sources, sub_dir='', create_sdk=True):
+def SdkPkgConfig(env, source, sub_dir='', create_sdk=True):
 
-    ret = SdkItem(env, '$SDK_DOC', sources, sub_dir, '', [], create_sdk=create_sdk)
+    ret = SdkItem(env, '$SDK_PKG_CONFIG', source, sub_dir, '', [(Xp.EXPORT_TYPES.PATH, 'PKG_CONFIG_PATH')],
+                  create_sdk=create_sdk)
     return ret
 
 
-def SdkHelp(env, sources, sub_dir='', create_sdk=True):
+def SdkDoc(env, source, sub_dir='', create_sdk=True):
 
-    ret = SdkItem(env, '$SDK_HELP', sources, sub_dir, '', [], create_sdk=create_sdk)
+    ret = SdkItem(env, '$SDK_DOC', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
 
-def SdkManPage(env, sources, sub_dir='', create_sdk=True):
+def SdkHelp(env, source, sub_dir='', create_sdk=True):
 
-    ret = SdkItem(env, '$SDK_MANPAGE', sources, sub_dir, '', [], create_sdk=create_sdk)
+    ret = SdkItem(env, '$SDK_HELP', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
 
-def SdkData(env, sources, sub_dir='', create_sdk=True):
+def SdkManPage(env, source, sub_dir='', create_sdk=True):
 
-    ret = SdkItem(env, '$SDK_DATA', sources, sub_dir, '', [], create_sdk=create_sdk)
+    ret = SdkItem(env, '$SDK_MANPAGE', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
 
-def SdkMessage(env, sources, sub_dir='', create_sdk=True):
+def SdkData(env, source, sub_dir='', create_sdk=True):
 
-    ret = SdkItem(env, '$SDK_MESSAGE', sources, sub_dir, '', [], create_sdk=create_sdk)
+    ret = SdkItem(env, '$SDK_DATA', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
 
-def SdkResource(env, sources, sub_dir='', create_sdk=True):
+def SdkMessage(env, source, sub_dir='', create_sdk=True):
 
-    ret = SdkItem(env, '$SDK_RESOURCE', sources, sub_dir, '', [], create_sdk=create_sdk)
+    ret = SdkItem(env, '$SDK_MESSAGE', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
 
-def SdkSample(env, sources, sub_dir='', create_sdk=True):
+def SdkResource(env, source, sub_dir='', create_sdk=True):
 
-    ret = SdkItem(env, '$SDK_SAMPLE', sources, sub_dir, '', [], create_sdk=create_sdk)
+    ret = SdkItem(env, '$SDK_RESOURCE', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
 
-def SdkTopLevel(env, sources, sub_dir='', create_sdk=True):
+def SdkSample(env, source, sub_dir='', create_sdk=True):
 
-    ret = SdkItem(env, '$SDK_TOP_LEVEL', sources, sub_dir, '', [], create_sdk=create_sdk)
+    ret = SdkItem(env, '$SDK_SAMPLE', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
 
-def SdkNoPkg(env, sources, sub_dir='', create_sdk=True):
+def SdkTopLevel(env, source, sub_dir='', create_sdk=True):
 
-    ret = SdkItem(env, '$SDK_NO_PKG', sources, sub_dir, '', [], create_sdk=create_sdk)
+    ret = SdkItem(env, '$SDK_TOP_LEVEL', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
 
-def SdkTools(env, sources, sub_dir='', create_sdk=True):
+def SdkNoPkg(env, source, sub_dir='', create_sdk=True):
 
-    ret = SdkItem(env, '$SDK_TOOLS', sources, sub_dir, '', [], create_sdk=create_sdk)
+    ret = SdkItem(env, '$SDK_NO_PKG', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
 
-def SdkAPI(env, sources, sub_dir='', create_sdk=True):
+def SdkTools(env, source, sub_dir='', create_sdk=True):
 
-    ret = SdkItem(env, '$SDK_API', sources, sub_dir, '', [], create_sdk=create_sdk)
+    ret = SdkItem(env, '$SDK_TOOLS', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
 
-def SdkPython(env, sources, sub_dir='', create_sdk=True):
+def SdkAPI(env, source, sub_dir='', create_sdk=True):
 
-    ret = SdkItem(env, '$SDK_PYTHON', sources, sub_dir, '', [], create_sdk=create_sdk)
+    ret = SdkItem(env, '$SDK_API', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
 
-def SdkScript(env, sources, sub_dir='', create_sdk=True):
+def SdkPython(env, source, sub_dir='', create_sdk=True):
 
-    ret = SdkItem(env, '$SDK_SCRIPT', sources, sub_dir, '', [], create_sdk=create_sdk)
+    ret = SdkItem(env, '$SDK_PYTHON', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
 
-def SdkPkgData(env, sources, sub_dir='', create_sdk=True):
-    ret = SdkItem(env, '$SDK_PKGDATA', sources, sub_dir, '', [], create_sdk=create_sdk)
+def SdkScript(env, source, sub_dir='', create_sdk=True):
+
+    ret = SdkItem(env, '$SDK_SCRIPT', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
 
-def Sdk(env, sources, sub_dir='', add_to_path=True, auto_add_libs=True, use_src_dir=False, create_sdk=True):
+def SdkPkgData(env, source, sub_dir='', create_sdk=True):
+    ret = SdkItem(env, '$SDK_PKGDATA', source, sub_dir, '', [], create_sdk=create_sdk)
+    return ret
+
+
+def Sdk(env, source, sub_dir='', add_to_path=True, auto_add_libs=True, use_src_dir=False, create_sdk=True):
     errors.SetPartStackFrameInfo(True)
-    if sources is None:
+    if source is None:
         return
-    if util.isList(sources) == False:
-        sources = [sources]
-    sources = SCons.Script.Flatten(sources)
+    if util.isList(source) == False:
+        source = [source]
+    source = SCons.Script.Flatten(source)
     out = []
-    for i in sources:
+    for i in source:
         if isinstance(i, SCons.Node.FS.File)or isinstance(i, SCons.Node.Node) or util.isString(i):
             try:
                 the_file = i.attributes.FilterAs
@@ -460,6 +479,7 @@ SConsEnvironment.SdkBin = SdkBin
 SConsEnvironment.SdkPrivateBin = SdkPrivateBin
 SConsEnvironment.Sdk = Sdk
 SConsEnvironment.SdkTarget = Sdk
+SConsEnvironment.SdkPkgConfig = SdkPkgConfig
 SConsEnvironment.SdkConfig = SdkConfig
 SConsEnvironment.SdkDoc = SdkDoc
 SConsEnvironment.SdkHelp = SdkHelp
@@ -488,16 +508,16 @@ api.register.add_builder('__CreateSDKBuilder__', SCons.Builder.Builder(
 # add configuartion varaible
 api.register.add_variable("DATE_STAMP", datetime.datetime.now().strftime('%Y%m%d%H%M'), '')
 
+api.register.add_variable('SDK_ROOT_DIR', '#_sdk', '')
 api.register.add_variable(
     'SDK_ROOT',
-    '#_sdks/${CONFIG}_${TARGET_PLATFORM}_${TOOLCHAIN.replace(",", "_")}/${PART_ROOT_NAME}_${PART_VERSION}${"_%s"%PART_ROOT_MINI_SIG if PART_ROOT_MINI_SIG!="" else ""}',
+    '${SDK_ROOT_DIR}/${CONFIG}_${TARGET_PLATFORM}_${TOOLCHAIN.replace(",", "_")}/${PART_ROOT_NAME}_${PART_VERSION}${"_%s"%PART_ROOT_MINI_SIG if PART_ROOT_MINI_SIG!="" else ""}',
     'Root Directory used for copy SDKs to')
 api.register.add_variable('SDK_LIB_ROOT', '$SDK_ROOT/lib', 'Full SDK directory for the lib concept')
 api.register.add_variable('SDK_BIN_ROOT', '$SDK_ROOT/bin', 'Full SDK directory for the bin concept')
 api.register.add_variable('SDK_INCLUDE_ROOT', '$SDK_ROOT/include', 'Full SDK directory for the include or header concept')
 api.register.add_variable('SDK_LIB', '$SDK_LIB_ROOT', 'Full SDK directory for the lib concept')
 api.register.add_variable('SDK_BIN', '$SDK_BIN_ROOT', 'Full SDK directory for the bin concept')
-
 
 if 'win32' == glb._host_platform:
     api.register.add_variable('SDK_PRIVATE_BIN', '$SDK_ROOT/private/bin', '')
@@ -519,7 +539,7 @@ api.register.add_variable('SDK_INCLUDE', '$SDK_INCLUDE_ROOT', 'Full SDK director
 api.register.add_variable('SDK_TOOLS', '$SDK_ROOT/tools', 'Full SDK directory for the tools concept')
 api.register.add_variable('SDK_API', '$SDK_ROOT/API', 'Full SDK directory for the API concept')
 api.register.add_variable('SDK_CONFIG', '$SDK_ROOT/config', 'Full SDK directory for the configuration file concept')
-
+api.register.add_variable('SDK_PKG_CONFIG', '$SDK_LIB_ROOT/pkgconfig', '')
 api.register.add_variable('SDK_RESOURCE', '$SDK_ROOT/resource', 'Full SDK directory for the resource concept')
 api.register.add_variable('SDK_SAMPLE', '$SDK_ROOT/sample', 'Full SDK directory for the sample concept')
 api.register.add_variable('SDK_TOP_LEVEL', '$SDK_ROOT/TOP_LEVEL',

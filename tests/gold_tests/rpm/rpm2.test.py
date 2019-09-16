@@ -14,4 +14,6 @@ Test.SkipUnless(
 
 Setup.Copy.FromDirectory('rpm_test2')
 
-Test.AddBuildRun('.').ReturnCode = 2
+tr = Test.AddBuildRun('.')
+tr.Processes.Default.ReturnCode = 0
+tr.Processes.Default.Streams.Warning = "rpm2.gold"

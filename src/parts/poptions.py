@@ -490,7 +490,7 @@ def post_option_setup():
                            action='callback',
                            help='Sets the default TARGET_PLATFORM use for cross builds')
 
-
+import SCons.Script.SConsOptions
 SCons.Script.SConsOptions.SConsValues.settable.extend(
     [
         'vcs_logic',

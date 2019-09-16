@@ -160,4 +160,7 @@ class dependent_ref(object):
     def DelaySubst(self, value, policy=policies.REQPolicy.warning):
         return self.PartRef.delaysubst(value, policy)
 
+    def str_sig(self):
+        return "{}:{}:{}".format(self.__part_ref.str_sig(),self.__sectionname,self.__requires.csig())
+
 # vim: set et ts=4 sw=4 ai ft=python :

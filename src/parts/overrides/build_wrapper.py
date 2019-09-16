@@ -46,18 +46,18 @@ def parts_call_(self, env, target=None, source=None, chdir=SCons.Builder._null, 
         # flatten the list
         source = SCons.Util.flatten(source)
 
-    dup = kw.get("allow_duplicates", False)
+    dup = kw.get("allow_duplicates",env.get("allow_duplicates", False))
     found = False
     if dup:
-        # Get info for help store info matches better
+        # Get information to help store info matches better
         if pobj is not None:
             name = pobj.Name
             srcpath = pobj.SourcePath
         else:
             name = None
             srcpath = None
-        # make key
 
+        # make key
         if source == SCons.Environment._null:
             s = "_null"
         elif SCons.Util.is_List(source):
@@ -67,18 +67,19 @@ def parts_call_(self, env, target=None, source=None, chdir=SCons.Builder._null, 
         else:
             s = "_null"
 
-        if target == []:
+        if not target:
             key = (srcpath, s, self.get_name(env), name)
         else:
-            key = (target, s, self.get_name(env), name)
-
+            if self.multi and False:
+                key = (target, self.get_name(env), name)
+            else:
+                key = (target, s, self.get_name(env), name)
         # test for match
         if key in key_list:
             tmp = value_list[key_list.index(key)]
             found = True
             kw['_found_duplication'] = True
 
-    # if not found:
     try:
         tmp = self.Orig_call(env, target, source, chdir=chdir, **kw)
     except errors.AllowedDuplication:
@@ -86,7 +87,7 @@ def parts_call_(self, env, target=None, source=None, chdir=SCons.Builder._null, 
 
     # take care of resolved target information.
     # for when we get a positive allow duplicate
-    if dup:
+    if dup and not found:
         key_list.append(key)
         value_list.append(tmp)
 

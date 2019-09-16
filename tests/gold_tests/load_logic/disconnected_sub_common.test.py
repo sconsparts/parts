@@ -28,17 +28,26 @@ t = Test.AddTestRun("build-target-target")
 t.Command = "scons --console-stream=none A:: --ll=target"
 t.ReturnCode = 0
 
-Test.AddUpdateCheck()
+Test.AddUpdateCheck("A::")
 
 t = Test.AddTestRun("build-target-min")
 t.Command = "scons --console-stream=none A:: --ll=min"
 t.ReturnCode = 0
 
-Test.AddUpdateCheck()
+Test.AddUpdateCheck("A::")
 
 t = Test.AddTestRun("build-target-unsafe")
 t.Command = "scons --console-stream=none A:: --ll=unsafe"
 t.ReturnCode = 0
+
+# this should look up to date
+Test.AddUpdateCheck("A::")
+
+# target "all" some state files for the root common.part 
+# that should not have been built yet
+Test.AddOutOfDateCheckParts()
+
+Test.AddBuildRun()
 
 Test.AddUpdateCheck()
 Test.AddCleanRun()

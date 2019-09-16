@@ -1,72 +1,79 @@
 
-def AddCleanRun(Test,target='all'):
-        tr=Test.AddTestRun(
-            "Cleaning Target: {0}".format(target),
-            "cleaning_target"
-            )
-        tr.Command='scons -c {0} --console-stream=none'.format(target)
-        tr.ReturnCode=0
-        return tr
-
-def AddUpdateCheckSCons(Test,target='all'):
-    tr=Test.AddTestRun(
-        "SCons up to date check"
-        "up-to-date-scons-run-scons",
-        )
-    tr.Command='scons -q {0} --disable-parts-cache --console-stream=none'.format(target)
-    tr.ReturnCode=0
-    return tr
-
-def AddUpdateCheckParts(Test,target='all'):
-    tr=Test.AddTestRun(
-        "Parts up to date check"
-        "up-to-date-parts-run-parts",
+def AddCleanRun(Test, target='all', options=''):
+    tr = Test.AddTestRun(
+        "Cleaning Target: {0}".format(target),
+        "cleaning_target"
     )
-    tr.Command='scons -q {0} --console-stream=none'.format(target)
-    tr.ReturnCode=0
-
+    tr.Command = 'scons -c {0} {1} --console-stream=none'.format(target, options)
+    tr.ReturnCode = 0
     return tr
 
-def AddUpdateCheck(Test,target='all'):
-    Test.AddUpdateCheckSCons(target)
-    Test.AddUpdateCheckParts(target)
 
-def AddOutOfDateCheckParts(Test,target="all"):
-    tr=Test.AddTestRun(
-        "Parts out to date check"
-        "out-of-date-check-run-parts",
+def AddUpdateCheckSCons(Test, target='all', options=''):
+    tr = Test.AddTestRun(
+        "Check SCons is up-to-date for target -> {}".format(target),
+        "scons-update-check-{}".format(target),
     )
-    tr.Command='scons -q {0} --console-stream=none'.format(target)
-    tr.ReturnCode=1
-
+    tr.Command = 'scons -q {0} {1} --disable-parts-cache --console-stream=none'.format(target, options)
+    tr.ReturnCode = 0
     return tr
 
-def AddOutOfDateCheckSCons(Test,target="all"):
-    tr=Test.AddTestRun(
-        "SCons out to date check"
-        "out-of-date-check-run-scons",
+
+def AddUpdateCheckParts(Test, target='all', options=''):
+    tr = Test.AddTestRun(
+        "Check Parts is up-to-date for target -> {}".format(target),
+        "parts-update-check-{}".format(target),
     )
-    tr.Command='scons -q {0} --disable-parts-cache --console-stream=none'.format(target)
-    tr.ReturnCode=1
+    tr.Command = 'scons -q {0} {1} --console-stream=none'.format(target, options)
+    tr.ReturnCode = 0
 
     return tr
 
-def AddBuildRun(Test,target="all",options=''):
+
+def AddUpdateCheck(Test, target='all', options=''):
+    Test.AddUpdateCheckSCons(target, options)
+    Test.AddUpdateCheckParts(target, options)
+
+
+def AddOutOfDateCheckParts(Test, target="all", options=''):
+    tr = Test.AddTestRun(
+        "Check Parts is out-of-date for target -> {}".format(target),
+        "parts-outdated-check-{}".format(target),
+    )
+    tr.Command = 'scons -q {0} {1} --console-stream=none'.format(target, options)
+    tr.ReturnCode = 1
+
+    return tr
+
+
+def AddOutOfDateCheckSCons(Test, target="all", options=''):
+    tr = Test.AddTestRun(
+        "Check SCons is out-of-date for target -> {}".format(target),
+        "scons-outdated-check-{}".format(target),
+    )
+    tr.Command = 'scons -q {0} {1} --disable-parts-cache --console-stream=none'.format(target, options)
+    tr.ReturnCode = 1
+
+    return tr
+
+
+def AddBuildRun(Test, target="all", options=''):
     if options:
-        s="Building target: {0} options: {1}".format(target,options)
+        s = "Building target-> {0} options-> {1}".format(target, options)
     else:
-        s="Building target: {0}".format(target)
-    tr=Test.AddTestRun(
-        s,"build_run"
+        s = "Building target-> {0}".format(target)
+    tr = Test.AddTestRun(
+        s, "build-{}".format(target)
     )
-    tr.Command='scons {0} {1} --console-stream=none'.format(target,options)
-    tr.ReturnCode=0
+    tr.Command = 'scons {0} {1} --console-stream=none'.format(target, options)
+    tr.ReturnCode = 0
 
     return tr
 
-def AddOutOfDateCheck(Test,target='all'):
-    Test.AddOutOfDateCheckSCons(target)
-    Test.AddOutOfDateCheckParts(target)
+
+def AddOutOfDateCheck(Test, target='all', options=''):
+    Test.AddOutOfDateCheckSCons(target, options)
+    Test.AddOutOfDateCheckParts(target, options)
 
 
 AddTestRunSet(AddCleanRun)

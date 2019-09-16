@@ -8,3 +8,6 @@ parts.egg-info/
 *.o
 .tox/
 _sandbox/
+
+.mypy_cache/
+

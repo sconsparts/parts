@@ -50,9 +50,9 @@ error_tests = [
 ]
 
 message_tests = [
-    re.compile('(scons?\s?:)', re.IGNORECASE).search,
-    re.compile('(parts?\s?:)', re.IGNORECASE).search,
-    re.compile('(Install file?\s?:)').search,
+    re.compile(r'(scons?\s?:)', re.IGNORECASE).search,
+    re.compile(r'(parts?\s?:)', re.IGNORECASE).search,
+    re.compile(r'(Install file?\s?:)').search,
 ]
 
 DEFAULT_STREAM = 0

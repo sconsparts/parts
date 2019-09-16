@@ -33,9 +33,9 @@ copy1.Command = 'echo 1part1.txt>part1.txt'
 copy2 = Test.AddTestRun('update_part2_txt', 'Updating part2.txt')
 copy2.Command = 'echo 2part2.txt>part2.txt'
 
-run1 = Test.AddBuildRun(
-    'build::name::pack0 --verbose=loading,node_check,update_check LOGGER=TEXT_LOGGER')
-run1.ReturnCode = 0
+run1 = Test.AddBuildRun('build::name::pack0', 
+    '--verbose=loading,node_check,update_check LOGGER=TEXT_LOGGER')
+
 
 alllog = run1.Disk.File('logs/all.log')
 # comment out as the "cache logic" is being redone

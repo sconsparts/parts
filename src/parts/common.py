@@ -258,14 +258,14 @@ def append_unique(obj, val):
 def prepend_unique(obj, val):
     ''' The purpose of this funtion is to add the object to a list in a unique way'''
     if not val in obj:
-        obj[0:0] = [val]
+        obj.insert(0,val)
     else:
         try:
             while True:
                 obj.remove(val)
         except ValueError:
             pass
-        obj[0:0] = [val]
+        obj.insert(0,val)
 
     return obj
 
@@ -573,9 +573,8 @@ def map_alias_to_root(pobj, concept, alias_str):
     Returns a list of Alias nodes.
     Each successor is predecessor's parent. I.e. [node, node.parent, node.parent.parent, ...]
     '''
-
+    
     alias_str = alias_str.format(concept, "${ALIAS}")
-
     alias = pobj.Env.Alias(alias_str)
 
     result = list(alias)

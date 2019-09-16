@@ -80,7 +80,14 @@ api.register.add_variable(
     'BUILD_DIR',
     '$BUILD_DIR_ROOT/${PART_SECTION}_${CONFIG}_${TARGET_PLATFORM}${"_"+TOOLCHAIN.replace(",","_") if TOOLCHAIN!="default" else ""}/$ALIAS',
     'Full path used to for building a given build configuration/variant')
-#api.register.add_variable('BUILD_DIR','$BUILD_DIR_ROOT/${CONFIG}_${TARGET_PLATFORM}/$ALIAS', 'Full path used to for building a given build configuration/variant')
+
+api.register.add_variable('PARTS_SYS_DIR_ROOT', '#.parts.cache', 'Root directory for build data for the system')
+api.register.add_variable(
+    'PARTS_SYS_DIR',
+    '$PARTS_SYS_DIR_ROOT/${CONFIG}_${TARGET_PLATFORM}${"_"+TOOLCHAIN.replace(",","_") if TOOLCHAIN!="default" else ""}',
+    'Full path used to for building a given build configuration/variant')
+
+
 api.register.add_variable(
     'OUTOFTREE_BUILD_DIR', '$BUILD_DIR/__oot',
     'Full path used to for building a given build configuration/variant for files outside the part directory tree')

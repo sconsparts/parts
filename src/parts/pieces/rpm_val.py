@@ -51,6 +51,7 @@ headers = [
     dict(key='Icon', extra_keys=('X_RPM_ICON',), value='{key}: {value}\n',),
     dict(key='Packager', extra_keys=('X_RPM_PACKAGER',), value='{key}: {value}\n',),
     dict(key='Requires', extra_keys=('X_RPM_REQUIRES',), value_mapper=rpm_list_mapper, value='{key}: {value}\n',),
+    dict(key='BuildRequires', extra_keys=('X_RPM_BUILDREQUIRES',), value_mapper=rpm_list_mapper, value='{key}: {value}\n',),
     dict(key='Provides', extra_keys=('X_RPM_PROVIDES',), value_mapper=rpm_list_mapper, value='{key}: {value}\n',),
     dict(key='Conflicts', extra_keys=('X_RPM_CONFLICTS',), value='{key}: {value}\n',),
     dict(key='Epoch', extra_keys=('X_RPM_EPOCH',), value='{key}: {value}\n',),
@@ -95,7 +96,7 @@ def add_files_content(env, file_contents, pkg_files, prefix, idx=-1):
             # this is a file node
             # check if this node should be prefix with a special value
             # if so we need to remove the normal PACKAGE prefix and replace it with the custom prefix
-            # imple details... This logic is mapped with the rpm_package code that generates the 
+            # imple details... This logic is mapped with the rpm_package code that generates the
             # tar file that is created for the rpm build. It cached the resolved value on the node
             # we want to make sure the orginial uncached value is what is stored in the spec file
             if env.hasMetaTag(node, "RPM_NODE_PREFIX_CACHED"):
@@ -145,7 +146,6 @@ def add_files_content(env, file_contents, pkg_files, prefix, idx=-1):
 
 
 def rpm_spec(env, target, source):
-
     # list of custom vars to add
     # these value ideally will be stuff like
     # add custom vars or advance setting that might
@@ -166,7 +166,7 @@ def rpm_spec(env, target, source):
         rpm_vals = new_vals
 
     # open spec file
-    if len(source):
+    if len(source) and source[0].name.endswith(".spec"):
         with open(source[0].abspath, 'r') as file_obj:
             file_contents = file_obj.read().split('\n')
         outstr = process_existing_spec(env, file_contents, rpm_vals)
@@ -248,6 +248,7 @@ def generate_spec(env, rpm_vals):
 
     # output headers
     out_str += generate_values(headers, env)
+
     # output sections
     out_str += generate_values(sections, env)
 
@@ -405,5 +406,5 @@ rpmspec_action = SCons.Action.Action(rpm_spec)
 api.register.add_builder('_rpmspec', SCons.Builder.Builder(
     action=rpmspec_action,
     source_factory=SCons.Node.FS.File,
-    target_factory=SCons.Node.FS.File
+    target_factory=SCons.Node.FS.File,
 ))

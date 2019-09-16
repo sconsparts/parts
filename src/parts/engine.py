@@ -14,6 +14,7 @@ import parts.api as api
 import parts.api.output
 import parts.common as common
 import parts.core.util as util
+import parts.core.builders # load the core builders
 import parts.datacache as datacache
 import parts.errors as errors
 import parts.events as events
@@ -144,7 +145,6 @@ class parts_addon(object):
 
     def Start(self):
         api.output.verbose_msg("init", "Starting up Parts")
-
         # set up some globals
         glb.pnodes = pnode.pnode_manager.manager()
 
@@ -159,7 +159,7 @@ class parts_addon(object):
         # turn off all default building of any items without a target, or until
         # default is called again to set one. ( ie the default by Scons is '.' which is everything)
         self.def_env.Default('')
-        self.def_env.EnsureSConsVersion(2, 1, 0)
+        self.def_env.EnsureSConsVersion(3, 1, 1)
         # self._setup_defenv()
 
         # try to setup all logger
@@ -168,7 +168,7 @@ class parts_addon(object):
         if self.__build_mode == 'help':
             self._setup_help_info()
         # setup the sdk options
-        self._setup_sdk()
+        # self._setup_sdk()
         # setup the progress meter
         self._setup_progress_meter()
 
@@ -457,8 +457,8 @@ class parts_addon(object):
         api.output.trace_msg("vcs_jobs_option", "vcs_jobs =", SCons.Script.GetOption('vcs_jobs'))
         api.output.trace_msg("update_option", "update =", SCons.Script.GetOption('update'))
 
-    def _setup_sdk(self):
-        return
+    #def _setup_sdk(self):
+        #return
 
     def _setup_progress_meter(self):
         api.output.verbose_msg("startup", "Setting up show-progress feature")
