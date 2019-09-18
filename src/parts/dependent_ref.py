@@ -68,9 +68,9 @@ class dependent_ref(object):
             if self.__part_ref.hasUniqueMatch:
                 self.__part = self.__part_ref.UniqueMatch
             elif self.__part_ref.hasMatch == False:
-                api.output.error_msg(self.NoMatchStr)
+                api.output.error_msg(self.NoMatchStr())
             elif self.__part_ref.hasAmbiguousMatch:
-                api.output.error_msg(self.AmbiguousMatchStr)
+                api.output.error_msg(self.AmbiguousMatchStr())
         return self.__part
 
     @property
