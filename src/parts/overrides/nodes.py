@@ -491,6 +491,16 @@ def changed_content(self, target, prev_ni, repo_node=None):
 SCons.Node.FS.Dir.changed_content = changed_content
 SCons.Node.Python.Value.changed_content = changed_content
 
+def changed_timestamp_then_content(self, target, prev_ni, node=None):
+    # for Values at the moment timestamp has no real meaning
+    # for Dir nodes it can be misleading in the case of directories so we just check for
+    # content changes
+    # might change in the future 
+    return self.changed_content(target, prev_ni, node)
+
+SCons.Node.FS.Dir.changed_content = changed_content
+SCons.Node.Python.Value.changed_content = changed_content
+
 
 def is_up_to_date_dir(self):
     """
