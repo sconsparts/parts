@@ -49,7 +49,8 @@ def parts_node_errors(builder, env, tlist, slist):
                     error = True
             if builder.multi:
                 if t.get_executor() is None:
-                    api.output.warning_msg("Executor is None for node '{}'.\n This is a sign that there is a order dependancy that is incorrect in the mutli builder used to generate this target".format(t.ID),show_stack=False)
+                    api.output.warning_msg(
+                        "Executor is None for node '{}'.\n This is a sign that there is a order dependancy that is incorrect in the mutli builder used to generate this target".format(t.ID), show_stack=False)
                     del t.executor
                 if t.get_executor() and (t.builder != builder or t.get_executor().get_all_targets() != tlist):
                     error = True
@@ -69,7 +70,6 @@ def parts_node_errors(builder, env, tlist, slist):
                 (t.env.get(
                     'PART_ALIAS', "<unknown>"), env.get(
                     'PART_ALIAS', "<unknown>")), show_stack=False)
-            1/0
 
     # call the SCons code
     scons_node_errors(builder, env, tlist, slist)

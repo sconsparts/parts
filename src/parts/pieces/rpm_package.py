@@ -138,7 +138,7 @@ def rpm_scanner(node, env, path, args=None):
             # may remove , do nothing or change the runpath of a binary
             # This build should also check if it is a binary and skip
             # "scripts" or text files that make be installed in these areas
-            filtered = env.SetRPath(filtered, RPATH_TARGET_PREFIX="$BUILD_DIR/_RPM_RUNPATH_", allow_duplicates=True)
+            filtered = env.SetRPath(filtered, RPATH_TARGET_PREFIX="$BUILD_DIR/_RPM_RUNPATH_${PART_MINI_SIG}", allow_duplicates=True)
             filtered_src += filtered
         else:
             filtered_src.append(filtered)

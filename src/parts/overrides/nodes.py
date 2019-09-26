@@ -498,8 +498,8 @@ def changed_timestamp_then_content(self, target, prev_ni, node=None):
     # might change in the future 
     return self.changed_content(target, prev_ni, node)
 
-SCons.Node.FS.Dir.changed_content = changed_content
-SCons.Node.Python.Value.changed_content = changed_content
+SCons.Node.FS.Dir.changed_timestamp_then_content = changed_content
+SCons.Node.Python.Value.changed_timestamp_then_content = changed_content
 
 
 def is_up_to_date_dir(self):

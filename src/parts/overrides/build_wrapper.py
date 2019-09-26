@@ -14,6 +14,7 @@ import os
 
 import parts.errors as errors
 import parts.glb as glb
+import parts.api as api
 import SCons.Builder
 # we used lists as a dictionary can't take a tuple as a key
 import SCons.Environment
@@ -34,51 +35,74 @@ Orig_call = SCons.Builder.BuilderBase.__call__
 def parts_call_(self, env, target=None, source=None, chdir=SCons.Builder._null, **kw):
     # self.object should be the env value
     pobj = glb.engine._part_manager._from_env(env)
+    # don't do any special handling of the target and list are both empty
 
-    # clean up source value to make it a list as the builder would expect it
-    # this help me latter in dealing with the values myself
-    # we don't make them real nodes as we don't know what the builder wants
-    if SCons.Util.is_String(source) and source != '':
-        source = [source]  # make it a list
-    elif source == SCons.Environment._null:
-        pass  # leave it alone
-    elif SCons.Util.is_List(source):
-        # flatten the list
-        source = SCons.Util.flatten(source)
-
-    dup = kw.get("allow_duplicates",env.get("allow_duplicates", False))
+    dup = False
     found = False
-    if dup:
-        # Get information to help store info matches better
-        if pobj is not None:
-            name = pobj.Name
-            srcpath = pobj.SourcePath
-        else:
-            name = None
-            srcpath = None
 
-        # make key
-        if source == SCons.Environment._null:
-            s = "_null"
+    if target or source:
+
+        # clean up source value to make it a list as the builder would expect it
+        # this help me latter in dealing with the values myself
+        # we don't make them real nodes as we don't know what the builder wants
+        if SCons.Util.is_String(source) and source != '':
+            source = [source]  # make it a list
+        elif source == SCons.Environment._null:
+            pass  # leave it alone
         elif SCons.Util.is_List(source):
-            s = [os.path.split(str(i))[1] for i in source]
-        elif SCons.Util.is_String(source):
-            s = source
-        else:
-            s = "_null"
+            # flatten the list
+            source = SCons.Util.flatten(source)
+        
+        if SCons.Util.is_String(target) and target != '':
+            target = [target]  # make it a list
+        elif not target:
+            pass # the emitter will probally fill this in .. leave alone
+        elif not SCons.Util.is_List(target):
+            # flatten the list
+            target = [target]
+        elif SCons.Util.is_List(target):
+            # flatten the list
+            target = SCons.Util.flatten(target)
 
-        if not target:
-            key = (srcpath, s, self.get_name(env), name)
-        else:
-            if self.multi and False:
-                key = (target, self.get_name(env), name)
+        # update here if we will handle allow_duplicates
+        dup = kw.get("allow_duplicates",env.get("allow_duplicates", False))
+        
+        if dup:
+            # Get information to help store info matches better
+            if pobj is not None:
+                name = pobj.Name
+                srcpath = pobj.SourcePath
             else:
-                key = (target, s, self.get_name(env), name)
-        # test for match
-        if key in key_list:
-            tmp = value_list[key_list.index(key)]
-            found = True
-            kw['_found_duplication'] = True
+                name = None
+                srcpath = None
+
+            def make_str(n):
+                try:
+                    return n.ID
+                except:
+                    return n
+            # make key
+            if source == SCons.Environment._null:
+                s = "_null"
+            elif SCons.Util.is_List(source):
+                s = [make_str(i) for i in source]
+            elif SCons.Util.is_String(source):
+                s = source
+            else:
+                s = "_null"
+
+            if not target:
+                key = (srcpath, s, self.get_name(env), name)
+            else:
+                if self.multi and False:
+                    key = (target, self.get_name(env), name)
+                else:
+                    key = (target, s, self.get_name(env), name)
+            # test for match
+            if key in key_list:
+                tmp = value_list[key_list.index(key)]
+                found = True
+                kw['_found_duplication'] = True
 
     try:
         tmp = self.Orig_call(env, target, source, chdir=chdir, **kw)
@@ -90,14 +114,7 @@ def parts_call_(self, env, target=None, source=None, chdir=SCons.Builder._null, 
     if dup and not found:
         key_list.append(key)
         value_list.append(tmp)
-
-    # don't add it to the Parts target list if this has no part or
-    # if the actions here are part of a AutoConfigure set of calls
-    # if pobj is not None and 'SConfSourceBuilder' not in self.object['BUILDERS']:
-        # pobj._target_files.update(tmp)
-    # else:
-        # print tmp[0], 'missing'
-        # pass
+    
     return tmp
 
 

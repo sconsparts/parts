@@ -105,6 +105,7 @@ api.register.add_builder(
         emitter=rpath_emit,
         action=set_runpath_action,
         single_source=True,
-        target_scanner=symlinks.symlink_scanner
+        target_scanner=symlinks.symlink_scanner,
+        name="set-rpath"
     )
 )

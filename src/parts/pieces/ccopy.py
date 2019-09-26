@@ -348,7 +348,6 @@ def CCopyWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw):
             elif isinstance(src, SCons.Node.FS.Dir):
                 e = dnode.Dir(os.sep.join(['.', src.name]))
             elif isinstance(src, symlinks.FileSymbolicLink):
-                # symlinks.ensure_node_is_symlink(e)
                 try:
                     e = dnode.FileSymbolicLink(os.sep.join(['.', src.name]))
                 except BaseException:

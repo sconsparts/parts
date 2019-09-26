@@ -414,7 +414,6 @@ def ensure_node_is_symlink(node, template=None):
 def _wrap_MetaTag(MetaTag):
     def call(MetaTag, nodes, ns, **kw):
         def _warning(k):
-            #api.output.warning_msg('{0} meta-tag usage is deprecated. Consider using SymLink() function'.format(k))
             api.output.verbose_msg(['warning'], '{0} meta-tag usage is deprecated. Consider using SymLink() function'.format(k))
 
         def _convert_nodes(nodes, linkto):
