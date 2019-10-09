@@ -640,7 +640,9 @@ Use -H or --help-options for a list of scons options
         # This is backward compatibility for Parts
         self.__def_env['PREPROCESS_LOGIC_QUEUE'] = self.__post_process_queue
 
-        self.def_env.Decider('MD5-timestamp')
+        # must have Decider set else we have a state issue in the environment
+        #self.def_env.Decider('MD5-timestamp')
+        self.def_env.Decider('content')
 
 
 api.register.add_bool_variable(

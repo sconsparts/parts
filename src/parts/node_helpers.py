@@ -43,10 +43,10 @@ def build_info_changed(self, scan=True, skip_implict=False, indent=0):
             api.output.verbose_msgf(
             ["binfo-change","node-changed"], "{indent}{node} Cached: False",node=self.ID, indent=" "*indent)
             return False
-        
+
     except AttributeError:
         pass
-    
+
     # if the node is build or visited it cannot be viewed as changed anymore
     if self.isBuilt or self.isVisited:
         api.output.verbose_msgf(
@@ -119,7 +119,7 @@ def build_info_changed(self, scan=True, skip_implict=False, indent=0):
             # if it fails ... it mean the node change because the child use to build this
             # node is different. It does not mean the logic to build the child changed
             if decider_map[self.changed_since_last_build](child, self, prev_ni, self):
-                
+
                 api.output.verbose_msgf(
                     ["binfo-change", "node-changed", "node-did-change"], "{indent}{node} dependent '{child}' changed!", node=self.ID, child=child, indent=" "*indent)
                 result = True
@@ -136,7 +136,7 @@ def node_explict_change(self, binfo=None, indent=0):
     '''
     Check explict state based on what was is defined in the node
     checks that the node change based on cached state. This want to return as fast as it can
-    So first change allows us to return result as soon as it is known    
+    So first change allows us to return result as soon as it is known
     '''
     # if the node is build or visited it cannot be viewed as changed anymore
     if self.isBuilt or self.isVisited:
@@ -322,7 +322,7 @@ def node_implict_change(self, scan=True, binfo=None, indent=0):
 
 
 def explict_change(node, indent=0):
-    ''' 
+    '''
     Check the explict children (sources and depends)
     Check is based on defined values via there binfo
     Does not check the implict
@@ -364,7 +364,7 @@ def explict_change(node, indent=0):
 
 
 def cached_explict_change(node, indent=0):
-    ''' 
+    '''
     Check the explict children (sources and depends)
     Check is based on defined values via there binfo
     Does not check the implict
@@ -402,7 +402,7 @@ def cached_explict_change(node, indent=0):
 
 
 def implicit_change(node, scan=False, indent=0):
-    ''' 
+    '''
     Check the explict children (sources and depends)
     Check is based on defined values via there binfo
     Does not check the implict
@@ -461,7 +461,7 @@ def implicit_change(node, scan=False, indent=0):
 
 
 def cached_implicit_change(node, indent=0):
-    ''' 
+    '''
     Check the explict children (sources and depends)
     Check is based on defined values via there binfo
     Does not check the implict
@@ -508,7 +508,7 @@ def has_changed(node, skip_implict=False, indent=0):
     2) It check explict depend before calling scanners to get implicit depends
 
     This should avoid some unneed scans and checks when out of date.
-    The logic also does this depth first. this is to ensure better 
+    The logic also does this depth first. this is to ensure better
     environment state in cases of scanner calling builders.
 
     skip_implict - allows us to skip testing this nodes implict as we maybe testing
@@ -516,7 +516,15 @@ def has_changed(node, skip_implict=False, indent=0):
 
     '''
 
-    api.output.verbose_msgf(["node-changed"], "{indent}checking {node}", node=node.ID, indent=" "*indent)
+    api.output.verbose_msgf(["node-changed"], "{indent}checking has_changed {node}", node=node.ID, indent=" "*indent)
+
+    # if the node is build or visited it cannot be viewed as changed anymore
+    if node.isBuilt or node.isVisited:
+        api.output.verbose_msgf(
+            ["binfo-change", "node-changed"],
+            "{indent}{node} has been built!", node=node.ID, indent=" "*indent)
+        node.attributes._changed = False
+        return False
 
     try:
         # if the node was cached with not changed or it is built
@@ -525,6 +533,11 @@ def has_changed(node, skip_implict=False, indent=0):
             api.output.verbose_msgf(
             ["node-changed"], "{indent}{node} Cached: False", node=node.ID, indent=" "*indent)
             return False
+        else:
+            api.output.verbose_msgf(
+            ["node-changed"], "{indent}{node} Cached: True", node=node.ID, indent=" "*indent)
+            return True
+
     except AttributeError:
         pass
 
@@ -533,14 +546,6 @@ def has_changed(node, skip_implict=False, indent=0):
     if not node.is_buildable():
         api.output.verbose_msgf(
             ["node-changed"], "{indent}{node} has no builder", node=node.ID, indent=" "*indent)
-        node.attributes._changed = False
-        return False
-
-    # if the node is build or visited it cannot be viewed as changed anymore
-    if node.isBuilt or node.isVisited:
-        api.output.verbose_msgf(
-            ["binfo-change", "node-changed"],
-            "{indent}{node} has been built!", node=node.ID, indent=" "*indent)
         node.attributes._changed = False
         return False
 
@@ -593,7 +598,7 @@ def has_children_changed(node, indent=0):
     given that this node probally needs to be updated still
     '''
 
-    api.output.verbose_msgf(["node-changed"], "{indent}checking {node}", node=node.ID, indent=" "*indent)
+    api.output.verbose_msgf(["node-changed"], "{indent}checking children {node}", node=node.ID, indent=" "*indent)
 
     # the node has to have a builder else it is unchanged as it is source to some other target
     # which will have binfo to do a real check if the node needs to be rebuilt
@@ -610,7 +615,7 @@ def has_children_changed(node, indent=0):
     # the implict has to be filed in via a scan we we want to delay
     children = (node.sources if node.sources else []) + \
         (node.depends if node.depends else [])
-    
+
     # now we want to check the children to see if they changed ( if they did we changed as well)
     for child in children:
         # call the child first as we need to go down to the bottom first and then come back up

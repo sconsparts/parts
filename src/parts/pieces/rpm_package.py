@@ -30,8 +30,8 @@ def rpm_scan_check(node, env):
 
 
 def rpm_group_values(env, dir, target, source, arg=None):
-    ''' 
-    This functions returns the file that are part 
+    '''
+    This functions returns the file that are part
     of a given package group
     '''
     api.output.verbose_msgf(["rpm-scanner", "scanner"], "Path finder - Getting source file")
@@ -45,14 +45,15 @@ def rpm_group_values(env, dir, target, source, arg=None):
                             common.DelayVariable(lambda: [r.ID for r in ret]))
     return tuple(ret)
 
-
+g_cache = {}
 def rpm_scanner(node, env, path, args=None):
-    ''' 
+    '''
     The goal of the scanner is to add the depend of the rpm
-    the .spec file and the .tar.gz file that we need generate 
+    the .spec file and the .tar.gz file that we need generate
     from the sources that are mapped to a given group
     '''
     api.output.verbose_msgf(["rpm-scanner", "scanner", "scanner-called"], "Rpm Scanning {}", node.ID)
+    api.output.verbose_msgf(["rpm-scanner", "scanner"],"is Built? {} {}",node.isBuilt,node.isVisited)
 
     # this is the package name without the .rpm"
     base_name = node.name[:-4]
@@ -65,169 +66,180 @@ def rpm_scanner(node, env, path, args=None):
         return []
     api.output.verbose_msgf(["rpm-scanner", "scanner"], "Source files: {}", common.DelayVariable(lambda: [e.ID for e in path]))
 
-    #############################################
-    # Sort files in to source group and to control group
-    spec_in = []
+    ret = g_cache.get(node.ID)
 
-    def spec(node):
-        if env.MetaTagValue(node, 'category', 'package') == 'PKGDATA':
-            if 'rpm' in env.MetaTagValue(node, 'types', 'package', ['rpm']):
-                if node.ID.endswith(".spec"):
-                    spec_in.append(node)
-                else:
-                    env.CCopy('${{BUILD_DIR}}/SPECS/{0}'.format(base_name), node)
-            return False
-        return True
+    if not ret:
+        #############################################
+        # Sort files in to source group and to control group
+        spec_in = []
 
-    # after this call spec_in should contain the spec file
-    # src should be all the sources we want to add to the .tar.gz
-    src = list(filter(spec, path))
+        def spec(node):
+            if env.MetaTagValue(node, 'category', 'package') == 'PKGDATA':
+                if 'rpm' in env.MetaTagValue(node, 'types', 'package', ['rpm']):
+                    if node.ID.endswith(".spec"):
+                        spec_in.append(node)
+                    else:
+                        env.CCopy('${{BUILD_DIR}}/SPECS/{0}'.format(base_name), node)
+                return False
+            return True
 
-    # get various data based on the rpm name
-    grps = re.match(rpm_reg, node.name, re.IGNORECASE)
-    target_name = grps.group(1)
-    target_version = grps.group(2)
-    target_release = grps.group(3)
-    target_arch = grps.group(4)
+        # after this call spec_in should contain the spec file
+        # src should be all the sources we want to add to the .tar.gz
+        src = list(filter(spec, path))
 
-    # make sure the TARGET_ARCH matched the value in the RPM file
-    # we set the value to ensure it subst correctly
-    env['TARGET_ARCH'] = target_arch
-    filename = target_name + '-' + target_version
+        # get various data based on the rpm name
+        grps = re.match(rpm_reg, node.name, re.IGNORECASE)
+        target_name = grps.group(1)
+        target_version = grps.group(2)
+        target_release = grps.group(3)
+        target_arch = grps.group(4)
 
-    #######################################################
-    # Generate the tar.gz file
-    #######################################################
+        # make sure the TARGET_ARCH matched the value in the RPM file
+        # we set the value to ensure it subst correctly
+        env['TARGET_ARCH'] = target_arch
+        filename = target_name + '-' + target_version
 
-    #######################################################
-    # iterate the src list to tweak paths and any meta values we need to tweak
+        #######################################################
+        # Generate the tar.gz file
+        #######################################################
 
-    pkg_nodes = []
-    env['RPM_BUILD_ROOT'] = "${{BUILD_DIR}}/{0}".format(filename)
-    filtered_src = []
+        #######################################################
+        # iterate the src list to tweak paths and any meta values we need to tweak
 
-    v1=env.get('allow_duplicates')
-    v2=env.get('_PARTS_DYN')
-    env['allow_duplicates']=True
-    env['_PARTS_DYN']=True  
+        pkg_nodes = []
+        env['RPM_BUILD_ROOT'] = "${{BUILD_DIR}}/{0}".format(filename)
+        filtered_src = []
 
-    for n in src:
+        v1=env.get('allow_duplicates')
+        v2=env.get('_PARTS_DYN')
+        env['allow_duplicates']=True
+        env['_PARTS_DYN']=True
 
-        # get catagory of this node
-        pk_type = env.MetaTagValue(n, 'category', 'package')
+        for n in src:
 
-        ###############################################################
-        # Process the package filters. These allow us to call other build
-        # action to process items, such as runpath tweaking or tweaking
-        # config files such as pkgcfg (.pc) files to have the prefix
-        # to path where the file will be installed.
+            # get catagory of this node
+            pk_type = env.MetaTagValue(n, 'category', 'package')
 
-        preaction_filters = env.get("modify_callbacks", [])
-        filtered = n
-     
-        for pfilter in preaction_filters:
-            api.output.trace_msgf(["rpm-scanner-filter","rpm-scanner", "scanner"], "Applying filter to {}", filtered.ID)
-            filtered_node = pfilter(filtered, env)
-            if filtered_node:
-                filtered = filtered_node
-        
-        # check to see if this type of file should be have the runpath
-        if pk_type in ("BIN", "LIB", "PRIVATE_BIN"):
-            # we call build to modify the runpath as needed
-            # depending on what PACKAGE_RUNPATH is set to
-            # may remove , do nothing or change the runpath of a binary
-            # This build should also check if it is a binary and skip
-            # "scripts" or text files that make be installed in these areas
-            filtered = env.SetRPath(filtered, RPATH_TARGET_PREFIX="$BUILD_DIR/_RPM_RUNPATH_${PART_MINI_SIG}", allow_duplicates=True)
-            filtered_src += filtered
-        else:
-            filtered_src.append(filtered)
+            ###############################################################
+            # Process the package filters. These allow us to call other build
+            # action to process items, such as runpath tweaking or tweaking
+            # config files such as pkgcfg (.pc) files to have the prefix
+            # to path where the file will be installed.
 
-        # check if this node has special prefix value we want to
-        # map to ( add more notes here on this logic)
-        if env.hasMetaTag(n, "RPM_NODE_PREFIX"):
-            prefix_value = env.MetaTagValue(n, "RPM_NODE_PREFIX")
-            # call rpm to get the value this would map to
-            try:
-                pkg_dir = subprocess.check_output(["rpm", "--eval", prefix_value]).strip().decode()
-                # set value on node to avoid looking this up again later
-                env.MetaTag(n, RPM_NODE_PREFIX_CACHED=pkg_dir)
-            except BaseException:
-                api.output.error_msg("rpm was not found")
-        else:
-            pkg_dir = "${{PACKAGE_{0}}}".format(pk_type)
+            preaction_filters = env.get("modify_callbacks", [])
+            filtered = n
 
-        # This maps the node to the "package" location based on where it was installed it
-        # the details that have to looked at are that the INSTALL_XXX directory maybe different
-        # for any given node as they can come from different Parts. This is why we refer to the node
-        # env object to get the correct value if the INSTALL_XXX directory. The important detail is that
-        # the location the exists in subdirectory of some sort. We have to ensure that subdirectory is
-        # not lost when mapped to the finial package location.
-        tmp_node = env.Entry(
-            '${{BUILD_DIR}}/{0}/{1}/{2}'.format(
-                filename,
-                pkg_dir,
-                n.env.Dir(n.env['INSTALL_{0}'.format(pk_type)]).rel_path(n)
+            for pfilter in preaction_filters:
+                api.output.trace_msgf(["rpm-scanner-filter","rpm-scanner", "scanner"], "Applying filter to {}", filtered.ID)
+                filtered_node = pfilter(filtered, env)
+                if filtered_node:
+                    filtered = filtered_node
+
+            # check to see if this type of file should be have the runpath
+            if pk_type in ("BIN", "LIB", "PRIVATE_BIN"):
+                # we call build to modify the runpath as needed
+                # depending on what PACKAGE_RUNPATH is set to
+                # may remove , do nothing or change the runpath of a binary
+                # This build should also check if it is a binary and skip
+                # "scripts" or text files that make be installed in these areas
+                filtered = env.SetRPath(filtered, RPATH_TARGET_PREFIX="$BUILD_DIR/_RPM_RUNPATH_${PART_MINI_SIG}", allow_duplicates=True)
+                filtered_src += filtered
+            else:
+                filtered_src.append(filtered)
+
+            # check if this node has special prefix value we want to
+            # map to ( add more notes here on this logic)
+            if env.hasMetaTag(n, "RPM_NODE_PREFIX"):
+                prefix_value = env.MetaTagValue(n, "RPM_NODE_PREFIX")
+                # call rpm to get the value this would map to
+                try:
+                    pkg_dir = subprocess.check_output(["rpm", "--eval", prefix_value]).strip().decode()
+                    # set value on node to avoid looking this up again later
+                    env.MetaTag(n, RPM_NODE_PREFIX_CACHED=pkg_dir)
+                except BaseException:
+                    api.output.error_msg("rpm was not found")
+            else:
+                pkg_dir = "${{PACKAGE_{0}}}".format(pk_type)
+
+            # This maps the node to the "package" location based on where it was installed it
+            # the details that have to looked at are that the INSTALL_XXX directory maybe different
+            # for any given node as they can come from different Parts. This is why we refer to the node
+            # env object to get the correct value if the INSTALL_XXX directory. The important detail is that
+            # the location the exists in subdirectory of some sort. We have to ensure that subdirectory is
+            # not lost when mapped to the finial package location.
+            tmp_node = env.Entry(
+                '${{BUILD_DIR}}/{0}/{1}/{2}'.format(
+                    filename,
+                    pkg_dir,
+                    n.env.Dir(n.env['INSTALL_{0}'.format(pk_type)]).rel_path(n)
+                )
             )
-        )
-        # check that a node is not defined more than one ( could , but should not happen with overlapping package groups)
-        if tmp_node in pkg_nodes:
-            api.output.error_msg("Node: {0} was defined twice for package {1}".format(n, node.name), show_stack=False)
-        # add to the node we want to package up in the tar.gz file
-        pkg_nodes.append(tmp_node)
+            # check that a node is not defined more than one ( could , but should not happen with overlapping package groups)
+            if tmp_node in pkg_nodes:
+                api.output.error_msg("Node: {0} was defined twice for package {1}".format(n, node.name), show_stack=False)
+            # add to the node we want to package up in the tar.gz file
+            pkg_nodes.append(tmp_node)
 
-    env['allow_duplicates']=v1
-    env['_PARTS_DYN']=v2
+        env['allow_duplicates']=v1
+        env['_PARTS_DYN']=v2
 
-    # copy nodes to location for creating the tar.gz file in the structure of the finial install
-    ret = env.CCopyAs(pkg_nodes, filtered_src, CCOPY_LOGIC='hard-copy', allow_duplicates=True)
+        # copy nodes to location for creating the tar.gz file in the structure of the finial install
+        ret = env.CCopyAs(pkg_nodes, filtered_src, CCOPY_LOGIC='hard-copy', allow_duplicates=True)
 
-    # create the tar.gz file
-    # archive the source file to be added to RPM needs to be in form of <target_name>-<target_version>.tar.gz
-    overrides = env.overrides.copy()
-    #overrides.update(
-        #allow_duplicates=True
-    #)
+        # create the tar.gz file
+        # archive the source file to be added to RPM needs to be in form of <target_name>-<target_version>.tar.gz
+        overrides = env.overrides.copy()
+        #overrides.update(
+            #allow_duplicates=True
+        #)
 
-    tar_file = [env.File('${{BUILD_DIR}}/_rpm/{0}/SOURCES/{1}.tar.gz'.format(base_name, filename))]
-    if not tar_file[0].isBuilt:
+        tar_file = [env.File('${{BUILD_DIR}}/_rpm/{0}/SOURCES/{1}.tar.gz'.format(base_name, filename))]
+
+        #if not tar_file[0].isBuilt:
+        api.output.verbose_msgf(["rpm-scanner", "scanner"], "Calling RPM Tar file generator")
         tar_file = env.TarGzFile(
             tar_file,
             ret,
             **overrides
         )
+        #else:
+            #api.output.verbose_msgf(["rpm-scanner", "scanner"], "RPM Tar file generator BUILT",tar_file.ID)
 
-    # define the spec file
-    overrides = env.overrides.copy()
-    overrides.update(
-        NAME=target_name,
-        _RPM_FILENAME=filename,
-        VERSION=target_version,
-        RELEASE=target_release,
-        PKG_FILES=pkg_nodes,  # PKG_FILES just makes it easier to build the spec file        
-    )
-    tmp = spec_in+pkg_nodes
-    api.output.verbose_msgf(["rpm-scanner", "scanner"], "Calling RPM Spec generator with: {}",
-                            common.DelayVariable(lambda: [e.ID for e in tmp]))
-
-    ################
-    # Generate the .spec file name
-    if spec_in:
-        spec_in = [spec_in[0]]
-        spec_file = [env.File('${{BUILD_DIR}}/_rpm/{0}/SPECS/{1}'.format(base_name, spec_in[0].name))]
-    else:
-        spec_in = []
-        spec_file = [env.File('${{BUILD_DIR}}/_rpm/{0}/SPECS/{0}.spec'.format(base_name))]
-
-    if not spec_file[0].isBuilt:
-        spec_file = env._rpmspec(
-            spec_file,
-            tmp,
-            **overrides
+        # define the spec file
+        overrides = env.overrides.copy()
+        overrides.update(
+            NAME=target_name,
+            _RPM_FILENAME=filename,
+            VERSION=target_version,
+            RELEASE=target_release,
+            PKG_FILES=pkg_nodes,  # PKG_FILES just makes it easier to build the spec file
         )
-    api.output.verbose_msgf(["rpm-scanner", "scanner"], "Returned {}",
-                            common.DelayVariable(lambda: [e.ID for e in (tar_file + spec_file)]))
-    return tar_file + spec_file
+        tmp = spec_in+pkg_nodes
+        api.output.verbose_msgf(["rpm-scanner", "scanner"], "Calling RPM Spec generator with: {}",
+                                common.DelayVariable(lambda: [e.ID for e in tmp]))
+
+        ################
+        # Generate the .spec file name
+        if spec_in:
+            spec_in = [spec_in[0]]
+            spec_file = [env.File('${{BUILD_DIR}}/_rpm/{0}/SPECS/{1}'.format(base_name, spec_in[0].name))]
+        else:
+            spec_in = []
+            spec_file = [env.File('${{BUILD_DIR}}/_rpm/{0}/SPECS/{0}.spec'.format(base_name))]
+
+        if not spec_file[0].isBuilt:
+            spec_file = env._rpmspec(
+                spec_file,
+                tmp,
+                **overrides
+            )
+        api.output.verbose_msgf(["rpm-scanner", "scanner"], "Returned {}",
+                                common.DelayVariable(lambda: [e.ID for e in (tar_file + spec_file)]))
+
+        ret = tar_file + spec_file
+        g_cache[node.ID] = ret
+
+    return ret
 
 
 RPMScanner = SCons.Script.Scanner(rpm_scanner, path_function=rpm_group_values, scan_check=rpm_scan_check)
