@@ -27,6 +27,8 @@ from SCons.Script.SConscript import SConsEnvironment
 global_file_name = "$PARTS_SYS_DIR/package.groups.jsn"
 
 # the wrapper function
+
+
 def DynamicPackageNodes(_env, source):
     '''
     This file defines all the files that will be packagable for any given group
@@ -35,16 +37,23 @@ def DynamicPackageNodes(_env, source):
     # make sure we have a common environment for this mutli build
     # is it needs to be defined at a "global" level
     env = glb.engine.def_env
-    # this defines the 
+    # this defines the
     targets = env._DynamicPackageNodes(global_file_name, source)
+    # we set a special decider to make sure item that depend on this
+    # will rebuild. This is needed at the moment as the json file does not
+    # contain information about the "csig" of any files it has. Given this a 
+    # a content change will not be seen and as such the package builder will 
+    # not rebuild adding updated nodes into the package.
+    # todo change the json file to have csig info to make sure packages rebuild 
+    # only when they are changed
     [t.Decider("timestamp-match") for t in targets]
     return targets
-    
+
 
 def WritePackageGroupFiles(target, source, env):
     # This write out all the files that would be install
     # orginized by the groups
-    with open(target[0].get_path(), 'w') as outfile:        
+    with open(target[0].get_path(), 'w') as outfile:
         data = json.dumps(
             dict(
                 pkg=packaging._sorted_groups[0],
@@ -55,11 +64,12 @@ def WritePackageGroupFiles(target, source, env):
         )
         outfile.write(data)
 
+
 def target_scanner(node, env, path):
     # clear any cached data as regen file list
     # should only need to be called here as after this target is called we should have
     # called all "installXXX" functions that would define a node to install
-    if not node_helpers.has_changed(node,skip_implict=True):
+    if not node_helpers.has_children_changed(node):  # ,skip_implict=True):
         api.output.verbose_msg(["dynamicpackage-scanner", "scanner", "scanner-called"], "called {}".format(node.ID))
         packaging.SortPackageGroups()
         packaging._sorted_groups
@@ -70,7 +80,7 @@ def target_scanner(node, env, path):
 # before we try to get nodes for a given group. This is call via a wrapper
 # to ensure a common environment
 api.register.add_builder('_DynamicPackageNodes', SCons.Builder.Builder(
-    action=SCons.Action.Action(WritePackageGroupFiles, "Sync any dynamic builder with node that are packaged"),
+    action=SCons.Action.Action(WritePackageGroupFiles, "Sync any dynamic builders with node that need to be packaged"),
     target_factory=SCons.Node.FS.File,
     source_factory=SCons.Node.FS.File,
     target_scanner=SCons.Script.Scanner(target_scanner),
@@ -81,6 +91,8 @@ api.register.add_builder('_DynamicPackageNodes', SCons.Builder.Builder(
 ###########################################################################
 
 # the wrapper function
+
+
 def GroupBuilder(env, source, no_pkg=False, **kw):
     '''
     This builder will make a json file and set some node values for 
@@ -88,14 +100,23 @@ def GroupBuilder(env, source, no_pkg=False, **kw):
     file that will contain a all the package files and group that are defined
     '''
 
-
     # make sure we have a common environment for this mutli build
     out = env._GroupBuilder(
         target=source,
-        source=[],     
+        source=[],
         allow_duplicates=True,
         **kw
     )
+
+    # we set a special decider to make sure item that depend on this
+    # will rebuild. This is needed at the moment as the json file does not
+    # contain information about the "csig" of any files it has. Given this a 
+    # a content change will not be seen and as such the package builder will 
+    # not rebuild adding updated nodes into the package.
+    # todo change the json file to have csig info to make sure packages rebuild 
+    # only when they are changed
+    [t.Decider("timestamp-match") for t in out]
+
     return out
 
 
@@ -110,41 +131,43 @@ def GroupBuilderAction(target, source, env):
         data = json.dumps([i.ID for i in target[0].attributes.GroupFiles], indent=2,)
         outfile.write(data)
 
+
 def emit(target, source, env):
     # need to be absolute on the path as the VariantDir() is a global value
     # that effect everything, it is not per environment
     ret = []
     for trg in target:
         trg = env.File("${{PARTS_SYS_DIR}}/package.group.{}.jsn".format(trg.ID))
-        trg.Decider("timestamp-match")        
+        trg.Decider("timestamp-match")
         ret.append(trg)
     return ret, source
 
 
 def GroupNodesScanner(node, env, path):
-    
-    api.output.verbose_msg(["groupbuilder-scanner", "scanner", "scanner-called"], "called {}".format(node.ID))
-    # this is the default group we depend on unless the node has a meta value saying that this 
-    # can be defined on the export.jsn file of this part instead
 
-    local = env.MetaTagValue(node, 'local_group', 'parts',False)
+    api.output.verbose_msg(["groupbuilder-scanner", "scanner", "scanner-called"], "called {}".format(node.ID))
+
+    # This is the default group we depend on unless the node has a meta value saying that this
+    # can be defined on the export.jsn file of this part instead. This can prevent the building of all
+    # components that are doing dynamic build action before this file can be generated correctly.
+    local = env.MetaTagValue(node, 'local_group', 'parts', False)
     if local:
         ret = [env.File(builders.exports.file_name)]
     else:
         ret = [env.File(global_file_name)]
 
     # make sure the groups are sorted
-    if not node_helpers.has_changed(node, skip_implict=True):
+    if not node_helpers.has_children_changed(node):  # , skip_implict=True):
         node = node.name.split(".")[2]
         new_sources, _ = env.GetFilesFromPackageGroups("", [node])
         #ret += new_sources
-    
-    api.output.verbose_msgf(["groupbuilder-scanner", "scanner"],"Returned {}",common.DelayVariable(lambda :[i.ID for i in ret]))
+
+    api.output.verbose_msgf(["groupbuilder-scanner", "scanner"], "Returned {}", common.DelayVariable(lambda: [i.ID for i in ret]))
     return ret
 
 
 api.register.add_builder('_GroupBuilder', SCons.Builder.Builder(
-    action=SCons.Action.Action(GroupBuilderAction, "looking up files in package group '${TARGET.name.split(\'.\')[2]}'"),
+    action=SCons.Action.Action(GroupBuilderAction, "Looking up files in package group '${TARGET.name.split(\'.\')[2]}'"),
     target_factory=SCons.Node.FS.File,
     source_factory=SCons.Node.Python.Value,
     emitter=emit,

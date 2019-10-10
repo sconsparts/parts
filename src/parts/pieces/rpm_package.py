@@ -24,6 +24,7 @@ rpm_reg = r"([\w_.-]+)-([\w.]+)-([\w_.]+)[.](\w+)\.rpm"
 
 def rpm_scan_check(node, env):
     api.output.verbose_msgf(["rpm-scanner", "scanner"], "Scanner Check {} - started", node.ID)
+    # we can scan given the children all all built or up to date
     ret = not node_helpers.has_children_changed(node)
     api.output.verbose_msgf(["rpm-scanner", "scanner"], "Scanner Check {}: {}", node.ID, ret)
     return ret
@@ -53,7 +54,6 @@ def rpm_scanner(node, env, path, args=None):
     from the sources that are mapped to a given group
     '''
     api.output.verbose_msgf(["rpm-scanner", "scanner", "scanner-called"], "Rpm Scanning {}", node.ID)
-    api.output.verbose_msgf(["rpm-scanner", "scanner"],"is Built? {} {}",node.isBuilt,node.isVisited)
 
     # this is the package name without the .rpm"
     base_name = node.name[:-4]
