@@ -13,7 +13,7 @@ from SCons.Script.SConscript import SConsEnvironment
 
 
 def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="configure", prefix=None, configure_args=[],
-             targets="all", top_level=True, copy_src=True, copy_top=False, auto_scanner={}, **kw):
+             auto_configure_args=True, targets="all", top_level=True, copy_src=True, copy_top=False, auto_scanner={}, **kw):
     '''
     auto make general logic
     autoreconf- the autoreconf program to call. for some project they have hacky wrapper scripts
@@ -25,6 +25,8 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                 have a slightly different script (Configure) that should called instead
     prefix    - If defined will use custom prefix and add DESTDIR to the make install
     configure_args - are extra args we need to pass to correctly configure the build
+    auto_configure_args - extra value to set various flags with what Parts is using. Certain automake like 
+                projects don't allow setting flags at the configure level. Defaults to True.
     top_level - We can rebuild build the configure and makefiles based on
                 the *.am file defined. However various build may not generate
                 all the Makefile. This causes false rebuilds, which we want to avoid.
@@ -79,7 +81,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
     # generation of some paths
     checkout_path = env.Dir("$CHECK_OUT_DIR")
     prefix_len = len(checkout_path.ID)+1
-
+    env.SetDefault(AUTOMAKE_BUILD_ARGS=SCons.Util.CLVar(""))
     build_dir = env.Dir("$BUILD_DIR/build")
     rel_src_path = build_dir.rel_path(checkout_path)
 
@@ -122,15 +124,16 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
     env["ABSDir"] = lambda pathlist: [env.Dir(p).abspath for p in pathlist]
     env['_ABSCPPINCFLAGS'] = '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)'
     env['_ABSLIBDIRFLAGS'] = '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)'
-    env["_CONFIGURE_ARGS"] = '--prefix=$CONFIGURE_PREFIX\
-        ${define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}${MAKEPATH("$PKG_CONFIG_PATH")}\
-        CC=$CC\
-        CXX=$CXX\
-        CPPFLAGS="$CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_ABSCPPINCFLAGS"\
-        CFLAGS="$CFLAGS"\
-        CXXFLAGS="$CXXFLAGS"'
-        #LDFLAGS="$_ABSRPATH $_ABSLIBDIRFLAGS"'
-    
+    if auto_configure_args:
+        env["_CONFIGURE_ARGS"] = '--prefix=$CONFIGURE_PREFIX\
+            ${define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}${MAKEPATH("$PKG_CONFIG_PATH")}\
+            CC=$CC\
+            CXX=$CXX\
+            CPPFLAGS="$CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_ABSCPPINCFLAGS"\
+            CFLAGS="$CFLAGS"\
+            CXXFLAGS="$CXXFLAGS"'
+            #LDFLAGS="$_ABSRPATH $_ABSLIBDIRFLAGS"'
+    env["_CONFIGURE_ARGS"] = ""
 
     configure_cmds = []
     if copy_src:
@@ -155,6 +158,12 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                     target=build_dir,
                     source=[top_level_auto_conf_pattern, top_level_auto_make_pattern]
                 )
+                # copy source files ( Pattern does not return Dir node at this time)
+                files = env.Glob("${CHECK_OUT_DIR}/*", exclude=["*.ac", "*.am"])
+                sources = env.CCopy(
+                    source=files,
+                    target=build_dir
+                )
             else:
                 # copy the build files
                 depends = env.CCopy(
@@ -162,12 +171,13 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                     target=build_dir
                 )
 
-            # copy source files
-            files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=["*.ac", "*.am"],recursive=not copy_top)
-            sources = env.CCopy(
-                source=files,
-                target=build_dir
-            )
+                # copy source files
+                files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=["*.ac", "*.am"])
+                sources = env.CCopy(
+                    source=files,
+                    target=build_dir
+                )
+            
                 
         # make the expected build file outputs (ie the MakeFiles, Configure, not the .am or .ac files)
         # to depend on the sources we copied over.
@@ -222,7 +232,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         build_files+sources,
         # the -rpath-link is to get the correct paths for the binaries to link with the rpath usage of the makefile
         [
-            'cd ${{SOURCE.dir}} ; make LDFLAGS="$_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS" {target} V=1\
+            'cd ${{SOURCE.dir}} ; make LDFLAGS="$_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS" V=1 $AUTOMAKE_BUILD_ARGS {target} \
             $(-j{jobs}$)'.format(target=targets, jobs=env.GetOption('num_jobs')),
             'cd ${SOURCE.dir} ; make install $AUTOMAKE_INSTALL_ARGS'
         ],
