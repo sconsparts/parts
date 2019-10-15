@@ -41,7 +41,11 @@ def rpm_group_values(env, dir, target, source, arg=None):
         if os.path.exists(node.ID):
             with open(node.ID, "r") as infile:
                 data = json.load(infile)
-                ret += [env.Entry(d) for d in data]
+                for d in data:
+                    n = env.Entry(d)
+                    if n.exists():
+                        ret.append(n)
+    
     api.output.verbose_msgf(["rpm-scanner", "scanner"], "Path finder - Source file= {}",
                             common.DelayVariable(lambda: [r.ID for r in ret]))
     return tuple(ret)

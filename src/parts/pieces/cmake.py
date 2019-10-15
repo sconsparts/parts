@@ -17,6 +17,7 @@ def CMake(env, destdir=None, auto_scanner={}, **kw):
     '''
 
     env = env.Clone(**kw)
+    build_dir = env.Dir("$BUILD_DIR/build")
     # The sandbox for the build install
     if destdir:
         env["CMAKE_DESTDIR"] = env.Dir(destdir).abspath
@@ -33,15 +34,23 @@ def CMake(env, destdir=None, auto_scanner={}, **kw):
         '-DCMAKE_EXE_LINKER_FLAGS="$_ABSRPATH$_ABSRPATHLINK"',
         "$CMAKE_ARGS"],
 
-
     # generate the build files
     out = env.CCommand(
-        ["Makefile"],
+        [build_dir.File("Makefile")],
         ["${CHECK_OUT_DIR}/CMakeLists.txt"],
-        'cd ${TARGET.dir} ;'
-        # CMAKE_PREFIX_PATH should replace this.. Have it as a fallback
-        '${define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}${MAKEPATH("$PKG_CONFIG_PATH")} '
-        '$CMAKE ${SOURCE.dir.abspath} $_CMAKE_ARGS',
+        [
+            # delete the directory as it can contains cached data
+            SCons.Defaults.Delete(build_dir),
+            # remake the directory as SCons thought it did this already
+            SCons.Defaults.Mkdir(build_dir),
+            # delete the directory we plan to install stuff into ..
+            # as this is probally out of date ( contains bad files to scan)
+            SCons.Defaults.Delete("$CMAKE_DESTDIR"),
+            'cd ${TARGET.dir} ;'
+            # CMAKE_PREFIX_PATH should replace this.. Have it as a fallback
+            '${define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}${MAKEPATH("$PKG_CONFIG_PATH")} '
+            '$CMAKE ${SOURCE.dir.abspath} $_CMAKE_ARGS'
+        ],
         source_scanner=scanners.null_scanner,
         target_scanner=scanners.depends_sdk_scanner
     )
@@ -72,6 +81,7 @@ def CMake(env, destdir=None, auto_scanner={}, **kw):
     # export the install location
     env.ExportItem("DESTDIR_PATH", env.Dir("$CMAKE_DESTDIR").abspath)
     return ret
+
 
 # adding logic to Scons Enviroment object
 SConsEnvironment.CMake = CMake

@@ -6,14 +6,14 @@ import parts.api as api
 import SCons.Builder
 import parts.node_helpers as node_helpers
 import SCons.Scanner.Prog
+import SCons.Defaults
 import scanners
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
 
 
-
 def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="configure", prefix=None, configure_args=[],
-             auto_configure_args=True, targets="all", top_level=True, copy_src=True, copy_top=False, auto_scanner={}, **kw):
+             auto_configure_args=True, configure_post_actions=None, targets="all", top_level=True, copy_src=True, copy_top=False, auto_scanner={}, **kw):
     '''
     auto make general logic
     autoreconf- the autoreconf program to call. for some project they have hacky wrapper scripts
@@ -27,6 +27,9 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
     configure_args - are extra args we need to pass to correctly configure the build
     auto_configure_args - extra value to set various flags with what Parts is using. Certain automake like 
                 projects don't allow setting flags at the configure level. Defaults to True.
+    configure_post_actions - In cases of configure like systems it often needed to add special
+                actions to make sure everthing work after the configure logic before the make command is called
+    target    - the target to use with the main make command. Defaults to 'all'
     top_level - We can rebuild build the configure and makefiles based on
                 the *.am file defined. However various build may not generate
                 all the Makefile. This causes false rebuilds, which we want to avoid.
@@ -52,12 +55,11 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                 to build correct
     '''
 
-
-    env=env.Clone(**kw)
+    env = env.Clone(**kw)
     # set up the install location for the auto make build
     # and custom prefix for build
     if prefix:
-        # we have a custom prefix set. this mean we need to 
+        # we have a custom prefix set. this mean we need to
         # add DESTDIR to the automake install command
         # add DESTDIR to the based on the value of AUTO_MAKE_DESTDIR
         # as this will be the value we need to use as the base
@@ -67,11 +69,10 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         env["CONFIGURE_PREFIX"] = env.Dir(prefix).abspath
         # the new location that we will find information is now in the form of
         # the AUTO_MAKE_DESTDIR plus the prefix value.
-        env["AUTO_MAKE_INSTALL_DESTDIR"]="$AUTO_MAKE_DESTDIR$CONFIGURE_PREFIX"
-        
-        
+        env["AUTO_MAKE_INSTALL_DESTDIR"] = "$AUTO_MAKE_DESTDIR$CONFIGURE_PREFIX"
+
     else:
-        # use default logic. ideally this case does not need the use of 
+        # use default logic. ideally this case does not need the use of
         # DESTDIR which in generally need when the automake build uses configure
         # paths to hard code at compile time locations on disk.
         env["CONFIGURE_PREFIX"] = '$AUTO_MAKE_DESTDIR'
@@ -132,10 +133,21 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
             CPPFLAGS="$CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_ABSCPPINCFLAGS"\
             CFLAGS="$CFLAGS"\
             CXXFLAGS="$CXXFLAGS"'
-            #LDFLAGS="$_ABSRPATH $_ABSLIBDIRFLAGS"'
-    env["_CONFIGURE_ARGS"] = ""
+        # LDFLAGS="$_ABSRPATH $_ABSLIBDIRFLAGS"'
+    else:
+        env["_CONFIGURE_ARGS"] = ""
 
-    configure_cmds = []
+    configure_cmds = [
+        # delete the make install area if we are rebuilding the
+        # the makefiles to avoid old files being added to the
+        # scan.
+        SCons.Defaults.Delete("$AUTO_MAKE_DESTDIR"),
+        # remake the directory as SCons thought it did this already
+        SCons.Defaults.Mkdir(build_dir),
+        # delete the directory we plan to install stuff into ..
+        # as this is probally out of date ( contains bad files to scan)
+        SCons.Defaults.Delete("$AUTO_MAKE_DESTDIR"),
+    ]
     if copy_src:
         rel_src_path = "."
 
@@ -147,7 +159,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
 
         # Apply the correct copy logic for the source
         if callable(copy_top):
-            depends, sources = copy_top(env,build_dir)
+            depends, sources = copy_top(env, build_dir)
         else:
             if copy_top:
                 # copy only item at the top level ( great for repos with Tons of nodes)
@@ -177,8 +189,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                     source=files,
                     target=build_dir
                 )
-            
-                
+
         # make the expected build file outputs (ie the MakeFiles, Configure, not the .am or .ac files)
         # to depend on the sources we copied over.
         env.Requires(auto_conf_buildfile, sources)
@@ -198,7 +209,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
             "*.am",
             "*.in",
             "*.in~",
-            "*.m4",            
+            "*.m4",
             "compile",
             "config.guess",
             "config.sub",
@@ -213,7 +224,10 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         ]
         sources = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=ignore_files).files()
 
-    configure_cmds.append('cd ${{TARGET.dir}} && ${{define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}}${{MAKEPATH("$PKG_CONFIG_PATH")}} {path}/{configure} $_CONFIGURE_ARGS $CONFIGURE_ARGS'.format(configure=configure,path=rel_src_path))
+    configure_cmds.append(
+        'cd ${{TARGET.dir}} && ${{define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}}${{MAKEPATH("$PKG_CONFIG_PATH")}} {path}/{configure} $_CONFIGURE_ARGS $CONFIGURE_ARGS'.format(configure=configure, path=rel_src_path))
+    if configure_post_actions:
+        configure_cmds.append(configure_post_actions)
 
     # generate the makefiles
     build_files = env.CCommand(
@@ -224,8 +238,8 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         target_scanner=scanners.depends_sdk_scanner
     )
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$\\$$$$$$$$ORIGIN")}'
-    
-    ret=env.CCommand(
+
+    ret = env.CCommand(
         [
             "$AUTO_MAKE_INSTALL_DESTDIR",
         ],
@@ -243,12 +257,13 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
             extra_scanner=SCons.Scanner.Prog.ProgramScanner(),
             **auto_scanner
         ),
-        
+
     )
 
     # export the install location
-    env.ExportItem("DESTDIR_PATH",env.Dir("$AUTO_MAKE_DESTDIR").abspath)
+    env.ExportItem("DESTDIR_PATH", env.Dir("$AUTO_MAKE_DESTDIR").abspath)
     return ret
+
 
 # adding logic to Scons Enviroment object
 SConsEnvironment.AutoMake = AutoMake

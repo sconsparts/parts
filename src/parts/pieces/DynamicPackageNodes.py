@@ -160,7 +160,7 @@ def GroupNodesScanner(node, env, path):
     if not node_helpers.has_children_changed(node):  # , skip_implict=True):
         node = node.name.split(".")[2]
         new_sources, _ = env.GetFilesFromPackageGroups("", [node])
-        #ret += new_sources
+        ret += new_sources
 
     api.output.verbose_msgf(["groupbuilder-scanner", "scanner"], "Returned {}", common.DelayVariable(lambda: [i.ID for i in ret]))
     return ret
