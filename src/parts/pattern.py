@@ -111,13 +111,13 @@ class Pattern(object):
                 if is_dir and not enity.name in ["__rt", "__oot"] and self.recursive:
                     paths.append(enity)
                 elif not is_dir and matches:
-                    api.output.verbose_msgf(["pattern.add","pattern"], "Adding {0} {1}", path,enity.ID)
+                    api.output.verbose_msgf(["pattern.add", "pattern"], "Adding {0} {1}", path, enity.ID)
                     try:
                         m[path].append(enity)
                     except KeyError:
                         m[path] = [enity]
                 else:
-                    api.output.verbose_msgf(["pattern.skip","pattern"], "Skipped {0}", enity.ID)
+                    api.output.verbose_msgf(["pattern.skip", "pattern"], "Skipped {0}", enity.ID)
         self.map = m
 
         # else we ignore the item

@@ -12,7 +12,6 @@ import SCons.Script
 from SCons.Debug import logInstanceCreation
 
 
-
 class map_build_context(object):
     '''
         This maps all build info related files we might need to help detect quickly

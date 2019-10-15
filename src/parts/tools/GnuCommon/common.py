@@ -150,7 +150,7 @@ class GnuInfo(ToolInfo):
 
         ret = {}
         for v, p in found.items():
-            #print "testing",v,p[0],p[1]
+            # print "testing",v,p[0],p[1]
             tmp = self.exists(env, namespace, v, p[0], use_script, p[1])
             if tmp is not None:
                 ret.update(self.make_ver_shell_env_set(v, tmp))

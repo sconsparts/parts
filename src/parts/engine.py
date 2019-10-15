@@ -14,7 +14,7 @@ import parts.api as api
 import parts.api.output
 import parts.common as common
 import parts.core.util as util
-import parts.core.builders # load the core builders
+import parts.core.builders  # load the core builders
 import parts.datacache as datacache
 import parts.errors as errors
 import parts.events as events
@@ -457,8 +457,8 @@ class parts_addon(object):
         api.output.trace_msg("vcs_jobs_option", "vcs_jobs =", SCons.Script.GetOption('vcs_jobs'))
         api.output.trace_msg("update_option", "update =", SCons.Script.GetOption('update'))
 
-    #def _setup_sdk(self):
-        #return
+    # def _setup_sdk(self):
+        # return
 
     def _setup_progress_meter(self):
         api.output.verbose_msg("startup", "Setting up show-progress feature")
@@ -641,7 +641,7 @@ Use -H or --help-options for a list of scons options
         self.__def_env['PREPROCESS_LOGIC_QUEUE'] = self.__post_process_queue
 
         # must have Decider set else we have a state issue in the environment
-        #self.def_env.Decider('MD5-timestamp')
+        # self.def_env.Decider('MD5-timestamp')
         self.def_env.Decider('content')
 
 

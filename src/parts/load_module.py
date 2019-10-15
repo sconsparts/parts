@@ -140,11 +140,11 @@ def get_possible_modules(pathList):
         result |= modules
     return result
 
+
 def get_path_with_modules(paths):
     ret = {}
     for path in paths:
-        tmp=get_possible_modules([path])
-        if tmp:        
-            ret[path]=get_possible_modules([path])
+        tmp = get_possible_modules([path])
+        if tmp:
+            ret[path] = get_possible_modules([path])
     return ret
-        

@@ -50,7 +50,7 @@ def get_args(cat, **kw):
 
 
 def ProcessInstall(env, target, sources, sub_dir, create_sdk, sdk_dir='', no_pkg=False, **kw):
-    
+
     # list of file we installed (dest)
     installed_files = []
     # list of all files we install (source, or where we installed from)
@@ -314,7 +314,7 @@ def InstallItem(env, target, source, sub_dir="", sdk_dir='', no_pkg=False, creat
     installed_files, src_files = ProcessInstall(env, target, source, sub_dir, create_sdk, sdk_dir, no_pkg, **kw)
     file_values = [env.Value("Value:{}".format(i.ID)) for i in installed_files if i not in pobj.DefiningSection.InstalledFiles]
     if file_values:
-        is_part_dyn = env.get("_PARTS_DYN",kw.get("_PARTS_DYN"))
+        is_part_dyn = env.get("_PARTS_DYN", kw.get("_PARTS_DYN"))
         # this defines some state file with what will be generated. These files only contain state, not direct file
         # node relationships ( this is why they are Value nodes )
         install_state_name = "${{PARTS_SYS_DIR}}/${{PART_ALIAS}}.${{PART_SECTION}}.install.{type}.{cat}.jsn".format(

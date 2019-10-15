@@ -499,7 +499,7 @@ def generateCopyBuilder(description):
         tmp = CCopyFunc(target, source, env, doCopy)
         return tmp
 
-    def _do_nothing_scan(node,env,path):
+    def _do_nothing_scan(node, env, path):
         "prevent implict scanner from working"
         return []
 
@@ -515,7 +515,7 @@ def generateCopyBuilder(description):
             source_factory=SCons.Node.FS.Entry,
             emitter=CCopyEmit,
             target_scanner=symlinks.symlink_scanner,
-            source_scanner=SCons.Script.Scanner(_do_nothing_scan,name="part_null_scanner"),
+            source_scanner=SCons.Script.Scanner(_do_nothing_scan, name="part_null_scanner"),
             name='CCOPY'
         )
     )

@@ -57,10 +57,6 @@ from parts.tools.MSCommon import msvc
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 
-
-
-
-
 ##############################################################################
 # Below here are the classes and functions for generation of
 # DSP/DSW/SLN/VCPROJ files.

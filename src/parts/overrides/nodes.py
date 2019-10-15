@@ -144,15 +144,17 @@ def wrap_visited(klass):
     _visited = klass.visited
 
     def set_visited(self, *lst, **kw):
-        # call scons function                
+        # call scons function
         ret = _visited(self, *lst, **kw)
         self.attributes._isVisited = True
         return ret
     klass.visited = set_visited
 
+
 # is this a child of this node
 wrap_visited(SCons.Node.Node)
 wrap_visited(SCons.Node.FS.File)
+
 
 def is_child(self, node):
     # we don't call the children() api as much as we would like to
@@ -253,7 +255,7 @@ def visited_dir(self):
 
     ninfo.timestamp = self.get_timestamp()
     ninfo.csig = self.get_csig()
-    #print(self.ID,"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+    # print(self.ID,"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
     self.isVisited = True
     # for a directory it always has a builder
     # what we care about is if the builder if the default
@@ -491,12 +493,14 @@ def changed_content(self, target, prev_ni, repo_node=None):
 SCons.Node.FS.Dir.changed_content = changed_content
 SCons.Node.Python.Value.changed_content = changed_content
 
+
 def changed_timestamp_then_content(self, target, prev_ni, node=None):
     # for Values at the moment timestamp has no real meaning
     # for Dir nodes it can be misleading in the case of directories so we just check for
     # content changes
-    # might change in the future 
+    # might change in the future
     return self.changed_content(target, prev_ni, node)
+
 
 SCons.Node.FS.Dir.changed_timestamp_then_content = changed_content
 SCons.Node.Python.Value.changed_timestamp_then_content = changed_content
@@ -704,14 +708,18 @@ def _my_init(self, value, built_value=None):
     # may not be the best way.. but works for the moment
     glb.pnodes.AddNodeToKnown(self)
 
+
 SCons.Node.Python.Value.orig_init = SCons.Node.Python.Value.__init__
 SCons.Node.Python.Value.__init__ = _my_init
 
 # to allow directories to work correctly as build target to a builder
+
+
 def _morph_dir(self):
     self.orig_morph()
     if self.builder is not SCons.Node.FS.MkdirBuilder:
         self.changed_since_last_build = 5
+
 
 SCons.Node.FS.Dir.orig_morph = SCons.Node.FS.Dir._morph
 SCons.Node.FS.Dir._morph = _morph_dir
@@ -741,14 +749,18 @@ SCons.Node.Alias.Alias.orig_init = SCons.Node.Alias.Alias.__init__
 SCons.Node.Alias.Alias.__init__ = _my_init
 
 # overide allows us to set Decider on a node without having to pass in a function
+
+
 def _changed_content(dependency, target, prev_ni, repo_node=None):
     return dependency.changed_content(target, prev_ni, repo_node)
+
 
 def _changed_timestamp_then_content(dependency, target, prev_ni, repo_node=None):
     try:
         return dependency.changed_timestamp_then_content(target, prev_ni, repo_node)
     except AttributeError:
         return dependency.changed_content(target, prev_ni, repo_node)
+
 
 def _changed_timestamp_newer(dependency, target, prev_ni, repo_node=None):
     try:
@@ -769,7 +781,7 @@ def _part_decider(self, function):
     # if so this allow us to decider function that are defined as part of the
     # environment object. call the same logic as getting environments here is
     # expensive when we don't need it
-    
+
     if function in ('MD5', 'content'):
         function = _changed_content
     elif function == 'MD5-timestamp':
@@ -781,9 +793,10 @@ def _part_decider(self, function):
     elif not callable(function):
         # if this callable? if not error out now.
         raise SCons.Errors.UserError("Unknown Decider value %s" % repr(function))
-    
+
     # call default node logic that expects a function
     return self.orig_decider(function)
+
 
 SCons.Node.Node.orig_decider = SCons.Node.Node.Decider
 SCons.Node.Node.Decider = _part_decider

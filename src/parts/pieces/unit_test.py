@@ -348,20 +348,20 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
 
         # utest::alias::palias -> utest::alias::palias::group
         #base_alias = sec.Env.Alias('${BUILD_UTEST_CONCEPT}${PART_ALIAS_CONCEPT}${PART_ALIAS}', core_alias)
-        #print(1,base_alias[0].ID,"->",core_alias[0].ID)
+        # print(1,base_alias[0].ID,"->",core_alias[0].ID)
         if not skip_run_test:
             base_run_alias = sec.Env.Alias('${RUN_UTEST_CONCEPT}${PART_ALIAS_CONCEPT}${PART_ALIAS}', core_run_alias)
             sec.Env.AlwaysBuild(base_run_alias)
 
         # utest::alias::palias:: -> utest::alias::palias
         #recurse_alias = sec.Env.Alias('${BUILD_UTEST_CONCEPT}${PART_ALIAS_CONCEPT}${PART_ALIAS}::', base_alias)
-        #print(2,recurse_alias[0].ID,"->",base_alias[0].ID)
+        # print(2,recurse_alias[0].ID,"->",base_alias[0].ID)
         if not skip_run_test:
             recurse_run_alias = sec.Env.Alias('${RUN_UTEST_CONCEPT}${PART_ALIAS_CONCEPT}${PART_ALIAS}::', base_run_alias)
             sec.Env.AlwaysBuild(recurse_run_alias)
 
         #talias = common.map_alias_to_root(sec.Part, 'utest', '{0}::${{PART_ALIAS_CONCEPT}}{1}::')
-        
+
         if not skip_run_test:
             talias_run = common.map_alias_to_root(sec.Part, 'run_utest', '{0}::${{PART_ALIAS_CONCEPT}}{1}::')
             sec.Env.AlwaysBuild(talias_run)

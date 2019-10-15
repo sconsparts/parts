@@ -45,12 +45,15 @@ def rpm_group_values(env, dir, target, source, arg=None):
                     n = env.Entry(d)
                     if n.exists():
                         ret.append(n)
-    
+
     api.output.verbose_msgf(["rpm-scanner", "scanner"], "Path finder - Source file= {}",
                             common.DelayVariable(lambda: [r.ID for r in ret]))
     return tuple(ret)
 
+
 g_cache = {}
+
+
 def rpm_scanner(node, env, path, args=None):
     '''
     The goal of the scanner is to add the depend of the rpm
@@ -114,10 +117,10 @@ def rpm_scanner(node, env, path, args=None):
         env['RPM_BUILD_ROOT'] = "${{BUILD_DIR}}/{0}".format(filename)
         filtered_src = []
 
-        v1=env.get('allow_duplicates')
-        v2=env.get('_PARTS_DYN')
-        env['allow_duplicates']=True
-        env['_PARTS_DYN']=True
+        v1 = env.get('allow_duplicates')
+        v2 = env.get('_PARTS_DYN')
+        env['allow_duplicates'] = True
+        env['_PARTS_DYN'] = True
 
         for n in src:
 
@@ -134,7 +137,7 @@ def rpm_scanner(node, env, path, args=None):
             filtered = n
 
             for pfilter in preaction_filters:
-                api.output.trace_msgf(["rpm-scanner-filter","rpm-scanner", "scanner"], "Applying filter to {}", filtered.ID)
+                api.output.trace_msgf(["rpm-scanner-filter", "rpm-scanner", "scanner"], "Applying filter to {}", filtered.ID)
                 filtered_node = pfilter(filtered, env)
                 if filtered_node:
                     filtered = filtered_node
@@ -146,7 +149,8 @@ def rpm_scanner(node, env, path, args=None):
                 # may remove , do nothing or change the runpath of a binary
                 # This build should also check if it is a binary and skip
                 # "scripts" or text files that make be installed in these areas
-                filtered = env.SetRPath(filtered, RPATH_TARGET_PREFIX="$BUILD_DIR/_RPM_RUNPATH_${PART_MINI_SIG}", allow_duplicates=True)
+                filtered = env.SetRPath(
+                    filtered, RPATH_TARGET_PREFIX="$BUILD_DIR/_RPM_RUNPATH_${PART_MINI_SIG}", allow_duplicates=True)
                 filtered_src += filtered
             else:
                 filtered_src.append(filtered)
@@ -184,8 +188,8 @@ def rpm_scanner(node, env, path, args=None):
             # add to the node we want to package up in the tar.gz file
             pkg_nodes.append(tmp_node)
 
-        env['allow_duplicates']=v1
-        env['_PARTS_DYN']=v2
+        env['allow_duplicates'] = v1
+        env['_PARTS_DYN'] = v2
 
         # copy nodes to location for creating the tar.gz file in the structure of the finial install
         ret = env.CCopyAs(pkg_nodes, filtered_src, CCOPY_LOGIC='hard-copy', allow_duplicates=True)
@@ -193,21 +197,21 @@ def rpm_scanner(node, env, path, args=None):
         # create the tar.gz file
         # archive the source file to be added to RPM needs to be in form of <target_name>-<target_version>.tar.gz
         overrides = env.overrides.copy()
-        #overrides.update(
-            #allow_duplicates=True
-        #)
+        # overrides.update(
+        # allow_duplicates=True
+        # )
 
         tar_file = [env.File('${{BUILD_DIR}}/_rpm/{0}/SOURCES/{1}.tar.gz'.format(base_name, filename))]
 
-        #if not tar_file[0].isBuilt:
+        # if not tar_file[0].isBuilt:
         api.output.verbose_msgf(["rpm-scanner", "scanner"], "Calling RPM Tar file generator")
         tar_file = env.TarGzFile(
             tar_file,
             ret,
             **overrides
         )
-        #else:
-            #api.output.verbose_msgf(["rpm-scanner", "scanner"], "RPM Tar file generator BUILT",tar_file.ID)
+        # else:
+        #api.output.verbose_msgf(["rpm-scanner", "scanner"], "RPM Tar file generator BUILT",tar_file.ID)
 
         # define the spec file
         overrides = env.overrides.copy()

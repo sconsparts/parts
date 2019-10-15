@@ -44,7 +44,7 @@ def depend_scanner(node, env, path):
     # and map a then map the export.jsn file for the part
     api.output.verbose_msgf(["import-scanner", "scanner", "scanner-called"], "Scanning node {0}", node.ID)
     # get the section
-    sec = glb.engine._part_manager.section_from_env(env)     
+    sec = glb.engine._part_manager.section_from_env(env)
     ret = []
     for comp in sec.Depends:
         # add the expected depend on the export file
@@ -56,8 +56,7 @@ def depend_scanner(node, env, path):
             if value and requirement.mapto:
                 targets = requirement.mapto(sec)
                 for t in targets:
-                    sec._map_target(value,t)
-
+                    sec._map_target(value, t)
 
     return ret
 

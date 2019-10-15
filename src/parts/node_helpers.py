@@ -41,7 +41,7 @@ def build_info_changed(self, scan=True, skip_implict=False, indent=0):
         # this mean we can stop and say it is not changed
         if not self.attributes._binfo_changed:
             api.output.verbose_msgf(
-            ["binfo-change","node-changed"], "{indent}{node} Cached: False",node=self.ID, indent=" "*indent)
+                ["binfo-change", "node-changed"], "{indent}{node} Cached: False", node=self.ID, indent=" "*indent)
             return False
 
     except AttributeError:
@@ -531,11 +531,11 @@ def has_changed(node, skip_implict=False, indent=0):
         # this mean we can stop and say it is not changed
         if not node.attributes._has_changed:
             api.output.verbose_msgf(
-            ["node-changed"], "{indent}{node} Cached: False", node=node.ID, indent=" "*indent)
+                ["node-changed"], "{indent}{node} Cached: False", node=node.ID, indent=" "*indent)
             return False
         else:
             api.output.verbose_msgf(
-            ["node-changed"], "{indent}{node} Cached: True", node=node.ID, indent=" "*indent)
+                ["node-changed"], "{indent}{node} Cached: True", node=node.ID, indent=" "*indent)
             return True
 
     except AttributeError:
@@ -570,7 +570,7 @@ def has_changed(node, skip_implict=False, indent=0):
             result = has_changed(child, indent=indent+1)
             if result:
                 api.output.verbose_msgf(
-                ["node-changed", "node-did-change"], "{indent}{node} changed!.", node=node.ID, indent=" "*indent)
+                    ["node-changed", "node-did-change"], "{indent}{node} changed!.", node=node.ID, indent=" "*indent)
                 break
 
         if not result:

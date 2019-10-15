@@ -9,7 +9,7 @@ from ..requirement import (REQ, DefineRequirementSet, requirement,
 
 def AddRequirement(name, requirementname):
     tmp = Requirement(name)
-    
+
     new_req = _added_types.get(requirementname)[0]._values
     if not tmp:
         output.warning_msgf("requirement '{0}' was not found. Was it defined before this call?", name)
@@ -17,7 +17,6 @@ def AddRequirement(name, requirementname):
         output.warning_msgf(
             "requirement '{1}' was not found to add to requirement {0}. Was it defined before this call?", name, requirementname)
     common.extend_unique(tmp._values, new_req)
-    
 
 
 def Requirement(name):

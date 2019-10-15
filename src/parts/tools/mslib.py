@@ -45,8 +45,6 @@ from parts.tools.MSCommon import msvc
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 
-
-
 def generate(env):
     """Add Builders and construction variables for lib to an Environment."""
     SCons.Tool.createStaticLibBuilder(env)

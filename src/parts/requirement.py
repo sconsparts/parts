@@ -33,7 +33,7 @@ class requirement(object):
         if __debug__:
             logInstanceCreation(self)
         self._key = key
-        self._force_internal=force_internal
+        self._force_internal = force_internal
         self._internal = internal
         self._weight = weight
         if public is None:
@@ -297,13 +297,13 @@ class REQ(with_metaclass(metaREQ, object)):
     def __init__(self, lst=[], weight=None):
         if __debug__:
             logInstanceCreation(self, 'parts.requirement.REQ')
-        self.__data = {}        
+        self.__data = {}
         for i in lst:
             tmp = copy.copy(i)
             if weight:
                 tmp._weight = weight
             self.__data[tmp.key] = tmp
-    
+
     def __or__(self, rhs):
         tmp = set(self.__data.values())
         for i in rhs:

@@ -42,7 +42,6 @@ from parts.tools.MSCommon import is_win64, msvc
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 
-
 ASSuffixes = ['.s', '.asm', '.ASM']
 ASPPSuffixes = ['.spp', '.SPP', '.sx']
 if SCons.Util.case_sensitive_suffixes('.s', '.S'):

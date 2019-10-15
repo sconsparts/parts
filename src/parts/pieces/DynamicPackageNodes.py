@@ -41,10 +41,10 @@ def DynamicPackageNodes(_env, source):
     targets = env._DynamicPackageNodes(global_file_name, source)
     # we set a special decider to make sure item that depend on this
     # will rebuild. This is needed at the moment as the json file does not
-    # contain information about the "csig" of any files it has. Given this a 
-    # a content change will not be seen and as such the package builder will 
+    # contain information about the "csig" of any files it has. Given this a
+    # a content change will not be seen and as such the package builder will
     # not rebuild adding updated nodes into the package.
-    # todo change the json file to have csig info to make sure packages rebuild 
+    # todo change the json file to have csig info to make sure packages rebuild
     # only when they are changed
     [t.Decider("timestamp-match") for t in targets]
     return targets
@@ -110,10 +110,10 @@ def GroupBuilder(env, source, no_pkg=False, **kw):
 
     # we set a special decider to make sure item that depend on this
     # will rebuild. This is needed at the moment as the json file does not
-    # contain information about the "csig" of any files it has. Given this a 
-    # a content change will not be seen and as such the package builder will 
+    # contain information about the "csig" of any files it has. Given this a
+    # a content change will not be seen and as such the package builder will
     # not rebuild adding updated nodes into the package.
-    # todo change the json file to have csig info to make sure packages rebuild 
+    # todo change the json file to have csig info to make sure packages rebuild
     # only when they are changed
     [t.Decider("timestamp-match") for t in out]
 

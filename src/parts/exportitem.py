@@ -201,9 +201,9 @@ def ExportItem(env, variable, values, create_sdk=True, map_as_depenance=False): 
         common.append_unique(pobj.DefiningSection.ExportAsDepends, variable)
         # remove this as this does not work with "dynamic" builders and requires a post_install_queue
         # which we want to kill/obsolete
-        #if values:
-            #print("{0}::alias::{1}::{2}".format(env['PART_SECTION'], env['ALIAS'], variable), values)
-            #env.Alias("{0}::alias::{1}::{2}".format(env['PART_SECTION'], env['ALIAS'], variable), values)
+        # if values:
+        #print("{0}::alias::{1}::{2}".format(env['PART_SECTION'], env['ALIAS'], variable), values)
+        #env.Alias("{0}::alias::{1}::{2}".format(env['PART_SECTION'], env['ALIAS'], variable), values)
 
     # set the create SDK value
     if env['CREATE_SDK'] == False and create_sdk == True:

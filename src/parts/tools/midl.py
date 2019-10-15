@@ -47,9 +47,6 @@ from parts.tools.MSCommon import msvc
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 
-
-
-
 def midl_emitter(target, source, env):
     """Produces a list of outputs from the MIDL compiler"""
     base, ext = SCons.Util.splitext(str(target[0]))

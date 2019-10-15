@@ -191,17 +191,17 @@ class section(pnode.pnode):
     def gen_system_concept_set(self):
         concept_set = set([])
 
-        for concept in ("build","utest","run_utest"):
+        for concept in ("build", "utest", "run_utest"):
             pobj = self.__pobj
             while pobj:
                 alias_str = '{0}::alias::{1}'.format(concept, pobj.alias)
                 alias_str_r = '{0}::'.format(alias_str)
                 concept_set.add(alias_str)
-                concept_set.add(alias_str_r)                
+                concept_set.add(alias_str_r)
                 pobj = pobj.Parent
             concept_str = '{0}::'.format(concept)
             concept_set.add(concept_str)
-        
+
         return concept_set
 
     def filter_system_nodes(self, nodes):
@@ -211,14 +211,15 @@ class section(pnode.pnode):
         #       alias_str or alias_str_r or equal to the concept
         #  This is the base Alias for a given Part
 
-        # should be cleaned up once allow users to define there own concepts... 
+        # should be cleaned up once allow users to define there own concepts...
         # get "known" concepts and makes expect strings
-        
-        concept_set = self.gen_system_concept_set()        
+
+        concept_set = self.gen_system_concept_set()
         # the startwith runutest:: is a workaround till we deal with sections better
+
         def is_system(node):
             return isinstance(node, SCons.Node.Alias.Alias) and\
-                (node.ID in concept_set or node.ID.startswith("run_utest::") )
+                (node.ID in concept_set or node.ID.startswith("run_utest::"))
 
         return [n for n in nodes if not is_system(n)]
 
@@ -240,13 +241,13 @@ class section(pnode.pnode):
         # make copy
         test_targets = set(self.filter_system_nodes(self.Targets))
         targets = set(test_targets)
-        #api.output.verbose_msgf(
-            #['top-level-mapping'],
-            #"Filtered targets nodes for '{}':\n{}", self.ID, common.DelayVariable(lambda: [n.ID for n in targets]))
+        # api.output.verbose_msgf(
+        # ['top-level-mapping'],
+        # "Filtered targets nodes for '{}':\n{}", self.ID, common.DelayVariable(lambda: [n.ID for n in targets]))
         # filter some special targets
         alias_str = '{0}::alias::{1}'.format(self.Name, self.__pobj.Alias)
         rm_targets = set(self.__env.Alias(alias_str))
-        
+
         # for each target
         for trg in targets:
             for test_target in test_targets:
@@ -315,7 +316,7 @@ class section(pnode.pnode):
         a = self.__env.Alias(alias_str)
         # build::alias::foo -> build::alias::foo::
         a1 = self.__env.Alias(alias_str_r, a)
-        
+
         # map build::alias::foo.sub1:: -> build::alias::foo::
         if not self.Part.isRoot:  # ie we have a parent
             # build::alias::foo.sub:: -> build::alias::foo::

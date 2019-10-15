@@ -15,6 +15,8 @@ import SCons.Script
 from SCons.Script.SConscript import SConsEnvironment
 
 # might want to move this function to a generic dummy file action
+
+
 def WriteScanResultState(target, source, env):
     # generate the state file name
     md5 = hashlib.md5()
@@ -31,24 +33,26 @@ def WriteScanResultState(target, source, env):
 
 
 WriteScanResultStateAction = SCons.Action.Action(
-                WriteScanResultState,
-                "Scanning '$TARGET' for files"
-            )
+    WriteScanResultState,
+    "Scanning '$TARGET' for files"
+)
 
 
-def DynScanPath(env, node, target, source, args):    
+def DynScanPath(env, node, target, source, args):
     ##################################################################
     # get the sources and add a import.dyn.jsn as a depends
     # this insures that values that are defined by dependents that are
     # being dynamic as well go off correctly so we can make our up-to-date
     # check correct run those scanners
     for s in source:
-        # todo?? 
+        # todo??
         # double check if we are a depends already!!!!
-        env.Depends(s,env.File(_builders.dyn_imports.file_name))
+        env.Depends(s, env.File(_builders.dyn_imports.file_name))
     return ()
 
+
 cache = {}
+
 
 def _DynamicDirScanner(node, env, path, args):
     api.output.verbose_msgf(["scandirectory-scanner", "scanner", "scanner-called"], "Scanning node {0}", node.ID)
@@ -58,16 +62,16 @@ def _DynamicDirScanner(node, env, path, args):
     scan_callbacks = args.get("scan_callbacks", env.get("scan_callbacks", []))
     scan_overrides = args.get("scan_overrides", env.get("scan_overrides", {}))
     default_mappings_dict = args.get("default_mappings_dict", env.get("default_mappings_dict", {}))
-    extra_scanner = args.get("extra_scanner")    
+    extra_scanner = args.get("extra_scanner")
     results = []
 
     ########################################################################
     # set post action
-    # have to do it in scanner since the generation of the scanner does 
+    # have to do it in scanner since the generation of the scanner does
     # not have a builder defined yet
     api.output.verbose_msgf(["scandirectory-scanner", "scanner"], "Checking post action")
     executor = node.get_executor()
-    # check that this action is not defined already in the post actions, else add it 
+    # check that this action is not defined already in the post actions, else add it
     # this is needed because adding it twice will cause false rebuilds that we want to avoid
     if WriteScanResultStateAction not in executor.post_actions:
         api.output.verbose_msgf(["scandirectory-scanner", "scanner"], "Adding post action")
@@ -77,8 +81,8 @@ def _DynamicDirScanner(node, env, path, args):
         )
 
     # did the node have explict changes
-    changed = node_helpers.has_changed(node,skip_implict=True)
-    if not changed and node.ID in cache:        
+    changed = node_helpers.has_changed(node, skip_implict=True)
+    if not changed and node.ID in cache:
         api.output.verbose_msgf(["scandirectory-scanner", "scanner"], "Returning cache {0}", node.ID)
         # if we are up-to-date or are built and we are in the cache
         # return this to save time and avoid duplicates
@@ -86,11 +90,11 @@ def _DynamicDirScanner(node, env, path, args):
     else:
         # call the extra scanner if needed
         # common case might be calling a ProgScan for building third party build system
-        # so we can make sure libs it would need are ready to go        
-        scan_results=[]
+        # so we can make sure libs it would need are ready to go
+        scan_results = []
         if extra_scanner:
             api.output.verbose_msgf(["scandirectory-scanner", "scanner"], "Calling extra scanner {0}", node.ID)
-            scan_results=extra_scanner(
+            scan_results = extra_scanner(
                 node,
                 env,
                 extra_scanner.path(
@@ -115,7 +119,7 @@ def _DynamicDirScanner(node, env, path, args):
         if node.isBuilt or node.isVisited:
             # we can scan the disk to get the information
             # as this state is correct and up to date
-            snode = env.Pattern(src_dir=node).files()            
+            snode = env.Pattern(src_dir=node).files()
             env.SideEffect(snode, node)
 
         # default logic we want to look for
@@ -162,14 +166,14 @@ def _DynamicDirScanner(node, env, path, args):
             results += out
 
         callbacks = env.get("SCANDIR_CALLBACKS", scan_callbacks)
-        v1=env.get('allow_duplicates')
-        v2=env.get('_PARTS_DYN')
-        env['allow_duplicates']=True
-        env['_PARTS_DYN']=True        
+        v1 = env.get('allow_duplicates')
+        v2 = env.get('_PARTS_DYN')
+        env['allow_duplicates'] = True
+        env['_PARTS_DYN'] = True
         for callback in callbacks:
             callback(node, env)
-        env['allow_duplicates']=v1
-        env['_PARTS_DYN']=v2
+        env['allow_duplicates'] = v1
+        env['_PARTS_DYN'] = v2
         api.output.verbose_msgf(["scandirectory-scanner", "scanner", "scanner-results"],
                                 "Scanning results {0}", [str(r) for r in results])
 
@@ -233,7 +237,7 @@ def ScanDirectory(env, default_dir, defaults=True, callbacks=[], extra_scanner=N
 
     # this generates the name of the side effect jsn file that stores state about what this scanned
     # having this data may not prove useful beyond debugging. however the file defines a known
-    # pathway for everythign to scan correctly on incremental builds. This is done via having 
+    # pathway for everythign to scan correctly on incremental builds. This is done via having
     # a set of state files that map imported and exported builder between components. This allows
     # the task logic to find and call the scanner to define nodes and or environment values to allow
     # the scanners and builder to work correctly when values are subst()
@@ -243,10 +247,10 @@ def ScanDirectory(env, default_dir, defaults=True, callbacks=[], extra_scanner=N
     state_file_name = env.File("${{PARTS_SYS_DIR}}/${{PART_ALIAS}}.${{PART_SECTION}}.dyn.scan.{}.jsn".format(name_hash))
     state_file_name.Decider("timestamp-match")
     env.SideEffect(state_file_name, default_dir)
-    env.Clean(default_dir,default_dir)
-    # because we know this is dynamic we need to define 
+    env.Clean(default_dir, default_dir)
+    # because we know this is dynamic we need to define
     # that the dyn.import.jsn need to be generated for this file
-    #env._map_dyn_imports_()
+    # env._map_dyn_imports_()
     # map this file to the dyn.exports.jsn file
     env._map_dyn_export_(state_file_name)
 
@@ -260,9 +264,10 @@ def ScanDirectory(env, default_dir, defaults=True, callbacks=[], extra_scanner=N
     )
 
     return SCons.Script.Scanner(
-        _DynamicDirScanner, 
+        _DynamicDirScanner,
         path_function=DynScanPath,
-        argument=extras      
-        )
+        argument=extras
+    )
+
 
 SConsEnvironment.ScanDirectory = ScanDirectory

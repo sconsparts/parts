@@ -19,6 +19,7 @@ import parts.node_helpers as node_helpers
 import parts.core.builders as builders
 import SCons.Scanner
 
+
 def wrap_Prog_scan(func):
     def _scan(node, env, libpath=()):
         pass
@@ -61,6 +62,6 @@ def wrap_FindPathDirs(klass):
     )
 
 
-#wrap_FindPathDirs(SCons.Scanner.FindPathDirs)
+# wrap_FindPathDirs(SCons.Scanner.FindPathDirs)
 
 # vim: set et ts=4 sw=4 ai :

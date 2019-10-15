@@ -184,4 +184,4 @@ class part_ref(object):
         )
 
     def str_sig(self):
-        return "{}:{}".format(self.__target.OrignialString,True if self.__local_space else False)
+        return "{}:{}".format(self.__target.OrignialString, True if self.__local_space else False)

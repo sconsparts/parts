@@ -1069,17 +1069,17 @@ class part(pnode.pnode):
                 self.__file.srcnode().abspath, time.time() - st))
 
             sections = list(self.__sections.values())+[self.__classic_section]
-            
+
             # for each section we want to build a ${PART_ALIAS}.${PART_SECTION}.exports.jsn
             # it has to be built off of the "default" environment
-            for section in sections:                
+            for section in sections:
                 # get the top level targets as we want to map these to the component by default
                 [section._map_target(t) for t in section.TopLevelTargets()]
                 # Add some default values to the export table
                 section.Exports["EXISTS"] = section.Alias
                 # define the import builder for all items that will be imported
-                import_out=builders.imports.map_imports(env,section)[0]
-                dyn_import_out=builders.dyn_imports.map_dyn_imports(env,section)[0]
+                import_out = builders.imports.map_imports(env, section)[0]
+                dyn_import_out = builders.dyn_imports.map_dyn_imports(env, section)[0]
                 # map targets with a depends on the imports, so they are mapped
                 # in the environment before the target tries to build
                 # ideally I would like to avoid this, but this allows everything to move forward
@@ -1092,21 +1092,21 @@ class part(pnode.pnode):
                     # Alias we want to add a depends on the import
                     # file so that all "imported" values get resolved
                     if target != import_out and not util.isAlias(target):
-                        #print("mapping",target,import_out)
-                        section.Env.Depends(target,import_out)
+                        # print("mapping",target,import_out)
+                        section.Env.Depends(target, import_out)
                 # for each section we also want to define a export file
                 # that defines everything we will export from the component
                 # to any component that might depend on it
-                
+
                 # this need to be dependent on the import file
                 export_jsn = env._map_export_(import_out)
                 env._map_dyn_export_(dyn_import_out)
-                
+
                 # define the top level aliases mappings
                 section._map_target(export_jsn)
                 # define node for the packages to bind to if needed
                 env.DynamicPackageNodes(export_jsn)
-                
+
             # we tag the Directory nodes so we can latter sort unknown items faster, by checking the directory ownership
             env._log_keys = False
 

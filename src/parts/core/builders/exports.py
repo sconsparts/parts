@@ -50,6 +50,7 @@ def map_export(env, source):
     [t.Decider("timestamp-match") for t in targets]
     return targets
 
+
 def source_scanner(node, env, path):
     # this just prevents SCons from calling default scanner on node such as directories
     api.output.verbose_msgf(["export-scanner", "scanner", "scanner-called"], "Scanning node {0}", node.ID)

@@ -63,8 +63,8 @@ file_name = "$PARTS_SYS_DIR/${PART_ALIAS}.${PART_SECTION}.dyn.imports.jsn"
 def map_dyn_imports(env, section=None):
     if not section:
         section = glb.engine._part_manager._from_env(env).Section(env["PART_SECTION"])
-        
-    targets =  env._part_dyn_imports_(
+
+    targets = env._part_dyn_imports_(
         # the output should be resolve based on the environment of the section
         section.Env.subst(file_name),
         # sources are a value that holds a mostly readable hash of the depends
@@ -73,6 +73,7 @@ def map_dyn_imports(env, section=None):
     )
     [t.Decider("timestamp-match") for t in targets]
     return targets
+
 
 api.register.add_builder('_part_dyn_imports_', SCons.Builder.Builder(
     name="dynamic-import-state",

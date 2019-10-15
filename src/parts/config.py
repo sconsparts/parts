@@ -481,7 +481,7 @@ def load_tool_config(env, name, tool, host, target):
         if not g_configuration[dep].has_tool_cfg(tool, host, target):
             # if not, we need to load it
             api.output.verbose_msgf(['configuration-load', 'configuration'],
-                            "Dependent configuration <{0}> for tool <{1}> not loaded", dep, tool)
+                                    "Dependent configuration <{0}> for tool <{1}> not loaded", dep, tool)
             load_tool_config(env, dep, tool, host, target)
 
     ################################################
@@ -498,7 +498,7 @@ def load_tool_config(env, name, tool, host, target):
     # location to look for files
     pathList = load_module.get_site_directories(os.path.join('configurations', name))
     typeName = 'config{0}'.format(name)
-    
+
     module_dict = load_module.get_path_with_modules(pathList)
     # for each path we want to see if on of the set of files we want exists
     # if not we load the next path
@@ -514,10 +514,10 @@ def load_tool_config(env, name, tool, host, target):
                     mod = load_module.load_module(pathList, configName, typeName)
                     api.output.verbose_msgf(['configuration-load', 'configuration'],
                                             'Configuration <{0}> loaded! File <{1}>', name, mod.__file__)
-                
+
                 except:
                     api.output.warning_msg("Failed to load {module} Exception was thrown:\n",
-                                           traceback.format_exc(),print_once=True)
+                                           traceback.format_exc(), print_once=True)
                     continue
 
                 # Load our config data, and map the version value
@@ -537,17 +537,17 @@ def load_tool_config(env, name, tool, host, target):
                 files = set()
                 # reports that for this configruation there was not special data defined
                 api.output.trace_msgf(['configuration-load', 'configuration'],
-                                        ' <{configname}.py was not found!',configname=configName)
-                                      
+                                      ' <{configname}.py was not found!', configname=configName)
+
         else:
             api.output.verbose_msgf(['configuration-load', 'configuration'],
-                                        'No configuration file was found in "{path}"',path=path)
-    
+                                    'No configuration file was found in "{path}"', path=path)
+
         if found:
             break
     else:
-        api.output.verbose_msgf(['configuration-load', 'configuration'], "No configuration file found for tool: <{tool}> configuration: <{config}>!", 
-            config=name, tool=tool)
+        api.output.verbose_msgf(['configuration-load', 'configuration'], "No configuration file found for tool: <{tool}> configuration: <{config}>!",
+                                config=name, tool=tool)
 
     #############################################################
     # At this point we want to get all information for the different versions
@@ -565,10 +565,12 @@ def load_tool_config(env, name, tool, host, target):
         # merge setting
         api.output.verbose_msg(['configuration-setup', 'configuration'], "Merging configurtation settings")
         settings, ver_rng = mod.config.merge(ver, base_settings)
-        api.output.verbose_msgf(['configuration-setup', 'configuration'], "{tool} - storing settings:{settings}", tool=tool, settings=settings)
+        api.output.verbose_msgf(['configuration-setup', 'configuration'],
+                                "{tool} - storing settings:{settings}", tool=tool, settings=settings)
         g_configuration[name].add_config_setting(tool, ver_rng, host, target, settings, mod.config.default_ver_func, files)
     else:
-        api.output.verbose_msgf(['configuration-setup', 'configuration'], "{tool} - storing settings:{settings}", tool=tool, settings=base_settings)
+        api.output.verbose_msgf(['configuration-setup', 'configuration'],
+                                "{tool} - storing settings:{settings}", tool=tool, settings=base_settings)
         g_configuration[name].add_config_setting(tool, version.version_range(), host, target, base_settings, base_ver_mapper, files)
 
 
@@ -668,7 +670,7 @@ def apply_config(env, name=None):
     env['CONFIG']._bind(env, 'CONFIG')
 
     api.output.verbose_msg('configuration', "Applying configuration <%s>" % name)
-    
+
     for t in tools:
         tmp, files = get_config(env, name, t, host, target)
         settings, setting_extra = tmp
@@ -682,9 +684,9 @@ def apply_config(env, name=None):
         for flag, items in settings.items():
             # check that we have the value ( may not exist)
             not_found = flag not in env
-                
+
             # replace values
-            # if the item is not found and not in 
+            # if the item is not found and not in
             # replace ( ie allowing it to default to non list value)
             # we set it as a empty list. This allows it to exist
             # and general work, and reduces issues if we want to append

@@ -34,7 +34,6 @@ import SCons.Builder
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 
-
 lipoObjectBuilder = SCons.Builder.Builder(
     action='lipo $SOURCES -create -output $TARGET',
     suffix="$OBJSUFFIX",

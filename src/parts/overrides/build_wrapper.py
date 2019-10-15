@@ -52,11 +52,11 @@ def parts_call_(self, env, target=None, source=None, chdir=SCons.Builder._null, 
         elif SCons.Util.is_List(source):
             # flatten the list
             source = SCons.Util.flatten(source)
-        
+
         if SCons.Util.is_String(target) and target != '':
             target = [target]  # make it a list
         elif not target:
-            pass # the emitter will probally fill this in .. leave alone
+            pass  # the emitter will probally fill this in .. leave alone
         elif not SCons.Util.is_List(target):
             # flatten the list
             target = [target]
@@ -65,8 +65,8 @@ def parts_call_(self, env, target=None, source=None, chdir=SCons.Builder._null, 
             target = SCons.Util.flatten(target)
 
         # update here if we will handle allow_duplicates
-        dup = kw.get("allow_duplicates",env.get("allow_duplicates", False))
-        
+        dup = kw.get("allow_duplicates", env.get("allow_duplicates", False))
+
         if dup:
             # Get information to help store info matches better
             if pobj is not None:
@@ -114,7 +114,7 @@ def parts_call_(self, env, target=None, source=None, chdir=SCons.Builder._null, 
     if dup and not found:
         key_list.append(key)
         value_list.append(tmp)
-    
+
     return tmp
 
 

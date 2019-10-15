@@ -48,9 +48,6 @@ from parts.tools.MSCommon import msvc, validate_vars
 __revision__ = "__FILE__ __REVISION__ __DATE__ __DEVELOPER__"
 
 
-
-
-
 def pdbGenerator(env, target, source, for_signature):
     try:
         return ['/PDB:%s' % target[0].attributes.pdb, '/DEBUG']

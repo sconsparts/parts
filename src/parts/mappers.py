@@ -133,7 +133,7 @@ class mapper(object):
         if policy == Policy.ReportingPolicy.error:
             # because the exception thrown will not get thrown the try catch in subst()
             env.Exit(1)
-       
+
     def _guarded_call(self, target, source, env, for_signature=False):
         raise NotImplementedError
 
@@ -850,11 +850,11 @@ class pkgrunpath_mapper(mapper):
         self._lib_paths = lib_paths
         self._bin_path = bin_path
         self._use_origin = use_origin
-        
+
         super(pkgrunpath_mapper, self).__init__()
 
     def __repr__(self):
-        return "${{{0}('{1}','{2}','{3}','{4}')}}".format(self.name,self._lib_paths,self._bin_path, self._origin,self._use_origin)
+        return "${{{0}('{1}','{2}','{3}','{4}')}}".format(self.name, self._lib_paths, self._bin_path, self._origin, self._use_origin)
 
     def _guarded_call(self, target, source, env, for_signature):
 
@@ -869,8 +869,8 @@ class pkgrunpath_mapper(mapper):
         if env['HOST_OS'] == 'win32':
             quote = '"'
         else:
-            quote = "'"        
-        
+            quote = "'"
+
         if self._use_origin:
             for libpath in libpaths:
                 libpath = env.Dir(str(libpath))
