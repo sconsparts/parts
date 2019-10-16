@@ -1,7 +1,11 @@
 
+def filter_path_chars(s):
+    tb = str.maketrans({k:'' for k in  r'\/:*?"<>|'})
+    return s.translate(tb)
+
 def AddCleanRun(Test, target='all', options=''):
     tr = Test.AddTestRun(
-        "Cleaning Target: {0}".format(target),
+        "Cleaning Target: {0}".format(filter_path_chars(target)),
         "cleaning_target"
     )
     tr.Command = 'scons -c {0} {1} --console-stream=none'.format(target, options)
@@ -12,7 +16,7 @@ def AddCleanRun(Test, target='all', options=''):
 def AddUpdateCheckSCons(Test, target='all', options=''):
     tr = Test.AddTestRun(
         "Check SCons is up-to-date for target -> {}".format(target),
-        "scons-update-check-{}".format(target),
+        "scons-update-check-{}".format(filter_path_chars(target)),
     )
     tr.Command = 'scons -q {0} {1} --disable-parts-cache --console-stream=none'.format(target, options)
     tr.ReturnCode = 0
@@ -22,7 +26,7 @@ def AddUpdateCheckSCons(Test, target='all', options=''):
 def AddUpdateCheckParts(Test, target='all', options=''):
     tr = Test.AddTestRun(
         "Check Parts is up-to-date for target -> {}".format(target),
-        "parts-update-check-{}".format(target),
+        "parts-update-check-{}".format(filter_path_chars(target)),
     )
     tr.Command = 'scons -q {0} {1} --console-stream=none'.format(target, options)
     tr.ReturnCode = 0
@@ -38,7 +42,7 @@ def AddUpdateCheck(Test, target='all', options=''):
 def AddOutOfDateCheckParts(Test, target="all", options=''):
     tr = Test.AddTestRun(
         "Check Parts is out-of-date for target -> {}".format(target),
-        "parts-outdated-check-{}".format(target),
+        "parts-outdated-check-{}".format(filter_path_chars(target)),
     )
     tr.Command = 'scons -q {0} {1} --console-stream=none'.format(target, options)
     tr.ReturnCode = 1
@@ -49,7 +53,7 @@ def AddOutOfDateCheckParts(Test, target="all", options=''):
 def AddOutOfDateCheckSCons(Test, target="all", options=''):
     tr = Test.AddTestRun(
         "Check SCons is out-of-date for target -> {}".format(target),
-        "scons-outdated-check-{}".format(target),
+        "scons-outdated-check-{}".format(filter_path_chars(target)),
     )
     tr.Command = 'scons -q {0} {1} --disable-parts-cache --console-stream=none'.format(target, options)
     tr.ReturnCode = 1
@@ -58,12 +62,13 @@ def AddOutOfDateCheckSCons(Test, target="all", options=''):
 
 
 def AddBuildRun(Test, target="all", options=''):
+
     if options:
         s = "Building target-> {0} options-> {1}".format(target, options)
     else:
         s = "Building target-> {0}".format(target)
     tr = Test.AddTestRun(
-        s, "build-{}".format(target)
+        s, "build-{}".format(filter_path_chars(target))
     )
     tr.Command = 'scons {0} {1} --console-stream=none'.format(target, options)
     tr.ReturnCode = 0
