@@ -132,8 +132,8 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
             CXX=$CXX\
             CPPFLAGS="$CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_ABSCPPINCFLAGS"\
             CFLAGS="$CFLAGS"\
+            LDFLAGS="$LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS"\
             CXXFLAGS="$CXXFLAGS"'
-        # LDFLAGS="$_ABSRPATH $_ABSLIBDIRFLAGS"'
     else:
         env["_CONFIGURE_ARGS"] = ""
 
@@ -238,7 +238,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         target_scanner=scanners.depends_sdk_scanner
     )
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$\\$$$$$$$$ORIGIN")}'
-
+    
     ret = env.CCommand(
         [
             "$AUTO_MAKE_INSTALL_DESTDIR",
@@ -246,7 +246,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         build_files+sources,
         # the -rpath-link is to get the correct paths for the binaries to link with the rpath usage of the makefile
         [
-            'cd ${{SOURCE.dir}} ; make LDFLAGS="$_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS" V=1 $AUTOMAKE_BUILD_ARGS {target} \
+            'cd ${{SOURCE.dir}} ; make LDFLAGS="$LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS" V=1 $AUTOMAKE_BUILD_ARGS {target} \
             $(-j{jobs}$)'.format(target=targets, jobs=env.GetOption('num_jobs')),
             'cd ${SOURCE.dir} ; make install $AUTOMAKE_INSTALL_ARGS'
         ],
