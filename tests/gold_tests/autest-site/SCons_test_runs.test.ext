@@ -1,7 +1,13 @@
 
 def filter_path_chars(s):
-    tb = str.maketrans({k:'' for k in  r'\/:*?"<>|'})
-    return s.translate(tb)
+    try:
+        # python 3 case
+        tb = str.maketrans({k: '' for k in r'\/:*?"<>|'})
+        return s.translate(tb)
+    except:
+        # python2 case to go away
+        return s.translate(None, r'\/:*?"<>|')
+
 
 def AddCleanRun(Test, target='all', options=''):
     tr = Test.AddTestRun(
