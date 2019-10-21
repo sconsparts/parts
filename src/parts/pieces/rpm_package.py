@@ -309,23 +309,6 @@ def rpm_emitter(target, source, env):
     if len(target) > 1:
         raise SCons.Errors.UserError('Only one target is allowed.')
 
-    ####################
-    # get the dist value
-    try:
-        dist = subprocess.check_output(["rpm", "--eval", "%{?dist}"]).strip().decode()
-    except BaseException:
-        api.output.error_msg("rpm tool was not found. Did you install it?")
-
-    # set dist to what is expected
-    if ("DIST" in env and env.subst('$DIST') == "%{?dist}") or ("DIST" not in env):
-        env["DIST"] = dist
-
-    # map arch to value the RPM will want to use
-    if not platform_info.ValidatePlatform(env['TARGET_ARCH']):
-        api.output.warning_msgf("{} is not a known defined TARGET_ARCH", env['TARGET_ARCH'])
-    env['TARGET_ARCH'] = rpmarch(env, env['TARGET_ARCH'])
-    api.output.verbose_msgf(['rpm'], "mapping architecture to rpm value of: {0}", env['TARGET_ARCH'])
-
     # give us the rpm name without the path on it
     fname = target[0].name
 
@@ -392,10 +375,38 @@ api.register.add_variable('RPM_DEVEL_EXT', "-devel", "")
 
 
 def RpmPackage_wrapper(env, target, source=None, **kw):
+
+    # api checks 
     if not source and "sources" in kw:
         source = kw["sources"]
         del kw["sources"]
         api.output.warning_msg("Builders should use 'source' not 'sources'")
+
+    target_arch = kw.get("TARGET_ARCH")
+    if target_arch and not platform_info.ValidatePlatform(target_arch):
+        api.output.warning_msgf("{} is not a known defined TARGET_ARCH", target_arch)
+        del kw["TARGET_ARCH"]
+        
+    env = env.Clone(**kw)
+
+    if target_arch:
+        env['TARGET_ARCH'] = target_arch  
+    ####################
+    # get the dist value
+    try:
+        dist = subprocess.check_output(["rpm", "--eval", "%{?dist}"]).strip().decode()
+    except BaseException:
+        api.output.error_msg("rpm tool was not found. Did you install it?")
+
+    # set dist to what is expected
+    if ("DIST" in env and env.subst('$DIST') == "%{?dist}") or ("DIST" not in env):
+        env["DIST"] = dist
+    # map arch to value the RPM will want to use
+    #if not platform_info.ValidatePlatform(env['TARGET_ARCH']):
+        #api.output.warning_msgf("{} is not a known defined TARGET_ARCH", env['TARGET_ARCH'])
+    env['TARGET_ARCH'] = rpmarch(env, env['TARGET_ARCH'])
+    api.output.verbose_msgf(['rpm'], "mapping architecture to rpm value of: {0}", env['TARGET_ARCH'])
+    
     return env._RPMPackage(target, source, **kw)
 
 
