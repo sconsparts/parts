@@ -2,5 +2,5 @@ Import('*')
 
 env.PartName("packaging")
 
-out=env.RPMPackage('foo-1.0-1.i686.rpm',sources = ['pkg1','pkg_control1'],TARGET_ARCH = 'x86')
+out=env.RPMPackage('foo-1.0-1.i686.rpm',source = ['pkg1','pkg_control1'],TARGET_ARCH = 'x86')
 env.Alias("${PART_SECTION}::alias::${PART_ALIAS}::dist",env.CCopy("#dist",out))[0]

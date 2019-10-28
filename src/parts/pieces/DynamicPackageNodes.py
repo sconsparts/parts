@@ -101,6 +101,8 @@ def GroupBuilder(env, source, no_pkg=False, **kw):
     '''
 
     # make sure we have a common environment for this mutli build
+    # is it needs to be defined at a "global" level
+    env = glb.engine.def_env
     out = env._GroupBuilder(
         target=source,
         source=[],
@@ -172,7 +174,7 @@ api.register.add_builder('_GroupBuilder', SCons.Builder.Builder(
     source_factory=SCons.Node.Python.Value,
     emitter=emit,
     target_scanner=SCons.Script.Scanner(GroupNodesScanner),
-    multi=True
+    #multi=True
 ))
 
 SConsEnvironment.GroupBuilder = GroupBuilder

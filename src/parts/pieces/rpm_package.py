@@ -38,7 +38,13 @@ def rpm_group_values(env, dir, target, source, arg=None):
     api.output.verbose_msgf(["rpm-scanner", "scanner"], "Path finder - Getting source file")
     ret = []
     for node in source:
-        if os.path.exists(node.ID):
+        # This needs to be a child check as the group state file
+        # has no real soures, it all based on implicted values
+        # This mean that it would only rebuild if a new file was added
+        # We need to make sure we only give back files if all the inputs
+        # to the group file are defined. Since a rebuilt child may not cause 
+        # this file to rebuild ( same md5), so we check the children instead.
+        if not node_helpers.has_children_changed(node) and os.path.exists(node.ID):
             with open(node.ID, "r") as infile:
                 data = json.load(infile)
                 for d in data:

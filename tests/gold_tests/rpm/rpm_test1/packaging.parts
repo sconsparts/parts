@@ -2,16 +2,16 @@ Import('*')
 
 env.PartName("packaging")
 
-out=env.RPMPackage('${NAME}-${VERSION}-${RELEASE}.${TARGET_ARCH}.rpm',sources = ['pkg1','pkg_control1'],TARGET_ARCH = 'x86_64',NAME = 'Software_Intel', VERSION = '1.0', RELEASE = '1', arch_mapper = {'x86_64':'x86_64'})
+out=env.RPMPackage('${NAME}-${VERSION}-${RELEASE}.${TARGET_ARCH}.rpm',source = ['pkg1','pkg_control1'],TARGET_ARCH = 'x86_64',NAME = 'Software_Intel', VERSION = '1.0', RELEASE = '1', arch_mapper = {'x86_64':'x86_64'})
 env.Alias("${PART_SECTION}::alias::${PART_ALIAS}::dist",env.CCopy("#dist",out))[0]
 
-out=env.RPMPackage('${NAME}-${VERSION}-${RELEASE}.${TARGET_ARCH}.rpm',sources = ['pkg2','pkg_control2'],TARGET_ARCH = 'x86',NAME = 'foo', VERSION ='1.0', RELEASE = '1', arch_mapper = {'x86':'athlon'})
+out=env.RPMPackage('${NAME}-${VERSION}-${RELEASE}.${TARGET_ARCH}.rpm',source = ['pkg2','pkg_control2'],TARGET_ARCH = 'x86',NAME = 'foo', VERSION ='1.0', RELEASE = '1', arch_mapper = {'x86':'athlon'})
 env.Alias("${PART_SECTION}::alias::${PART_ALIAS}::dist",env.CCopy("#dist",out))[0]
 
-out=env.RPMPackage('${NAME}-${VERSION}-${RELEASE}.${TARGET_ARCH}.rpm',sources = ['pkg2','pkg_control2'],NAME='intel_product', VERSION='1.2.3', RELEASE = '1.3')
+out=env.RPMPackage('${NAME}-${VERSION}-${RELEASE}.${TARGET_ARCH}.rpm',source = ['pkg2','pkg_control2'],NAME='intel_product', VERSION='1.2.3', RELEASE = '1.3')
 env.Alias("${PART_SECTION}::alias::${PART_ALIAS}::dist",env.CCopy("#dist",out))[0]
 
-out=env.RPMPackage('${NAME}-${VERSION}-${RELEASE}.${TARGET_ARCH}.rpm',sources = ['pkg1','pkg_control1'],TARGET_ARCH = 'x86_64',NAME = 'Software_Intel1', VERSION = '1.0', RELEASE = '1', arch_mapper = {'x86_64':'x86_64'})
+out=env.RPMPackage('${NAME}-${VERSION}-${RELEASE}.${TARGET_ARCH}.rpm',source = ['pkg1','pkg_control1'],TARGET_ARCH = 'x86_64',NAME = 'Software_Intel1', VERSION = '1.0', RELEASE = '1', arch_mapper = {'x86_64':'x86_64'})
 env.Alias("${PART_SECTION}::alias::${PART_ALIAS}::dist",env.CCopy("#dist",out))[0]
 
 
