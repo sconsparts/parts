@@ -11,6 +11,7 @@ from builtins import filter
 
 import parts.api as api
 import parts.common as common
+import parts.core.util as util
 import parts.errors as errors
 import parts.node_helpers as node_helpers
 import parts.platform_info as platform_info
@@ -37,6 +38,7 @@ def rpm_group_values(env, dir, target, source, arg=None):
     '''
     api.output.verbose_msgf(["rpm-scanner", "scanner"], "Path finder - Getting source file")
     ret = []
+
     for node in source:
         # This needs to be a child check as the group state file
         # has no real soures, it all based on implicted values
@@ -47,8 +49,8 @@ def rpm_group_values(env, dir, target, source, arg=None):
         if not node_helpers.has_children_changed(node) and os.path.exists(node.ID):
             with open(node.ID, "r") as infile:
                 data = json.load(infile)
-                for d in data:
-                    n = env.Entry(d)
+                for json_node in data:
+                    n = util.make_node(json_node,env)
                     if n.exists():
                         ret.append(n)
 
@@ -388,7 +390,7 @@ def RpmPackage_wrapper(env, target, source=None, **kw):
         del kw["sources"]
         api.output.warning_msg("Builders should use 'source' not 'sources'")
 
-    target_arch = kw.get("TARGET_ARCH")
+    target_arch = env.subst(kw.get("${TARGET_ARCH}",""))
     if target_arch and not platform_info.ValidatePlatform(target_arch):
         api.output.warning_msgf("{} is not a known defined TARGET_ARCH", target_arch)
         del kw["TARGET_ARCH"]

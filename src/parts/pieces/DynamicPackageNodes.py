@@ -102,11 +102,12 @@ def GroupBuilder(env, source, no_pkg=False, **kw):
 
     # make sure we have a common environment for this mutli build
     # is it needs to be defined at a "global" level
-    env = glb.engine.def_env
-    out = env._GroupBuilder(
+    nenv = glb.engine.def_env
+    out = nenv._GroupBuilder(
         target=source,
         source=[],
         allow_duplicates=True,
+        _local_export_file=env.subst(builders.exports.file_name),
         **kw
     )
 
@@ -130,7 +131,8 @@ def GroupBuilderAction(target, source, env):
         target[0].attributes.GroupFiles = no_pkg
 
     with open(target[0].get_path(), 'w') as outfile:
-        data = json.dumps([i.ID for i in target[0].attributes.GroupFiles], indent=2,)
+        tt=[{"name":i.ID,"type":util.json_type(i)} for i in target[0].attributes.GroupFiles]
+        data = json.dumps(tt, indent=2,)
         outfile.write(data)
 
 
@@ -154,12 +156,14 @@ def GroupNodesScanner(node, env, path):
     # components that are doing dynamic build action before this file can be generated correctly.
     local = env.MetaTagValue(node, 'local_group', 'parts', False)
     if local:
-        ret = [env.File(builders.exports.file_name)]
+        ret = [env.File(env['_local_export_file'])]
     else:
         ret = [env.File(global_file_name)]
 
-    # make sure the groups are sorted
-    if not node_helpers.has_children_changed(node):  # , skip_implict=True):
+    # make sure the groups are sorted  
+    # We want to check the export file added above for changes
+    # to decide if we will add the sources at this point in time
+    if not node_helpers.has_changed(ret[0]):
         node = node.name.split(".")[2]
         new_sources, _ = env.GetFilesFromPackageGroups("", [node])
         ret += new_sources
