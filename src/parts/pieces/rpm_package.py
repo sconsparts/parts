@@ -390,7 +390,7 @@ def RpmPackage_wrapper(env, target, source=None, **kw):
         del kw["sources"]
         api.output.warning_msg("Builders should use 'source' not 'sources'")
 
-    target_arch = env.subst(kw.get("${TARGET_ARCH}",""))
+    target_arch = env.subst(kw.get("TARGET_ARCH",""))
     if target_arch and not platform_info.ValidatePlatform(target_arch):
         api.output.warning_msgf("{} is not a known defined TARGET_ARCH", target_arch)
         del kw["TARGET_ARCH"]
