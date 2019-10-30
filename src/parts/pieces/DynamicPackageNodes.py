@@ -46,7 +46,7 @@ def DynamicPackageNodes(_env, source):
     # not rebuild adding updated nodes into the package.
     # todo change the json file to have csig info to make sure packages rebuild
     # only when they are changed
-    [t.Decider("timestamp-match") for t in targets]
+
     return targets
 
 
@@ -69,7 +69,7 @@ def target_scanner(node, env, path):
     # clear any cached data as regen file list
     # should only need to be called here as after this target is called we should have
     # called all "installXXX" functions that would define a node to install
-    if not node_helpers.has_children_changed(node):  # ,skip_implict=True):
+    if not node_helpers.has_children_changed(node):
         api.output.verbose_msg(["dynamicpackage-scanner", "scanner", "scanner-called"], "called {}".format(node.ID))
         packaging.SortPackageGroups()
         packaging._sorted_groups
@@ -111,15 +111,6 @@ def GroupBuilder(env, source, no_pkg=False, **kw):
         **kw
     )
 
-    # we set a special decider to make sure item that depend on this
-    # will rebuild. This is needed at the moment as the json file does not
-    # contain information about the "csig" of any files it has. Given this a
-    # a content change will not be seen and as such the package builder will
-    # not rebuild adding updated nodes into the package.
-    # todo change the json file to have csig info to make sure packages rebuild
-    # only when they are changed
-    [t.Decider("timestamp-match") for t in out]
-
     return out
 
 
@@ -131,7 +122,7 @@ def GroupBuilderAction(target, source, env):
         target[0].attributes.GroupFiles = no_pkg
 
     with open(target[0].get_path(), 'w') as outfile:
-        tt=[{"name":i.ID,"type":util.json_type(i)} for i in target[0].attributes.GroupFiles]
+        tt = [{"name": i.ID, "type": util.json_type(i)} for i in target[0].attributes.GroupFiles]
         data = json.dumps(tt, indent=2,)
         outfile.write(data)
 
@@ -142,7 +133,6 @@ def emit(target, source, env):
     ret = []
     for trg in target:
         trg = env.File("${{PARTS_SYS_DIR}}/package.group.{}.jsn".format(trg.ID))
-        trg.Decider("timestamp-match")
         ret.append(trg)
     return ret, source
 
@@ -160,7 +150,7 @@ def GroupNodesScanner(node, env, path):
     else:
         ret = [env.File(global_file_name)]
 
-    # make sure the groups are sorted  
+    # make sure the groups are sorted
     # We want to check the export file added above for changes
     # to decide if we will add the sources at this point in time
     if not node_helpers.has_changed(ret[0]):
@@ -178,7 +168,6 @@ api.register.add_builder('_GroupBuilder', SCons.Builder.Builder(
     source_factory=SCons.Node.Python.Value,
     emitter=emit,
     target_scanner=SCons.Script.Scanner(GroupNodesScanner),
-    #multi=True
 ))
 
 SConsEnvironment.GroupBuilder = GroupBuilder

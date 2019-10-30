@@ -72,7 +72,6 @@ def map_imports(env, section):
         [],  # [env.Value(d.str_sig()) for d in section.Depends],
         section=section,
     )
-    [t.Decider("timestamp-match") for t in targets]
     return targets
 
 

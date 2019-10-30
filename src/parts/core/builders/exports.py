@@ -44,10 +44,9 @@ def map_export(env, source):
         # some of the jsn file might be sync points for dynamic builders
         # only these dynamic builder will generate files that are not part
         # of the data state parts is generating. the default static builders
-        # don't get mapped to this jsn based tate files.
+        # don't get mapped to this jsn based state files.
         source,
     )
-    [t.Decider("timestamp-match") for t in targets]
     return targets
 
 

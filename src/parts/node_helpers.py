@@ -124,6 +124,12 @@ def build_info_changed(self, scan=True, skip_implict=False, indent=0):
                     ["binfo-change", "node-changed", "node-did-change"], "{indent}{node} dependent '{child}' changed!", node=self.ID, child=child, indent=" "*indent)
                 result = True
                 break
+
+        if self.action_changed():
+            api.output.verbose_msgf(
+                    ["binfo-change", "node-changed", "node-did-change"], "{indent}{node} action changed!", node=self.ID, child=child, indent=" "*indent)
+            result = True
+
     else:
         api.output.verbose_msgf(
             ["binfo-change", "node-changed", "node-did-change"], "{indent}{node} has no stored info: changed!", node=self.ID, indent=" "*indent)

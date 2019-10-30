@@ -173,7 +173,7 @@ else:
 
     def copy_copy(dest, source):
         try:
-            shutil.copy2(source, dest)
+            shutil.copy(source, dest)
             # copy source permissions and add owner write permission
             mode = os.stat(source)
             os.chmod(dest, stat.S_IMODE(mode[stat.ST_MODE]) | stat.S_IWRITE)

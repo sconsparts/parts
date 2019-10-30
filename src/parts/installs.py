@@ -320,7 +320,6 @@ def InstallItem(env, target, source, sub_dir="", sdk_dir='', no_pkg=False, creat
         install_state_name = "${{PARTS_SYS_DIR}}/${{PART_ALIAS}}.${{PART_SECTION}}.install.{type}.{cat}.jsn".format(
             cat=target[1:], type="dyn" if is_part_dyn else "emit")
         manifest = env._InstallManifest(install_state_name, file_values)
-        [t.Decider("timestamp-match") for t in manifest]
 
         env._map_dyn_export_(manifest) if is_part_dyn else env._map_export_(manifest)
 

@@ -41,6 +41,18 @@ Alias = SCons.Node.Alias.Alias
 
 _decider_map = SCons.Node._decider_map
 
+# may need to have this called as a post read step to make sure custom deciders are wrapped correctly
+for k, func in _decider_map.items():
+    def override_decider(dependency, target, prev_ni, repo_node=None):
+        # we cannot do this a better way in SCons yet.. this allows us to make sure the statefile
+        # are built when ever a timestamp change happens. This check has to be a target file in the
+        # .part.cache ( which makes it a state file of some type)
+        if target.ID.startswith(".parts.cache"):
+            return _changed_timestamp_match(dependency, target, prev_ni, repo_node)
+        # else call default logic whatever that may be
+        return func(dependency, target, prev_ni, repo_node)
+    _decider_map[k] = override_decider
+
 
 def wrap_MkdirFunc(function):
     def MkdirFunc(target, source, env):
@@ -101,6 +113,7 @@ def action_changed(self, binfo=None, indent=0):
     '''
     # if the node is build or visited it cannot be viewed as changed anymore
     if self.isBuilt or self.isVisited:
+
         return False
 
     if self.has_builder():  # check to be safe that this has a builder
@@ -121,6 +134,9 @@ def action_changed(self, binfo=None, indent=0):
             return True
 
     return False
+
+
+SCons.Node.Node.action_changed = action_changed
 
 #############################################
 # these are pnode addition

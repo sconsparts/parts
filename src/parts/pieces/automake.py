@@ -133,7 +133,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
             CPPFLAGS="$CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_ABSCPPINCFLAGS"\
             CFLAGS="$CFLAGS"\
             LDFLAGS="$LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS"\
-            CXXFLAGS="$CXXFLAGS"'
+            CXXFLAGS="$CXXFLAGS $CCFLAGS $CPPFLAGS"'
     else:
         env["_CONFIGURE_ARGS"] = ""
 
@@ -141,7 +141,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         # delete the make install area if we are rebuilding the
         # the makefiles to avoid old files being added to the
         # scan.
-        SCons.Defaults.Delete("$AUTO_MAKE_DESTDIR"),
+        SCons.Defaults.Delete(build_dir),
         # remake the directory as SCons thought it did this already
         SCons.Defaults.Mkdir(build_dir),
         # delete the directory we plan to install stuff into ..
@@ -149,6 +149,14 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         SCons.Defaults.Delete("$AUTO_MAKE_DESTDIR"),
     ]
     if copy_src:
+        # need to this on how we can deal with the copy and remove the copied files
+        # or do we just deal with possible bugs in some 3rd party builds???
+        # worried that if we are coping it is probally messed up enough to be an issue here
+        configure_cmds = [
+            # delete the directory we plan to install stuff into ..
+            # as this is probally out of date ( contains bad files to scan)
+            SCons.Defaults.Delete("$AUTO_MAKE_DESTDIR"),
+        ]
         rel_src_path = "."
 
         # update action for autoreconf

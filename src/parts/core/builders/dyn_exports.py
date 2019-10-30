@@ -50,8 +50,6 @@ def map_dyn_export(env, source):
     )
     # dyn.export.jsn files are a source to making export.jsn
     env._map_export_(tmp)
-    # set targets to have a special decider
-    [t.Decider("timestamp-match") for t in tmp]
     return tmp
 
 

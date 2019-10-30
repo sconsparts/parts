@@ -245,7 +245,7 @@ def ScanDirectory(env, default_dir, defaults=True, callbacks=[], extra_scanner=N
     md5.update(default_dir[0].ID.encode())
     name_hash = md5.hexdigest()
     state_file_name = env.File("${{PARTS_SYS_DIR}}/${{PART_ALIAS}}.${{PART_SECTION}}.dyn.scan.{}.jsn".format(name_hash))
-    state_file_name.Decider("timestamp-match")
+
     env.SideEffect(state_file_name, default_dir)
     env.Clean(default_dir, default_dir)
     # because we know this is dynamic we need to define

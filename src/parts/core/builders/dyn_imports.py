@@ -71,7 +71,7 @@ def map_dyn_imports(env, section=None):
         [],
         section=section,
     )
-    [t.Decider("timestamp-match") for t in targets]
+
     return targets
 
 
