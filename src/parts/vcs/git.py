@@ -7,7 +7,6 @@ import parts.api as api
 import parts.common as common
 import parts.datacache as datacache
 import parts.version as version
-from parts.core import util
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
 
@@ -60,7 +59,8 @@ class git(base):
 
         if branch and tag or branch and revision or tag and revision:
             api.output.error_msgf(
-                "Only one argument of 'branch', 'tag' or 'revision' can be set at a time. \n tag={tag}\n branch={branch}\n revision={revision}",
+                "Only one argument of 'branch', 'tag' or 'revision' can be set at a time. \n"
+                " tag={tag}\n branch={branch}\n revision={revision}",
                 branch=branch,
                 tag=tag,
                 revision=revision)
@@ -121,15 +121,15 @@ class git(base):
         ]
 
         # clean actions.. use if --vcs-clean is set
-        cmd1 = 'cd {0} && "{1}" clean -dfx --force && "{1}" reset --hard'.format(out_dir, git.gitpath)
-        strval1 = 'cd {0} && {1} clean -dfx --force && "{1}" reset --hard'.format(out_dir, 'git')
+        cmd1 = 'cd {0} && "{1}" clean -dfx --force && "{1}" reset ${{GIT_RESET_ARGS}} --hard'.format(out_dir, git.gitpath)
+        strval1 = 'cd {0} && {1} clean -dfx --force && "{1}" reset ${{GIT_RESET_ARGS}} --hard'.format(out_dir, 'git')
         clean_action = [
             self._env.Action(cmd1, strval1)
         ]
 
         # Fetch action to update with correct branch/tag
-        cmd1 = 'cd {0} && "{1}" fetch'.format(out_dir, git.gitpath)
-        strval1 = 'cd {0} && {1} fetch'.format(out_dir, 'git')
+        cmd1 = 'cd {0} && "{1}" fetch ${{GIT_FETCH_ARGS}}'.format(out_dir, git.gitpath)
+        strval1 = 'cd {0} && {1} fetch ${{GIT_FETCH_ARGS}}'.format(out_dir, 'git')
         fetch_action = [
             self._env.Action(cmd1, strval1)
         ]
@@ -142,15 +142,15 @@ class git(base):
             branch = self._env["GIT_DEFAULT_BRANCH"]
         else:
             branch = self.__branch
-        cmd1 = 'cd {0} && "{1}" checkout {2}'.format(out_dir, git.gitpath, branch)
-        strval1 = 'cd {0} && {1} checkout {2}'.format(out_dir, 'git', branch)
+        cmd1 = 'cd {0} && "{1}" checkout ${{GIT_CHECKOUT_ARGS}} {2}'.format(out_dir, git.gitpath, branch)
+        strval1 = 'cd {0} && {1} checkout ${{GIT_CHECKOUT_ARGS}} {2}'.format(out_dir, 'git', branch)
         checkout_action = [
             self._env.Action(cmd1, strval1)
         ]
 
         # we do this with a update request only if we are not on a tag
-        cmd1 = 'cd {0} && "{1}" pull'.format(out_dir, git.gitpath)
-        strval1 = 'cd {0} && {1} pull'.format(out_dir, 'git')
+        cmd1 = 'cd {0} && "{1}" pull ${{GIT_PULL_ARGS}}'.format(out_dir, git.gitpath)
+        strval1 = 'cd {0} && {1} pull ${{GIT_PULL_ARGS}}'.format(out_dir, 'git')
         pull_action = [
             self._env.Action(cmd1, strval1)
         ]
@@ -175,7 +175,8 @@ class git(base):
             else:
                 # if it they are not set we want to say something is up.. give me the power to fix it, or do something about it
                 api.output.error_msg(
-                    'Directory "{0}" already exists with no .git directory.\n Manually remove directory or\n update with --vcs-retry or --vcs-clean'.format(out_dir),
+                    'Directory "{0}" already exists with no .git directory.\n Manually remove directory or\n'
+                    ' update with --vcs-retry or --vcs-clean'.format(out_dir),
                     show_stack=False)
         else:
             if data['modified'] and not do_clean:
@@ -186,14 +187,14 @@ class git(base):
                     show_stack=False
                 )
             if data['untracked'] and self._env['GIT_IGNORE_UNTRACKED'] == False and not do_clean:
-                 # check that we don't have untracked files locally. if we do complain to be safe.
+                # check that we don't have untracked files locally. if we do complain to be safe.
                 api.output.error_msg(
-                    'Untracked files found in "{0}".\n Manually commit and push changes\n or set variable GIT_IGNORE_UNTRACKED to True\n or update with --vcs-clean'.format(out_dir),
+                    'Untracked files found in "{0}".\n Manually commit and push changes\n'
+                    ' or set variable GIT_IGNORE_UNTRACKED to True\n or update with --vcs-clean'.format(
+                        out_dir),
                     show_stack=False)
 
-            server_disk = data['server']
             server_changed = self._server_changed(data)
-            tags = data['tags']
             # if branch or tag changed
             branch_changed = self._branch_changed(data)
             # are we on a tag or branch
@@ -204,8 +205,10 @@ class git(base):
             if self.__revision or on_tag:
                 prefix = ''
             # hard reset_action
-            cmd1 = 'cd {0} && "{1}" reset --hard {prefix}{origin}'.format(out_dir, git.gitpath, origin=branch, prefix=prefix)
-            strval1 = 'cd {0} && {1} reset --hard {prefix}{origin}'.format(out_dir, 'git', origin=branch, prefix=prefix)
+            cmd1 = 'cd {0} && "{1}" reset ${{GIT_RESET_ARGS}} --hard {prefix}{origin}'.format(
+                    out_dir, git.gitpath, origin=branch, prefix=prefix)
+            strval1 = 'cd {0} && {1} reset ${{GIT_RESET_ARGS}} --hard {prefix}{origin}'.format(
+                    out_dir, 'git', origin=branch, prefix=prefix)
             hard_reset_action = [
                 self._env.Action(cmd1, strval1)
             ]
@@ -219,7 +222,9 @@ class git(base):
                 # we cannot change if we are modified and not cleaning
                 if self.is_modified() and not do_clean:
                     api.output.error_msg(
-                        'Cannot change remote origin. Local modification found in "{0}".\n Manually commit and push changes or\n update with --vcs-clean'.format(out_dir),
+                        'Cannot change remote origin. Local modification found in "{0}".\n'
+                        ' Manually commit and push changes or\n update with --vcs-clean'.format(
+                            out_dir),
                         show_stack=False)
                 # change origin
                 ret += orgin_change_action
@@ -281,21 +286,23 @@ class git(base):
             # as only tags and branch can be cloned and checked out in one command
             branch = '-b {}'.format(self._env["GIT_DEFAULT_BRANCH"])
 
-        strval = '{0} clone --progress {branch} {1} "{2}"'.format(git.gitpath, clone_path, git_out_path, branch=branch)
-        cmd = '"{0}" clone --progress {branch} {1} "{2}"'.format(git.gitpath, clone_path, git_out_path, branch=branch)
+        strval = '{0} clone ${{GIT_CLONE_ARGS}} --progress {branch} {1} "{2}"'.format(
+                git.gitpath, clone_path, git_out_path, branch=branch)
+        cmd = '"{0}" clone ${{GIT_CLONE_ARGS}} --progress {branch} {1} "{2}"'.format(
+                git.gitpath, clone_path, git_out_path, branch=branch)
         ret = [self._env.Action(cmd, strval)]
 
         # if this is a revision we want to checkout that revision
         if self.__revision:
-            cmd = 'cd {0} && "{1}" checkout {2}'.format(out_dir, git.gitpath, self.__revision)
-            strval = 'cd {0} && {1} checkout {2}'.format(out_dir, 'git', self.__revision)
+            cmd = 'cd {0} && "{1}" checkout ${{GIT_CHECKOUT_ARGS}} {2}'.format(out_dir, git.gitpath, self.__revision)
+            strval = 'cd {0} && {1} checkout ${{GIT_CHECKOUT_ARGS}} {2}'.format(out_dir, 'git', self.__revision)
             ret += [self._env.Action(cmd, strval)]
 
         # have patch file .. apply it
         if self._patchfile:
             fullpath = self._env.File(self._patchfile).abspath
-            strval = 'cd {0} && {1} am "{2}"'.format(out_dir, git.gitpath, fullpath)
-            cmd = 'cd {0} && "{1}" am "{2}"'.format(out_dir, git.gitpath, fullpath)
+            strval = 'cd {0} && {1} am ${{GIT_AM_ARGS}} "{2}"'.format(out_dir, git.gitpath, fullpath)
+            cmd = 'cd {0} && "{1}" am ${{GIT_AM_ARGS}} "{2}"'.format(out_dir, git.gitpath, fullpath)
             ret += [self._env.Action(cmd, strval)]
 
         return ret
@@ -566,7 +573,7 @@ def GetGitData(env, checkoutdir=None):
             pass
 
     # get state on current branch on disk and if anything is modified or untracked
-    ret, data = base.command_output('cd {1} && "{0}" status -s -b'.format(git.gitpath, checkoutdir))
+    ret, data = base.command_output('cd {1} && "{0}" status ${{GIT_STATUS_ARGS}} -s -b'.format(git.gitpath, checkoutdir))
     if not ret:
         data.replace('\r\n', '\n')
         # first line is the ## branch
@@ -589,7 +596,7 @@ def GetGitData(env, checkoutdir=None):
                     break
 
     # get tags as these might be the "branch" we are on
-    ret, data = base.command_output('cd {1} && "{0}" tag --points-at HEAD'.format(git.gitpath, checkoutdir))
+    ret, data = base.command_output('cd {1} && "{0}" tag ${{GIT_TAG_ARGS}} --points-at HEAD'.format(git.gitpath, checkoutdir))
     if not ret:
         data.replace('\r\n', '\n')
     tags = data.split('\n')[:-1]
