@@ -249,6 +249,10 @@ def _filter_node(node, filters, metainfo):
                                         "Node filter mapped {0} to group={1}, no_pkg={2}", node.ID, group, no_pkg)
                 get_group_set(group, no_pkg).add(node)
                 new_groups.add(group)
+
+    if None in new_groups:
+        get_group_set(None, no_pkg).remove(node)
+        new_groups.remove(None)
     metainfo.update(groups=tuple(new_groups))
 
 

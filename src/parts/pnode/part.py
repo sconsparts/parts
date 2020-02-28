@@ -55,6 +55,9 @@ class part(pnode.pnode):
         '__prepend',    # this is stuff we would want to prepend
         '__kw',         # this is stuff we want to replace
 
+        # Debug stack for where this part was called
+        '__stackframe',
+
         # basic attibutes
         '__ID',
         '__file',         # the Parts file
@@ -222,6 +225,9 @@ class part(pnode.pnode):
 
         # this to force loading .. bypassing caching features
         self.__force_load = kw.get('force_load', False)
+
+        # this is for reporting better error messages
+        self.__stackframe = errors.GetPartStackFrameInfo()
 
         # some state stuff
         try:
@@ -660,7 +666,7 @@ class part(pnode.pnode):
                 toolchain=self.__env['TOOLCHAIN']
             )
 
-        diff.update(diff_env(base_env, self.__env, ['SKIP_CONCEPT_DEFINITION']))
+        diff.update(diff_env(base_env, self.__env, ['requires']))
         if diff != {}:
 
             md5 = hashlib.md5()
@@ -1046,7 +1052,8 @@ class part(pnode.pnode):
 
             if (glb.engine._build_mode == 'build') or (os.path.exists(self.__file.srcnode().abspath) == True):
                 if os.path.exists(self.__file.srcnode().abspath) == False:
-                    api.output.error_msg('Parts file ' + self.__file.srcnode().abspath + " was not found.")
+                    api.output.error_msg('Parts file ' + self.__file.srcnode().abspath +
+                                         " was not found.", stackframe=self.__stackframe)
 
                 # Call the part file
                 with self.part_loading_context(self.__file,

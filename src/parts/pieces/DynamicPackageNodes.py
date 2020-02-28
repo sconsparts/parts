@@ -115,7 +115,11 @@ def GroupBuilder(env, source, no_pkg=False, **kw):
 
 
 def GroupBuilderAction(target, source, env):
-    new_sources, no_pkg = env.GetFilesFromPackageGroups("target", [target[0].name.split(".")[2]])
+    # get the group name from the target file name
+    
+    group_name = ".".join(target[0].name.split(".")[2:-1])
+    
+    new_sources, no_pkg = env.GetFilesFromPackageGroups(target, [group_name])
     if not env.get("no_pkg", False):
         target[0].attributes.GroupFiles = new_sources
     else:
@@ -146,24 +150,26 @@ def GroupNodesScanner(node, env, path):
     # components that are doing dynamic build action before this file can be generated correctly.
     local = env.MetaTagValue(node, 'local_group', 'parts', False)
     if local:
+        api.output.verbose_msg(["groupbuilder-scanner", "scanner"], "Mapping {} as local".format(node.ID))
         ret = [env.File(env['_local_export_file'])]
     else:
+        api.output.verbose_msg(["groupbuilder-scanner", "scanner"], "Mapping {} as global".format(node.ID))
         ret = [env.File(global_file_name)]
 
     # make sure the groups are sorted
     # We want to check the export file added above for changes
     # to decide if we will add the sources at this point in time
     if not node_helpers.has_changed(ret[0]):
-        node = node.name.split(".")[2]
+        node = ".".join(node.name.split(".")[2:-1])
         new_sources, _ = env.GetFilesFromPackageGroups("", [node])
         ret += new_sources
 
     api.output.verbose_msgf(["groupbuilder-scanner", "scanner"], "Returned {}", common.DelayVariable(lambda: [i.ID for i in ret]))
     return ret
 
-
+#".".join(target[0].name.split(".")[2:-1])
 api.register.add_builder('_GroupBuilder', SCons.Builder.Builder(
-    action=SCons.Action.Action(GroupBuilderAction, "Looking up files in package group '${TARGET.name.split(\'.\')[2]}'"),
+    action=SCons.Action.Action(GroupBuilderAction, "Looking up files in package group '${'.'.join(TARGET.name.split(\'.\')[2:-1])}'"),
     target_factory=SCons.Node.FS.File,
     source_factory=SCons.Node.Python.Value,
     emitter=emit,

@@ -660,7 +660,7 @@ class Settings(object):
         # some general values we need to setup on any given system
         env['PART_USER'] = common.GetUserName(env)
         env['RPATH'] = []  # double check this case, linker tools may have this covered now.
-
+        env["ABSDir"] = lambda pathlist: [env.Dir(p).abspath for p in pathlist]
         # some setup we want in the "shell" Environment
         if 'SSH_AUTH_SOCK' in os.environ:
             env['ENV']['SSH_AUTH_SOCK'] = os.environ['SSH_AUTH_SOCK']

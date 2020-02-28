@@ -203,7 +203,7 @@ class reporter(object):
                 filename, lineno, routine, content = stackframe
             else:
                 filename, lineno, routine, content = errors.GetPartStackFrameInfo()
-            s += ' File: "%s", line: %s, in "%s"\n %s\n' % (filename, lineno, routine, content)
+            s += ' File "%s", line %s:, in "%s"\n %s\n' % (filename, lineno, routine, content)
 
         self.console.Error.write(s)
         self.logger.logerr(s)

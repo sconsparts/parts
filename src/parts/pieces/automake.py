@@ -120,9 +120,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
             auto_conf_buildfile += [checkout_path.File(node.ID[prefix_len:-3]) for node in auto_conf_pattern.files()]
 
     env["CONFIGURE_ARGS"] = configure_args
-    # move this to some "defaults" location
-    # probally need to change the _concat to a __env__.ABSDir from ABSDir
-    env["ABSDir"] = lambda pathlist: [env.Dir(p).abspath for p in pathlist]
+    
     env['_ABSCPPINCFLAGS'] = '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)'
     env['_ABSLIBDIRFLAGS'] = '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)'
     if auto_configure_args:
