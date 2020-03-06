@@ -1017,6 +1017,34 @@ class TempFileMunge(mapper):
         return [cmd[0], command_args]
 
 
+# these are some basic string items
+class replace_mapper(mapper):
+    ''' replace a character in subst value'''
+    name = '_replace'
+
+    def __init__(self, val, old, new, count=None):
+        if __debug__:
+            logInstanceCreation(self, 'parts.mappers.replace_mapper')
+        mapper.__init__(self)
+        self._val = val
+        self._old = old
+        self._new = new
+        self._count = count
+
+    def __repr__(self):
+        return "${{{0}('{1}','{2}','{3}','{4}')}}".format(self.name, self._val, self._old, self._new, self._count)
+
+    def _guarded_call(self, target, source, env, for_signature):
+        tmp = env.subst(self._val)
+        if self._count:
+            tmp = tmp.replace(env.subst(self._old),env.subst(self._new),self._count)
+        else:
+            tmp = tmp.replace(env.subst(self._old),env.subst(self._new))
+        return tmp
+        
+
+
+
 api.register.add_mapper(_concat)
 # api.register.add_mapper(_concat_ixes)
 
@@ -1036,6 +1064,9 @@ api.register.add_mapper(normpath_mapper)
 api.register.add_mapper(relpath_mapper)
 api.register.add_mapper(runpath_mapper)
 api.register.add_mapper(pkgrunpath_mapper)
+api.register.add_mapper(replace_mapper)
+
+
 
 # seems to be fixed in Scons
 # api.register.add_mapper(TempFileMunge)

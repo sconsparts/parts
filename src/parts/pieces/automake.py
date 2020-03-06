@@ -13,7 +13,7 @@ from SCons.Script.SConscript import SConsEnvironment
 
 
 def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="configure", prefix=None, configure_args=[],
-             auto_configure_args=True, configure_post_actions=None, targets="all", top_level=True, copy_src=True, copy_top=False, auto_scanner={}, **kw):
+             auto_configure_args=True, configure_post_actions=None, targets="all", install_targets="install", top_level=True, copy_src=True, copy_top=False, auto_scanner={}, **kw):
     '''
     auto make general logic
     autoreconf- the autoreconf program to call. for some project they have hacky wrapper scripts
@@ -254,7 +254,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         [
             'cd ${{SOURCE.dir}} ; make $_AUTOMAKE_BUILD_ARGS $AUTOMAKE_BUILD_ARGS {target} \
             $(-j{jobs}$)'.format(target=targets, jobs=env.GetOption('num_jobs')),
-            'cd ${SOURCE.dir} ; make install $AUTOMAKE_INSTALL_ARGS'
+            'cd ${{SOURCE.dir}} ; make {install} $AUTOMAKE_INSTALL_ARGS'.format(install=install_targets)
         ],
         target_factory=env.Dir,
         target_scanner=env.ScanDirectory(
