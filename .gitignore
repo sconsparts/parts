@@ -11,3 +11,7 @@ _sandbox/
 
 .mypy_cache/
 
+
+src/scons_parts.egg-info/
+
+Pipfile.lock

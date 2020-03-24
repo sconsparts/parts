@@ -336,6 +336,10 @@ def rpm_emitter(target, source, env):
         api.output.error_msg(
             "RPM target files must be in format of <name>-<version>-<release>.<arch>.rpm\n current format of value of target file is '{0}'".format(target[0].name))
 
+    # export the version for the rpm we are generating 
+    target_version = grps.group(2)
+    env.ExportItem("PKG_RPM_VERSION", target_version)
+
     ################################
     # export the values
     # to help with more automated depends mapping

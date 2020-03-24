@@ -132,12 +132,15 @@ DefineRequirementSet('DESTDIR_PATH', [requirement('DESTDIR_PATH', public=True, l
 DefineRequirementSet('RPM_PACKAGE_RUNPATH', [requirement('RPM_PACKAGE_RUNPATH', public=True,
                                                          listtype=True, policy=REQ.Policy.ignore, internal=True, force_internal=True)])
 
+
+DefineRequirementSet('PKG_RPM_VERSION', [requirement('PKG_RPM_VERSION', public=False, listtype=False,
+                                             policy=REQ.Policy.ignore, internal=True, force_internal=True)])
 DefineRequirementSet('PKG_RPM', [requirement('PKG_RPM', public=False, listtype=False,
                                              policy=REQ.Policy.ignore, internal=True, force_internal=True)])
 DefineRequirementSet('PKG_RPM_DEVEL', [requirement('PKG_RPM_DEVEL', public=False,
                                                    listtype=False, policy=REQ.Policy.ignore, internal=True, force_internal=True)])
 
-DefineRequirementSet('PKG_DEFAULTS', ['PKG_RPM', 'PKG_RPM_DEVEL'], weight=-5000)
+DefineRequirementSet('PKG_DEFAULTS', ['PKG_RPM', 'PKG_RPM_DEVEL', 'PKG_RPM_VERSION'], weight=-5000)
 
 # C/C++ like
 DefineRequirementSet('CPPPATH', [requirement('CPPPATH', public=True, policy=REQ.Policy.ignore)])
