@@ -9,11 +9,31 @@ from future import standard_library
 standard_library.install_aliases()
 
 import sys
+import os
+import re
+import subprocess
 
-# this tests to see if the script parts is running or if we are loading in SCons.
-fname = sys._getframe(1).f_code.co_filename
-if fname.endswith("pkg_resources.py") or fname.endswith('pkg_resources/__init__.py'):
+try:
+    import SCons.Script
+    script=False
+except ImportError:
+    script=True
+    try:
+        path = re.search(r'engine path: \[\'([\\\:/\w\.\-]*)',subprocess.check_output("scons --version",shell=True).decode(),re.MULTILINE).groups()[0]
+    except subprocess.CalledProcessError:
+        path = None
+    
+    if path:
+        path = os.path.split(path)[0]
+        sys.path = [path]+sys.path
+        print("Scons found at:",path)
+    else:
+        print("Scons not found! Did you install it? Is the Python environment setup correctly to see it?")
+
+
+if script:
+    # Running one of our scripts. Don't load engine. Let script control logic
     pass
-    # print sys._getframe(1).f_code.co_filename
 else:
+    # loading from SConstruct .. run engine
     from parts.main import *

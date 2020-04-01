@@ -237,6 +237,7 @@ def _filter_node(node, filters, metainfo):
     api.output.verbose_msgf(["packaging"], "Filtering node {0}", node.ID)
     new_groups = set(metainfo.get('groups', set()))
     default_no_pkg = metainfo.get('no_package', False)
+    no_pkg=default_no_pkg
     for _filter in filters:
         grps = _filter(node)
         if grps:
@@ -248,7 +249,7 @@ def _filter_node(node, filters, metainfo):
                 api.output.verbose_msgf(["packaging-filter"],
                                         "Node filter mapped {0} to group={1}, no_pkg={2}", node.ID, group, no_pkg)
                 get_group_set(group, no_pkg).add(node)
-                new_groups.add(group)
+                new_groups.add(group)        
 
     if None in new_groups:
         get_group_set(None, no_pkg).remove(node)
