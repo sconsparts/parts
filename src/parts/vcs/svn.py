@@ -366,5 +366,6 @@ api.register.add_list_variable('SVN_FLAGS', ['--non-interactive'], 'Flags to use
 api.register.add_variable('VCS_SVN_DIR', '${CHECK_OUT_ROOT}/${PART_ALIAS}', 'Full path used for any given checked out item')
 
 api.register.add_global_object('VcsSvn', svn)
+api.register.add_global_object('ScmSvn', svn)
 
 SConsEnvironment.SvnInfo = GetSvnData

@@ -260,6 +260,7 @@ class smart_svn(svn.svn):
 
 
 api.register.add_global_object('VcsSmartSvn', smart_svn)
+api.register.add_global_object('ScmSmartSvn', smart_svn)
 api.register.add_variable(
     'VCS_SMART_SVN_DIR', '${CHECK_OUT_ROOT}/${VCS.NAME}${VCS.STABLE_VERSION}', 'Full path used for any given checked out item')
 api.register.add_variable('UID_PATH', '<unknown>', '')

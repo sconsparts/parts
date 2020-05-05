@@ -1068,7 +1068,6 @@ api.register.add_mapper(define_if)
 api.register.add_mapper(part_mapper)
 api.register.add_mapper(part_id_mapper)
 api.register.add_mapper(part_id_export_mapper)
-#glb.mappers["PARTIDEXPORTS"]=PARTIDEXPORTS
 api.register.add_mapper(part_sub_mapper)
 api.register.add_mapper(part_subst_mapper)
 api.register.add_mapper(part_name_mapper)

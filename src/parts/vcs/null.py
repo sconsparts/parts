@@ -43,3 +43,4 @@ class null_t(base):
 
 null = null_t()
 api.register.add_global_object('VcsLocal', null_t)
+api.register.add_global_object('ScmLocal', null_t)

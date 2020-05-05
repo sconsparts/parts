@@ -42,8 +42,7 @@ mappers = {}
 globals = {}
 # these are all the sections that have been defined
 sections = set()
-
-gmappers = {}
+# subst cache to help with speed up build
 subst_cache = {}
 
 # path to where Parts is installed

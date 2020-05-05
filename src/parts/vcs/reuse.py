@@ -177,3 +177,5 @@ class reuse_part_vcs(base):
 
 api.register.add_global_object('VcsReuse', reuse_part_vcs)
 api.register.add_global_object('VcsUsePriorPart', reuse_part_vcs)
+api.register.add_global_object('ScmReuse', reuse_part_vcs)
+

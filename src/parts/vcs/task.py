@@ -75,4 +75,4 @@ class task(object):
 
 
 # this is the logic file for per part logging we want to use when we are getting source
-api.register.add_variable('VCS_LOG_PART_FILE_NAME', 'VCS-${PART_ALIAS}.log', '')
+api.register.add_variable('VCS_LOG_PART_FILE_NAME', 'SCM-${PART_ALIAS}.log', '')
