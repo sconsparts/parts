@@ -50,7 +50,7 @@ class task(object):
                 #buildError.node = self.__vcs.CheckOutDir
                 #buildError.exc_info = sys.exc_info()
                 #raise buildError
-        except BaseException:
+        except Exception:
             import traceback
             import io
             traceback.print_exc()

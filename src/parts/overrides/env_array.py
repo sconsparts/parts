@@ -20,7 +20,7 @@ def Parts__setitem__(self, key, val):
     if isinstance(val, common.bindable):
         try:
             self._bindable_vars.add(key)
-        except BaseException:
+        except Exception:
             self._bindable_vars = set([key])
         val._bind(self, key)
     elif key in getattr(self, '_bindable_vars', set([])):

@@ -981,7 +981,7 @@ def GenerateStoredInfo(self):
         try:
             if self.ID != self.srcnode().ID and not self.exists() and self.srcnode().exists():
                 info.SrcNodeID = self.srcnode().ID
-        except BaseException:
+        except Exception:
             pass
 
     if self.has_builder() or self.side_effect:
@@ -997,7 +997,7 @@ def GenerateStoredInfo(self):
         # some time the node info is a string not a Node object
         try:
             key = node.ID
-        except BaseException:
+        except Exception:
             # for some reason SCons will store the Alias "children" values as strings
             # not Nodes. This mean that the children of File nodes may not be normalized to
             # the expected value

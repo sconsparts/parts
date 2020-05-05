@@ -39,10 +39,9 @@ TEST_LINES = [r'hello world from print_msg(); test #1 passed',
 
 def checkLogFile(data):
     for line in TEST_LINES:
-        if not re.search(r'.*?^\s*{0}\s*$'.format(re.escape(line)), data,
-                         re.MULTILINE | re.DOTALL):
+        if not re.search(r'.*?^\s*{0}\s*$'.format(re.escape(line)), data, re.MULTILINE | re.DOTALL):
             return 'line "{0}" not found in the log:\n{1}'.format(line, data)
-    times = re.findall('Command execution time:\s+(\d+\.\d+)\s+seconds', data)
+    times = re.findall(r'Command execution time:\s+(\d+\.\d+)\s+seconds', data)
     if len(times) != 2:
         return 'unexpected amount of commands executed: %d' % len(times)
 

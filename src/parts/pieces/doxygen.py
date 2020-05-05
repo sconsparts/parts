@@ -34,7 +34,7 @@ def DetectDot(env):
                 env.PrependENVPath('PATH', os.path.split(res)[0])
             else:
                 res = None
-        except BaseException:
+        except Exception:
             if t:
                 Trace('An error occured during reading DOT from the registry\n')
             res = None
@@ -62,7 +62,7 @@ def DetectDoxygen(env):
                 res = 'doxygen'
             else:
                 res = None
-        except BaseException:
+        except Exception:
             if t:
                 Trace('An error occured during reading DOXYGEN from the registry\n')
             res = None
@@ -322,7 +322,7 @@ def doxyEmitter(target, source, env):
 def createDoxygenBuilder(env):
     try:
         doxygen = env['BUILDERS']['Doxygen']
-    except BaseException:
+    except Exception:
         doxygen = SCons.Builder.Builder(
             action="$DOXYGEN $DOXYFILE",
             emitter=doxyEmitter,

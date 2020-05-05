@@ -42,7 +42,7 @@ def get_args(cat, **kw):
     args.update(kw)
     try:
         args['tags']['category'] = cat
-    except BaseException:
+    except Exception:
         args['tags'] = {'category': cat}
     return args
 

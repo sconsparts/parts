@@ -43,6 +43,9 @@ globals = {}
 # these are all the sections that have been defined
 sections = set()
 
+gmappers = {}
+subst_cache = {}
+
 # path to where Parts is installed
 parts_path = os.path.abspath(os.path.split(__file__)[0])
 

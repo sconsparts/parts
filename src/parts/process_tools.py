@@ -239,7 +239,7 @@ if os.name == 'nt':
     def _performAction(pid, action):
         try:
             PROCESS_ACTIONS[action](pid)
-        except BaseException as e:
+        except Exception as e:
             raise UserError('Cannot {2} PID {0}: {1}'.format(pid, e, action))
 
 elif os.name == 'posix':
@@ -283,7 +283,7 @@ elif os.name == 'posix':
             except OSError as e:
                 if e.errno != errno.ESRCH:
                     raise UserError('Cannot {2} PID {0}: {1}'.format(pid, e, action))
-            except BaseException as e:
+            except Exception as e:
                 raise UserError('Cannot {2} PID {0}: {1}'.format(pid, e, action))
 
 else:

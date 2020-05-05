@@ -62,7 +62,6 @@ api.register.add_builder('_part_exports_', SCons.Builder.Builder(
     target_factory=SCons.Node.FS.File,
     source_factory=SCons.Node.FS.Entry,
     source_scanner=SCons.Script.Scanner(source_scanner, name="export-scan"),
-
     multi=1
 ))
 

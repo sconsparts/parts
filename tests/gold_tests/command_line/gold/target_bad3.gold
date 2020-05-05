@@ -1,4 +1,4 @@
 usage: scons [OPTION] [TARGET] ...
 
 SCons {}rror: {}rror:  darwin-z7000 is not a valid --target_platform value
-Value must be in form of <Plaform>-<Architecture>
+Value must be in form of <Platform>-<Architecture>

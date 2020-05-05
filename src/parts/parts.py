@@ -84,7 +84,7 @@ api.register.add_variable(
 api.register.add_variable('PARTS_SYS_DIR_ROOT', '#.parts.cache', 'Root directory for build data for the system')
 api.register.add_variable(
     'PARTS_SYS_DIR',
-    '$PARTS_SYS_DIR_ROOT/${CONFIG}_${TARGET_PLATFORM}${"_"+TOOLCHAIN.replace(",","_") if TOOLCHAIN!="default" else ""}',
+    '$PARTS_SYS_DIR_ROOT/$PARTS_RUN_CSIG/${CONFIG}_${TARGET_PLATFORM}${"_"+TOOLCHAIN.replace(",","_") if TOOLCHAIN!="default" else ""}',
     'Full path used to for building a given build configuration/variant')
 
 

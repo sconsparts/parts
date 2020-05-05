@@ -18,7 +18,7 @@ class part_info(stored_info.stored_info):
         '__rootID',              # the root part ID ( is self if no subparts) - good after file read
         '__target_platform',     # the target platform we are building for - good after file read
         '__config',              # the configuration ( debug, release, etc) - good after file read
-        '__platform_match',      # any special matching requirments set by this part - good after file read
+        '__platform_match',      # any special matching requirement set by this part - good after file read
         '__config_match',
         '__package_group',       # the package group this was mapped to - good after file read
         '__mode',                # any mode information - good after file read
@@ -33,7 +33,7 @@ class part_info(stored_info.stored_info):
         # processing)
         '__build_context',
         '__config_context',      # Information off all file that defined configuration information that had been called in any section of this Part - good after file read
-        '__force_load',          # does this need to be loaded for file if it is a dependancy, not cache - good after file read
+        '__force_load',          # does this need to be loaded for file if it is a dependency, not cache - good after file read
         '__kw',                  # random stuff passed in - good after file read
         '__vcs_cache_filename',  # information about cache file that has information about VCS state for this Parts, if any. - good after file read
         '__build_targets',       # How does this Part care about SCons.Script.BUILD_TARGET values

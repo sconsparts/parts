@@ -452,7 +452,7 @@ def found_config_files(name, tool, host, target):
                     break
                 except ImportError:
                     pass
-                except BaseException:
+                except Exception:
                     api.output.verbose_msg("configuration", "Unexpected failure:\n",
                                            traceback.format_exc())
 

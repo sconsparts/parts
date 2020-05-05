@@ -69,6 +69,7 @@ def CMake(env, destdir=None, auto_scanner={}, **kw):
         [
             "cd ${SOURCE.dir} ; cmake --build . --config Release --target install -- $_CMAKE_MAKE_ARGS"
         ],
+        source_scanner=scanners.null_scanner,
         target_factory=env.Dir,
         target_scanner=env.ScanDirectory(
             cmake_install_dir,

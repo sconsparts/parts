@@ -121,5 +121,5 @@ class rtf(logger.Logger):
     def __del__(self):
         try:
             self.m_file.close()
-        except BaseException:
+        except Exception:
             pass

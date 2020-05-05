@@ -76,11 +76,11 @@ class pnode(object):
         return self._isVisited
 
     @isVisited.setter
-    def _set_isVisited(self, value):
+    def isVisited(self, value):
         self._isVisited = value
 
     def __repr__(self):
-        return "<{1} object at 0x{2:x} ID={3}>".format(self.__module__, self.__class__.__name__, id(self), self.ID)
+        return "<{0} object at 0x{1:x} ID={2}>".format(self.__class__.__name__, id(self), self.ID)
 
 
 def pnode_factory(klass, *lst, **kw):
@@ -125,7 +125,7 @@ def pnode_factory(klass, *lst, **kw):
         # to get an ID
         ret = klass(*lst, **kw)
         # tell the node we only need to have the ID generated
-        # should seperate this to a setup_id and setup
+        # should separate this to a setup_id and setup
         ret._setup_(gen_ID=True, *lst, **kw)
         id = ret.ID
         # see if this is a known ID

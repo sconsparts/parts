@@ -6,9 +6,11 @@ name = "pypi"
 [packages]
 scons = "*"
 future = "*"
-scons-parts = {path = ".", editable = true}
+scons-parts = {path = ".",editable = true}
 
 [dev-packages]
 autest = "*"
 pylint = "*"
 "autopep8" = "*"
+mypy = "*"
+

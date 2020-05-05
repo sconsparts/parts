@@ -39,7 +39,7 @@ def removeall(path):
             st = os.lstat(p)
             # should exist in 2.6, does not seem to be on some distros of 2.7??
             os.lchmod(p, stat.S_IMODE(st[stat.ST_MODE]) | stat.S_IWRITE)
-        except BaseException:
+        except Exception:
             pass
         os.unlink(p)
 
@@ -229,7 +229,7 @@ class base(object):
             mod_msg = 'Local modification detected in "{0}".\n Add --update to force update for merge and potential loss of local changes'.format(
                 self.CheckOutDir.abspath)
             if ret:
-                # get policy for how to handle a positive reponse
+                # get policy for how to handle a positive response
                 pol = self._env.GetOption('vcs_policy')
                 api.output.verbose_msgf('vcs_update', "update policy is '{0}'", pol)
                 if pol == 'warning':
@@ -296,14 +296,14 @@ class base(object):
         # this check the backwards compatible way.. to be removed
         # @todo remove this case in 0.10+1.0 version
         elif self._env.get('UPDATE_' + self._env['PART_ALIAS'].upper(), None) is not None or self._pobj.Env['UPDATE_ALL'] == True:
-            api.output.verbose_msg('vcs_update', ' Backward compatibility check requres updating')
+            api.output.verbose_msg('vcs_update', ' Backward compatibility check requires updating')
             ret_val = True
 
         # check to see that the last operation was complete
         cache = datacache.GetCache(name=self._env['ALIAS'], key='vcs')
         if cache:
             # we only care to check if there is a cache item
-            # else we assume everythign is OK
+            # else we assume everything is OK
             # this prevent un wanted forced check outs cause the cache was
             # being ignored or rebuilt
 
@@ -356,7 +356,7 @@ class base(object):
                     ret = self.Update()
                 except PartRuntimeError as e:
                     ret = True
-            except BaseException:
+            except Exception:
                 api.output.error_msg("Unexpected exception when doing Update actions for {0}. Stopping build!".format(
                     self._pobj.Alias), show_stack=False, exit=False)
                 traceback.print_exc()
@@ -366,7 +366,7 @@ class base(object):
         else:
             try:
                 ret = self.CheckOut()
-            except BaseException:
+            except Exception:
                 api.output.error_msg("Unexpected exception when Checkout actions for {0}. Stopping build!".format(
                     self._pobj.Alias), show_stack=False, exit=False)
                 traceback.print_exc()
@@ -429,7 +429,7 @@ class base(object):
     def Update(self):
         ''' This does the check update logic for a given tool
 
-        Ideally this does not get overidden as the and tool only needs to provide a command to run
+        Ideally this does not get overridden as the and tool only needs to provide a command to run
         '''
 
         action = self.UpdateAction(self.CheckOutDir.abspath)
@@ -438,7 +438,7 @@ class base(object):
     def CheckOut(self):
         ''' This does the check update logic for a given tool
 
-        Ideally this does not get overidden as the and tool only needs to provide a command to run
+        Ideally this does not get overridden as the and tool only needs to provide a command to run
         '''
 
         action = self.CheckOutAction(self.CheckOutDir.abspath)
@@ -449,7 +449,7 @@ class base(object):
 
         @param result True or False based on if the Update logic was able to finish a successfull update
 
-        Allow the a vcs upbject to setup an last minute state that it wants to. or store any data that might be needed
+        Allow the a vcs object to setup an last minute state that it wants to. or store any data that might be needed
         for the next run
         '''
         pass

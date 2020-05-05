@@ -24,7 +24,7 @@ class Event(object):
     def Disconnect(self, callback):
         try:
             self.__callbacks.remove(callback)
-        except BaseException:
+        except Exception:
             pass
         return self
 

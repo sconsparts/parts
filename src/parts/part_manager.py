@@ -865,7 +865,7 @@ class part_manager(object):
                 p_list.append(None)
                 jobs = SCons.Job.Jobs(1, s_list)
                 jobs.run(postfunc=lambda: post_vcs_func(jobs, s_list))
-        except BaseException:
+        except Exception:
             if p_list.ReturnCode:
                 glb.engine.def_env.Exit(p_list.ReturnCode)
             if s_list.ReturnCode:

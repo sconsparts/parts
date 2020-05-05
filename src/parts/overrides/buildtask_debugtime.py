@@ -52,7 +52,7 @@ def logTaskEvent(task, event, timestamp, duration=-1):
                 [str(s) for s in sources],
                 env.subst(str(executor), target=targets, source=sources))
             )
-        except BaseException as substErr:
+        except Exception as substErr:
             taskLine = 'Cannot get task representation: %r' % substErr
     else:
         taskLine = 'duration=%.5f' % duration

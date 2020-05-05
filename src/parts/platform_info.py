@@ -1,7 +1,7 @@
 '''
 Contains basic functions needed to provide bitness of OS and architecture
 These function provide information on the current running platform.
-User should not need these much, but it can be useful. With cross plaform support
+User should not need these much, but it can be useful. With cross platform support
 added some day this will not be needed external, but instead user will use env
 var defined to to tell what has been targeted as the build env.
 '''
@@ -139,7 +139,7 @@ def OSBit():
         ret = None
         try:
             ret = SCons.Util.RegGetValue(SCons.Util.HKEY_LOCAL_MACHINE, value)
-        except BaseException:
+        except Exception:
             pass
         if ret is None and os.environ.get('PROCESSOR_ARCHITEW6432', None) is None:
             return 32

@@ -276,7 +276,7 @@ def opt_branch(option, opt, value, parser):
         try:
             # need better logic to validate arguments.. but this will do for now
             k, v = t.rsplit(':', 1)
-        except BaseException:
+        except Exception:
             fvalue['default'] = t
             continue
 

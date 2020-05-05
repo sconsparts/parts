@@ -160,7 +160,7 @@ def rpm_spec(env, target, source):
         for v in rpm_vals:
             try:
                 new_vals.append(env.subst(v))
-            except BaseException:
+            except Exception:
                 api.output.warning_msgf("Failed to subst() value:\n {0}\n passing orginal value instead.", v)
                 new_vals.append(v)
         rpm_vals = new_vals

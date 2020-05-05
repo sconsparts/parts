@@ -27,7 +27,7 @@ def _get_gitpath(env):
 
 
 class git(base):
-    ''' This is the implmentation of the vcs GIT logic'''
+    ''' This is the implementation of the vcs GIT logic'''
 
     __slots__ = [
         '__branch',
@@ -116,13 +116,13 @@ class git(base):
         # change repo
         cmd1 = 'cd {0} && "{1}" remote set-url origin {origin}'.format(out_dir, git.gitpath, origin=update_path)
         strval1 = 'cd {0} && {1} remote set-url origin {origin}'.format(out_dir, 'git', origin=update_path)
-        orgin_change_action = [
+        origin_change_action = [
             self._env.Action(cmd1, strval1)
         ]
 
         # clean actions.. use if --vcs-clean is set
-        cmd1 = 'cd {0} && "{1}" clean -dfx --force && "{1}" reset ${{GIT_RESET_ARGS}} --hard'.format(out_dir, git.gitpath)
-        strval1 = 'cd {0} && {1} clean -dfx --force && "{1}" reset ${{GIT_RESET_ARGS}} --hard'.format(out_dir, 'git')
+        cmd1 = 'cd {0} && "{1}" clean -dfx --force'.format(out_dir, git.gitpath)
+        strval1 = 'cd {0} && {1} clean -dfx --force'.format(out_dir, 'git')
         clean_action = [
             self._env.Action(cmd1, strval1)
         ]
@@ -159,11 +159,11 @@ class git(base):
         do_clean = self._env.GetOption('vcs_clean')
         do_retry = self._env.GetOption('vcs_retry')
         data = self.get_git_data()
-
+        
         # do we have data?
         if data is None:
             # we have some bad state
-            # could happen if check policy is existance or cache and user messed around
+            # could happen if check policy is existence or cache and user messed around
             if do_clean or do_retry:
                 ret = [
                     self._env.Action(
@@ -216,7 +216,7 @@ class git(base):
             # first check to see if we want to a clean setup
             # this will remove and reset the branch
             if do_clean:
-                ret += clean_action
+                ret += clean_action+hard_reset_action
             # if the server changed we need to reset the origin to the new value
             if server_changed:
                 # we cannot change if we are modified and not cleaning
@@ -227,7 +227,7 @@ class git(base):
                             out_dir),
                         show_stack=False)
                 # change origin
-                ret += orgin_change_action
+                ret += origin_change_action
                 # do fetch to get data
                 ret += fetch_action
                 if not branch_changed or on_revision or on_tag:
@@ -243,15 +243,18 @@ class git(base):
                 # do fetch to get data
                 ret += fetch_action
                 # do the checkout
-                ret += checkout_action
-                if do_clean:
-                    ret += hard_reset_action
+                ret += checkout_action                
             elif not on_tag:
                 # branch did not change
-                if do_clean:
-                    ret += hard_reset_action
-                else:
+                if not do_clean:
                     ret += pull_action
+
+            # reapply the patch if any
+            if self._patchfile:
+                fullpath = self._env.File(self._patchfile).abspath
+                strval = 'cd {0} && {1} am ${{GIT_AM_ARGS}} "{2}"'.format(out_dir, git.gitpath, fullpath)
+                cmd = 'cd {0} && "{1}" am ${{GIT_AM_ARGS}} "{2}"'.format(out_dir, git.gitpath, fullpath)
+                ret += [self._env.Action(cmd, strval)]
 
         return ret
 
@@ -273,7 +276,7 @@ class git(base):
         # if not os.path.exists(out_dir):
         # os.makedirs(out_dir)
 
-        # the intial clone
+        # the initial clone
         git_out_path = out_dir.replace('\\', '/')
         clone_path = self.FullPath
 
@@ -336,10 +339,10 @@ class git(base):
 
         returns None if it passes, returns a string to possible print tell why it failed
         '''
-        api.output.verbose_msg(["vcs_update", "vcs_git"], " Doing existance check")
+        api.output.verbose_msg(["vcs_update", "vcs_git"], " Doing existence check")
         if self.PartFileExists and os.path.exists(os.path.join(self.CheckOutDir.abspath, '.git')):
             return None
-        api.output.verbose_msg(["vcs_update", "vcs_git"], " Existance check failed")
+        api.output.verbose_msg(["vcs_update", "vcs_git"], " Existence check failed")
         return "{0} needs to be updated on disk" .format(self._pobj.Alias)
 
     def do_check_logic(self):
@@ -354,7 +357,7 @@ class git(base):
         '''
         failed = False
         api.output.verbose_msg(["vcs_update", "vcs_git"], " Using vcs-logic: check.")
-        # test for existance
+        # test for existence
         tmp = self.do_exist_logic()
         if tmp:
             return tmp
@@ -367,7 +370,7 @@ class git(base):
 
             # do the locations we fetch from match??
             if cache['server'] != self.FullPath:
-                api.output.verbose_msg(["vcs_update", "vcs_git"], " Cache version of server does not match.. verifing on disk..")
+                api.output.verbose_msg(["vcs_update", "vcs_git"], " Cache version of server does not match.. verifying on disk..")
                 failed = True
 
             else:
@@ -379,7 +382,7 @@ class git(base):
                 api.output.verbose_msgf(["vcs_update", "vcs_git"], " Requested revision: {0}", self.__revision)
                 if cache['revision'] != self.__revision and cache['revision'] != self.__revision[:9]:
                     api.output.verbose_msg(["vcs_update", "vcs_git"],
-                                           " Cache version of revision does not match.. verifing on disk..")
+                                           " Cache version of revision does not match.. verifying on disk..")
                     failed = True
                 else:
                     api.output.verbose_msg(["vcs_update", "vcs_git"], " Disk revisions matches")
@@ -392,7 +395,7 @@ class git(base):
 
                 if cache['branch'] != branch:
                     api.output.verbose_msg(["vcs_update", "vcs_git"],
-                                           " Cache version of branch does not match.. verifing on disk..")
+                                           " Cache version of branch does not match.. verifying on disk..")
                     failed = True
                 else:
                     api.output.verbose_msg(["vcs_update", "vcs_git"], " Disk branch matches")
@@ -411,10 +414,10 @@ class git(base):
         returns None if it passes, returns a string to possible print tell why it failed
         '''
         api.output.verbose_msg(["vcs_update", "vcs_git"], " Using force vcs logic.")
-        # test for existance
+        # test for existence
         tmp = self.do_exist_logic()
         if tmp:
-            api.output.verbose_msg(["vcs_update", "vcs_git"], " Existance checked failed")
+            api.output.verbose_msg(["vcs_update", "vcs_git"], " Existence checked failed")
             return tmp
         data = self.get_git_data()
         if data:
@@ -497,7 +500,7 @@ class git(base):
     def get_git_data(self):
         # get current state
         if self._disk_data is None:
-            self._disk_data = GetGitData(self._env, self.CheckOutDir.abspath)
+            self._disk_data = GetGitData(self._env, self.CheckOutDir.abspath, patched=bool(self._patchfile))
         return self._disk_data
 
     @property
@@ -548,7 +551,7 @@ class version_from_tag(object):
         return versions[-1]
 
 
-def GetGitData(env, checkoutdir=None):
+def GetGitData(env, checkoutdir=None, patched=False):
 
     branch = None  # the branch we are one
     server = None  # the server with the data
@@ -596,7 +599,10 @@ def GetGitData(env, checkoutdir=None):
                     break
 
     # get tags as these might be the "branch" we are on
-    ret, data = base.command_output('cd {1} && "{0}" tag ${{GIT_TAG_ARGS}} --points-at HEAD'.format(git.gitpath, checkoutdir))
+    if patched:
+        ret, data = base.command_output('cd {1} && "{0}" tag ${{GIT_TAG_ARGS}} --points-at HEAD^'.format(git.gitpath, checkoutdir))
+    else:
+        ret, data = base.command_output('cd {1} && "{0}" tag ${{GIT_TAG_ARGS}} --points-at HEAD'.format(git.gitpath, checkoutdir))
     if not ret:
         data.replace('\r\n', '\n')
     tags = data.split('\n')[:-1]
@@ -632,7 +638,7 @@ def GetGitData(env, checkoutdir=None):
     return ret
 
 
-# add configuartion varaible needed for part
+# add configuration variable needed for part
 api.register.add_variable('GIT_SERVER', '', '')
 api.register.add_variable('GIT_USER', '$PART_USER', '')
 api.register.add_variable('VCS_GIT_DIR', '${CHECK_OUT_ROOT}/${PART_ALIAS}', '')
@@ -641,6 +647,7 @@ api.register.add_bool_variable('GIT_IGNORE_UNTRACKED', False, 'Controls if we sh
 api.register.add_enum_variable('GIT_PROTOCOL', 'https', '', ['https', 'git'])
 
 api.register.add_global_object('VcsGit', git)
+api.register.add_global_object('ScmGit', git)
 api.register.add_global_parts_object("GitVersionFromTag", version_from_tag, True)
 
 SConsEnvironment.GitInfo = GetGitData

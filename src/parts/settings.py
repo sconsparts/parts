@@ -462,7 +462,7 @@ class Settings(object):
 
     def _env_const_ref(self, **kw):
         """
-        This makes a reference to environment with the toolchain and configruation set on it
+        This makes a reference to environment with the toolchain and configuration set on it
         given the user is not setting tools directly. This function would normally be the
         Environment() call. But we have a need to get an instance of the environment for diffing
         purposes because of this we want to pass back a instance, not a copy of the of the environment
@@ -600,14 +600,17 @@ class Settings(object):
             # apply values
             self.vars.Update(env, args=overrides, files=cfg_files, user_defaults=glb_defaults, add_unknown=True)
 
+            # call callback function to allow for general csig of this run
+            env["PARTS_RUN_CSIG"] = lambda **kw: glb.engine._cache_key
+
             # get the builders
             builders = self._builders
             # set builders
             env['BUILDERS'].update(builders)
 
             # stuff to zap.. backwards compatiblity
-            env["ARCHITECTURE"] = deprecated("ARCHITECTURE", "TARGET_ARCH", env['TARGET_ARCH'])
-            env["config"] = deprecated("config", "CONFIG", env['CONFIG'])
+            #env["ARCHITECTURE"] = deprecated("ARCHITECTURE", "TARGET_ARCH", env['TARGET_ARCH'])
+            #env["config"] = deprecated("config", "CONFIG", env['CONFIG'])
 
             self.__env_cache["base"] = env
         return env.Clone()
@@ -640,7 +643,7 @@ class Settings(object):
         try:
             tool_path = common.make_list(kw['toolpath'])
             del kw['toolpath']
-        except BaseException:
+        except Exception:
             tool_path = []
         # add the Parts toolpaths
         tool_path += load_module.get_site_directories('tools')

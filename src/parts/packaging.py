@@ -69,7 +69,7 @@ def PackageGroup(name, parts=None):
 def AddPackageNodeFilter(callbacks):
     try:
         settings.DefaultSettings().vars['PACKAGE_NODE_FILTER'].Default.extend(common.make_list(callbacks))
-    except BaseException:
+    except Exception:
         settings.DefaultSettings().vars['PACKAGE_NODE_FILTER'] = common.make_list(callbacks)
 
 
@@ -83,7 +83,7 @@ def AppendPackageGroupCriteria(name, func):
     name = SCons.Script.DefaultEnvironment().subst(name)
     try:
         settings.DefaultSettings().vars['PACKAGE_GROUP_FILTER'].Default[name].extend(common.make_list(func))
-    except BaseException:
+    except Exception:
         settings.DefaultSettings().vars['PACKAGE_GROUP_FILTER'].Default[name] = common.make_list(func)
     return PackageGroup(name)
 
@@ -93,7 +93,7 @@ def PrependPackageGroupCriteria(name, func):
     try:
         settings.DefaultSettings().vars['PACKAGE_GROUP_FILTER'].Default[name] = common.make_list(
             func) + settings.DefaultSettings().vars['PACKAGE_GROUP_FILTER'].Default[name]
-    except BaseException:
+    except Exception:
         settings.DefaultSettings().vars['PACKAGE_GROUP_FILTER'].Default[name] = common.make_list(func)
     return PackageGroup(name)
 
@@ -109,7 +109,7 @@ def AppendPackageGroupCriteriaEnv(env, name, func):
     name = env.subst(name)
     try:
         env['PACKAGE_GROUP_FILTER'][name].extend(common.make_list(func))
-    except BaseException:
+    except Exception:
         env['PACKAGE_GROUP_FILTER'][name] = common.make_list(func)
     return PackageGroup(name)
 
@@ -118,7 +118,7 @@ def PrependPackageGroupCriteriaEnv(env, name, func):
     name = env.subst(name)
     try:
         env['PACKAGE_GROUP_FILTER'][name] = common.make_list(func) + env['PACKAGE_GROUP_FILTER'][name]
-    except BaseException:
+    except Exception:
         env['PACKAGE_GROUP_FILTER'][name] = common.make_list(func)
     return PackageGroup(name)
 

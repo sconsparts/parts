@@ -18,7 +18,7 @@ def PartDynExportsAction(target, source, env):
     section = glb.engine._part_manager._from_env(env).Section(env["PART_SECTION"])
 
     data = {}
-    # create data sctructure for the exported data
+    # create data structure for the exported data
     for k, v in section.Exports.items():
         v = env.Flatten(v)
         if v != []:

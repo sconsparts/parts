@@ -75,7 +75,7 @@ class GnuInfo(ToolInfo):
             try:
                 while line == '\r\n' or line == '\n':
                     line = pipe.stdout.readline()
-            except BaseException:
+            except Exception:
                 pass
             match = re.search(r'[vV ]([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+)', line.decode())
             pipe.stdout.close()

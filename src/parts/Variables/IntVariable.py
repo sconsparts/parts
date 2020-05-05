@@ -20,7 +20,7 @@ class IntVariable(Variable):
             """
             try:
                 return int(str_val)
-            except BaseException:
+            except Exception:
                 raise ValueError("Invalid value for Int option: %s" % str_val)
 
         super(IntVariable, self).__init__(

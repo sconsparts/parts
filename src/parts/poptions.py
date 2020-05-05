@@ -1,4 +1,5 @@
 from __future__ import absolute_import, division, print_function
+import SCons.Script.SConsOptions
 
 import os
 import sys
@@ -72,7 +73,7 @@ def opt_target(option, opt, value, parser):
     tmp = platform_info.target_convert(value, error=False)
     if tmp is None:
         raise OptionValueError(
-            "Error:  %s is not a valid --target_platform value\nValue must be in form of <Plaform>-<Architecture>" % value)
+            "Error:  %s is not a valid --target_platform value\nValue must be in form of <Platform>-<Architecture>" % value)
 
     parser.values.target_platform = tmp
 
@@ -191,7 +192,7 @@ def opt_color(option, opt, value, parser):
             try:
                 # need better lgic to validate arguments.. but this will do for now
                 k, v = t.split('=')
-            except BaseException:
+            except Exception:
                 raise OptionValueError('Error: Invalid stream type to set color for: "%s" valid stream types are:\n\
  console, con, tty\n\
  stdout, out, o\n\
@@ -347,7 +348,8 @@ SCons.Script.AddOption(
         'unsafe',
         'default'],
     action='store',
-    help='Tells Parts what logic to use when loading files. Options are "all", "target", "min", "unsafe", "default"')
+    help='Tells Parts what logic to use when loading files. Options are "all", "target", "min", "unsafe", "default"'
+)
 
 SCons.Script.AddOption("--disable-color",
                        dest='use_color',
@@ -490,7 +492,7 @@ def post_option_setup():
                            action='callback',
                            help='Sets the default TARGET_PLATFORM use for cross builds')
 
-import SCons.Script.SConsOptions
+
 SCons.Script.SConsOptions.SConsValues.settable.extend(
     [
         'vcs_logic',

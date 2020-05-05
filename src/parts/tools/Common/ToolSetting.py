@@ -183,7 +183,7 @@ class ToolSetting(object):
             if self.not_found[key] is None:
                 # this combo was fully queried
                 return
-        except BaseException:
+        except Exception:
             pass
         api.output.verbose_msgf(['toolsettings'], "query for known")
         # don't have it, so we setup to get it added to cache
@@ -270,7 +270,7 @@ class ToolSetting(object):
                 api.output.verbose_msgf(['toolsettings'], "not_found : {}", key)
                 # this combo was fully queried
                 return
-        except BaseException:
+        except Exception:
             pass
         api.output.verbose_msgf(['toolsettings'], "query for Exact version '{0}'", version)
         # don't have it, so we setup to get it added to cache
@@ -373,7 +373,7 @@ class ToolSetting(object):
 
                 if tmp is not None:
                     found = True
-            except BaseException:
+            except Exception:
                 found = False
 
         # test to see if it was found

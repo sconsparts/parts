@@ -2,6 +2,8 @@
 # that also accepts target scanners
 from __future__ import absolute_import, division, print_function
 
+from pathlib import Path
+
 import parts.api as api
 import SCons.Builder
 import parts.node_helpers as node_helpers
@@ -13,10 +15,11 @@ from SCons.Script.SConscript import SConsEnvironment
 
 
 def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="configure", prefix=None, configure_args=[],
-             auto_configure_args=True, configure_post_actions=None, targets="all", install_targets="install", top_level=True, copy_src=True, copy_top=False, auto_scanner={}, **kw):
+             auto_configure_args=True, configure_post_actions=None, targets="all", install_targets="install", top_level=True, 
+             copy_src=True, copy_top=False, auto_scanner={}, copy_scm=True, **kw):
     '''
     auto make general logic
-    autoreconf- the autoreconf program to call. for some project they have hacky wrapper scripts
+    autoreconf- the autoreconf program to call. for some project they have hackie wrapper scripts
                 that will call this or some other magic to make what should happen at this stage
                 work.
     autoreconf_args-Default arguments to use for autoreconf. Some autoconf like project might have
@@ -33,7 +36,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
     top_level - We can rebuild build the configure and makefiles based on
                 the *.am file defined. However various build may not generate
                 all the Makefile. This causes false rebuilds, which we want to avoid.
-                Top_level is true as it will ignore all the makefiles thare are subdirectories
+                Top_level is true as it will ignore all the makefiles there are subdirectories
                 that we should be able to most ignore. Given we don't know about them SCons
                 will not correctly rebuild them if they are manual deleted. This forces
                 the user to do a change that would rebuild the top level makefile.
@@ -43,16 +46,19 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                 SCM ignore files. This can cause false rebuilds and mess up
                 the default update logic with git.
                 We do this by default to be safe out of box. However there
-                are some speed improments to avoid this step. 
+                are some speed improvements to avoid this step. 
     copy_top -  If copy_src is True, then True will copy over only toplevel level file/dir as nodes
-                if False (Default) it do a recurise search of files and copy them as nodes
+                if False (Default) it do a recursive search of files and copy them as nodes
                 This can be a function which will be called. it will be pass the (env,build_dir)
                 env is the environment object and build_dir is the Dir node to copy all items under
                 and returns a tuple of (build_files, source_files) Where
                 build_files are the files we need as sources to make the finial makefile
                 source_file any sources that are copied to the build_dir and would cause the make command to re-run
-                the builder will make source files an explict prepresiqute for the finial expected generate buildfile
+                the builder will make source files an explicit prepresiqute for the finial expected generate buildfile
                 to build correct
+    copy_scm - Copy the scm directory (currently this mean only .git) when coping the source over when copy_src is True.
+                This takes extra time and space but may be needed if the automake tool query git for information which
+                many project seem to do. 
     '''
 
     env = env.Clone(**kw)
@@ -146,6 +152,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         # as this is probally out of date ( contains bad files to scan)
         SCons.Defaults.Delete("$AUTO_MAKE_DESTDIR"),
     ]
+    scm_sources=[]
     if copy_src:
         # need to this on how we can deal with the copy and remove the copied files
         # or do we just deal with possible bugs in some 3rd party builds???
@@ -188,9 +195,21 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                     source=[auto_conf_pattern, auto_make_pattern],
                     target=build_dir
                 )
+                
+                if copy_scm:
+                    git_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", includes=["*.git/*"],excludes=[".git/index"])
+                    # need to treat ./git/index differently as it state changes and can cause false rebuilds
+                    if git_files.files():
+                        git_index = env.File("${CHECK_OUT_DIR}/.git/index")
+                        scm_sources = env.CCopy(
+                            source=git_files,
+                            target=build_dir
+                        )
+                        #env.AddPostAction(scm_sources[-1], env.Action(SCons.Defaults.Copy("$BUILD_DIR/build/.git/index",git_index.ID)))
+                    
 
                 # copy source files
-                files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=["*.ac", "*.am"])
+                files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=["*.ac", "*.am", "*.git/*"])
                 sources = env.CCopy(
                     source=files,
                     target=build_dir
@@ -198,7 +217,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
 
         # make the expected build file outputs (ie the MakeFiles, Configure, not the .am or .ac files)
         # to depend on the sources we copied over.
-        env.Requires(auto_conf_buildfile, sources)
+        env.Requires(auto_conf_buildfile, sources+scm_sources)
     else:
         if autoreconf:
             configure_cmds.append(
@@ -207,7 +226,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
 
         depends = auto_conf_pattern.files()
         # these are file that will be messing up the "source" area
-        # need to all the user to add to this set
+        # need to allow the user to add to this set
         ignore_files = [
             ".git/*",
             "configure",
@@ -224,7 +243,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
             "ltmain.sh",
             "missing",
             "INSTALL",
-            # this should be the default.. but might have negitive side effects
+            # this should be the default.. but might have negative side effects
             "autom4te.cache/*",
             "config/*"
         ]
@@ -256,6 +275,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
             $(-j{jobs}$)'.format(target=targets, jobs=env.GetOption('num_jobs')),
             'cd ${{SOURCE.dir}} ; make {install} $AUTOMAKE_INSTALL_ARGS'.format(install=install_targets)
         ],
+        source_scanner=scanners.null_scanner,
         target_factory=env.Dir,
         target_scanner=env.ScanDirectory(
             "$AUTO_MAKE_INSTALL_DESTDIR",

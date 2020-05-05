@@ -89,7 +89,7 @@ def is_Sconstruct_up_to_date():
 
     return ret
 
-# would it be nice if ther was a addon base in Scons... hmmmmm
+# would it be nice if there was a addon base in Scons... hmmmmm
 
 
 class parts_addon(object):
@@ -108,7 +108,7 @@ class parts_addon(object):
         self.__is_sconstruct_loaded = False
 
         self._exit_up_to_date = False
-        self._loaded_data = False
+        self._build_files_loaded = False
 
         # events
         self.CacheDataEvent = events.Event()
@@ -128,11 +128,11 @@ class parts_addon(object):
         log_obj = log_obj('', '')
         try:
             verbose = [i.lower() for i in SCons.Script.GetOption('verbose')]
-        except BaseException:
+        except Exception:
             verbose = []
         try:
             trace = [i.lower() for i in SCons.Script.GetOption('trace')]
-        except BaseException:
+        except Exception:
             trace = []
 
         glb.rpter.Setup(
@@ -195,7 +195,7 @@ class parts_addon(object):
         if SCons.Script.BUILD_TARGETS:  # and SCons.Script.Main.exit_status == 0 and self.HadError==False and self.__use_cache == True:
             # current changed logic to say the build is good if we loaded all the information we had to load.
             # given this we don't really care if there was a bad "build" as the state we care about should be OK
-            # self.store_db_data(self._loaded_data,self.__build_mode)
+            # self.store_db_data(self._build_files_loaded,self.__build_mode)
             pass
         # else:
         #    self.store_db_data(False)
@@ -238,9 +238,9 @@ class parts_addon(object):
 
     def Process(self, fs, options, targets, target_top):
         '''
-        This does the main processing of the parts before Scons takes over again
-        The main goal of this function to do an post Sconstruct reading processing
-        that we might want to do. such as processing the part files,
+        This does the main processing of the parts before SCons takes over again
+        The main goal of this function to do any post Sconstruct reading processing
+        that we might want to do, such as processing the part files,
         delayed mapping, etc
         '''
         memory_stats.append('before Parts processed')
@@ -275,7 +275,7 @@ class parts_addon(object):
                 self.PostProcessEvent(self.__build_mode)
 
                 # datacache.SaveCache()
-                self._loaded_data = True
+                self._build_files_loaded = True
 
                 # clear the datacache for certain cases that we don't need to touch any more
                 # to save memory
@@ -289,7 +289,7 @@ class parts_addon(object):
 
                 # reset our stack info for error reporting.. (todo. double check this again)
                 # errors.ResetPartStackFrameInfo()
-            except BaseException:
+            except Exception:
                 self.__had_error = True
                 raise
         finally:
@@ -371,7 +371,7 @@ class parts_addon(object):
     # setup APIs
     def _setup_variables(self):
         '''
-        Set all the varible that we have or need globally
+        Set all the variable that we have or need globally
         '''
 
         # set up the build mode
@@ -463,22 +463,22 @@ class parts_addon(object):
     def _setup_progress_meter(self):
         api.output.verbose_msg("startup", "Setting up show-progress feature")
         if SCons.Script.GetOption('show_progress'):
-            # class ProgressCounter(object):
-            #    def __init__(self):
-            #        self._time=0
-            #        self._node=None
-            #    def __call__(self, node, *args, **kw):
-            #        if self._time:
-            #            tt=time.time() - self._time
-            #            if time.time() - self._time > 10:
-            #
-            #                glb.rpter.console.Warning.write( " ****** {0} is took {1} sec to process\n".format(self._node.ID,tt))
-            #
-            #        glb.rpter.console.Trace.write("Processing {0}\n".format(node.ID))
-            #        self._time=time.time()
-            #        self._node=node
-            # SCons.Script.Progress(ProgressCounter(),1)
-            SCons.Script.Progress(self.def_env['PROGRESS_STR'], 1, file=glb.rpter.console, overwrite=True)
+             class ProgressCounter(object):
+                def __init__(self):
+                    self._time=0
+                    self._node=None
+                def __call__(self, node, *args, **kw):
+                    if self._time:
+                        tt=time.time() - self._time
+                        if time.time() - self._time > 10:
+            
+                            glb.rpter.console.Warning.write( " ****** {0} is took {1} sec to process\n".format(self._node.ID,tt))
+            
+                    #glb.rpter.console.Trace.write("Processing {0}\r".format(node.ID))
+                    self._time=time.time()
+                    self._node=node
+             SCons.Script.Progress(ProgressCounter(),1)
+             SCons.Script.Progress(self.def_env['PROGRESS_STR'], 1, file=glb.rpter.console, overwrite=True)
 
     def add_preprocess_logic_queue(self, funcobj):
         self.__post_process_queue.append(funcobj)
@@ -532,12 +532,13 @@ Use -H or --help-options for a list of scons options
         white_list = [
             'LOGGER',
             'PART_LOGGER',
+            "LOG_ROOT_DIR",
             'CONFIG',
             'config',
             'TARGET_PLATFORM',
             'toolchain',
             'tools',
-            'mode',
+            #'mode',
             'CCOPY_LOGIC',
             'BUILD_BRANCH',
             'USE_CACHE_KEY',
@@ -624,6 +625,10 @@ Use -H or --help-options for a list of scons options
     @property
     def isSconstructLoaded(self):
         return self.__is_sconstruct_loaded
+
+    @property
+    def BuildFilesLoaded(self):
+        return self._build_files_loaded
 
     @property
     def def_env(self):

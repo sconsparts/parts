@@ -90,9 +90,9 @@ class mapper(object):
     name = "Base"
 
     def __init__(self):
-        if __debug__:
-            logInstanceCreation(self, 'parts.mappers.Base')
-        self.stackframe = errors.GetPartStackFrameInfo()
+        #if __debug__:
+            #logInstanceCreation(self, 'parts.mappers.Base')
+        self.stackframe = None#errors.GetPartStackFrameInfo()
 
     def alias_missing(self, env):
         if env.get('MAPPER_BAD_ALIAS_AS_WARNING', True):
@@ -133,16 +133,34 @@ class mapper(object):
         if policy == Policy.ReportingPolicy.error:
             # because the exception thrown will not get thrown the try catch in subst()
             env.Exit(1)
-
+        
     def _guarded_call(self, target, source, env, for_signature=False):
         raise NotImplementedError
 
     def __call__(self, target, source, env, for_signature=False):
         try:
-            return self._guarded_call(target, source, env, for_signature)
+            key=(str(self), env.get_csig()) # get the sig key
+            ret=glb.subst_cache.get(key) # do we have an item cached
+            # do we have a dyn_export file
+            # meaning we have some dynamic logic in a scanner
+            dyn_export = env.get("DYN_EXPORT_FILE") 
+            # if we have an export test that it is built             
+            if dyn_export:
+                is_export_built = dyn_export.isBuilt or dyn_export.isVisited
+            else:
+                # else we just say it is for the cache test
+                is_export_built = True
+            # test if we can trust what is cached
+            # we have to have loaded the part files
+            if ret and glb.engine.BuildFilesLoaded and is_export_built:
+                return ret
+            else:
+                ret=self._guarded_call(target, source, env, for_signature)
+                glb.subst_cache[key]=ret
+            return ret
         except SystemExit:
             raise
-        except BaseException:
+        except Exception:
             api.output.error_msg(
                 "Unexpected exception in {0} mapping happened\n mapper: \"{1!r}\"\n{2}".format(
                     self.name, self, traceback.format_exc()),
@@ -400,10 +418,9 @@ class part_id_mapper(mapper):
             return penv.subst_list(ret)
         return penv.subst(ret)
 
-
 class part_id_export_mapper(mapper):
     ''' This class maps the part name and version range to the correct alias in
-    the Default enviroment to the actual value stored the in default Env PART_INFO map.
+    the Default environment to the actual value stored the in default Env PART_INFO map.
     It then returns the value of the property for the requested part alias.
     It has to do a small hack to replace a the property in the actual Env else a SCons
     issue with subst and lists causes the subst to fail.
@@ -415,7 +432,6 @@ class part_id_export_mapper(mapper):
             logInstanceCreation(self, 'parts.mappers.part_id_export_mapper')
         mapper.__init__(self)
         self.part_name = name
-        #self.ver_range = version.version_range(ver_range)
         self.part_prop = part_prop
         self.policy = policy
         self.section = section
@@ -426,7 +442,7 @@ class part_id_export_mapper(mapper):
     def _guarded_call(self, target, source, env, for_signature):
         thread_id = _thread.get_ident()
         spacer = "." * env_guard.depth(thread_id)
-
+        
         pobj_org = glb.engine._part_manager._from_env(env)
         sec = pobj_org.DefiningSection
         api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, 'Expanding value "{0!r}"'.format(self))
@@ -455,7 +471,7 @@ class part_id_export_mapper(mapper):
         # if
         ret = psec.Exports.get(self.part_prop, [])
         api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, 'Property {0} = {1} '.format(self.part_prop, ret))
-
+                
         return ret
 
 
@@ -1052,6 +1068,7 @@ api.register.add_mapper(define_if)
 api.register.add_mapper(part_mapper)
 api.register.add_mapper(part_id_mapper)
 api.register.add_mapper(part_id_export_mapper)
+#glb.mappers["PARTIDEXPORTS"]=PARTIDEXPORTS
 api.register.add_mapper(part_sub_mapper)
 api.register.add_mapper(part_subst_mapper)
 api.register.add_mapper(part_name_mapper)

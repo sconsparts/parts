@@ -43,7 +43,7 @@ def wrap_FindPathDirs(klass):
         pass
     try:
         func = klass.__call__.__func__
-    except BaseException:
+    except Exception:
         func = klass.__call__
     _call.__code__ = func.__code__
 

@@ -96,7 +96,7 @@ class Variable(object):
 
         try:
             self.Update(env.Clone())
-        except BaseException:
+        except Exception:
             return False
 
         return True

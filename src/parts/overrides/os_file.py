@@ -19,7 +19,7 @@ if sys.platform == 'win32':
 
     try:
         _original_file = builtins.file
-    except BaseException:
+    except Exception:
         pass
     _original_open = builtins.open
 

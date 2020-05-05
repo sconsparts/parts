@@ -59,6 +59,7 @@ def rpm_group_values(env, dir, target, source, arg=None):
     return tuple(ret)
 
 
+# ths is a cache for this scanner to not process item more than once
 g_cache = {}
 
 
@@ -132,7 +133,7 @@ def rpm_scanner(node, env, path, args=None):
 
         for n in src:
 
-            # get catagory of this node
+            # get category of this node
             pk_type = env.MetaTagValue(n, 'category', 'package')
 
             ###############################################################
@@ -172,7 +173,7 @@ def rpm_scanner(node, env, path, args=None):
                     pkg_dir = subprocess.check_output(["rpm", "--eval", prefix_value]).strip().decode()
                     # set value on node to avoid looking this up again later
                     env.MetaTag(n, RPM_NODE_PREFIX_CACHED=pkg_dir)
-                except BaseException:
+                except Exception:
                     api.output.error_msg("rpm was not found")
             else:
                 pkg_dir = "${{PACKAGE_{0}}}".format(pk_type)
@@ -407,7 +408,7 @@ def RpmPackage_wrapper(env, target, source=None, **kw):
     # get the dist value
     try:
         dist = subprocess.check_output(["rpm", "--eval", "%{?dist}"]).strip().decode()
-    except BaseException:
+    except Exception:
         api.output.error_msg("rpm tool was not found. Did you install it?")
 
     # set dist to what is expected

@@ -350,7 +350,7 @@ def CCopyWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw):
             elif isinstance(src, symlinks.FileSymbolicLink):
                 try:
                     e = dnode.FileSymbolicLink(os.sep.join(['.', src.name]))
-                except BaseException:
+                except Exception:
                     # this is a hack to deal with some backward compatibility issue
                     # with deal with symlinks in old code
                     e = dnode.Entry(os.sep.join(['.', src.name]))

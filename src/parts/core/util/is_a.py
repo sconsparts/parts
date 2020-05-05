@@ -6,6 +6,10 @@ import SCons.Node
 import SCons.Util
 
 
+def isNode(obj):
+    return isinstance(obj, (SCons.Node.Alias.Alias, SCons.Node.FS.Entry, SCons.Node.FS.Dir, SCons.Node.FS.File, SCons.Node.FS.FileSymbolicLink, SCons.Node.Python.Value))
+
+
 def isEntry(obj):
     return isinstance(obj, SCons.Node.FS.Entry)
 
@@ -32,6 +36,10 @@ def isSymLink(obj):
 
 def isList(obj):
     return SCons.Util.is_List(obj)
+
+
+def isSet(obj):
+    return isinstance(obj, set)
 
 
 def isDictionary(obj):

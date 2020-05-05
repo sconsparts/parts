@@ -36,11 +36,11 @@ class pipeRedirector(object):
                 line = self.pipein.readline()
                 try:
                     line = line.decode()
-                except BaseException:
+                except Exception:
                     pass
                 if line:
                     self.output.WriteStream(self.taskId, self.streamId, line)
-        except BaseException:
+        except Exception:
             # There was an error... that shouldn't happen, but still it did. So we report it
             # to the caller and close our pipe end so that spawned program won't block
             self.error = traceback.format_exc()
@@ -138,7 +138,7 @@ class part_spawner(object):
                         killProcessTree(proc)
                         raise UserError("Killed by timeout ({0} sec)".format(timeout))
                     ret = proc.returncode
-        except BaseException as e:
+        except Exception as e:
             msg = str(SCons.Errors.convert_to_BuildError(e, sys.exc_info()))
             output.WriteStream(id, console.Console.error_stream, msg)
             ret = -1

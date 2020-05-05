@@ -34,17 +34,17 @@ if SCons.Util.can_read_reg:
 
         try:
             return SCons.Util.RegOpenKeyEx(key, subkey, 0, SCons.Util.hkey_mod.KEY_READ)
-        except BaseException:
+        except Exception:
             pass
 
         try:
             return SCons.Util.RegOpenKeyEx(key, subkey, 0, SCons.Util.hkey_mod.KEY_READ | 0x0100)
-        except BaseException:
+        except Exception:
             pass
 
         try:
             return SCons.Util.RegOpenKeyEx(key, subkey, 0, SCons.Util.hkey_mod.KEY_READ | 0x0200)
-        except BaseException:
+        except Exception:
             pass
 
         return None
@@ -52,13 +52,13 @@ if SCons.Util.can_read_reg:
     def enumRegistryKey(key, i):
         try:
             return SCons.Util.RegEnumKey(key, i)
-        except BaseException:
+        except Exception:
             return None
 
     def readRegistryValue(key, value):
         try:
             return SCons.Util.RegQueryValueEx(key, value)[0]
-        except BaseException:
+        except Exception:
             return None
 
     class WdkScanner(object):
@@ -180,7 +180,7 @@ if SCons.Util.can_read_reg:
             for v in version.split('.'):
                 value = value[v]
             return value
-        except BaseException:
+        except Exception:
             return None
 
     class WdkInfo(ToolInfo):
@@ -225,7 +225,7 @@ def _ddkplatform(platform):
             'x86_64': 'amd64',
             'ia64': 'ia64',
         }[platform]
-    except BaseException:
+    except Exception:
         return platform
 
 
@@ -236,7 +236,7 @@ def _ddklibplatform(platform):
             'x86_64': 'amd64',
             'ia64': 'ia64',
         }[platform]
-    except BaseException:
+    except Exception:
         return platform
 
 

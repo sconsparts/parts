@@ -153,10 +153,10 @@ class svn(base):
 
         returns None if it passes, returns a string to possible print tell why it failed
         '''
-        api.output.verbose_msg(["vcs_update", "vcs_svn"], " Doing existance check")
+        api.output.verbose_msg(["vcs_update", "vcs_svn"], " Doing existence check")
         if self.PartFileExists and os.path.exists(os.path.join(self.CheckOutDir.abspath, '.svn')):
             return None
-        api.output.verbose_msg(["vcs_update", "vcs_svn"], " Existance check failed")
+        api.output.verbose_msg(["vcs_update", "vcs_svn"], " Existence check failed")
         return "%s needs to be updated on disk" % self._pobj.Alias
 
     def do_check_logic(self):
@@ -166,7 +166,7 @@ class svn(base):
         returns None if it passes, returns a string to possible print tell why it failed
         '''
         api.output.verbose_msg(["vcs_update", "vcs_svn"], " Using vcs-logic: check.")
-        # test for existance
+        # test for existence
         tmp = self.do_exist_logic()
         if tmp:
             return tmp
@@ -199,10 +199,10 @@ class svn(base):
         returns None if it passes, returns a string to possible print tell why it failed
         '''
         api.output.verbose_msg(["vcs_update", "vcs_svn"], " Using force vcs logic.")
-        # test for existance
+        # test for existence
         tmp = self.do_exist_logic()
         if tmp:
-            api.output.verbose_msg(["vcs_update", "vcs_svn"], " Existance checked failed")
+            api.output.verbose_msg(["vcs_update", "vcs_svn"], " Existence checked failed")
             return tmp
         data = self.get_svn_data()
         if data:

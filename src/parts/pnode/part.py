@@ -73,7 +73,7 @@ class part(pnode.pnode):
 
         '__mode',          # special build values
         '__uses',      # list of Parts that this we want to map to first
-        '__settings',       # The setting object used to create the enviornment
+        '__settings',       # The setting object used to create the environment
         '__env',            # the prime SCons Environment
         '__platform_match',  # this is how we can depend on this object
         '__config_match',
@@ -109,7 +109,7 @@ class part(pnode.pnode):
         # VCS stuff
         '__vcs',  # The information on how to check out this Part, None to use as file as local path.
 
-        # compatiblity stuff
+        # compatibility stuff
         '__sdk_or_installed_called',  # this is to help with issues with unit tests sub parts in classic format
         '__order_value',  # use to help with ordering in a compatible way between classic and new formats
         '__cache',  # used for internal caching of data
@@ -143,7 +143,8 @@ class part(pnode.pnode):
         self.__sdk_files = []
         # the name of the SDK file we will make.. if any
         self.__sdk_file = None
-
+        
+        self.__env_diff = None
         # packaging stuff
         # what package group to add this to
         if package_group:
@@ -159,16 +160,16 @@ class part(pnode.pnode):
         # this is the style/format the part file used
         self.__format = None
 
-        # everything we dependon, implict and explict,
+        # everything we depend on, implicit and explicit,
         # contain component objects.. change to part and component mix latter??
 #        self.__full_dependson=[]
 #        self.__dependson=[] # has to be a list as the order matters for linking
         # these are Parts that this Part uses, but may not depend on.
         # we will make sure these are processed before this Part is processed
-        # used primarly for classic formats
+        # used primarily for classic formats
         # otherwise the Depends on logic will try to verify these object for possible
         # matches, else error. ie IF the part name matches the rest of it has to
-        # dependons staements with no matching name fall trhought the "global"
+        # dependons statements with no matching name fall through the "global"
         # set of Parts to match
         # ideally stored only on root_parts
         if self.__kw.get('parent_part', None) is None:
@@ -232,7 +233,7 @@ class part(pnode.pnode):
         # some state stuff
         try:
             self.__read_state = self.__read_state
-        except BaseException:
+        except Exception:
             self.__read_state = glb.load_none
         super(part, self).__init__()
 
@@ -360,14 +361,14 @@ class part(pnode.pnode):
         """Get the current root Part."""
         return self.__root
 
-    @property  # readonly non-mutabale #remove?
+    @property  # readonly non-mutable #remove?
     def ParentName(self):
         """Get the current parent Part name."""
         if self.__parent is None:
             return None
         return self.__parent.Name
 
-    @property  # readonly non-mutabale #remove?
+    @property  # readonly non-mutable #remove?
     def RootName(self):
         """Get the current root Part name."""
         return self.__root.Name
@@ -388,7 +389,7 @@ class part(pnode.pnode):
     def Mode(self):  # readonly non-mutable
         return self.__mode  # may want to return a copy
 
-    @property  # readonly non-mutabale
+    @property  # readonly non-mutable
     def Uses(self):
         if self.isRoot:
             try:
@@ -431,13 +432,13 @@ class part(pnode.pnode):
 
     @property
     def PlatformMatch(self):  # readonly
-        ''' Returns the SystemPlatform this part will match on for dependancies
+        ''' Returns the SystemPlatform this part will match on for dependencies
         '''
         return self.__platform_match
 
     @property
     def ConfigMatch(self):  # readonly
-        ''' Returns the SystemPlatform this part will match on for dependancies
+        ''' Returns the SystemPlatform this part will match on for dependencies
         '''
         return self.__config_match
 
@@ -525,7 +526,7 @@ class part(pnode.pnode):
         return self.LoadState == glb.load_file
 
     @isVisited.setter
-    def _set_isVisited(self, value):
+    def isVisited(self, value):
         pass
 
     # packaging stuff
@@ -624,7 +625,6 @@ class part(pnode.pnode):
         # issue of generating an ID vs a full setup
         genid = kw.get('gen_ID')
 
-        ss = time.time()
         # is this core like the iapat object?
 
         if _env is None:
@@ -641,53 +641,55 @@ class part(pnode.pnode):
         else:
             self.__env = _env
 
-        # basic data
-        # create diff with default environment
-        base_env = self.__settings._env_const_ref()
-        # check to see if the big three are different config, target_platform, toolchain
-        # if so we want to diff off of that case, as these items can make a massive set
-        # of changes we really want to ignore, or don't care about as much as the
-        # one item that caused them to change
-        diff = {}
-        if self.__mode != []:
-            diff = {'mode': self.__mode}
-        if base_env['TARGET_PLATFORM'] != self.__env['TARGET_PLATFORM'] or\
-                base_env.subst('$CONFIG') != self.__env.subst('$CONFIG') or\
-                base_env['toolchain'] != self.__env['toolchain']:
-            if base_env['TARGET_PLATFORM'] != self.__env['TARGET_PLATFORM']:
-                diff['TARGET_PLATFORM'] = self.__env['TARGET_PLATFORM']
-            if base_env['toolchain'] != self.__env['toolchain']:
-                diff['toolchain'] = self.__env['toolchain']
-            if base_env.subst('$CONFIG') != self.__env.subst('$CONFIG'):
-                diff['CONFIG'] = self.__env.subst('$CONFIG')
-            base_env = self.__settings._env_const_ref(
-                TARGET_PLATFORM=self.__env['TARGET_PLATFORM'],
-                CONFIG=self.__env.subst('$CONFIG'),
-                toolchain=self.__env['TOOLCHAIN']
-            )
+        if self.__env_diff is None:
+            # basic data
+            # create diff with default environment
+            base_env = self.__settings._env_const_ref()
+            # check to see if the big three are different config, target_platform, toolchain
+            # if so we want to diff off of that case, as these items can make a massive set
+            # of changes we really want to ignore, or don't care about as much as the
+            # one item that caused them to change
+            diff = {}
+            if self.__mode != []:
+                diff = {'mode': self.__mode}
+            if base_env['TARGET_PLATFORM'] != self.__env['TARGET_PLATFORM'] or\
+                    base_env.subst('$CONFIG') != self.__env.subst('$CONFIG') or\
+                    base_env['toolchain'] != self.__env['toolchain']:
+                if base_env['TARGET_PLATFORM'] != self.__env['TARGET_PLATFORM']:
+                    diff['TARGET_PLATFORM'] = self.__env['TARGET_PLATFORM']
+                if base_env['toolchain'] != self.__env['toolchain']:
+                    diff['toolchain'] = self.__env['toolchain']
+                if base_env.subst('$CONFIG') != self.__env.subst('$CONFIG'):
+                    diff['CONFIG'] = self.__env.subst('$CONFIG')
+                base_env = self.__settings._env_const_ref(
+                    TARGET_PLATFORM=self.__env['TARGET_PLATFORM'],
+                    CONFIG=self.__env.subst('$CONFIG'),
+                    toolchain=self.__env['TOOLCHAIN']
+                )
 
-        diff.update(diff_env(base_env, self.__env, ['requires']))
-        if diff != {}:
+            diff.update(diff_env(base_env, self.__env, ['requires']))
+            
+            if diff != {}:
 
-            md5 = hashlib.md5()
-            md5.update(common.get_content(diff))
-            self.__env_diff = diff
-            self.__env_diff_sig = md5.hexdigest()
-            self.__env_mini_diff_sig = self.__env_diff_sig[-4:]
-            path_sig = self.__env_mini_diff_sig
-        else:
-            self.__env_diff = {}
-            self.__env_diff_sig = ''
-            self.__env_mini_diff_sig = ''
-            # since we we can load the same part from different directories, we assume a version difference
-            # we don't know what the difference is yet (as the part file is not read). We md5 the path to make a difference
-            # if there is no version difference, we will get an ambigous error message later when we try to build,
-            # via same outputs, or via mapper function not having more than one match.
-            md5 = hashlib.md5()
+                md5 = hashlib.md5()
+                md5.update(common.get_content(diff))
+                self.__env_diff = diff
+                self.__env_diff_sig = md5.hexdigest()
+                self.__env_mini_diff_sig = self.__env_diff_sig[-4:]
+                path_sig = self.__env_mini_diff_sig
+            else:
+                self.__env_diff = {}
+                self.__env_diff_sig = ''
+                self.__env_mini_diff_sig = ''
+                # since we we can load the same part from different directories, we assume a version difference
+                # we don't know what the difference is yet (as the part file is not read). We md5 the path to make a difference
+                # if there is no version difference, we will get an ambigous error message later when we try to build,
+                # via same outputs, or via mapper function not having more than one match.
+                md5 = hashlib.md5()
 
-            md5.update(self.__env.subst(self.__file).encode())
-            md5.update(self.__env_diff_sig.encode())
-            path_sig = md5.hexdigest()[-4:]
+                md5.update(self.__env.subst(self.__file).encode())
+                md5.update(self.__env_diff_sig.encode())
+                path_sig = md5.hexdigest()[-4:]
 
         # We need to set to the alias value as this is the unique ID used to map data internally
         if self.__alias is None:
@@ -766,10 +768,6 @@ class part(pnode.pnode):
     def _merge(self, otherobj):
         # turn other object in to this guy the best we can
         otherobj.__dict__ = self.__dict__
-
-    def _set_full_depends(self, val):
-        """Get the return all(indirect and direct) Parts that this part depends on."""
-        self.__full_dependson = val
 
     def __make_part_env(self):
 
@@ -984,7 +982,7 @@ class part(pnode.pnode):
         def __keep_going(self, exc_type, exc_value, tb):
             '''
             This method is called on exit when the context object has been constructed
-            with keep_going paramter set to True.
+            with keep_going parameter set to True.
             '''
             type(self).__exit__(self, exc_type, exc_value, tb)
             # Suppress all but LoadStoredError exceptions
@@ -1008,7 +1006,7 @@ class part(pnode.pnode):
             # print "promotion state from cache to file"
             try:
                 glb.pnodes.Create(part, **self._cache['init_state'])
-            except BaseException:
+            except Exception:
                 pass
 
         if self.LoadState < glb.load_file:
@@ -1079,7 +1077,9 @@ class part(pnode.pnode):
 
             # for each section we want to build a ${PART_ALIAS}.${PART_SECTION}.exports.jsn
             # it has to be built off of the "default" environment
+            #print("Part",self.Env,self.Env.get_csig())
             for section in sections:
+                #print("Section",section.Env,section.Env.get_csig())
                 # get the top level targets as we want to map these to the component by default
                 [section._map_target(t) for t in section.TopLevelTargets()]
                 # Add some default values to the export table
@@ -1090,9 +1090,9 @@ class part(pnode.pnode):
                 # map targets with a depends on the imports, so they are mapped
                 # in the environment before the target tries to build
                 # ideally I would like to avoid this, but this allows everything to move forward
-                # imporvement that we can make on this are:
+                # improvement that we can make on this are:
                 # 1) have a sec.bottom_level_targets to reduce the set we add to
-                # 2) have a way to force resolution of a node being build/uptodate given
+                # 2) have a way to force resolution of a node being build/up-to-date given
                 #    There are nodes that are dynamically resolved in the task-master logic
                 for target in section.Targets:
                     # if the target is not the import file and not an
@@ -1388,7 +1388,7 @@ class part(pnode.pnode):
         try:
             vcs_obj = self.__vcs if self.__vcs else self.__root.__vcs
             info.vcs_cache_filename = vcs_obj._cache_filename
-        except BaseException:
+        except Exception:
             pass
         info.BuildTargets = self.BuildTargets
         return info
@@ -1418,14 +1418,14 @@ class part(pnode.pnode):
         if self.Version == '0.0.0':
             self.Version = version.version(info.Version)
 
-        self.__platform_match = info.PlatformMatch  # should be hanlded by _setup_
+        self.__platform_match = info.PlatformMatch  # should be handled by _setup_
         self.__config_match = info.ConfigMatch
         self.__package_group = info.PackageGroup  # should be handled by _setup_
         self.__mode = info.Mode  # ?? # should be handled by _setup_
 
         for i in info.SubPartIDs:
             self.__subparts[i] = glb.pnodes.GetPNode(i)
-        self.__parent = info.Parent  # should be hanlded by _setup_
+        self.__parent = info.Parent  # should be handled by _setup_
         # how to deal with this???
         # need to double check logic for this when full new formats section are working
         self.__sections = info.SectionIDs

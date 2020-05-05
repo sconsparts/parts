@@ -76,7 +76,7 @@ def get_tools(env, tlset):
                 # see if this is a tool that is loadable
                 try:
                     SCons.Tool.Tool(tool, toolpath=__tools_dirs)
-                except BaseException:
+                except Exception:
                     api.output.error_msg("Failed to load Unknown ToolChain or Tool:", tool, show_stack=False)
                 else:
                     new_list.extend([(tool, {}, configured)])

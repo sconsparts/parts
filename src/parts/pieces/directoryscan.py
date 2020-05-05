@@ -237,7 +237,7 @@ def ScanDirectory(env, default_dir, defaults=True, callbacks=[], extra_scanner=N
 
     # this generates the name of the side effect jsn file that stores state about what this scanned
     # having this data may not prove useful beyond debugging. however the file defines a known
-    # pathway for everythign to scan correctly on incremental builds. This is done via having
+    # pathway for everything to scan correctly on incremental builds. This is done via having
     # a set of state files that map imported and exported builder between components. This allows
     # the task logic to find and call the scanner to define nodes and or environment values to allow
     # the scanners and builder to work correctly when values are subst()
@@ -252,7 +252,8 @@ def ScanDirectory(env, default_dir, defaults=True, callbacks=[], extra_scanner=N
     # that the dyn.import.jsn need to be generated for this file
     # env._map_dyn_imports_()
     # map this file to the dyn.exports.jsn file
-    env._map_dyn_export_(state_file_name)
+    export_file = env._map_dyn_export_(state_file_name)
+    env["DYN_EXPORT_FILE"] = export_file[0]
 
     extras = dict(
         use_scan_defaults=use_scan_defaults,

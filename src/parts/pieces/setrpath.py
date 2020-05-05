@@ -35,7 +35,7 @@ def _is_elf(node):
         text = subprocess.check_output(['file', node.abspath]).decode()
         if " ELF " in text:
             return True
-    except BaseException:
+    except Exception:
         pass
     return False
 
