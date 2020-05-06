@@ -48,7 +48,7 @@ api.register.add_builder('__AddXmlHeader__', SCons.Script.Builder(
 
 
 def AddXmlHeader(env, target, source, sub_dir='.', **kw):
-    if sub_dir is not '.':
+    if sub_dir != '.':
         tmp_target = os.path.join(target, sub_dir)
     else:
         tmp_target = target

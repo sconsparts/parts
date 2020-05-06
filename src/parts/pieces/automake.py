@@ -15,7 +15,7 @@ from SCons.Script.SConscript import SConsEnvironment
 
 
 def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="configure", prefix=None, configure_args=[],
-             auto_configure_args=True, configure_post_actions=None, targets="all", install_targets="install", top_level=True, 
+             auto_configure_args=True, configure_post_actions=None, targets="all", install_targets="install", top_level=True,
              copy_src=True, copy_top=False, auto_scanner={}, copy_scm=True, **kw):
     '''
     auto make general logic
@@ -126,7 +126,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
             auto_conf_buildfile += [checkout_path.File(node.ID[prefix_len:-3]) for node in auto_conf_pattern.files()]
 
     env["CONFIGURE_ARGS"] = configure_args
-    
+
     env['_ABSCPPINCFLAGS'] = '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)'
     env['_ABSLIBDIRFLAGS'] = '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)'
     if auto_configure_args:
@@ -152,7 +152,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         # as this is probally out of date ( contains bad files to scan)
         SCons.Defaults.Delete("$AUTO_MAKE_DESTDIR"),
     ]
-    scm_sources=[]
+    scm_sources = []
     if copy_src:
         # need to this on how we can deal with the copy and remove the copied files
         # or do we just deal with possible bugs in some 3rd party builds???
@@ -195,9 +195,9 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                     source=[auto_conf_pattern, auto_make_pattern],
                     target=build_dir
                 )
-                
+
                 if copy_scm:
-                    git_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", includes=["*.git/*"],excludes=[".git/index"])
+                    git_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", includes=["*.git/*"], excludes=[".git/index"])
                     # need to treat ./git/index differently as it state changes and can cause false rebuilds
                     if git_files.files():
                         git_index = env.File("${CHECK_OUT_DIR}/.git/index")
@@ -206,7 +206,6 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                             target=build_dir
                         )
                         #env.AddPostAction(scm_sources[-1], env.Action(SCons.Defaults.Copy("$BUILD_DIR/build/.git/index",git_index.ID)))
-                    
 
                 # copy source files
                 files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=["*.ac", "*.am", "*.git/*"])
@@ -246,7 +245,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
             # this should be the default.. but might have negative side effects
             "autom4te.cache/*",
             "config/*"
-        ]
+        ]+env.get("IGNORE_FILES", [])
         sources = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=ignore_files).files()
 
     configure_cmds.append(

@@ -99,7 +99,8 @@ class svn(base):
                     out_dir), "Cleaning up checkout area for {0}".format(out_dir))] + self.CheckOutAction(out_dir)
             else:
                 api.platforms.output.error_msg(
-                    'Directory "{0}" already exists with no .svn directory. Manually remove directory or update with --vcs-retry or --vcs-clean'.format(out_dir),
+                    'Directory "{0}" already exists with no .svn directory. Manually remove directory or update with --scm-retry or --scm-clean'.format(
+                        out_dir),
                     show_stack=False)
         else:
             strval = '%s switch $SVN_FLAGS %s%s "%s"' % ('svn', update_path, self.Revision, out_dir)
@@ -165,7 +166,7 @@ class svn(base):
 
         returns None if it passes, returns a string to possible print tell why it failed
         '''
-        api.output.verbose_msg(["vcs_update", "vcs_svn"], " Using vcs-logic: check.")
+        api.output.verbose_msg(["vcs_update", "vcs_svn"], " Using scm-logic: check.")
         # test for existence
         tmp = self.do_exist_logic()
         if tmp:

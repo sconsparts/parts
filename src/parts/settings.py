@@ -7,6 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 import copy
 import os
+from pathlib import Path
 import sys
 
 import parts.api as api
@@ -418,7 +419,7 @@ class Settings(object):
         return self.Config_Set.Configuration(default_ver_func, post_process_func)
 
     def __apply_tools_and_config(self, env, pre=[], post=[]):
-         # apply tool chain
+        # apply tool chain
         env.ToolChain(pre + env['toolchain'] + post)
         # apply the configuration for the tool
         env.Configuration()
@@ -662,6 +663,7 @@ class Settings(object):
 
         # some general values we need to setup on any given system
         env['PART_USER'] = common.GetUserName(env)
+        env['PART_USER_DIR'] = Path.home()
         env['RPATH'] = []  # double check this case, linker tools may have this covered now.
         env["ABSDir"] = lambda pathlist: [env.Dir(p).abspath for p in pathlist]
         # some setup we want in the "shell" Environment
@@ -672,8 +674,9 @@ class Settings(object):
             # add certain paths for windows, that have been missing.
             env.AppendENVPath('PATH', SCons.Platform.win32.get_system_root(), delete_existing=1)
             env.AppendENVPath('PATH', SCons.Platform.win32.get_system_root() + '\\system32', delete_existing=1)
+            env['ENV']['HOME'] = env["PART_USER_DIR"]
+            env['ENV']['HOMEPATH'] = env['PART_USER_DIR']
             env['ENV']['USERNAME'] = env['PART_USER']
-
         elif env['HOST_PLATFORM'] == 'posix':
             if 'LD_LIBRARY_PATH' in os.environ:
                 env['ENV']['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']

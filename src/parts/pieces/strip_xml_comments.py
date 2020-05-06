@@ -95,7 +95,7 @@ api.register.add_builder('__StripXMLComments__', SCons.Script.Builder(
 
 
 def StripXMLComments(env, target, source, sub_dir='.', **kw):
-    if sub_dir is not '.':
+    if sub_dir != '.':
         tmp_target = os.path.join(target, sub_dir)
     else:
         tmp_target = target

@@ -86,9 +86,10 @@ class base(object):
         '_pobj',  # Default value is None
         '_env',  # Default value is None
         '_full_path',
+        '_use_cache',
     ]
 
-    def __init__(self, repository, server=None):
+    def __init__(self, repository, server=None, use_cache=None):
         '''Constructor for the vcs object
         @param self The object pointer
         @param repository The location under in the server to find get the data files
@@ -101,6 +102,31 @@ class base(object):
         self._pobj = None
         self._env = None
         self._full_path = None
+        self._use_cache = use_cache
+
+    @property
+    def canMirror(self) -> bool:
+        '''
+        Returns True if we can make a mirror locally on disk
+        '''
+        return False
+
+    @property
+    def hasMirror(self) -> bool:
+        '''
+        Returns true if there is a mirror found
+        '''
+        return False
+
+    @property
+    def useCache(self) -> bool:
+        '''
+        Returns true if there is a mirror found
+        '''
+        if self._use_cache is None:
+            return self._env.subst("$USE_SCM_CACHE", False)
+        else:
+            return self._use_cache
 
     @property
     def Server(self):
@@ -213,7 +239,7 @@ class base(object):
             ret_val = True
         elif update == 'auto':
             # do smart logic stuff
-            # get the vcs-logic value
+            # get the scm-logic value
 
             logic_type = self._env.GetOption('vcs_logic')
             api.output.verbose_msg('vcs_update', ' doing smart logic of "%s"' % logic_type)
@@ -347,8 +373,39 @@ class base(object):
         '''
         return None
 
-    def UpdateOnDisk(self):
-        ''' This function does the update logic on the disk'''
+    def UpdateOnDisk(self) -> int:
+        '''
+        This function does the update logic on the disk.
+        The function is large so prevent copy and pasting issues in different
+        objects.
+        '''
+        ##############################################
+        # start with mirror
+        #############################################
+        # if we can mirror and we should use the cache
+        ret = False
+        if self.canMirror and self.useCache:
+            # create the mirror if it does not exist
+            if not self.hasMirror:
+                ret = self.CreateMirror()
+            else:
+                ret = self.UpdateMirror()
+
+        # Something went wrong ( probally does not exists)
+        if ret and self._env.GetOption('vcs_retry') == True:
+            # we have retry on... we we will give it another try
+            # as it could be bad disk state or network glitch
+            api.output.print_msg("CreateMirror action failed, restoring clean state.")
+            api.output.print_msg('Deleting directory: {}'.format(self.MirrorPath))
+            try:
+                removeall(self.MirrorPath)
+            except OSError as e:
+                api.output.error_msg("Failed to remove directory: {0}".format(e), show_stack=False, exit=False)
+                raise
+            ret = self.CreateMirror()
+            if ret:
+                api.output.error_msg("CreateMirror action failed again for {0}. Stopping build!".format(
+                    self.FullPath), show_stack=False, exit=False)
 
         if self.PartFileExists and self.CheckOutDirExists:
             try:
@@ -361,7 +418,7 @@ class base(object):
                     self._pobj.Alias), show_stack=False, exit=False)
                 traceback.print_exc()
                 raise
-            if ret and self._env.GetOption('vcs_retry') == True:
+            if ret and ret != 10 and self._env.GetOption('vcs_retry') == True:
                 astr = "Update"
         else:
             try:
@@ -374,7 +431,7 @@ class base(object):
             if ret and self._env.GetOption('vcs_retry') == True:
                 astr = "Checkout"
 
-        if ret and self._env.GetOption('vcs_retry') == True:
+        if ret and ret != 10 and self._env.GetOption('vcs_retry') == True:
             api.output.print_msg("{0} action failed, restoring clean state for {1}.".format(astr, self._pobj.Alias))
             api.output.print_msg('Deleting directory: %s' % self.CheckOutDir.abspath)
             try:
@@ -402,6 +459,18 @@ class base(object):
         '''
         pass
 
+    def CreateMirrorAction(self):
+        '''
+        Given we can make a mirror. This function will return the action to create the mirror
+        '''
+        return None
+
+    def UpdateMirrorAction(self):
+        '''
+        Given we have a mirror. This function will return the action to update the mirror
+        '''
+        return None
+
     def UpdateAction(self, out_dir):
         '''
         this is what would be called for any updating of the location
@@ -426,6 +495,14 @@ class base(object):
         '''
         return None
 
+    def CreateMirror(self):
+        action = self.CreateMirrorAction()
+        return self._env.Execute(action)
+
+    def UpdateMirror(self):
+        action = self.UpdateMirrorAction()
+        return self._env.Execute(action)
+
     def Update(self):
         ''' This does the check update logic for a given tool
 
@@ -433,6 +510,8 @@ class base(object):
         '''
 
         action = self.UpdateAction(self.CheckOutDir.abspath)
+        if action == 10:  # needs to be cleaned first
+            return 10
         return self._env.Execute(action)
 
     def CheckOut(self):
@@ -523,3 +602,6 @@ api.register.add_bool_variable('UPDATE_ALL', False, 'Controls if Parts will upda
 api.register.add_variable('CHECK_OUT_ROOT', '#_vcs', 'Root directory to place checked out data')
 api.register.add_variable('CHECK_OUT_DIR', '$VCS_DIR', 'Full path used for any given checked out item')
 api.register.add_variable('VCS_DIR', '$VCS.CHECKOUT_DIR', '')
+
+api.register.add_variable('SCM_CACHE_ROOT_DIR', '$PART_USER_DIR/.cache/parts/scm', '')
+api.register.add_bool_variable('USE_SCM_CACHE', True, '')

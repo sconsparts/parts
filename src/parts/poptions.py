@@ -386,7 +386,7 @@ SCons.Script.AddOption("--ccopy", '--ccopy-logic', '--copy-logic',
                        action='store',
                        help='Control how Parts copy logic will work must be hard-soft-copy,soft-hard-copy, soft-copy, hard-copy, copy')
 
-SCons.Script.AddOption('--vcs-update', '--update',
+SCons.Script.AddOption('--scm-update', '--vcs-update', '--update',
                        dest='update',
                        default='auto',
                        nargs='?',
@@ -395,7 +395,7 @@ SCons.Script.AddOption('--vcs-update', '--update',
                        action='callback',
                        help='Controls if Parts should update the Vcs object, and which Parts to update.')
 
-SCons.Script.AddOption("--enable-vcs-clean", "--vcs-clean",
+SCons.Script.AddOption("--enable-scm-clean", "--scm-clean", "--enable-vcs-clean", "--vcs-clean",
                        dest='vcs_clean',
                        default=False,
                        nargs='?',
@@ -405,6 +405,8 @@ SCons.Script.AddOption("--enable-vcs-clean", "--vcs-clean",
                        help='Controls if VCS update should ensure a clean, unmodifed, factory defaults update.')
 
 SCons.Script.AddOption(
+    "--enable-scm-retry",
+    "--scm-retry",
     "--enable-vcs-retry",
     "--vcs-retry",
     dest='vcs_retry',
@@ -421,9 +423,10 @@ SCons.Script.AddOption(
         'vcs_retry'),
     type='string',
     action='callback',
-    help='Controls if an failure with a VCS update or checkout is allow to retry the update by removing the existing code')
+    help='Controls if an failure with a SCM update or checkout is allow to retry the update by removing the existing code')
 
 SCons.Script.AddOption(
+    "--scm-logic",
     "--vcs-logic",
     dest='vcs_logic',
     default='check',
@@ -435,15 +438,15 @@ SCons.Script.AddOption(
         'check',
         'force'],
     action='store',
-    help='Control logic of how Parts will automatically do vcs up date checks. Values must be none, exists, check, force')
+    help='Control logic of how Parts will automatically do SCM up date checks. Values must be none, exists, check, force')
 
-SCons.Script.AddOption("--vcs-job", '--vcsj', '--vj',
+SCons.Script.AddOption("--scm-job", '--scmj', '--sj', "--vcs-job", '--vcsj', '--vj',
                        dest='vcs_jobs',
                        default=0,
                        nargs=1,
                        type='int',
                        action='store',
-                       help='Level of concurrent VCS checkouts/updates that can happen at once. Defaults to -j value if not set')
+                       help='Level of concurrent SCM checkouts/updates that can happen at once. Defaults to -j value if not set')
 
 SCons.Script.AddOption("--disable-section-suppression",
                        dest="section_suppression",
@@ -468,7 +471,7 @@ SCons.Script.AddOption("--cfg-file", "--config-file",
                        help='Configuration file used to store common settings')
 
 # policy values
-SCons.Script.AddOption("--vcs-policy",
+SCons.Script.AddOption("--scm-policy", "--vcs-policy",
                        dest='vcs_policy',
                        default='message-update',
                        nargs=1,
@@ -476,7 +479,7 @@ SCons.Script.AddOption("--vcs-policy",
                        choices=['warning', 'error', 'message-update', 'warning-update',
                                 'update', 'checkout-warning', 'checkout-error'],
                        action='store',
-                       help='Policy in how Parts should react if the automatic vcs check find that it is out of date.\
+                       help='Policy in how Parts should react if the automatic scm check find that it is out of date.\
  The policy values can be warning, error, message_update, warning-update, update, checkout-warning, checkout-error')
 
 

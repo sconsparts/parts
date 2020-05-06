@@ -651,11 +651,11 @@ Use -H or --help-options for a list of scons options
 
 
 api.register.add_bool_variable(
-    'use_env', False, 'Controls if the shell enviroment will be used instead of values setup by SCons, and Parts')
+    'use_env', False, 'Controls if the shell environment will be used instead of values setup by SCons, and Parts')
 api.register.add_bool_variable('duplicate_build', False, 'Controls if the src files are copied to the build area for building')
 api.register.add_list_variable('mode', [], 'Values used to control different build mode for a given part')
 
-api.register.add_variable('ALIAS_SEPARATOR', '::', 'seperator used to seperate namespace concepts from general alias value')
+api.register.add_variable('ALIAS_SEPARATOR', '::', 'seperator used to separate namespace concepts from general alias value')
 
 api.register.add_variable('PROGRESS_STR', ['scons: Evaluating |\r',
                                            'scons: Evaluating /\r',

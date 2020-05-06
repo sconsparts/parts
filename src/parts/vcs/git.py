@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import os
+from pathlib import Path
 import re
 
 import parts.api as api
@@ -39,7 +40,7 @@ class git(base):
     ]
     gitpath = None  # the path to the git program to run
 
-    def __init__(self, repository, server=None, protocol=None, branch=None, tag=None, revision=None, patchfile=None, **kw):
+    def __init__(self, repository, server=None, protocol=None, branch=None, tag=None, revision=None, patchfile=None, use_cache=None, **kw):
         '''Constructor call for the GIT object
         @param repository The repository or path from server under the server to get our data from
         @param server The server to connect to
@@ -52,6 +53,7 @@ class git(base):
         self._completed = None
         self._protocol = protocol
         self._patchfile = patchfile
+
         if repository.endswith('.git'):
             repository = repository[:-4]
         if server and server.endswith('/'):
@@ -69,6 +71,25 @@ class git(base):
             self.__branch = tag
 
         super(git, self).__init__(repository, server)
+
+    @base.canMirror.getter
+    def canMirror(self) -> bool:
+        '''
+        Returns True if we can make a mirror locally on disk
+        '''
+        return True
+
+    @base.hasMirror.getter
+    def hasMirror(self) -> bool:
+        '''
+        Returns true if there is a mirror found
+        '''
+        cache_dir = self.MirrorPath
+        return cache_dir.exists()
+
+    @property
+    def MirrorPath(self) -> str:
+        return Path(self._env.subst("$SCM_GIT_CACHE_DIR")) / self.Server / self.Repository
 
     def _branch_changed(self, data):
         return data['branch'] != "{0}...origin/{0}".format(self.__branch) and self.__branch not in data['tags']
@@ -102,6 +123,33 @@ class git(base):
             ret = ret[:-1]
         return ret
 
+    def CreateMirrorAction(self):
+        '''
+        Returns the action to create a mirror
+        '''
+        git_out_path = self.MirrorPath
+        clone_path = self.FullPath
+
+        strval = '{0} clone --mirror --progress {1} "{2}"'.format(git.gitpath, clone_path, git_out_path)
+        cmd = '"{0}" clone --mirror --progress {1} "{2}"'.format(git.gitpath, clone_path, git_out_path)
+        ret = [self._env.Action(cmd, strval)]
+
+        return ret
+
+    def UpdateMirrorAction(self):
+        '''
+        Update an exsting mirror
+        '''
+
+        git_out_path = self.MirrorPath
+        clone_path = self.FullPath
+
+        strval = 'cd {mirror} && {0} fetch --force'.format(git.gitpath, mirror=self.MirrorPath)
+        cmd = 'cd {mirror} && "{0}" fetch --force'.format(git.gitpath, mirror=self.MirrorPath)
+        ret = [self._env.Action(cmd, strval)]
+
+        return ret
+
     def UpdateAction(self, out_dir):
         '''
         Returns the update Action for GIT
@@ -112,15 +160,30 @@ class git(base):
 
         # if the server is different we need to relocate
         update_path = self.FullPath
+        use_mirror = self.useCache
 
         # change repo
-        cmd1 = 'cd {0} && "{1}" remote set-url origin {origin}'.format(out_dir, git.gitpath, origin=update_path)
-        strval1 = 'cd {0} && {1} remote set-url origin {origin}'.format(out_dir, 'git', origin=update_path)
-        origin_change_action = [
-            self._env.Action(cmd1, strval1)
-        ]
+        if use_mirror:
+            cmd1 = 'cd {0} && "{1}" remote set-url origin {origin}'.format(out_dir, git.gitpath, origin=self.MirrorPath)
+            strval1 = 'cd {0} && {1} remote set-url origin {origin}'.format(out_dir, 'git', origin=self.MirrorPath)
+            origin_change_action = [
+                self._env.Action(cmd1, strval1)
+            ]
+            # set actions to push to original repo
+            # change repo
+            cmd1 = 'cd {0} && "{1}" remote set-url --push origin {origin}'.format(out_dir, git.gitpath, origin=self.FullPath)
+            strval1 = 'cd {0} && {1} remote set-url --push origin {origin}'.format(out_dir, git.gitpath, origin=self.FullPath)
+            origin_change_action += [
+                self._env.Action(cmd1, strval1)
+            ]
+        else:
+            cmd1 = 'cd {0} && "{1}" remote set-url origin {origin}'.format(out_dir, git.gitpath, origin=update_path)
+            strval1 = 'cd {0} && {1} remote set-url origin {origin}'.format(out_dir, 'git', origin=update_path)
+            origin_change_action = [
+                self._env.Action(cmd1, strval1)
+            ]
 
-        # clean actions.. use if --vcs-clean is set
+        # clean actions.. use if --scm-clean is set
         cmd1 = 'cd {0} && "{1}" clean -dfx --force'.format(out_dir, git.gitpath)
         strval1 = 'cd {0} && {1} clean -dfx --force'.format(out_dir, 'git')
         clean_action = [
@@ -159,7 +222,7 @@ class git(base):
         do_clean = self._env.GetOption('vcs_clean')
         do_retry = self._env.GetOption('vcs_retry')
         data = self.get_git_data()
-        
+
         # do we have data?
         if data is None:
             # we have some bad state
@@ -176,13 +239,13 @@ class git(base):
                 # if it they are not set we want to say something is up.. give me the power to fix it, or do something about it
                 api.output.error_msg(
                     'Directory "{0}" already exists with no .git directory.\n Manually remove directory or\n'
-                    ' update with --vcs-retry or --vcs-clean'.format(out_dir),
+                    ' update with -scm-retry or --scm-clean'.format(out_dir),
                     show_stack=False)
         else:
             if data['modified'] and not do_clean:
                 # check that we don't have modification locally. if we do complain to be safe
                 api.output.error_msg(
-                    'Local modification found in "{0}".\n Manually commit and push changes or\n update with --vcs-clean'.format(
+                    'Local modification found in "{0}".\n Manually commit and push changes or\n update with --scm-clean'.format(
                         out_dir),
                     show_stack=False
                 )
@@ -190,9 +253,11 @@ class git(base):
                 # check that we don't have untracked files locally. if we do complain to be safe.
                 api.output.error_msg(
                     'Untracked files found in "{0}".\n Manually commit and push changes\n'
-                    ' or set variable GIT_IGNORE_UNTRACKED to True\n or update with --vcs-clean'.format(
+                    ' or set variable GIT_IGNORE_UNTRACKED to True\n or update with --scm-clean'.format(
                         out_dir),
-                    show_stack=False)
+                    show_stack=False,
+                    exit=False)
+                return 10  # for needing to clean
 
             server_changed = self._server_changed(data)
             # if branch or tag changed
@@ -206,9 +271,9 @@ class git(base):
                 prefix = ''
             # hard reset_action
             cmd1 = 'cd {0} && "{1}" reset ${{GIT_RESET_ARGS}} --hard {prefix}{origin}'.format(
-                    out_dir, git.gitpath, origin=branch, prefix=prefix)
+                out_dir, git.gitpath, origin=branch, prefix=prefix)
             strval1 = 'cd {0} && {1} reset ${{GIT_RESET_ARGS}} --hard {prefix}{origin}'.format(
-                    out_dir, 'git', origin=branch, prefix=prefix)
+                out_dir, 'git', origin=branch, prefix=prefix)
             hard_reset_action = [
                 self._env.Action(cmd1, strval1)
             ]
@@ -223,9 +288,10 @@ class git(base):
                 if self.is_modified() and not do_clean:
                     api.output.error_msg(
                         'Cannot change remote origin. Local modification found in "{0}".\n'
-                        ' Manually commit and push changes or\n update with --vcs-clean'.format(
+                        ' Manually commit and push changes or\n update with --scm-clean'.format(
                             out_dir),
-                        show_stack=False)
+                        show_stack=False, exit=False)
+                    return 10  # for needing to clean
                 # change origin
                 ret += origin_change_action
                 # do fetch to get data
@@ -243,7 +309,7 @@ class git(base):
                 # do fetch to get data
                 ret += fetch_action
                 # do the checkout
-                ret += checkout_action                
+                ret += checkout_action
             elif not on_tag:
                 # branch did not change
                 if not do_clean:
@@ -278,7 +344,11 @@ class git(base):
 
         # the initial clone
         git_out_path = out_dir.replace('\\', '/')
-        clone_path = self.FullPath
+        use_mirror = self.useCache
+        if use_mirror:
+            clone_path = self.MirrorPath
+        else:
+            clone_path = self.FullPath
 
         if self.__branch:
             branch = '-b {}'.format(self.__branch)
@@ -290,16 +360,25 @@ class git(base):
             branch = '-b {}'.format(self._env["GIT_DEFAULT_BRANCH"])
 
         strval = '{0} clone ${{GIT_CLONE_ARGS}} --progress {branch} {1} "{2}"'.format(
-                git.gitpath, clone_path, git_out_path, branch=branch)
+            git.gitpath, clone_path, git_out_path, branch=branch)
         cmd = '"{0}" clone ${{GIT_CLONE_ARGS}} --progress {branch} {1} "{2}"'.format(
-                git.gitpath, clone_path, git_out_path, branch=branch)
+            git.gitpath, clone_path, git_out_path, branch=branch)
         ret = [self._env.Action(cmd, strval)]
 
         # if this is a revision we want to checkout that revision
         if self.__revision:
             cmd = 'cd {0} && "{1}" checkout ${{GIT_CHECKOUT_ARGS}} {2}'.format(out_dir, git.gitpath, self.__revision)
-            strval = 'cd {0} && {1} checkout ${{GIT_CHECKOUT_ARGS}} {2}'.format(out_dir, 'git', self.__revision)
+            strval = 'cd {0} && {1} checkout ${{GIT_CHECKOUT_ARGS}} {2}'.format(out_dir, git.gitpath, self.__revision)
             ret += [self._env.Action(cmd, strval)]
+
+        if use_mirror:
+            # set actions to push to original repo
+            # change repo
+            cmd1 = 'cd {0} && "{1}" remote set-url --push origin {origin}'.format(out_dir, git.gitpath, origin=self.FullPath)
+            strval1 = 'cd {0} && {1} remote set-url --push origin {origin}'.format(out_dir, git.gitpath, origin=self.FullPath)
+            ret += [
+                self._env.Action(cmd1, strval1)
+            ]
 
         # have patch file .. apply it
         if self._patchfile:
@@ -355,8 +434,9 @@ class git(base):
 
         returns None if it passes, returns a string to possible print tell why it failed
         '''
+
         failed = False
-        api.output.verbose_msg(["vcs_update", "vcs_git"], " Using vcs-logic: check.")
+        api.output.verbose_msg(["vcs_update", "vcs_git"], " Using scm-logic: check.")
         # test for existence
         tmp = self.do_exist_logic()
         if tmp:
@@ -639,6 +719,7 @@ def GetGitData(env, checkoutdir=None, patched=False):
 
 
 # add configuration variable needed for part
+api.register.add_variable('SCM_GIT_CACHE_DIR', '$SCM_CACHE_ROOT_DIR/git', '')
 api.register.add_variable('GIT_SERVER', '', '')
 api.register.add_variable('GIT_USER', '$PART_USER', '')
 api.register.add_variable('VCS_GIT_DIR', '${CHECK_OUT_ROOT}/${PART_ALIAS}', '')
