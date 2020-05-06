@@ -4,7 +4,7 @@ time statistics are gathered for all commands, even for those ending in some kin
 exception. We are also adding per-thread logging that could be enabled or disabled via
 commandline option.
 '''
-from __future__ import absolute_import, division, print_function
+
 
 import datetime
 import errno

@@ -1,7 +1,7 @@
 #
 # $Id: doxygen.py 23243 2008-05-30 15:15:40Z eleskine $
 
-from __future__ import absolute_import, division, print_function
+
 
 import fnmatch
 import os

@@ -2,7 +2,7 @@
 # Given that the Python uses C file handling and for historical reason MS has not updated this API to correctly
 # open file in a shared moded as windows wants it, but instead a locked mode, the api calls to hard links and symlink
 # tend to fail with call to delete or rename on windows. A simple ( well not so simple) to call win32 API's corrects this problem
-from __future__ import absolute_import, division, print_function
+
 
 import ctypes
 import os

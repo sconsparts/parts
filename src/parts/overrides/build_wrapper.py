@@ -8,7 +8,7 @@
 
 # I could try to turn the key into a string however i was unsure of speed impact..
 # deal with that latter
-from __future__ import absolute_import, division, print_function
+
 
 import os
 

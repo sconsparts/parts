@@ -2,7 +2,7 @@
 version and version_range implementation to make life easier when dealing with
 version strings.
 '''
-from __future__ import absolute_import, division, print_function
+
 
 import re
 from builtins import map, range

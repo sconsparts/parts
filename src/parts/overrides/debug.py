@@ -1,7 +1,7 @@
 '''
 Module contains overrides for SCons.Debug module
 '''
-from __future__ import absolute_import, division, print_function
+
 
 import weakref
 

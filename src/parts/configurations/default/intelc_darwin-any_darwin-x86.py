@@ -1,7 +1,7 @@
 ######################################
 # Intel compiler configurations default-darwin
 ######################################
-from __future__ import absolute_import, division, print_function
+
 
 from intelc_darwin import config
 from parts.config import *

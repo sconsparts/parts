@@ -5,7 +5,7 @@ obscure exception - it's not clear why SCons wanted to hide this statistics in s
 To detect if SCons has already printed the info we also monkey-patch
 SCons.Debug.dump_caller_counts which is only called by main() right before printint the stats
 '''
-from __future__ import absolute_import, division, print_function
+
 
 import atexit
 import time

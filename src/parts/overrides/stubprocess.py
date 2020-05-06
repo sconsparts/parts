@@ -14,7 +14,7 @@ Popen("/foo/bar") -> fork -> execve(["python", __file__]) -> execve("/foo/bar")
 
 All parameters needed for I/O redirection are passed in pickle via temporary file.
 '''
-from __future__ import absolute_import, division, print_function
+
 
 import sys
 from builtins import range

@@ -1,4 +1,4 @@
-from __future__ import absolute_import, division, print_function
+
 
 import os
 import re
@@ -604,4 +604,4 @@ api.register.add_variable('CHECK_OUT_DIR', '$VCS_DIR', 'Full path used for any g
 api.register.add_variable('VCS_DIR', '$VCS.CHECKOUT_DIR', '')
 
 api.register.add_variable('SCM_CACHE_ROOT_DIR', '$PART_USER_DIR/.cache/parts/scm', '')
-api.register.add_bool_variable('USE_SCM_CACHE', True, '')
+api.register.add_bool_variable('USE_SCM_CACHE', False, '')

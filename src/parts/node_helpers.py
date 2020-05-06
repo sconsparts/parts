@@ -2,7 +2,7 @@
 this file provides the AbsFile wrappers. I have not moved this to pieces area
 yet as i need a way to safely add the global object to parts export statement
 '''
-from __future__ import absolute_import, division, print_function
+
 
 import ctypes
 import os

@@ -16,7 +16,7 @@ This module introduces two environment variables to control binary stripping and
         from the binary. All binaries with separate debug files will be stripped.
 
 """
-from __future__ import absolute_import, division, print_function
+
 
 import parts.api.output
 import parts.tools.Common

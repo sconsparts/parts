@@ -5,7 +5,7 @@ and SCons.Node.FS.File classes.
 
 There is also env.SymLink builder is introduced here
 '''
-from __future__ import absolute_import, division, print_function
+
 
 import ctypes
 import os

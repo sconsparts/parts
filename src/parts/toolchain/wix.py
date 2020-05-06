@@ -1,5 +1,5 @@
 # defines WiX tools chain
-from __future__ import absolute_import, division, print_function
+
 
 
 def wix_setup(env, ver):

@@ -2,7 +2,7 @@
     for all the archive builders including "tar","tar.gz","tar.bz2"
     "bz2","zip", "tgz"'''
 
-from __future__ import absolute_import, division, print_function
+
 
 import parts.common as common
 import parts.errors

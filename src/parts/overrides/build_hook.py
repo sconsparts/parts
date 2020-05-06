@@ -2,7 +2,7 @@
 
 # Scons tries to build the tree. This is basicaly giving us a call back hook
 # That would be nice to have in SCons.
-from __future__ import absolute_import, division, print_function
+
 
 import parts.glb as glb
 # this code overides scons build targets so we can do some processing before

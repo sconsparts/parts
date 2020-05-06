@@ -5,7 +5,7 @@ User should not need these much, but it can be useful. With cross platform suppo
 added some day this will not be needed external, but instead user will use env
 var defined to to tell what has been targeted as the build env.
 '''
-from __future__ import absolute_import, division, print_function
+
 
 import os
 import platform

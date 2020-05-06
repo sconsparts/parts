@@ -4,7 +4,7 @@ matching expressions. Scons just add a Glob function.. need to consider using th
 internal here instead, and then possiblely removing pattern 100%
 '''
 
-from __future__ import absolute_import, division, print_function
+
 
 import os
 

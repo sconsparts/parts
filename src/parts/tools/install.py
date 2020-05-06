@@ -3,7 +3,7 @@ this tool override is provided as a way to support the a hock we need to deal
 with libraries on linux that use symlinks. this add a hack support to unpack file
 on copy... hopefully this can be dropped soon once i get time to make a better solution
 """
-from __future__ import absolute_import, division, print_function
+
 
 import fnmatch
 import os

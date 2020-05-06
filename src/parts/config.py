@@ -3,7 +3,7 @@ This contain the base code for all configurations we define in parts, and
 some helpfunction to help dump data, or get the correct configuration data
 '''
 
-from __future__ import absolute_import, division, print_function
+
 
 import copy
 import os

@@ -1,6 +1,6 @@
 # an enhanced Command function
 # that also accepts target scanners
-from __future__ import absolute_import, division, print_function
+
 
 from pathlib import Path
 

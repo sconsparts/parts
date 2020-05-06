@@ -1,6 +1,6 @@
 # this fix allows us to share setting with the default environment better
 # this allows for better integration with SCons from the user point of view
-from __future__ import absolute_import, division, print_function
+
 
 import parts.api as api
 import parts.glb as glb

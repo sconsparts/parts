@@ -1,5 +1,5 @@
 # defines tools chain icc ( as in the Intel Compiler posix)
-from __future__ import absolute_import, division, print_function
+
 
 
 def icc_setup(env, ver):

@@ -9,7 +9,7 @@ the list seperatly, we "pre expand the values" to allow the scanner to work as e
 speed boost as we fill in the values as at this point it is not going to change. This prevents extra subst()
 processing later on the same environment for the same variable.
 '''
-from __future__ import absolute_import, division, print_function
+
 
 import _thread
 

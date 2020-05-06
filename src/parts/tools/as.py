@@ -1,6 +1,6 @@
 # Stub file to update env for ar tool
 
-from __future__ import absolute_import, division, print_function
+
 
 import parts.tools.Common
 import parts.tools.GnuCommon.binutils

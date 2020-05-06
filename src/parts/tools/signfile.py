@@ -2,7 +2,7 @@
 # default to the moment signtool on windows...
 # all other places need to be filled in
 
-from __future__ import absolute_import, division, print_function
+
 
 import os
 

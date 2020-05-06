@@ -3,7 +3,7 @@
 # encoding and you want to translate it to a different code page that might
 # be used on a users system
 
-from __future__ import absolute_import, division, print_function
+
 
 import codecs
 from builtins import map, zip

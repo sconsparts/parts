@@ -2,7 +2,7 @@
 This file is what python loads when the user say import parts
 This file will import main.py and main will do the rest of work needed
 '''
-from __future__ import absolute_import, division, print_function
+
 
 # deal with py2 and py3 import issues
 from future import standard_library

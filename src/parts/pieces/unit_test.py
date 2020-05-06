@@ -1,5 +1,5 @@
 
-from __future__ import absolute_import, division, print_function
+
 
 import os
 import stat
@@ -52,7 +52,7 @@ def unit_test_script_bf(target, source, env):
             command_env[key] = env.subst(value)
 
         command = '''#! /usr/bin/env python
-from __future__ import absolute_import, division, print_function
+
 import os
 import sys
 import subprocess

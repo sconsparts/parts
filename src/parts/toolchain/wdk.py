@@ -1,5 +1,5 @@
 # defines tools chain wdk
-from __future__ import absolute_import, division, print_function
+
 
 
 def wdk_setup(env, ver):

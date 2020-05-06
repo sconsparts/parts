@@ -3,7 +3,7 @@
 
 # it deal with the logic of different ways to setup/configure/defines
 # a set of setting used to define a Environment contect to build within
-from __future__ import absolute_import, division, print_function
+
 
 import copy
 import os
