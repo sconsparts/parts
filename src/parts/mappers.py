@@ -90,9 +90,9 @@ class mapper(object):
     name = "Base"
 
     def __init__(self):
-        #if __debug__:
-            #logInstanceCreation(self, 'parts.mappers.Base')
-        self.stackframe = None#errors.GetPartStackFrameInfo()
+        # if __debug__:
+        #logInstanceCreation(self, 'parts.mappers.Base')
+        self.stackframe = None  # errors.GetPartStackFrameInfo()
 
     def alias_missing(self, env):
         if env.get('MAPPER_BAD_ALIAS_AS_WARNING', True):
@@ -133,18 +133,18 @@ class mapper(object):
         if policy == Policy.ReportingPolicy.error:
             # because the exception thrown will not get thrown the try catch in subst()
             env.Exit(1)
-        
+
     def _guarded_call(self, target, source, env, for_signature=False):
         raise NotImplementedError
 
     def __call__(self, target, source, env, for_signature=False):
         try:
-            key=(str(self), env.get_csig()) # get the sig key
-            ret=glb.subst_cache.get(key) # do we have an item cached
+            key = (str(self), env.get_csig())  # get the sig key
+            ret = glb.subst_cache.get(key)  # do we have an item cached
             # do we have a dyn_export file
             # meaning we have some dynamic logic in a scanner
-            dyn_export = env.get("DYN_EXPORT_FILE") 
-            # if we have an export test that it is built             
+            dyn_export = env.get("DYN_EXPORT_FILE")
+            # if we have an export test that it is built
             if dyn_export:
                 is_export_built = dyn_export.isBuilt or dyn_export.isVisited
             else:
@@ -155,8 +155,8 @@ class mapper(object):
             if ret and glb.engine.BuildFilesLoaded and is_export_built:
                 return ret
             else:
-                ret=self._guarded_call(target, source, env, for_signature)
-                glb.subst_cache[key]=ret
+                ret = self._guarded_call(target, source, env, for_signature)
+                glb.subst_cache[key] = ret
             return ret
         except SystemExit:
             raise
@@ -418,6 +418,7 @@ class part_id_mapper(mapper):
             return penv.subst_list(ret)
         return penv.subst(ret)
 
+
 class part_id_export_mapper(mapper):
     ''' This class maps the part name and version range to the correct alias in
     the Default environment to the actual value stored the in default Env PART_INFO map.
@@ -442,7 +443,7 @@ class part_id_export_mapper(mapper):
     def _guarded_call(self, target, source, env, for_signature):
         thread_id = _thread.get_ident()
         spacer = "." * env_guard.depth(thread_id)
-        
+
         pobj_org = glb.engine._part_manager._from_env(env)
         sec = pobj_org.DefiningSection
         api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, 'Expanding value "{0!r}"'.format(self))
@@ -471,7 +472,7 @@ class part_id_export_mapper(mapper):
         # if
         ret = psec.Exports.get(self.part_prop, [])
         api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, 'Property {0} = {1} '.format(self.part_prop, ret))
-                
+
         return ret
 
 
@@ -1053,12 +1054,10 @@ class replace_mapper(mapper):
     def _guarded_call(self, target, source, env, for_signature):
         tmp = env.subst(self._val)
         if self._count:
-            tmp = tmp.replace(env.subst(self._old),env.subst(self._new),self._count)
+            tmp = tmp.replace(env.subst(self._old), env.subst(self._new), self._count)
         else:
-            tmp = tmp.replace(env.subst(self._old),env.subst(self._new))
+            tmp = tmp.replace(env.subst(self._old), env.subst(self._new))
         return tmp
-        
-
 
 
 api.register.add_mapper(_concat)
@@ -1081,7 +1080,6 @@ api.register.add_mapper(relpath_mapper)
 api.register.add_mapper(runpath_mapper)
 api.register.add_mapper(pkgrunpath_mapper)
 api.register.add_mapper(replace_mapper)
-
 
 
 # seems to be fixed in Scons

@@ -325,7 +325,10 @@ class log_file_writer(object):
 
 
 if sys.platform == 'win32':
-    time_func = time.clock
+    try:  # Python 3.4+
+        time_func = time.perf_counter
+    except AttributeError:  # Earlier than Python 3.
+        time_func = time.clock
 else:
     time_func = time.time
 

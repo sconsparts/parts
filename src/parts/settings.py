@@ -674,8 +674,8 @@ class Settings(object):
             # add certain paths for windows, that have been missing.
             env.AppendENVPath('PATH', SCons.Platform.win32.get_system_root(), delete_existing=1)
             env.AppendENVPath('PATH', SCons.Platform.win32.get_system_root() + '\\system32', delete_existing=1)
-            env['ENV']['HOME'] = env["PART_USER_DIR"]
-            env['ENV']['HOMEPATH'] = env['PART_USER_DIR']
+            env['ENV']['HOME'] = str(env["PART_USER_DIR"])
+            env['ENV']['HOMEPATH'] = str(env['PART_USER_DIR'])
             env['ENV']['USERNAME'] = env['PART_USER']
         elif env['HOST_PLATFORM'] == 'posix':
             if 'LD_LIBRARY_PATH' in os.environ:
