@@ -6,7 +6,7 @@ import os
 
 
 try:
-    path = re.search(r'engine path: \[\'([/\w\.\-]*)',subprocess.check_output(["scons","--version"]).decode(),re.MULTILINE).groups()[0]
+    path = re.search(r'engine path: \[\'([\\\:/\w\.\-]*)',subprocess.check_output("scons --version",shell=True).decode(),re.MULTILINE).groups()[0]
 except:
     path = None
 
