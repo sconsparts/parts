@@ -106,11 +106,17 @@ def add_files_content(env, file_contents, pkg_files, prefix, idx=-1):
                 tmp = tmp.replace(node_prefix, rpm_prefix)
             dir_tmp = '%dir {0}'.format(os.path.split(tmp)[0])
             directories.add(dir_tmp)
+
             if env.hasMetaTag(node, 'POSIX_ATTR') or env.hasMetaTag(node, 'POSIX_USER') or env.hasMetaTag(node, 'POSIX_GROUP'):
                 attr = env.MetaTagValue(node, 'POSIX_ATTR', default="-")
                 user = env.MetaTagValue(node, 'POSIX_USER', default="-")
                 group = env.MetaTagValue(node, 'POSIX_GROUP', default="-")
                 tmp = '%attr({attr},{user},{group}) {node}'.format(attr=attr, user=user, group=group, node=tmp)
+
+            if env.hasMetaTag(node, 'RPM_NODE_DIRECTIVE'):
+                directive = env.MetaTagValue(node, 'RPM_NODE_DIRECTIVE')
+                tmp = '{directive} {node}'.format(directive=directive, node=tmp)
+
             files.append(tmp)
         else:
             # this is directory node
@@ -161,7 +167,7 @@ def rpm_spec(env, target, source):
             try:
                 new_vals.append(env.subst(v))
             except Exception:
-                api.output.warning_msgf("Failed to subst() value:\n {0}\n passing orginal value instead.", v)
+                api.output.warning_msgf("Failed to subst() value:\n {0}\n passing original value instead.", v)
                 new_vals.append(v)
         rpm_vals = new_vals
 
