@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 if sys.platform != "win32":
-    class WindowsError(object):
+    class WindowsError:
         pass
 
 install = False

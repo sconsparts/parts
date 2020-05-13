@@ -4,6 +4,7 @@ import SCons.Script.SConsOptions
 import os
 import sys
 from optparse import OptionValueError
+from typing import List, Optional
 
 import parts.api as api
 import parts.color as color
@@ -63,9 +64,9 @@ def SetOptionDefault(key, value):
 
 def opt_file(option, opt, value, parser, var, argstr):
     if os.path.exists(value):
-        parser.values.__dict__[var] = os.path.abspath(value)
+        setattr(parser.values, var, os.path.abspath(value))
     else:
-        raise OptionValueError("Error: %s %s was not found was not found on disk" % (argstr, value))
+        raise OptionValueError("Error: {0} {1} was not found was not found on disk".format(argstr, value))
 
 
 def opt_target(option, opt, value, parser):
@@ -73,7 +74,7 @@ def opt_target(option, opt, value, parser):
     tmp = platform_info.target_convert(value, error=False)
     if tmp is None:
         raise OptionValueError(
-            "Error:  %s is not a valid --target_platform value\nValue must be in form of <Platform>-<Architecture>" % value)
+            "Error:  {0} is not a valid --target_platform value\nValue must be in form of <Platform>-<Architecture>".format(value))
 
     parser.values.target_platform = tmp
 
@@ -87,7 +88,7 @@ def opt_chain(option, opt, value, parser):
 
 
 def opt_list(option, opt, value, parser, var):
-    parser.values.__dict__[var] = value.split(',')
+    setattr(parser.values, var, value.split(','))
 
 
 opt_true_values = set(['y', 'yes', 'true', 't', '1', 'on', 'all'])
@@ -100,51 +101,56 @@ def opt_bool(option, opt, value, parser, var, negate=False):
     else:
         TrueValue = True
     if value is None:
-        parser.values.__dict__[var] = TrueValue
+        setattr(parser.values, var, TrueValue)
         return
     tmp = value.lower()
     if tmp in opt_true_values:
-        parser.values.__dict__[var] = TrueValue
+        setattr(parser.values, var, TrueValue)
     elif tmp in opt_false_values:
-        parser.values.__dict__[var] = not TrueValue
+        setattr(parser.values, var, not TrueValue)
     else:
-        raise OptionValueError('Invalid value for boolean option "%s" value "%s"\n Valid options are %s' %
-                               (var.replace('-', '_'), value, opt_true_values | opt_false_values))
+        raise OptionValueError(
+            'Invalid value for boolean option "{0}" value "{1}"\n Valid options are {2}'.format(
+                var.replace('-', '_'), value, opt_true_values | opt_false_values)
+        )
 
 
 def opt_bool_enum(option, opt, value, parser, var, enum, negate=False):
     if value is None:
-        parser.values.__dict__[var] = True
+        setattr(parser.values, var, True)
         return
     tmp = value.lower()
     if tmp in opt_true_values:
-        parser.values.__dict__[var] = True
+        setattr(parser.values, var, True)
     elif tmp in opt_false_values:
-        parser.values.__dict__[var] = False
+        setattr(parser.values, var, False)
     elif tmp in enum:
-        parser.values.__dict__[var] = tmp
+        setattr(parser.values, var, tmp)
     else:
-        raise OptionValueError('Invalid value for option "%s" value "%s"\n Valid options are %s' %
-                               (var.replace('-', '_'), value, set(enum) | opt_true_values | opt_false_values))
+        raise OptionValueError('Invalid value for option "{0}" value "{1}"\n Valid options are {2}'.format(
+                               var.replace('-', '_'), value, set(enum) | opt_true_values | opt_false_values))
 
 
-def opt_update(option, opt, value, parser):
+def opt_list_bool(option, opt, value: str, parser):
+    # get option value we need to set
+    dest_key: str = option.dest
     if value is None:
-        parser.values.update = True
+        setattr(parser.values, dest_key, True)
         return
-    tmp = value.split(',')
+    # split value into different values
+    tmp: List[str] = value.split(',')
     if len(tmp) > 1:
-        parser.values.update = tmp
+        setattr(parser.values, dest_key, tmp)
         return
+    # we have only one item
+    # try to convery in to a bool
     tmp2 = tmp[0].lower()
-
     if tmp2 in opt_true_values:
-        parser.values.update = True
+        setattr(parser.values, dest_key, True)
     elif tmp2 in opt_false_values:
-        parser.values.update = False
-    elif tmp2 in ['auto']:
-        parser.values.update = 'auto'
+        setattr(parser.values, dest_key, False)
     else:
+        # not a bool pass the value as is
         parser.values.update = tmp
 
 
@@ -386,24 +392,46 @@ SCons.Script.AddOption("--ccopy", '--ccopy-logic', '--copy-logic',
                        action='store',
                        help='Control how Parts copy logic will work must be hard-soft-copy,soft-hard-copy, soft-copy, hard-copy, copy')
 
-SCons.Script.AddOption('--scm-update', '--vcs-update', '--update',
-                       dest='update',
-                       default='auto',
-                       nargs='?',
-                       callback=opt_update,
-                       type='string',
-                       action='callback',
-                       help='Controls if Parts should update the Vcs object, and which Parts to update.')
+#########################################################################
+# SCM managment
 
-SCons.Script.AddOption("--enable-scm-clean", "--scm-clean", "--enable-vcs-clean", "--vcs-clean",
-                       dest='vcs_clean',
-                       default=False,
-                       nargs='?',
-                       callback=lambda option, opt, value, parser: opt_bool(option, opt, value, parser, 'vcs_clean'),
-                       type='string',
-                       action='callback',
-                       help='Controls if VCS update should ensure a clean, unmodifed, factory defaults update.')
+# update source on disk
+SCons.Script.AddOption(
+    '--scm-update', '--vcs-update', '--update',
+    dest='update',
+    default='__auto__',
+    nargs='?',
+    callback=opt_list_bool,
+    type='string',
+    action='callback',
+    help='Controls if Parts should update the Vcs object, and which Parts to update.'
+)
 
+# update mirror given the USE_SCM_CACHE is True
+SCons.Script.AddOption(
+    '--scm-update-mirror', '--update-mirror',
+    dest='update_mirror',
+    default='__auto__',
+    nargs='?',
+    callback=opt_list_bool,
+    type='string',
+    action='callback',
+    help='Controls if Parts should update the Vcs object, and which Parts to update.'
+)
+
+# allows update to make a clean state
+SCons.Script.AddOption(
+    "--enable-scm-clean", "--scm-clean", "--enable-vcs-clean", "--vcs-clean",
+    dest='vcs_clean',
+    default=False,
+    nargs='?',
+    callback=lambda option, opt, value, parser: opt_bool(option, opt, value, parser, 'vcs_clean'),
+    type='string',
+    action='callback',
+    help='Controls if VCS update should ensure a clean, unmodifed, factory defaults update.'
+)
+
+# allow retry when updating items on disl
 SCons.Script.AddOption(
     "--enable-scm-retry",
     "--scm-retry",
@@ -425,6 +453,7 @@ SCons.Script.AddOption(
     action='callback',
     help='Controls if an failure with a SCM update or checkout is allow to retry the update by removing the existing code')
 
+# type of check to do for update check on disk
 SCons.Script.AddOption(
     "--scm-logic",
     "--vcs-logic",

@@ -6,7 +6,7 @@ import parts.glb as glb
 from SCons.Debug import logInstanceCreation
 
 
-class pnode(object):
+class pnode:
     """description of class"""
     __slots__ = [
         # Some internal magic

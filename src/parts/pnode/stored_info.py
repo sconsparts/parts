@@ -4,7 +4,7 @@
 from SCons.Debug import logInstanceCreation
 
 
-class stored_info(object):
+class stored_info:
     """description of class"""
     __slots__ = []
 

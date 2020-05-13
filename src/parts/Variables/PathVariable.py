@@ -13,7 +13,7 @@ from .variable import Variable
 # a translation of a class not a tuple of values
 
 
-class PathVariable(object):
+class PathVariable:
 
     def __init__(self, name, help, default, validator=None, value=None, help_group=None):
         '''

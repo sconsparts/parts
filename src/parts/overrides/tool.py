@@ -12,7 +12,7 @@ import SCons.Tool
 from SCons.Debug import logInstanceCreation
 
 
-class Parts_Tool(object):
+class Parts_Tool:
     _cache = defaultdict(dict)
 
     def __init__(self, name, toolpath=[], **kw):

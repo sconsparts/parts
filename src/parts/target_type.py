@@ -203,7 +203,7 @@ one to see what concept, part object, and section/concept we want to process
 '''
 
 
-class target_type(object):
+class target_type:
 
     def __init__(self, target):
         if __debug__:

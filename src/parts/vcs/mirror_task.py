@@ -7,7 +7,7 @@ import SCons.Errors
 from parts.reporter import PartRuntimeError as PartRuntimeError
 
 
-class task(object):
+class task:
     '''
     This is a simple class that does nothing more than have the Vcs object update
     itself on disk. This is used to for parallel checkouts/updates.
@@ -32,7 +32,7 @@ class task(object):
         Set up any logic or to figure out if anything should execute.
         '''
         self.___orginial_part_log_name = self.__vcs._env["LOG_PART_FILE_NAME"]
-        self.__vcs._env["LOG_PART_FILE_NAME"] = "${VCS_LOG_PART_FILE_NAME}"
+        self.__vcs._env["LOG_PART_FILE_NAME"] = "${SCM_CACHE_LOG_PART_FILE_NAME}"
 
     def needs_execute(self):
         ''' reports if anything should execute'''
@@ -42,14 +42,10 @@ class task(object):
         ''' this is what we call to do the checkout'''
         try:
             try:
-                if self.__vcs.UpdateOnDisk():
+                if self.__vcs.UpdateMirrorOnDisk():
                     self.failed()
-            except PartRuntimeError as e:
+            except PartRuntimeError:
                 self.failed()
-                #buildError = SCons.Errors.convert_to_BuildError(e)
-                #buildError.node = self.__vcs.CheckOutDir
-                #buildError.exc_info = sys.exc_info()
-                #raise buildError
         except Exception:
             import traceback
             import io
@@ -60,7 +56,7 @@ class task(object):
         self.__failed = True
 
     def failed(self):
-        api.output.error_msgf("Vcs task failed for Part {0}", self.__vcs._env.get('ALIAS'), show_stack=False, exit=False)
+        api.output.error_msgf("Scm Cache task failed for Part {0}", self.__vcs._env.get('ALIAS'), show_stack=False, exit=False)
         self.__taskmaster.stop()
 
     def executed(self):
@@ -75,4 +71,4 @@ class task(object):
 
 
 # this is the logic file for per part logging we want to use when we are getting source
-api.register.add_variable('VCS_LOG_PART_FILE_NAME', 'SCM-${PART_ALIAS}.log', '')
+api.register.add_variable('SCM_CACHE_LOG_PART_FILE_NAME', 'SCM-mirror-${PART_ALIAS}.log', '')

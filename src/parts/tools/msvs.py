@@ -78,9 +78,9 @@ def _hexdigest(s):
 
 
 def xmlify(s):
-    s = string.replace(s, "&", "&amp;")  # do this first
-    s = string.replace(s, "'", "&apos;")
-    s = string.replace(s, '"', "&quot;")
+    s = s.replace("&", "&amp;")  # do this first
+    s = s.replace("'", "&apos;")
+    s = s.replace('"', "&quot;")
     return s
 
 
@@ -155,7 +155,7 @@ else:
                                      os.path.split(sys.executable)[1])
 
 
-class Config(object):
+class Config:
     pass
 
 
@@ -188,7 +188,7 @@ def makeHierarchy(sources):
     return hierarchy
 
 
-class _DSPGenerator(object):
+class _DSPGenerator:
     """ Base class for DSP generators """
 
     srcargs = [
@@ -866,7 +866,7 @@ class _GenerateV7DSP(_DSPGenerator):
             self.file.close()
 
 
-class _DSWGenerator(object):
+class _DSWGenerator:
     """ Base class for DSW generators """
 
     def __init__(self, dswfile, source, env):

@@ -124,7 +124,7 @@ def add_targets_to_INSTALLED_FILES(target, source, env):
     return target, source
 
 
-class DESTDIR_factory(object):
+class DESTDIR_factory:
     """
     a node factory, where all files will be relative to the dir supplied in the constructor.
     """

@@ -20,7 +20,7 @@ from SCons.Debug import logInstanceCreation
 from . import base
 
 
-class SectionInfo(object):
+class SectionInfo:
     __slots__ = (
         'section',
         'depend_esig_changed',

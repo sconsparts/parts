@@ -26,7 +26,7 @@ def Pattern_func(env, sub_dir='', src_dir='', includes=['*'], excludes=[], recur
 g_db = {}
 
 
-class Pattern(object):
+class Pattern:
     def __init__(self, sub_dir=None, src_dir=None, includes=['*'], excludes=[], recursive=True, env=None):
         if env is None:
             env = glb.engine.def_env
@@ -125,7 +125,7 @@ class Pattern(object):
 
 
 '''
-class Pattern(object):
+class Pattern:
 
     def __init__(self, sub_dir='', src_dir='', includes=['*'], excludes=[], recursive=True, env=None):
         if __debug__:
@@ -261,7 +261,7 @@ class Pattern(object):
 '''
 
 
-class _Pattern(object):
+class _Pattern:
     def __init__(self, env):
         if __debug__:
             logInstanceCreation(self)

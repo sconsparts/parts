@@ -12,7 +12,7 @@ from SCons.Debug import logInstanceCreation
 win32 = sys.platform == 'win32'
 
 
-class ColorTextStream(object):
+class ColorTextStream:
     '''Basically is an object that wraps a stream and process color ansi
     command codes for color
     '''

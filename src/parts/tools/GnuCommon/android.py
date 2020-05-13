@@ -16,7 +16,7 @@ from . import common
 # android scanner for Windows
 
 
-class win_scanner(object):
+class win_scanner:
 
     def __init__(self, env, arch, tool_prefix, tool):
         if __debug__:
@@ -102,7 +102,7 @@ class win_scanner(object):
 # android scanner for posix/mac
 
 
-class posix_scanner(object):
+class posix_scanner:
     if sys.platform == 'linux2':
         host = 'linux'
     elif sys.platform == 'darwin':

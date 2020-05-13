@@ -6,6 +6,7 @@ import stat
 import subprocess
 import sys
 import traceback
+from typing import List, Union, Optional
 
 import parts.api as api
 import parts.common as common
@@ -70,7 +71,7 @@ def removeall(path):
             rm_dir(fullpath)
 
 
-class base(object):
+class base:
     '''
     Base object for all VCS (version control systems) objects
 
@@ -87,6 +88,7 @@ class base(object):
         '_env',  # Default value is None
         '_full_path',
         '_use_cache',
+        '__update_src',
     ]
 
     def __init__(self, repository, server=None, use_cache=None):
@@ -103,6 +105,7 @@ class base(object):
         self._env = None
         self._full_path = None
         self._use_cache = use_cache
+        self.__update_src: Optional[bool]=None
 
     @property
     def canMirror(self) -> bool:
@@ -124,12 +127,12 @@ class base(object):
         Returns true if there is a mirror found
         '''
         if self._use_cache is None:
-            return self._env.subst("$USE_SCM_CACHE", False)
+            return self._env["USE_SCM_CACHE"]
         else:
             return self._use_cache
 
     @property
-    def Server(self):
+    def Server(self) -> str:
         '''returns the value of the server
 
         Subclasses may add to this logic as they might want to define other values to fall back on if the
@@ -139,7 +142,7 @@ class base(object):
         return self._server
 
     @property
-    def Repository(self):
+    def Repository(self) -> str:
         '''returns the value of the server
 
         Subclasses may add to this logic as they might want to define other values based on custom logic.
@@ -157,15 +160,15 @@ class base(object):
         return self._env.Dir(self.CheckOutDir).File(self._pobj.File)
 
     @property
-    def PartFileExists(self):
+    def PartFileExists(self) -> bool:
         return os.path.exists(self.PartFileName.abspath)
 
     @property
-    def CheckOutDirExists(self):
+    def CheckOutDirExists(self) -> bool:
         return os.path.exists(self.CheckOutDir.abspath)
 
     @property
-    def FullPath(self):
+    def FullPath(self) -> str:
         ''' returns the full path'''
         if not self._full_path:
             # Combine and normalize the URL
@@ -202,7 +205,7 @@ class base(object):
             CHECKOUT_DIR=''
         )
 
-    def _has_target_match(self, update_option):
+    def _has_target_match(self, update_option: Union[bool, List[str]]) -> bool:
 
         if util.isList(update_option):
             for i in update_option:
@@ -228,21 +231,64 @@ class base(object):
 
         return False
 
+    def NeedsToUpdateMirror(self) -> bool:
+        '''
+        Checks is we need to update or create the mirror
+        '''
+        # check that we can mirror the object and we set
+        # the ability for the mirror cache to be used
+        if self.canMirror and self.useCache:
+            update: Union[bool, List[str]] = self._env.GetOption('update_mirror')
+            src_update = self._env.GetOption('update')
+            # check that we have a cache directory
+            if not self.hasMirror:
+                # no cache exists so create it
+                api.output.verbose_msg(['scm.mirror', 'scm'],
+                                       'Mirror does not exist for for part: "{}"'.format(self._pobj.Alias))
+                ret = True
+            # check that we want to update the miror for this object
+            elif self._has_target_match(update) or update == True:
+                api.output.verbose_msg(['scm.mirror', 'scm'],
+                                       ' --update-mirror switch matched, update needed for: "{}"'.format(self.MirrorPath))
+                ret = True
+            elif update == False:
+                api.output.verbose_msg(['scm.mirror', 'scm'],   
+                                       ' --update-mirror switch expictly turned off')
+                ret = False
+            elif update == "__auto__" and src_update != "__auto__" and self.NeedsToUpdate():
+                # do update of mirrors by default if we are updating source given that the 
+                # source is not being updated implictly. Ie don't update mirror unless --update
+                # is used
+                ret = True
+            else:
+                api.output.verbose_msg(['scm.mirror', 'scm'],
+                                    'Scm object does not require mirror to be updated for part: "{}"'.format(self._pobj.Alias))
+                ret = False
+        else:
+            api.output.verbose_msg(['scm.mirror', 'scm'],
+                                   'Scm object {0} does not support mirroring for part: "{1}"'.format(self.__class__,self._pobj.Alias))
+            ret = False
+
+        return ret
+
     def NeedsToUpdate(self):
         '''Tell us if this Vcs object believe it need to be updated'''
-        ret_val = False
+        if self.__update_src is not None:
+            return self.__update_src
+        ret_val:bool = False
         update = self._env.GetOption('update')
-        api.output.verbose_msg('vcs_update', 'Vcs update check for part: "%s"' % self._pobj.Alias)
+        api.output.verbose_msg(['scm.update','scm'], 'Vcs update check for part: "%s"' % self._pobj.Alias)
         # do custom check
         if self.do_update_check():
-            api.output.verbose_msg('vcs_update', ' do_update_check (custom checks) requires updating')
+            api.output.verbose_msg(['scm.update','scm'], ' do_update_check (custom checks) requires updating')
             ret_val = True
-        elif update == 'auto':
+        elif update == '__auto__':
             # do smart logic stuff
             # get the scm-logic value
 
             logic_type = self._env.GetOption('vcs_logic')
-            api.output.verbose_msg('vcs_update', ' doing smart logic of "%s"' % logic_type)
+            api.output.verbose_msg(['scm.update','scm'], ' doing smart logic of "%s"' % logic_type)
+            ret:Optional[bool] = None
             if logic_type == 'exists':
                 ret = self.do_exist_logic()
             elif logic_type == 'check':
@@ -250,14 +296,13 @@ class base(object):
             elif logic_type == 'force':
                 ret = self.do_force_logic()
             elif logic_type == 'none':
-                ret = False
-                return ret
+                ret = None
             mod_msg = 'Local modification detected in "{0}".\n Add --update to force update for merge and potential loss of local changes'.format(
                 self.CheckOutDir.abspath)
             if ret:
                 # get policy for how to handle a positive response
                 pol = self._env.GetOption('vcs_policy')
-                api.output.verbose_msgf('vcs_update', "update policy is '{0}'", pol)
+                api.output.verbose_msgf(['scm.update','scm'], "update policy is '{0}'", pol)
                 if pol == 'warning':
                     ret_val = False
                     # report the warning
@@ -269,7 +314,7 @@ class base(object):
                 elif pol == 'checkout-warning':
                     ret_val = False
                     if self.do_exist_logic():
-                        api.output.verbose_msg('vcs_update', ret)
+                        api.output.verbose_msg(['scm.update','scm'], ret)
                     else:
                         # report the warning
                         api.output.warning_msg(ret, show_stack=False)
@@ -278,7 +323,7 @@ class base(object):
                 elif pol == 'checkout-error':
                     ret_val = False
                     if self.do_exist_logic():
-                        api.output.verbose_msg('vcs_update', ret)
+                        api.output.verbose_msg(['scm.update','scm'], ret)
                     else:
                         # report the error
                         api.output.error_msg(ret, show_stack=False, exit=False)
@@ -302,29 +347,23 @@ class base(object):
                             self.CheckOutDir.abspath), show_stack=False)
                 elif pol == 'update':
                     ret_val = True
-                    api.output.verbose_msg('vcs_update', ret)
+                    api.output.verbose_msg(['scm.update','scm'], ret)
                     if self.is_modified():
                         api.output.error_msg(mod_msg, show_stack=False)
                     elif os.path.exists(self.CheckOutDir.abspath):
                         api.output.verbose_msg(
-                            'vcs_update', 'No local modification detected in "{0}", updating...'.format(self.CheckOutDir.abspath))
+                            ['scm.update','scm'], 'No local modification detected in "{0}", updating...'.format(self.CheckOutDir.abspath))
                 else:
                     ret_val = False
             else:
                 ret_val = False
-            api.output.verbose_msg('vcs_update', ' smart logic returns value of %s%s' %
+            api.output.verbose_msg(['scm.update','scm'], ' smart logic returns value of %s%s' %
                                    (ret_val, ret_val == True and ',update needed' or ''))
 
         elif self._has_target_match(update) or update == True:
-            api.output.verbose_msg('vcs_update', ' --update switch matched, update needed')
+            api.output.verbose_msg(['scm.update','scm'], ' --update switch matched, update needed')
             ret_val = True
-
-        # this check the backwards compatible way.. to be removed
-        # @todo remove this case in 0.10+1.0 version
-        elif self._env.get('UPDATE_' + self._env['PART_ALIAS'].upper(), None) is not None or self._pobj.Env['UPDATE_ALL'] == True:
-            api.output.verbose_msg('vcs_update', ' Backward compatibility check requires updating')
-            ret_val = True
-
+        
         # check to see that the last operation was complete
         cache = datacache.GetCache(name=self._env['ALIAS'], key='vcs')
         if cache:
@@ -335,12 +374,13 @@ class base(object):
 
             # see if it passed last time
             if cache.get('completed', True) != True:
-                api.output.verbose_msg('vcs_update', ' Last action was recorded as failing to complete, update needed')
+                api.output.verbose_msg(['scm.update','scm'], ' Last action was recorded as failing to complete, update needed')
                 ret_val = True
         if ret_val:
-            api.output.verbose_msg(['vcs_update'], ' %s will \033[31mupdate!\033[0m' % (self._pobj.Alias))
+            api.output.verbose_msg([['scm.update','scm']], ' %s will \033[31mupdate!\033[0m' % (self._pobj.Alias))
         else:
-            api.output.verbose_msg(['vcs_update'], ' %s will \033[32mnot update!\033[0m' % (self._pobj.Alias))
+            api.output.verbose_msg([['scm.update','scm']], ' %s will \033[32mnot update!\033[0m' % (self._pobj.Alias))
+        self.__update_src = ret_val
         return ret_val
 
     def is_modified(self):
@@ -351,14 +391,14 @@ class base(object):
 
         return False
 
-    def do_exist_logic(self):
+    def do_exist_logic(self) -> Optional['str']:
         ''' call for testing if the vcs think the stuff exists
 
         returns None if it passes, returns a string to possible print tell why it failed
         '''
         return None
 
-    def do_check_logic(self):
+    def do_check_logic(self) -> Optional['str']:
         ''' call for checking if what we have in the data cache is matching the current checkout request
         in the SConstruct match up
 
@@ -366,32 +406,28 @@ class base(object):
         '''
         return None
 
-    def do_force_logic(self):
+    def do_force_logic(self) -> Optional['str']:
         ''' call for testing if what is one disk matches what the SConstruct says should be used
 
         returns None if it passes, returns a string to possible print tell why it failed
         '''
         return None
 
-    def UpdateOnDisk(self) -> int:
+    def UpdateMirrorOnDisk(self) -> int:
         '''
-        This function does the update logic on the disk.
-        The function is large so prevent copy and pasting issues in different
-        objects.
+        This function will update/create the mirror of the object
         '''
-        ##############################################
-        # start with mirror
-        #############################################
+
         # if we can mirror and we should use the cache
-        ret = False
+        ret = 0
         if self.canMirror and self.useCache:
             # create the mirror if it does not exist
             if not self.hasMirror:
                 ret = self.CreateMirror()
-            else:
+            elif self.PartFileExists and self.CheckOutDirExists:
                 ret = self.UpdateMirror()
 
-        # Something went wrong ( probally does not exists)
+        # Something went wrong (probally has partial state from a previous failure)
         if ret and self._env.GetOption('vcs_retry') == True:
             # we have retry on... we we will give it another try
             # as it could be bad disk state or network glitch
@@ -406,7 +442,18 @@ class base(object):
             if ret:
                 api.output.error_msg("CreateMirror action failed again for {0}. Stopping build!".format(
                     self.FullPath), show_stack=False, exit=False)
+        return ret
 
+    def UpdateOnDisk(self) -> int:
+        '''
+        This function does the update logic on the disk.
+        The function is large so prevent copy and pasting issues in different
+        objects.
+        '''
+        
+        ret = 0
+        # does the part file and checkout directory both exists
+        # if it does we just need to update the code
         if self.PartFileExists and self.CheckOutDirExists:
             try:
                 try:
@@ -421,6 +468,7 @@ class base(object):
             if ret and ret != 10 and self._env.GetOption('vcs_retry') == True:
                 astr = "Update"
         else:
+            # if these items are missing we need to clone/checkout the code.            
             try:
                 ret = self.CheckOut()
             except Exception:

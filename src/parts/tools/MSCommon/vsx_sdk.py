@@ -10,7 +10,7 @@ from parts.tools.Common.ToolInfo import ToolInfo
 from .common import vssdk
 
 
-class MapLib(object):
+class MapLib:
 
     def __call__(self, target, source, env, for_signature):
         return env.isConfigBasedOn('debug') and 'debug' or 'retail'

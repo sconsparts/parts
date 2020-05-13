@@ -1,6 +1,7 @@
 
 
 import os
+from typing import List, Union, Optional
 
 import parts.api as api
 import parts.common as common
@@ -72,16 +73,16 @@ class file_system(base):
             CHECKOUT_DIR='$VCS_FILESYSTEM_DIR',
         )
 
-    def do_exist_logic(self):
+    def do_exist_logic(self) -> Optional['str']:
         ''' call for testing if the vcs think the stuff exists
 
         returns None if it passes, returns a string to possible print tell why it failed
         '''
         if self.PartFileExists:
             return None
-        return "%s needs to be updated on disk" % self._pobj.Alias
+        return "{0} needs to be updated on disk".format(self._pobj.Alias)
 
-    def do_check_logic(self):
+    def do_check_logic(self) -> Optional['str']:
         ''' call for checking if what we have in the data cache is matching the current checkout request
         in the SConstruct match up
 
@@ -89,7 +90,7 @@ class file_system(base):
         '''
         return self.do_exist_logic()
 
-    def do_force_logic(self):
+    def do_force_logic(self) -> Optional['str']:
         ''' call for testing if what is one disk matches what the SConstruct says should be used
 
         returns None if it passes, returns a string to possible print tell why it failed

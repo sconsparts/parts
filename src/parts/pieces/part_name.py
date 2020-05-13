@@ -36,7 +36,7 @@ def get_part_short_name(env):
     return glb.engine._part_manager._from_env(env).ShortName
 
 
-class _PartName(object):
+class _PartName:
 
     def __init__(self, env):
         if __debug__:

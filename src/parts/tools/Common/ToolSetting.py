@@ -96,7 +96,7 @@ This allow the ability to retest
 '''
 
 
-class ToolSetting(object):
+class ToolSetting:
 
     def __init__(self, name):
         if __debug__:

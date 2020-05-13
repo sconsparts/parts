@@ -13,7 +13,7 @@ from SCons.Debug import logInstanceCreation
 from . import Finders
 
 
-class ToolInfo(object):
+class ToolInfo:
 
     def __init__(self, version, install_scanner, script, subst_vars, shell_vars, test_file):
         if __debug__:

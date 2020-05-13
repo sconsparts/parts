@@ -22,7 +22,7 @@ def make_list(obj):
     return [obj]
 
 
-class Variable(object):
+class Variable:
 
     def __init__(self, name, help=None, default=None, validator=None, converter=None, value=None, help_group=None):
         if __debug__:

@@ -58,7 +58,7 @@ SCons.Script.AddOption("--hide-progress",
                        help='Controls if progress state is shown')
 
 
-class NullStream(object):
+class NullStream:
 
     def __init__(self):
         if __debug__:
@@ -78,7 +78,7 @@ class NullStream(object):
         pass
 
 
-class Cursor(object):
+class Cursor:
 
     def __init__(self, *args):
         if __debug__:
@@ -127,7 +127,7 @@ if color.is_win32:
     )
 
 
-class Console(object):
+class Console:
     ''' only support output operations at this time'''
     out_stream = 1
     error_stream = 2

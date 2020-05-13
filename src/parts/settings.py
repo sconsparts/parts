@@ -41,7 +41,7 @@ def normalize_map(m):
 # primary config stuff
 
 # class to handle old stuff that needs to change.. move to better location later
-class deprecated(object):
+class deprecated:
 
     def __init__(self, key, new_key, value):
         if __debug__:
@@ -89,7 +89,7 @@ class deprecated(object):
         return item in self._value
 
 
-class string_tester(object):
+class string_tester:
 
     def __init__(self, value):
         if __debug__:
@@ -125,7 +125,7 @@ def get_cache_values(*lst):
     return ret
 
 
-class ToolChain(object):
+class ToolChain:
 
     def __init__(self):
         if __debug__:
@@ -135,7 +135,7 @@ class ToolChain(object):
         pass
 
 
-class All(object):
+class All:
 
     def __init__(self, *lst):
         if __debug__:
@@ -152,7 +152,7 @@ class All(object):
         return self.lst
 
 
-class OneOf(object):
+class OneOf:
 
     def __init__(self, *lst):
         if __debug__:
@@ -172,7 +172,7 @@ class OneOf(object):
         return []
 
 
-class AnyOf(object):
+class AnyOf:
 
     def __init__(self, *lst):
         if __debug__:
@@ -219,7 +219,7 @@ opt_true_values = set(['y', 'yes', 'true', 't', '1', 'on', 'all'])
 opt_false_values = set(['n', 'no', 'false', 'f', '0', 'off', 'none'])
 
 
-class Settings(object):
+class Settings:
 
     __env_chache = {}
 

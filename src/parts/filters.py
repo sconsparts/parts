@@ -7,7 +7,7 @@ import parts.metatag as metatag
 from SCons.Debug import logInstanceCreation
 
 
-class hasFileExtension(object):
+class hasFileExtension:
 
     def __init__(self, extlist):
         if __debug__:
@@ -21,7 +21,7 @@ class hasFileExtension(object):
         return False
 
 
-class HasPackageCatagory(object):
+class HasPackageCatagory:
 
     def __init__(self, catagory):
         if __debug__:

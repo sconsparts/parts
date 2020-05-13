@@ -12,7 +12,7 @@ import SCons.Script
 from SCons.Debug import logInstanceCreation
 
 
-class map_build_context(object):
+class map_build_context:
     '''
         This maps all build info related files we might need to help detect quickly
     if the build context has changed from the last run.

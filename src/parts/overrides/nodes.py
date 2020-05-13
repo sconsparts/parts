@@ -85,7 +85,7 @@ def wrap_MkdirFunc(function):
 wrap_MkdirFunc(SCons.Node.FS.MkdirFunc)
 
 
-class wrapper(object):
+class wrapper:
 
     def __init__(self, binfo, ninfo=None):
         if __debug__:
@@ -94,7 +94,7 @@ class wrapper(object):
         self.ninfo = ninfo
 
 
-class fake_ninfo(object):
+class fake_ninfo:
     __slots__ = ['timestamp', 'csig']
 
     def __init__(self, timestamp, csig):

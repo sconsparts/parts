@@ -78,7 +78,7 @@ def color_to_str(color):
     return "Unknown Color"
 
 
-class ConsoleColor(object):
+class ConsoleColor:
 
     def __init__(self, fg_color=Default, bk_color=Default):
         if __debug__:

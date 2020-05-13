@@ -27,7 +27,7 @@ class CCopyException(Exception):
         self.exc = exc
 
 
-class CopyBuilderDescription(object):
+class CopyBuilderDescription:
     def __init__(self, builderName, ccopyName, copyFunctions):
         self.builderName = builderName
         self.ccopyName = ccopyName
@@ -270,7 +270,7 @@ def CCopyEmit(target, source, env):
     return [target], [source]
 
 
-class CCopy(object):
+class CCopy:
     default = 0
     copy = 1
     hard_soft_copy = 2
@@ -521,7 +521,7 @@ def generateCopyBuilder(description):
     )
 
 
-class copyfunctions(object):
+class copyfunctions:
     def __init__(self, funcs):
         self.__funcs = funcs
 

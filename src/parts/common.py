@@ -32,7 +32,7 @@ def GetUserName(env):
 # that holds it
 
 
-class bindable(object):
+class bindable:
 
     def _bind(self, env, key):
         raise NotImplementedError
@@ -41,7 +41,7 @@ class bindable(object):
         raise NotImplementedError
 
 
-class DelayVariable(object):
+class DelayVariable:
     ''' This class defines a varable that will not be evaluted until it is requested
     This allow it to be assigned some logic and not execute it till requested, as needed
     The class will reset the value in the SCons Environment with the delayed value
@@ -473,7 +473,7 @@ def parseVersionNumber(versionNumber):
 
 
 # help objects
-class _make_rel(object):
+class _make_rel:
 
     def __init__(self, lst):
         if __debug__:
@@ -504,7 +504,7 @@ class _make_rel(object):
         return ret
 
 
-class _make_reld(object):
+class _make_reld:
 
     def __init__(self, lst):
         if __debug__:
@@ -521,7 +521,7 @@ class _make_reld(object):
         return str(ret)
 
 
-class named_parms(object):
+class named_parms:
 
     def __init__(self, _kw):
         if __debug__:

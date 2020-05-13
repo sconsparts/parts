@@ -11,7 +11,7 @@ import parts.requirement as requirement
 from SCons.Debug import logInstanceCreation
 
 
-class dependent_ref(object):
+class dependent_ref:
     """This Class allows us to map a dependancy between two different components
     A dependancy allows certain data items, to be defined by the requirements, to
     be shared between the two environments defining each section

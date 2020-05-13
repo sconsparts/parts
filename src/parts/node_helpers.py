@@ -25,7 +25,7 @@ from SCons.Script.SConscript import SConsEnvironment
 decider_map = SCons.Node._decider_map
 
 
-class ninfotmp(object):
+class ninfotmp:
 
     def __init__(self):
         if __debug__:
@@ -683,7 +683,7 @@ def abs_path_node(env, path, create_node):
 
 
 # these provide a string Absolute path
-class _AbsFile(object):
+class _AbsFile:
 
     def __init__(self, env):
         if __debug__:
@@ -694,7 +694,7 @@ class _AbsFile(object):
         return abs_path(self.env, path, self.env.File)
 
 
-class _AbsDir(object):
+class _AbsDir:
 
     def __init__(self, env):
         if __debug__:
@@ -716,7 +716,7 @@ def AbsDir(env, path):
 # the Variant Directory of the given Part
 
 
-class _AbsFileNode(object):
+class _AbsFileNode:
 
     def __init__(self, env):
         if __debug__:
@@ -727,7 +727,7 @@ class _AbsFileNode(object):
         return abs_path_node(self.env, path, self.env.File)
 
 
-class _AbsDirNode(object):
+class _AbsDirNode:
 
     def __init__(self, env):
         if __debug__:

@@ -539,10 +539,7 @@ class part(pnode.pnode):
     @property
     def Vcs(self):
         """return the VCS object"""
-        if self.__vcs:
-            return self.__vcs
-        from ..vcs import null
-        return null.null
+        return self.__vcs
 
     # some compatibility stuff
     @property
@@ -724,17 +721,13 @@ class part(pnode.pnode):
             dir_tmp = self.__env.Dir('#')
         else:
             dir_tmp = self.__env.Dir(self.__parent.__src_path)
-        if self.__vcs is None:
-            # we have no vcs object
-            # so we take file name as is
-            self.__file = dir_tmp.File(self.__env.subst(self.__file))  # the Parts file to read in
+        
+        # setup vcs object. We always have one. null_t is the default
+        self.__vcs._setup_(self)  # update env with vcs level defines
+        if self.isRoot:
+            self.__file = dir_tmp.File(self.__vcs.PartFileName)
         else:
-            # we have a vcs object.. ask vcs object for resolved file name
-            self.__vcs._setup_(self)  # update env with vcs level defines
-            if self.isRoot:
-                self.__file = dir_tmp.File(self.__vcs.PartFileName)
-            else:
-                self.__file = dir_tmp.File(self.__env.subst(self.__file))  # the Parts file to read in
+            self.__file = dir_tmp.File(self.__env.subst(self.__file))  # the Parts file to read in
 
         # the src_path we need to make sure SCons as no issues when loading the Part file
         self.__src_path = os.path.split(self.__file.srcnode().abspath)[0]
@@ -887,7 +880,7 @@ class part(pnode.pnode):
         self.__classic_section._map_targets()
         return
 
-    class build_target_wrapper(object):
+    class build_target_wrapper:
         '''
         There are some .parts files that inspect SCons.Script.BUILD_TARGETS
         value to decide whether to build unit-tests or not. We need to determine
@@ -944,7 +937,7 @@ class part(pnode.pnode):
             locals()[name] = def_method(name)
         del name, def_method
 
-    class part_loading_context(object):
+    class part_loading_context:
         '''
         Class used as .parts file loading context. It solves two tasks:
          1. Filters out exceptions raised during the file reading.

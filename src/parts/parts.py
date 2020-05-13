@@ -10,7 +10,7 @@ import parts.vcs as vcs
 from SCons.Script.SConscript import SConsEnvironment
 
 
-def Part_factory(arg1=None, parts_file=None, mode=[], vcs_type=vcs.null.null_t("#"), default=False,
+def Part_factory(arg1=None, parts_file=None, mode=[], vcs_type=None, default=False,
                  append={}, prepend={}, create_sdk=True, package_group=None,
                  alias=None, name=None, *lst, **kw):
     ''' This  function acts a factory to help with Part creation.
@@ -23,6 +23,8 @@ def Part_factory(arg1=None, parts_file=None, mode=[], vcs_type=vcs.null.null_t("
         parts_file = arg1
     elif arg1 and parts_file and alias is None:
         alias = arg1
+    if vcs_type is None:
+        vcs_type=vcs.null.null_t("#")
 
     tmp = glb.pnodes.Create(pnode.part.part, file=parts_file, mode=mode, vcs_t=vcs_type,
                             default=default, append=append, prepend=prepend,

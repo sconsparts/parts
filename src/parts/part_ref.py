@@ -9,7 +9,7 @@ import parts.version as version
 from SCons.Debug import logInstanceCreation
 
 
-class part_ref(object):
+class part_ref:
     """description of class"""
     __slots__ = [
         '__local_space',

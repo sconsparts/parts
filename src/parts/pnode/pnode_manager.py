@@ -15,7 +15,7 @@ import SCons.Node
 from SCons.Debug import logInstanceCreation
 
 
-class _node_info(object):
+class _node_info:
     __slots__ = [
         '__csig',
         '__timestamp',
@@ -44,7 +44,7 @@ class _node_info(object):
         return self.__csig
 
 
-class manager(object):
+class manager:
     """description of class"""
 
     _node_types = {}

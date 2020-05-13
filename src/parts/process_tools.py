@@ -14,7 +14,7 @@ except ImportError:
     UserError = Exception
 
 
-class ProcessAction(object):
+class ProcessAction:
     SUSPEND = 'suspend'
     TERMINATE = 'terminate'
     RESUME = 'resume'

@@ -24,7 +24,7 @@ from SCons.Debug import logInstanceCreation
 from SCons.Subst import CmdStringHolder
 
 
-class env_guard(object):
+class env_guard:
     __slots__ = ('thread_id',)
     __depth__ = defaultdict(int)
 
@@ -86,7 +86,7 @@ def replace_list_items(container, marker, replacement, wrap=lambda x: x):
     return container
 
 
-class mapper(object):
+class mapper:
     name = "Base"
 
     def __init__(self):

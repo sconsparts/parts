@@ -181,12 +181,12 @@ wix.Register(
 )
 
 
-class WixPreprocessor(object):
+class WixPreprocessor:
     '''
     This is a helper class used by WiX tool source scanners to emulate
     candle.exe pre-processor.
     '''
-    class SysVars(object):
+    class SysVars:
         '''
         This is a class to emulate $(sys.VARNAME) WiX preprocossor variables.
         VARNAME can be one of the following: PLATFORM, SOURCEFILEPATH, SOURCEFILEDIR,
@@ -211,7 +211,7 @@ class WixPreprocessor(object):
         def CURRENTDIR(self):
             return self.cwd.abspath + '\\'
 
-    class EnvVars(object):
+    class EnvVars:
         '''
         This class emulates $(env.VARNAME) WiX preprocessor variables.
         See WiX docs for more information.
@@ -227,7 +227,7 @@ class WixPreprocessor(object):
             except KeyError:
                 return ''
 
-    class VarVars(object):
+    class VarVars:
         '''
         This class emulates $(var.VARNAME) WiX preprocossor variables.
         '''

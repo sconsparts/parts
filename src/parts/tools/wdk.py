@@ -61,7 +61,7 @@ if SCons.Util.can_read_reg:
         except Exception:
             return None
 
-    class WdkScanner(object):
+    class WdkScanner:
         # Versions is a dictionary of form {Major0 : {Minor0: {Build0: path}, Minor1: path}}
         versions = None
         plain_versions = None

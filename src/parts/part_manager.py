@@ -26,7 +26,7 @@ from parts.target_type import target_type
 from SCons.Debug import logInstanceCreation
 
 
-class part_manager(object):
+class part_manager:
 
     def __init__(self):
         if __debug__:
@@ -824,14 +824,32 @@ class part_manager(object):
         '''
         # we need to see if any part needs to be checked out or updated
         # loop each part and ask it need to be updated
+
+        # these are the list for item we will update on disk
+        # we have a list of item we can do in parallel and item that 
+        # have to be done serial. 
+        p_mirror_list = vcs.task_master.task_master()
         p_list = vcs.task_master.task_master()
         s_list = vcs.task_master.task_master()
+
+        # define the set of item to try to update
         if part_set is None:
+            # nothing defined so check all known parts
             part_set = list(self.parts.values())
+
+        # items we are updating on disk require update to the state files
         update_set = set([])
+
+        # this is the set of part we need to check for updating
         for p in part_set:
             # if so add to queue for checkout
             vcsobj = p.Vcs
+
+            # can we mirror this?
+            if vcsobj.NeedsToUpdateMirror():
+                p_mirror_list.append(vcsobj,mirror=True)
+                
+
             if vcsobj.NeedsToUpdate():
                 # we check to see if the vcs object allow for the
                 # parallel checkout policy.
@@ -841,6 +859,7 @@ class part_manager(object):
                 else:
                     s_list.append(vcsobj)
             elif not vcsobj.CacheFileExists:
+                # update cache file if it does not exist
                 update_set.add(p)
 
         def post_vcs_func(jobs, tm):
@@ -851,8 +870,18 @@ class part_manager(object):
                 tm.ReturnCode = 4
                 api.output.error_msg("Errors detected while updating disk!", show_stack=False)
 
-        # checkout anything in the queue
+        # call the task logic with the SCons Job object to update item on disk
+
         try:
+            if p_mirror_list._has_tasks():
+                api.output.print_msg("Updating mirrors")
+                vcs_j = SCons.Script.GetOption('vcs_jobs')
+                if vcs_j == 0:
+                    vcs_j = SCons.Script.GetOption('num_jobs')
+                p_mirror_list.append(None)
+                jobs = SCons.Job.Jobs(vcs_j, p_mirror_list)
+                jobs.run(postfunc=lambda: post_vcs_func(jobs, p_mirror_list))
+                api.output.print_msg("Updating mirrors - Done")
             if p_list._has_tasks():
                 # get value for level of number of concurrent checkouts
                 vcs_j = SCons.Script.GetOption('vcs_jobs')
@@ -1290,7 +1319,7 @@ class part_manager(object):
                     binfo = glb.pnodes.GetAliasStoredInfo(node.ID)
                     if binfo:
                         # this is a little hacky... look at cleaning up..
-                        class wrapper(object):
+                        class wrapper:
 
                             def __init__(self, binfo, ninfo=None):
                                 if __debug__:

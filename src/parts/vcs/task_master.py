@@ -1,10 +1,11 @@
 
 
 
-from . import task
+from . import update_task
+from . import mirror_task
 
 
-class task_master(object):
+class task_master:
     ''' This is a taskmaster that is customized for vcs processing
 
     Someday SCons will formalize this code, that day we will have something to subclass form.
@@ -17,7 +18,7 @@ class task_master(object):
         self.__stopped = False
         self.__return_code = 0
 
-    def check_vcs_output(self, vcsobj):
+    def has_checkout_path(self, vcsobj) -> bool:
         '''
         This function checks to see if the checkout path is unique
 
@@ -26,16 +27,30 @@ class task_master(object):
         This function is not part of the task functions.
         '''
         for i in self.__tasks:
-            if vcsobj.CheckOutDir == i.Vcs.CheckOutDir:
-                return False
-        return True
+            if isinstance(i,update_task.task) and vcsobj.CheckOutDir == i.Vcs.CheckOutDir:
+                return True
+        return False
 
-    def append(self, x):
+    def has_mirror_path(self, vcsobj) -> bool:
+        '''
+        This function checks to see if the mirror path is unique.
+
+        Only need to mirror the items once
+
+        '''
+        for i in self.__tasks:
+            if isinstance(i,mirror_task.task) and vcsobj.MirrorPath == i.Vcs.MirrorPath:
+                return True
+        return False
+
+    def append(self, x, mirror=False):
         if x is None:
             self.__tasks.append(None)
-        else:
-            if self.check_vcs_output(x):
-                self.__tasks.append(task.task(x, self))
+        elif mirror:
+            if not self.has_mirror_path(x):
+                self.__tasks.append(mirror_task.task(x, self))
+        elif not self.has_checkout_path(x):
+                self.__tasks.append(update_task.task(x, self))
 
     def next_task(self):
         t = self.__tasks[self.__i]

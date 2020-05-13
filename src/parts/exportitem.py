@@ -12,7 +12,7 @@ import SCons.Script
 from SCons.Script.SConscript import SConsEnvironment
 
 
-class EXPORT_TYPES(object):
+class EXPORT_TYPES:
     FILE = 1
     PATH = 2
     PATH_FILE = 3

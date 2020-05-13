@@ -55,7 +55,7 @@ except ImportError:
         _fields_ = [('PrivilegeCount', ctypes.c_ulong),
                     ('Privileges', LUID_AND_ATTRIBUTES * 1)]
 
-    class Privilege(object):
+    class Privilege:
         """
         Context class to temporary elevate privilege.
         """

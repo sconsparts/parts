@@ -40,7 +40,7 @@ class BinutilInfo(GnuInfo):
         return None
 
 
-class BinutilsSetupWrapper(object):
+class BinutilsSetupWrapper:
 
     def __init__(self, binutils):
         if __debug__:

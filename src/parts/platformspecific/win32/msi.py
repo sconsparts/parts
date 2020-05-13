@@ -53,7 +53,7 @@ MSIDBOPEN_CREATEDIRECT = 4  # create new database, direct mode read/write
 MSIDBOPEN_PATCHFILE = 16  # add flag to indicate patch file
 
 
-class Product(object):
+class Product:
 
     def __init__(self, productGuid):
         self.__productGuid = productGuid
@@ -91,7 +91,7 @@ class Product(object):
         return self.__productGuid
 
 
-class MsiHandle(object):
+class MsiHandle:
 
     def __init__(self, handle=None):
         self._handle = handle

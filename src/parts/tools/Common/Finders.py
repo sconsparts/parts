@@ -11,7 +11,7 @@ import SCons.Util
 from SCons.Debug import logInstanceCreation
 
 
-class PathFinder(object):
+class PathFinder:
     '''
     Provides information
     '''
@@ -35,7 +35,7 @@ class PathFinder(object):
         return ret
 
 
-class EnvFinder(object):
+class EnvFinder:
 
     def __init__(self, keys, rel_path=None):
         if __debug__:
@@ -61,7 +61,7 @@ class EnvFinder(object):
         return ret
 
 
-class RegFinder(object):
+class RegFinder:
 
     def __init__(self, keys, rel_path=None):
         if __debug__:
@@ -97,7 +97,7 @@ class RegFinder(object):
 if sys.platform == 'win32':
     import parts.platformspecific.win32.msi as msi
 
-    class MsiFinder(object):
+    class MsiFinder:
         """
         This class uses MSI API to find tools installed on the system.
         When the objects __call__ method is called the finder reads list
@@ -168,7 +168,7 @@ if sys.platform == 'win32':
             return version
 
 else:
-    class MsiFinder(object):
+    class MsiFinder:
 
         def __init__(self, *lst, **kw):
             pass
@@ -177,7 +177,7 @@ else:
             return None
 
 
-class ScriptFinder(object):
+class ScriptFinder:
 
     def __init__(self, name, args=None):
         if __debug__:

@@ -109,7 +109,7 @@ def Component(env, name, version_range=None, requires=REQ.DEFAULT, section="buil
     return dependent_ref.dependent_ref(part_ref.part_ref(trg, localspace), section, requires)
 
 
-class ComponentEnv(object):
+class ComponentEnv:
 
     def __init__(self, env):
         if __debug__:
@@ -248,7 +248,7 @@ def depends_on(env, depends):
         depends_on_classic(env, depends_list)
 
 
-class dependsOnEnv(object):
+class dependsOnEnv:
 
     def __init__(self, env):
         if __debug__:

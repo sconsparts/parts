@@ -9,7 +9,7 @@ import parts.console as console  # for stream types
 from SCons.Debug import logInstanceCreation
 
 
-class Logger(object):
+class Logger:
 
     def __init__(self, dir="", file=""):
         if __debug__:

@@ -15,7 +15,7 @@ from . import common
 # for version 12.x
 
 
-class file_scanner12(object):
+class file_scanner12:
 
     def __init__(self, path, pattern, arch, env):
         if __debug__:
@@ -106,7 +106,7 @@ class file_scanner12(object):
 
 
 # for version 11.x
-class file_scanner11(object):
+class file_scanner11:
 
     def __init__(self, path, pattern, pattern2, arch, env):
         if __debug__:
@@ -173,7 +173,7 @@ class file_scanner11(object):
         return None
 
 
-class file_scanner9_10(object):
+class file_scanner9_10:
 
     def __init__(self, path, pattern, arch, env):
         if __debug__:

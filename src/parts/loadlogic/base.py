@@ -3,7 +3,7 @@
 # basic loader all loader are based on
 
 
-class Base(object):
+class Base:
 
     def process_depends(self, part, depends):
         return

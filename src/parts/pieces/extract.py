@@ -77,7 +77,7 @@ def getNodesFromCache(fileNode, generator, env):
     return nodes
 
 
-class _ArcInfoProxy(object):
+class _ArcInfoProxy:
     __slots__ = ['_index', '_item', '_arc', ]
 
     def __init__(self, archive, archiveItem, index):

@@ -7,7 +7,7 @@ from SCons.Debug import logInstanceCreation
 # finding a usable existing solution
 
 
-class Event(object):
+class Event:
 
     def __init__(self):
         if __debug__:

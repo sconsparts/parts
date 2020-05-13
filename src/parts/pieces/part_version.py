@@ -45,7 +45,7 @@ def get_part_short_version(env):
     return glb.engine._part_manager._from_env(env).ShortVersion
 
 
-class _PartVersion(object):
+class _PartVersion:
 
     def __init__(self, env):
         if __debug__:

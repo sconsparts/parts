@@ -17,7 +17,7 @@ __all__ = [
 ]
 
 
-class VersionPart(object):
+class VersionPart:
     '''
     Gives a part of a version number a way to store the string value and a
     weight associated with that string.
@@ -99,7 +99,7 @@ class VersionPart(object):
         return "%s" % self.ver
 
 
-class version(object):
+class version:
     '''
     version object for comparing version numbers.  This also enables special
     strings to be interpreted with special weight values that can be added or
@@ -376,7 +376,7 @@ class version(object):
         return self[2]
 
 
-class version_range(object):
+class version_range:
     '''
     Specifies either a start and end value or a set of version ranges to include
     or exclude.  This can then be used with versions to check if they are in a

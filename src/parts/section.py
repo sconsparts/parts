@@ -3,7 +3,7 @@
 from SCons.Debug import logInstanceCreation
 
 
-class section_delegator(object):
+class section_delegator:
     ''' This class is the object the Parts object will deal with. It is created in a lazy manner by the meta form instance of
     the section_t class. This allow for reduce memory overhead for Parts that don't use the new format and also ensures that
     better scaling happen when we have cases of lots of Parts and lots of custom section are defined, as a Part is likely to use
@@ -11,7 +11,7 @@ class section_delegator(object):
     '''
 
 
-class section_t(object):
+class section_t:
     ''' This class is the primary template used to create all section instances in Parts. It provides
     the basic wrapper code to handle the different cases the can be used in the declorator syntax.
     Internally it will create a instance object with data needed by the Part object to handle what the
@@ -57,7 +57,7 @@ def default_test_func(self, *lst, **kw):
     return True
 
 
-class section(object):
+class section:
     ''' this class allows for the creation of a "Section" in the Parts file
     A section is a set of functions or phases that are used to setup state to
     do some set of actions. The main difference over the classic functional way
@@ -124,7 +124,7 @@ class section(object):
 
     def Type(self):
         if hasattr(self.Type.__func__, 'type') == False:
-            class mybase(object):
+            class mybase:
 
                 def __init__(self, env):
                     if __debug__:

@@ -35,7 +35,7 @@ def ConfigValues(**kw):
     return kw
 
 
-class configuration(object):
+class configuration:
 
     def __init__(self, default_ver_func, post_process_func=None):
         if __debug__:
@@ -136,7 +136,7 @@ class configuration(object):
         return (settings, settings_ex), ver_rng
 
 
-class _ConfigurationSet(object):
+class _ConfigurationSet:
 
     def __init__(self, name, dependsOn):
         if __debug__:

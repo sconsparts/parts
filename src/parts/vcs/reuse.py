@@ -1,4 +1,5 @@
 
+from typing import List, Union, Optional
 
 import parts.api as api
 import parts.common as common
@@ -103,14 +104,14 @@ class reuse_part_vcs(base):
 
         return self._vcs.do_update_check
 
-    def do_exist_logic(self):
+    def do_exist_logic(self) -> Optional['str']:
         ''' call for testing if the vcs think the stuff exists
 
         returns None if it passes, returns a string to possible print tell why it failed
         '''
         return self._vcs.do_exist_logic
 
-    def do_check_logic(self):
+    def do_check_logic(self) -> Optional['str']:
         ''' call for checking if what we have in the data cache is matching the current checkout request
         in the SConstruct match up
 
@@ -118,7 +119,7 @@ class reuse_part_vcs(base):
         '''
         return self._vcs.do_check_logic
 
-    def do_force_logic(self):
+    def do_force_logic(self) -> Optional['str']:
         ''' call for testing if what is one disk matches what the SConstruct says should be used
 
         returns None if it passes, returns a string to possible print tell why it failed

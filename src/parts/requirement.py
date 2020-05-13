@@ -16,7 +16,7 @@ from SCons.Debug import logInstanceCreation
 _added_types = {}
 
 
-class requirement(object):
+class requirement:
 
     def __init__(self, key, internal=False, public=None, policy=None, mapper=None, listtype=None, weight=0, mapto=None, force_internal=False):
         ''' Sets up the requirment object
@@ -173,7 +173,7 @@ class requirement(object):
                 'weight': self._weight}
 
 
-class requirement_set(object):
+class requirement_set:
 
     def __init__(self, lst, weight=-1000):
         '''Construct a new requirement set object

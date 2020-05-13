@@ -27,7 +27,7 @@ from SCons.Errors import UserError
 closeFileDescriptors = sys.platform not in ('win32', 'cygwin')
 
 
-class pipeRedirector(object):
+class pipeRedirector:
 
     def _readerthread(self):
         line = ' '
@@ -75,7 +75,7 @@ class pipeRedirector(object):
         self.thread = None
 
 
-class part_spawner(object):
+class part_spawner:
     __slots__ = ['env']
 
     def __init__(self, env=None):
@@ -149,9 +149,9 @@ class part_spawner(object):
         return ret
 
 
-class part_logger(object):
+class part_logger:
 
-    class StreamChunk(object):
+    class StreamChunk:
         __slots__ = ['stream', 'msg', 'lock']
 
         def __init__(self, stream, msg):
@@ -249,7 +249,7 @@ class part_logger(object):
         self.otherOutWrite[stream](taskId, outLine)
 
 
-class part_nil_logger(object):
+class part_nil_logger:
     ''' the point of this class is to define the base interface for all part logger
     items. The goal is the this object is to be a empty object that can be written to
     in case that no other item is provided, or if logging is turned off'''
@@ -278,7 +278,7 @@ class part_nil_logger(object):
         pass
 
 
-class log_file_writer(object):
+class log_file_writer:
     '''
     This context manager provides serialized access to log files.
     Usage:
@@ -333,7 +333,7 @@ else:
     time_func = time.time
 
 
-class parts_text_logger(object):
+class parts_text_logger:
 
     def __init__(self, env):
         if __debug__:

@@ -4,7 +4,7 @@ import parts.glb as glb
 from SCons.Debug import logInstanceCreation
 
 
-class dependent_info(object):
+class dependent_info:
     ''' this class defines state we need for the section when we store dependancy information'''
     __slots__ = [
         '__part_ref_str',

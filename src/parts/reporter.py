@@ -28,7 +28,7 @@ else:
         pass
 
 
-class streamer(object):
+class streamer:
 
     def __init__(self, outfunc):
         self.outfunc = outfunc
@@ -95,7 +95,7 @@ def is_message(str):
     return False
 
 
-class reporter(object):
+class reporter:
 
     def __init__(self):
 

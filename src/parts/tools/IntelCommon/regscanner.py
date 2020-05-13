@@ -14,7 +14,7 @@ from . import common
 
 
 # this is a general scanner for all version till version 11.1
-class reg_scanner(object):
+class reg_scanner:
 
     def __init__(self, regkeys, pattern, arch, env, ver):
         if __debug__:
@@ -106,7 +106,7 @@ class reg_scanner(object):
 
 
 # this is a general scanner for all version at version 11.1 (and beyond??)
-class reg_scanner2(object):
+class reg_scanner2:
 
     def __init__(self, regkeys, pattern, arch, env, ver):
         if __debug__:
@@ -216,7 +216,7 @@ class reg_scanner2(object):
 
 
 # this is a general scanner for all version till version 12.0
-class reg_scanner_v12(object):
+class reg_scanner_v12:
 
     def __init__(self, regkeys, subkey_path, env_var):
         if __debug__:

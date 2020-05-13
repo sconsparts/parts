@@ -3,6 +3,7 @@
 
 import os
 import re
+from typing import List, Union, Optional
 
 import parts.api as api
 import parts.common as common
@@ -149,7 +150,7 @@ class svn(base):
         '''Function that should be used by subclass to add to any custom update logic that should be checked'''
         return False
 
-    def do_exist_logic(self):
+    def do_exist_logic(self) -> Optional['str']:
         ''' call for testing if the vcs think the stuff exists that should be build
 
         returns None if it passes, returns a string to possible print tell why it failed
@@ -160,7 +161,7 @@ class svn(base):
         api.output.verbose_msg(["vcs_update", "vcs_svn"], " Existence check failed")
         return "%s needs to be updated on disk" % self._pobj.Alias
 
-    def do_check_logic(self):
+    def do_check_logic(self) -> Optional['str']:
         ''' call for checking if what we have in the data cache is matching the current checkout request
         in the SConstruct match up
 
@@ -194,7 +195,7 @@ class svn(base):
             api.output.verbose_msg(["vcs_update", "vcs_svn"], " Data Cache does not exist.. doing force logic")
             return self.do_force_logic()
 
-    def do_force_logic(self):
+    def do_force_logic(self) -> Optional['str']:
         ''' call for testing if what is one disk matches what the SConstruct says should be used
 
         returns None if it passes, returns a string to possible print tell why it failed

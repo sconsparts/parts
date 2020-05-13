@@ -3,7 +3,7 @@
 # clean up more...
 
 
-class Policy(object):
+class Policy:
     pass
 
 

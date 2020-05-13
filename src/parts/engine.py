@@ -92,7 +92,7 @@ def is_Sconstruct_up_to_date():
 # would it be nice if there was a addon base in Scons... hmmmmm
 
 
-class parts_addon(object):
+class parts_addon:
 
     def __init__(self):
         if __debug__:
@@ -463,7 +463,7 @@ class parts_addon(object):
     def _setup_progress_meter(self):
         api.output.verbose_msg("startup", "Setting up show-progress feature")
         if SCons.Script.GetOption('show_progress'):
-             class ProgressCounter(object):
+             class ProgressCounter:
                 def __init__(self):
                     self._time=0
                     self._node=None
