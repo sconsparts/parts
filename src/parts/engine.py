@@ -402,7 +402,7 @@ class parts_addon:
         # compatibility check
         if isinstance(glb.rpter.logger, logger.QueueLogger):
             tmp = self.def_env.get('LOGGER', "NIL_LOGGER")
-            if tmp is not "NIL_LOGGER":
+            if tmp != "NIL_LOGGER":
                 directory = self.def_env.Dir(self.def_env['LOG_ROOT_DIR'])
                 tmp = self.def_env.subst(tmp)
                 # remap old TEXT_LOGGER value
