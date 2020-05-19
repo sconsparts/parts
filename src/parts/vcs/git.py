@@ -38,6 +38,7 @@ class git(base):
         '_completed',
         '_protocol',
         '_patchfile',
+        '_istag',
     ]
     gitpath = None  # the path to the git program to run
 
@@ -67,9 +68,10 @@ class git(base):
                 branch=branch,
                 tag=tag,
                 revision=revision)
-
+        self._istag: bool = False
         if tag:
-            self.__branch = tag
+            self.__branch: str = tag
+            self._istag: bool = True
 
         super(git, self).__init__(repository, server)
 
@@ -139,7 +141,7 @@ class git(base):
 
     def UpdateMirrorAction(self):
         '''
-        Update an exsting mirror
+        Update an exiting mirror
         '''
 
         git_out_path = self.MirrorPath
@@ -264,7 +266,7 @@ class git(base):
             # if branch or tag changed
             branch_changed = self._branch_changed(data)
             # are we on a tag or branch
-            on_tag = self._on_tag(data)
+            on_tag = self._on_tag(data) or self._istag
             on_revision = self.__revision
 
             prefix = 'origin/'
@@ -419,10 +421,10 @@ class git(base):
 
         returns None if it passes, returns a string to possible print tell why it failed
         '''
-        api.output.verbose_msg(["scm.update.git","scm.update", "scm.git","scm"], " Doing existence check")
+        api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Doing existence check")
         if self.PartFileExists and os.path.exists(os.path.join(self.CheckOutDir.abspath, '.git')):
             return None
-        api.output.verbose_msg(["scm.update.git","scm.update", "scm.git","scm"], " Existence check failed")
+        api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Existence check failed")
         return "{0} needs to be updated on disk" .format(self._pobj.Alias)
 
     def do_check_logic(self) -> Optional['str']:
@@ -437,7 +439,7 @@ class git(base):
         '''
 
         failed = False
-        api.output.verbose_msg(["scm.update.git","scm.update", "scm.git","scm"], " Using scm-logic: check.")
+        api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Using scm-logic: check.")
         # test for existence
         tmp = self.do_exist_logic()
         if tmp:
@@ -446,44 +448,48 @@ class git(base):
         cache = datacache.GetCache(name=self._env['ALIAS'], key='vcs')
 
         if cache:
-            api.output.verbose_msgf(["scm.update.git","scm.update", "scm.git","scm"], " Cached server:    '{0}'", cache['server'])
-            api.output.verbose_msgf(["scm.update.git","scm.update", "scm.git","scm"], " Requested Server: '{0}'", self.FullPath)
+            api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"], " Cached server:    '{0}'", cache['server'])
+            api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"], " Requested Server: '{0}'", self.FullPath)
 
             # do the locations we fetch from match??
             if cache['server'] != self.FullPath:
-                api.output.verbose_msg(["scm.update.git","scm.update", "scm.git","scm"], " Cache version of server does not match.. verifying on disk..")
+                api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"],
+                                       " Cache version of server does not match.. verifying on disk..")
                 failed = True
 
             else:
-                api.output.verbose_msg(["scm.update.git","scm.update", "scm.git","scm"], " Disk urls matches")
+                api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Disk urls matches")
             # the path seems to be matching still.
             # check that what we want to pull matches ( ie branch tag or revision)
             if not failed and self.__revision:
-                api.output.verbose_msgf(["scm.update.git","scm.update", "scm.git","scm"], " Cached revision: {0}", cache['revision'])
-                api.output.verbose_msgf(["scm.update.git","scm.update", "scm.git","scm"], " Requested revision: {0}", self.__revision)
+                api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"],
+                                        " Cached revision: {0}", cache['revision'])
+                api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"],
+                                        " Requested revision: {0}", self.__revision)
                 if cache['revision'] != self.__revision and cache['revision'] != self.__revision[:9]:
-                    api.output.verbose_msg(["scm.update.git","scm.update", "scm.git","scm"],
+                    api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"],
                                            " Cache version of revision does not match.. verifying on disk..")
                     failed = True
                 else:
-                    api.output.verbose_msg(["scm.update.git","scm.update", "scm.git","scm"], " Disk revisions matches")
+                    api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Disk revisions matches")
             elif not failed:
                 # test branch
                 branch = self.__branch if self.__branch else self._env["GIT_DEFAULT_BRANCH"]
 
-                api.output.verbose_msgf(["scm.update.git","scm.update", "scm.git","scm"], " Cached branch: {0}", cache['branch'])
-                api.output.verbose_msgf(["scm.update.git","scm.update", "scm.git","scm"], " Requested branch: {0}", branch)
+                api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"], " Cached branch: {0}", cache['branch'])
+                api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"], " Requested branch: {0}", branch)
 
                 if cache['branch'] != branch:
-                    api.output.verbose_msg(["scm.update.git","scm.update", "scm.git","scm"],
+                    api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"],
                                            " Cache version of branch does not match.. verifying on disk..")
                     failed = True
                 else:
-                    api.output.verbose_msg(["scm.update.git","scm.update", "scm.git","scm"], " Disk branch matches")
+                    api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Disk branch matches")
 
         else:
             # there is no cache .. fallback to force logic
-            api.output.verbose_msg(["scm.update.git","scm.update", "scm.git","scm"], " Data Cache does not exist.. doing force logic")
+            api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"],
+                                   " Data Cache does not exist.. doing force logic")
             failed = True
 
         if failed:
@@ -494,22 +500,22 @@ class git(base):
 
         returns None if it passes, returns a string to possible print tell why it failed
         '''
-        api.output.verbose_msg(["scm.update.git","scm.update", "scm.git","scm"], " Using force vcs logic.")
+        api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Using force vcs logic.")
         # test for existence
         tmp = self.do_exist_logic()
         if tmp:
-            api.output.verbose_msg(["scm.update.git","scm.update", "scm.git","scm"], " Existence checked failed")
+            api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Existence checked failed")
             return tmp
         data = self.get_git_data()
         if data:
             if data['server'] != self.FullPath:
-                api.output.verbose_msg(["scm.update.git","scm.update", "scm.git","scm"], " Disk checked failed")
+                api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Disk checked failed")
                 return 'Server on disk is different than the one requested for Parts "%s"\n On disk: %s\n requested: %s' % (
                     self._pobj.Alias, data['server'], self.FullPath)
 
             # check the revision is it was set
             if self.__revision and data['revision'] != self.__revision and data['short_revision'] != self.__revision:
-                api.output.verbose_msg(["scm.update.git","scm.update", "scm.git","scm"], " Disk revision does not match")
+                api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Disk revision does not match")
                 return 'revision on disk is different than the one requested for Parts "%s"\n On disk: %s\n requested: %s' % (
                     self._pobj.Alias, data['revision'], self.__revision)
             elif not self.__revision:
@@ -517,7 +523,7 @@ class git(base):
                 branch = self.__branch if self.__branch else self._env["GIT_DEFAULT_BRANCH"]
                 if branch and data['branch'] != "{0}...origin/{0}".format(branch) and branch not in data['tags']:
                     # check branch or tag
-                    api.output.verbose_msg(["scm.update.git","scm.update", "scm.git","scm"], " Disk branch does not match")
+                    api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Disk branch does not match")
                     return 'Branch on disk is different than the one requested for Parts "%s"\n On disk: %s\n requested: %s' % (
                         self._pobj.Alias, data['branch'], branch)
 

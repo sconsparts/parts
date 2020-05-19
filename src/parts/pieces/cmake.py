@@ -24,14 +24,15 @@ def CMake(env, destdir=None, auto_scanner={}, **kw):
     cmake_install_dir = env.Dir("$CMAKE_DESTDIR")
     env["CMAKE"] = "cmake"
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$$$$$$$ORIGIN")}'
+
     env["_CMAKE_ARGS"] = [
         "-DCMAKE_INSTALL_PREFIX=$CMAKE_DESTDIR",
         r'${define_if("$DESTDIR_PATH","-DCMAKE_PREFIX_PATH=\"")}${MAKEPATH("$DESTDIR_PATH",";")}${define_if("$DESTDIR_PATH","\"")}',
         "-DCMAKE_INSTALL_LIBDIR=lib",
         "-DCMAKE_INSTALL_BINDIR=bin",
         "-DCMAKE_BUILD_TYPE=Release",
-        '-DCMAKE_SHARED_LINKER_FLAGS="$_ABSRPATH$_ABSRPATHLINK"',
-        '-DCMAKE_EXE_LINKER_FLAGS="$_ABSRPATH$_ABSRPATHLINK"',
+        '-DCMAKE_SHARED_LINKER_FLAGS="$_ABSRPATH"',
+        '-DCMAKE_EXE_LINKER_FLAGS="$_ABSRPATH"',
         "$CMAKE_ARGS"],
 
     # generate the build files
@@ -57,8 +58,8 @@ def CMake(env, destdir=None, auto_scanner={}, **kw):
     cmake_build_files = ["CMakeLists.txt"]
     src_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=cmake_build_files+[".git/*"]).files()
     env["_CMAKE_MAKE_ARGS"] = 'VERBOSE=1\
-        CC=${{CC}}\
-        CXX=${{CXX}}\
+        CC="${{CC}}"\
+        CXX="${{CXX}}"\
         $(-j{jobs}$)'.format(jobs=env.GetOption('num_jobs'))
 
     ret = env.CCommand(

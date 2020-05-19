@@ -237,6 +237,7 @@ class base:
         '''
         # check that we can mirror the object and we set
         # the ability for the mirror cache to be used
+
         if self.canMirror and self.useCache:
             update: Union[bool, List[str]] = self._env.GetOption('update_mirror')
             src_update = self._env.GetOption('update')
@@ -252,13 +253,15 @@ class base:
                                        ' --update-mirror switch matched, update needed for: "{}"'.format(self.MirrorPath))
                 ret = True
             elif update == False:
-                api.output.verbose_msg(['scm.mirror', 'scm'],   
-                                       ' --update-mirror switch expictly turned off')
+                api.output.verbose_msg(['scm.mirror', 'scm'],
+                                       ' --update-mirror switch explicitly turned off')
                 ret = False
-            elif update == "__auto__" and src_update != "__auto__" and self.NeedsToUpdate():
-                # do update of mirrors by default if we are updating source given that the 
-                # source is not being updated implictly. Ie don't update mirror unless --update
-                # is used
+            elif update == "__auto__" and self.NeedsToUpdate():
+                # Do update implicitly if user did not say update mirror and teh component needs to be updated
+                # because of the use of --scm-update switch. This ensures the mirrors get the update states
+                api.output.verbose_msg(['scm.mirror', 'scm'],
+                                       ' --update-mirror switch implicitly because component needs to be update needed for: "{}"'.format(self.MirrorPath))
+
                 ret = True
             else:
                 api.output.verbose_msg(['scm.mirror', 'scm'],
@@ -363,7 +366,7 @@ class base:
         elif self._has_target_match(update) or update == True:
             api.output.verbose_msg(['scm.update','scm'], ' --update switch matched, update needed')
             ret_val = True
-        
+
         # check to see that the last operation was complete
         cache = datacache.GetCache(name=self._env['ALIAS'], key='vcs')
         if cache:
@@ -417,14 +420,13 @@ class base:
         '''
         This function will update/create the mirror of the object
         '''
-
         # if we can mirror and we should use the cache
         ret = 0
         if self.canMirror and self.useCache:
             # create the mirror if it does not exist
             if not self.hasMirror:
                 ret = self.CreateMirror()
-            elif self.PartFileExists and self.CheckOutDirExists:
+            else:
                 ret = self.UpdateMirror()
 
         # Something went wrong (probally has partial state from a previous failure)
@@ -450,7 +452,7 @@ class base:
         The function is large so prevent copy and pasting issues in different
         objects.
         '''
-        
+
         ret = 0
         # does the part file and checkout directory both exists
         # if it does we just need to update the code
@@ -468,7 +470,7 @@ class base:
             if ret and ret != 10 and self._env.GetOption('vcs_retry') == True:
                 astr = "Update"
         else:
-            # if these items are missing we need to clone/checkout the code.            
+            # if these items are missing we need to clone/checkout the code.
             try:
                 ret = self.CheckOut()
             except Exception:

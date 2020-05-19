@@ -28,7 +28,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                 have a slightly different script (Configure) that should called instead
     prefix    - If defined will use custom prefix and add DESTDIR to the make install
     configure_args - are extra args we need to pass to correctly configure the build
-    auto_configure_args - extra value to set various flags with what Parts is using. Certain automake like 
+    auto_configure_args - extra value to set various flags with what Parts is using. Certain automake like
                 projects don't allow setting flags at the configure level. Defaults to True.
     configure_post_actions - In cases of configure like systems it often needed to add special
                 actions to make sure everthing work after the configure logic before the make command is called
@@ -46,7 +46,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                 SCM ignore files. This can cause false rebuilds and mess up
                 the default update logic with git.
                 We do this by default to be safe out of box. However there
-                are some speed improvements to avoid this step. 
+                are some speed improvements to avoid this step.
     copy_top -  If copy_src is True, then True will copy over only toplevel level file/dir as nodes
                 if False (Default) it do a recursive search of files and copy them as nodes
                 This can be a function which will be called. it will be pass the (env,build_dir)
@@ -58,7 +58,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                 to build correct
     copy_scm - Copy the scm directory (currently this mean only .git) when coping the source over when copy_src is True.
                 This takes extra time and space but may be needed if the automake tool query git for information which
-                many project seem to do. 
+                many project seem to do.
     '''
 
     env = env.Clone(**kw)
@@ -132,8 +132,8 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
     if auto_configure_args:
         env["_CONFIGURE_ARGS"] = '--prefix=$CONFIGURE_PREFIX\
             ${define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}${MAKEPATH("$PKG_CONFIG_PATH")}\
-            CC=$CC\
-            CXX=$CXX\
+            CC="$CC"\
+            CXX="$CXX"\
             CPPFLAGS="$CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_ABSCPPINCFLAGS"\
             CFLAGS="$CFLAGS"\
             LDFLAGS="$LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS"\

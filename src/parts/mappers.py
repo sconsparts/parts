@@ -648,22 +648,26 @@ class make_path(mapper):
     '''
     name = 'MAKEPATH'
 
-    def __init__(self, varlist, pathsep=None, makeabs=True):
+    def __init__(self, varlist, pathsep=None, makeabs=True, unique=False):
         # sep == None means use system
         mapper.__init__(self)
         self.value = varlist
         self.pathsep = pathsep
         self.makeabs = makeabs
+        self.unique = unique
 
     def __repr__(self):
         return '${{{0}("{1}","{2}","{3}")}}'.format(self.name, self.value, self.pathsep, self.makeabs)
 
     def _guarded_call(self, target, source, env, for_signature):
-        vals = env.Flatten(env.subst_list(self.value))
+        values = env.Flatten(env.subst_list(self.value))
+        if self.unique:
+            # may need to allow more control of how it is made unique
+            values = common.extend_unique([],values)
         ret = ""
         pathsep = self.pathsep if self.pathsep else os.pathsep
 
-        for val in vals:
+        for val in values:
             # scons barfs on it own CmdStringHolder
             if self.makeabs:
                 ret += "{}{}".format(env.Dir(str(val)).abspath, pathsep)
@@ -680,24 +684,28 @@ class join(mapper):
     '''
     name = 'JOIN'
 
-    def __init__(self, varlist, sep):
+    def __init__(self, varlist, sep, unique=False):
         # sep == None means use system
         mapper.__init__(self)
         self.value = varlist
         self.sep = sep
+        self.unique = unique
 
     def __repr__(self):
         return '${{{0}("{1}","{2}")}}'.format(self.name, self.value, self.sep)
 
     def _guarded_call(self, target, source, env, for_signature):
-        vals = env.Flatten(env.subst_list(self.value))
-        ret = self.sep.join([str(i) for i in vals])
+        values = env.Flatten(env.subst_list(self.value))
+        if self.unique:
+            # may need to allow more control of how it is made unique
+            values = common.append_unique([],values)
+        ret = self.sep.join([str(i) for i in values])
         return ret
 
 
 class abspaths_mapper(mapper):
-    ''' 
-    Allows for an easy expanding value as a list directorys or files
+    '''
+    Allows for an easy expanding value as a list directory's or files
     returns a list of values.
     '''
     name = 'ABSPATHS'
