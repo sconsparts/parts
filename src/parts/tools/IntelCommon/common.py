@@ -17,6 +17,7 @@ intel_12_1_posix = r'composer_xe_(2011)_sp1\.(\d+.\d+)'
 
 # hopefully a stable base
 intel_13_plus_posix = r'composer_xe_(20\d\d(_sp\d+)?)\.(\d+.\d+)'
+intel_19_plus_posix = r'compilers_and_libraries_(\d+.\d+.\d+)'
 
 # different layout in registry
 intel_11_1 = r'\d\d\d'

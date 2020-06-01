@@ -5,6 +5,7 @@ import hashlib
 import os
 import json
 
+import parts.glb as glb
 import parts.api as api
 import parts.common as common
 import parts.core.builders as _builders
@@ -253,8 +254,7 @@ def ScanDirectory(env, default_dir, defaults=True, callbacks=[], extra_scanner=N
     # env._map_dyn_imports_()
     # map this file to the dyn.exports.jsn file
     export_file = env._map_dyn_export_(state_file_name)
-    env["DYN_EXPORT_FILE"] = export_file[0]
-
+    glb.engine._part_manager.section_from_env(env).Env["DYN_EXPORT_FILE"] = env["DYN_EXPORT_FILE"] = export_file[0]
     extras = dict(
         use_scan_defaults=use_scan_defaults,
         scan_callbacks=scan_callbacks,

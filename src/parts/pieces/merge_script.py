@@ -76,23 +76,34 @@ def get_output(script, args=None, shellenv=None):
     return output.decode()
 
 
-def parse_output(output, keep=None):
+def parse_output(output, keep=None, remove=None):
 
     ret = {}  # this is the data we will return
-
+    # these are the default items we want to remove 
+    filter_keys =("LS_COLORS","BASHOPTS","SHELLOPTS","PPID")
+    if remove:
+        filter_keys = filter_keys + tuple(remove)
     # parse everything
     reg = re.compile('(\\w*)=(.*)', re.I)
     for line in output.splitlines():
         m = reg.match(line)
         if m:
-            if keep is not None:
+            key = m.group(1)
+            if keep:
                 # see if we need to filter out data
-                k = m.group(1)
-                if k in keep:
-                    ret[k] = m.group(2)  # .split(os.pathsep)
+                for regk in keep:
+                    if re.match(regk,key):
+                        ret[key] = m.group(2) 
+                        break
             else:
-                # take everything
-                ret[m.group(1)] = m.group(2)  # .split(os.pathsep)
+                # take everything that should not be skipped
+                skip = False
+                for regk in filter_keys:
+                    if re.match(regk,key):
+                        skip = True
+                        break
+                if not skip:
+                    ret[key] = m.group(2)
 
     # see if we need to filter out data
     if keep is not None:
@@ -101,7 +112,7 @@ def parse_output(output, keep=None):
     return ret
 
 
-def get_script_env(env, script, args=None, vars=None):
+def get_script_env(env, script, args=None, vars=None, remove=None):
     '''
     this function returns a dictionary of all the data we want to merge
     or process in some other way.
@@ -112,18 +123,18 @@ def get_script_env(env, script, args=None, vars=None):
         nenv = normalize_env(env['ENV'], [])
 
     output = get_output(env.File(script).abspath, args, nenv)
-    vars = parse_output(output, vars)
+    vars = parse_output(output, vars, remove)
     return vars
 
 
-def merge_script_vars(env, script, args=None, vars=None):
+def merge_script_vars(env, script, args=None, vars=None, remove=None):
     '''
     This merges the data retieved from the script in to the Enviroment
     by prepending it.
     script is the name of the script, args is optional arguments to pass
     vars are var we want to retrieve, if None it will retieve everything found
     '''
-    shell_env = get_script_env(env, script, args, vars)
+    shell_env = get_script_env(env, script, args, vars, remove)
     for k, v in shell_env.items():
         env.PrependENVPath(k, v, delete_existing=1)
 

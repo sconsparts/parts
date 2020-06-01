@@ -179,11 +179,13 @@ else:
 
 class ScriptFinder:
 
-    def __init__(self, name, args=None):
+    def __init__(self, name, args=None, keep=None, remove=None):
         if __debug__:
             logInstanceCreation(self)
         self.name = name
         self.args = args
+        self.keep = keep
+        self.remove = remove
 
     def __call__(self, env):
         # get the full path

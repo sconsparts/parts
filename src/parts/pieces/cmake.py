@@ -33,6 +33,8 @@ def CMake(env, destdir=None, auto_scanner={}, **kw):
         "-DCMAKE_BUILD_TYPE=Release",
         '-DCMAKE_SHARED_LINKER_FLAGS="$_ABSRPATH"',
         '-DCMAKE_EXE_LINKER_FLAGS="$_ABSRPATH"',
+        '-DCMAKE_CXX_COMPILER=$CXX',
+        '-DCMAKE_C_COMPILER=$CC',
         "$CMAKE_ARGS"],
 
     # generate the build files
@@ -58,8 +60,6 @@ def CMake(env, destdir=None, auto_scanner={}, **kw):
     cmake_build_files = ["CMakeLists.txt"]
     src_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=cmake_build_files+[".git/*"]).files()
     env["_CMAKE_MAKE_ARGS"] = 'VERBOSE=1\
-        CC="${{CC}}"\
-        CXX="${{CXX}}"\
         $(-j{jobs}$)'.format(jobs=env.GetOption('num_jobs'))
 
     ret = env.CCommand(

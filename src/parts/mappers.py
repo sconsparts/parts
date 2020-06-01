@@ -27,71 +27,42 @@ from SCons.Subst import CmdStringHolder
 class env_guard:
     __slots__ = ('thread_id',)
     __depth__ = defaultdict(int)
+    __cache__ = {}
 
     def __init__(self, thread_id=None):
         self.thread_id = thread_id or _thread.get_ident()
 
     def __enter__(self):
+        depth = self.__depth__[self.thread_id]
+        if depth == 0:
+            # if depth is zero reset to None
+            self.__cache__[self.thread_id] = True
         self.__depth__[self.thread_id] += 1
+        return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.__depth__[self.thread_id] -= 1
+        depth = self.__depth__[self.thread_id]
+        if depth == 0:
+            # if depth is zero reset to None
+            del self.__depth__[self.thread_id]
+            del self.__cache__[self.thread_id]
 
     @classmethod
     def depth(cls, thread_id=None):
         return cls.__depth__[thread_id or _thread.get_ident()]
 
     @classmethod
-    def can_modify(cls, thread_id=None):
-        return not cls.__depth__[thread_id or _thread.get_ident()]
-
-
-def replace_list_items(container, marker, replacement, wrap=lambda x: x):
-    '''
-    The function modifies container by removing all items equal to "marker",
-    moving all items in "replacement" to the latest position of either "marker"
-    or "replacement". Note that "marker" is one item while "replacement" is
-    a sequence of items.
-    See the unit-test for details.
-
-    Returns the container.
-    '''
-    marker = (wrap(marker), wrap((marker,)))
-    result = []
-    marker_index, replacement_index, next_seq = -1, -1, 0
-    for item in container:
-        if item in marker:
-            marker_index = len(result)
-            continue
-        elif next_seq < len(replacement):
-            # For some reasons SCons may convert [x, y, z] in to [(x,), (y,), (z,)]
-            # need to handle the case.
-            if item in (replacement[next_seq], (replacement[next_seq],)):
-                next_seq += 1
-                result.append(item)
-                if next_seq == len(replacement):
-                    # remove the whole sequence from the result
-                    del result[-(next_seq):]
-                    replacement_index = len(result)
-                    next_seq = 0
-                continue
-        result.append(item)
-        next_seq = 0
-    if marker_index < 0:
-        # Nothing to remove. Return unmodified container.
-        return container
-    index = max(marker_index, replacement_index)
-    result[index:index] = replacement
-    container[:] = result
-    return container
+    def cache(cls, val=None, thread_id=None):
+        if val == False:
+            cls.__cache__[thread_id or _thread.get_ident()] = val
+        return cls.__cache__[thread_id or _thread.get_ident()]
 
 
 class mapper:
     name = "Base"
 
     def __init__(self):
-        # if __debug__:
-        #logInstanceCreation(self, 'parts.mappers.Base')
         self.stackframe = None  # errors.GetPartStackFrameInfo()
 
     def alias_missing(self, env):
@@ -137,38 +108,44 @@ class mapper:
     def _guarded_call(self, target, source, env, for_signature=False):
         raise NotImplementedError
 
+    def _get_cache_hash(self, env):
+        return (str(self), env.get_csig())  # get the sig key
+
     def __call__(self, target, source, env, for_signature=False):
-        try:
-            key = (str(self), env.get_csig())  # get the sig key
-            ret = glb.subst_cache.get(key)  # do we have an item cached
-            # do we have a dyn_export file
-            # meaning we have some dynamic logic in a scanner
-            dyn_export = env.get("DYN_EXPORT_FILE")
-            # if we have an export test that it is built
-            if dyn_export:
-                is_export_built = dyn_export.isBuilt or dyn_export.isVisited
-            else:
-                # else we just say it is for the cache test
-                is_export_built = True
-            # test if we can trust what is cached
-            # we have to have loaded the part files
-            if ret and glb.engine.BuildFilesLoaded and is_export_built:
+
+        with env_guard() as grd:
+            try:
+                key = self._get_cache_hash(env)  # get the sig key
+                ret = glb.subst_cache.get(key)  # do we have an item cached
+                # do we have a dyn_export file
+                # meaning we have some dynamic logic in a scanner
+                dyn_export = env.get("DYN_EXPORT_FILE")
+                # if we have an export test that it is built
+                if dyn_export:
+                    is_export_built = dyn_export.isBuilt or dyn_export.isVisited
+                    env_guard.cache(is_export_built)
+
+                # test if we can trust what is cached
+                # we have to have loaded the part files
+                if ret:
+                    return ret
+                else:
+                    ret = self._guarded_call(target, source, env, for_signature)
+                    if env_guard.cache() and glb.engine.BuildFilesLoaded:
+                        glb.subst_cache[key] = ret
+
                 return ret
-            else:
-                ret = self._guarded_call(target, source, env, for_signature)
-                glb.subst_cache[key] = ret
-            return ret
-        except SystemExit:
-            raise
-        except Exception:
-            api.output.error_msg(
-                "Unexpected exception in {0} mapping happened\n mapper: \"{1!r}\"\n{2}".format(
-                    self.name, self, traceback.format_exc()),
-                stackframe=self.stackframe,
-                exit=False
-            )
-            # because the exception thrown will not get thrown the try catch in subst()
-            env.Exit(1)
+            except SystemExit:
+                raise
+            except Exception:
+                api.output.error_msg(
+                    "Unexpected exception in {0} mapping happened\n mapper: \"{1!r}\"\n{2}".format(
+                        self.name, self, traceback.format_exc()),
+                    stackframe=self.stackframe,
+                    exit=False
+                )
+                # because the exception thrown will not get thrown the try catch in subst()
+                env.Exit(1)
 
 
 def _sub_lst(env, obj, thread_id):
@@ -218,28 +195,26 @@ def _sub_lst(env, obj, thread_id):
 
 
 def sub_lst(env, lst, thread_id, recurse=True):
-    ''' Utility function to help with returning list from env.subst() as this function
-    doesn't like the returning of lists.'''
-    spacer = "." * env_guard.depth(thread_id)
-
+    ''' 
+    Utility function to help with returning list from env.subst() as this function
+    doesn't like the returning of lists.
+    '''
     def do_sub_lst():
-        api.output.trace_msg(['sub_lst', 'mapper'], spacer, "sub_lst getting value for", lst)
-
-        ret = []
-        for v in lst[:]:
-            tmp = _sub_lst(env, v, thread_id)
-            if tmp and util.isList(tmp[0]):
-                common.extend_unique(ret, tmp,)
-            else:
-                common.append_unique(ret, tmp)
-
-        api.output.trace_msg(['sub_lst', 'mapper'], spacer, "sub_lst returning", ret)
-
-        return ret
-
-    if recurse:
         with env_guard(thread_id):
-            return do_sub_lst()
+            spacer = "." * env_guard.depth(thread_id)
+            api.output.trace_msg(['sub_lst', 'mapper'], spacer, "sub_lst getting value for", lst)
+            ret = []
+            for v in lst[:]:
+                tmp = _sub_lst(env, v, thread_id)
+                if tmp and util.isList(tmp[0]):
+                    common.extend_unique(ret, tmp,)
+                else:
+                    common.append_unique(ret, tmp)
+
+            api.output.trace_msg(['sub_lst', 'mapper'], spacer, "sub_lst returning", ret)
+
+            return ret
+
     return do_sub_lst()
 
 
@@ -464,6 +439,7 @@ class part_id_export_mapper(mapper):
                              'Found matching part! name: {0} -> alias: {1}'.format(pobj.Name, pobj.Alias))
 
         psec = pobj.Section(self.section)
+        penv = psec.Env
         # the question here is if the export table it up-to-date
         # normally this is probally the case. However if a build has a scanner that
         # add items to the export table dynamically this might not be true. Given no broken caching logic
@@ -473,6 +449,17 @@ class part_id_export_mapper(mapper):
         ret = psec.Exports.get(self.part_prop, [])
         api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, 'Property {0} = {1} '.format(self.part_prop, ret))
 
+        # we need to test if this part has dynamic stuff that is unsafe to cache at this point in time
+        dyn_export = penv.get("DYN_EXPORT_FILE")
+        #print("3434 {} dyn_export = {}".format(env.get("PART_ALIAS"),dyn_export))
+        # if we have an export test that it is built
+        if dyn_export:
+            is_export_built = dyn_export.isBuilt or dyn_export.isVisited
+        else:
+            # else we just say it is for the cache test
+            is_export_built = True
+
+        env_guard.cache(is_export_built, thread_id)
         return ret
 
 
@@ -573,6 +560,8 @@ class part_name_mapper(mapper):
             return None
         if self.env_var:
             env[self.env_var] = ret
+        if glb.engine.BuildFilesLoaded:
+            glb.subst_cache[self._get_cache_hash(env)] = ret
         return ret
 
 
@@ -663,7 +652,7 @@ class make_path(mapper):
         values = env.Flatten(env.subst_list(self.value))
         if self.unique:
             # may need to allow more control of how it is made unique
-            values = common.extend_unique([],values)
+            values = common.extend_unique([], values)
         ret = ""
         pathsep = self.pathsep if self.pathsep else os.pathsep
 
@@ -698,7 +687,7 @@ class join(mapper):
         values = env.Flatten(env.subst_list(self.value))
         if self.unique:
             # may need to allow more control of how it is made unique
-            values = common.append_unique([],values)
+            values = common.append_unique([], values)
         ret = self.sep.join([str(i) for i in values])
         return ret
 

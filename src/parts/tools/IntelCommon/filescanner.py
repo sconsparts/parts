@@ -12,8 +12,8 @@ from SCons.Debug import logInstanceCreation
 
 from . import common
 
-# for version 12.x
 
+# for version 12.x
 
 class file_scanner12:
 

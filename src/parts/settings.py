@@ -678,9 +678,10 @@ class Settings:
             env['ENV']['HOMEPATH'] = str(env['PART_USER_DIR'])
             env['ENV']['USERNAME'] = env['PART_USER']
         elif env['HOST_PLATFORM'] == 'posix':
-            if 'LD_LIBRARY_PATH' in os.environ:
+            if 'LD_LIBRARY_PATH' in os.environ:          
                 env['ENV']['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']
             env['ENV']['HOME'] = os.environ['HOME']
+            env['ENV']['LANG'] = os.environ.get("LANG","en_US.UTF-8")
             env['ENV']['USER'] = env['PART_USER']
 
         # add path to current Python being used, so we use this instead of some other version

@@ -9,6 +9,7 @@ from collections import defaultdict
 
 import parts.api as api
 import SCons.Tool
+import SCons.Errors
 from SCons.Debug import logInstanceCreation
 
 
@@ -63,7 +64,7 @@ class Parts_Tool:
                     api.output.verbose_msg(["tools_failure", "load_module"], "Stack:\n{0}".format(traceback.format_exc()))
 
                     if str(e) != "No module named {0}".format(self.name) and str(e) != "No module named '{0}'".format(self.name):
-                        raise SCons.Errors.EnvironmentError(e)
+                        raise SCons.Errors.SConsEnvironmentError(e)
                     try:
                         import zipimport
                     except ImportError:
@@ -97,7 +98,7 @@ class Parts_Tool:
                         if str(e) != "No module named %s" % self.name:
                             api.output.verbose_msg("tools", "Failed to load module!")
                             api.output.verbose_msg(["tools_failure", "load_module"], "Stack:\n%s" % (traceback.format_exc()))
-                            raise SCons.Errors.EnvironmentError(e)
+                            raise SCons.Errors.SConsEnvironmentError(e)
                         try:
                             import zipimport
                             importer = zipimport.zipimporter(sys.modules['SCons.Tool'].__path__[0])
@@ -108,12 +109,12 @@ class Parts_Tool:
                             m = "No tool named '%s': %s" % (self.name, e)
                             api.output.verbose_msg("tools", "Failed to load module!")
                             api.output.verbose_msg(["tools_failure", "load_module"], "Stack:\n%s" % (traceback.format_exc()))
-                            raise SCons.Errors.EnvironmentError(m)
+                            raise SCons.Errors.SConsEnvironmentError(m)
                 except ImportError as e:
                     m = "No tool named '%s': %s" % (self.name, e)
                     api.output.verbose_msg("tools", "Failed to load module!")
                     api.output.verbose_msg(["tools_failure", "load_module"], "Stack:\n%s" % (traceback.format_exc()))
-                    raise SCons.Errors.EnvironmentError(m)
+                    raise SCons.Errors.SConsEnvironmentError(m)
             else:
                 return result
 

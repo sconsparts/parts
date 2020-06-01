@@ -135,7 +135,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
             CC="$CC"\
             CXX="$CXX"\
             CPPFLAGS="$CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_ABSCPPINCFLAGS"\
-            CFLAGS="$CFLAGS"\
+            CFLAGS="$CCFLAGS $CFLAGS"\
             LDFLAGS="$LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS"\
             CXXFLAGS="$CXXFLAGS $CCFLAGS $CPPFLAGS"'
     else:

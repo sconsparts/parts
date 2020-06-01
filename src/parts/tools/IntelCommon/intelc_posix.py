@@ -6,9 +6,62 @@ from builtins import range
 from parts.platform_info import SystemPlatform
 from parts.tools.Common.Finders import (EnvFinder, PathFinder, RegFinder,
                                         ScriptFinder)
-
+from parts.tools.Common.Scanners import GenericScanner
 from . import common, filescanner
 from .common import Intelc, IntelcInfo
+
+
+# 32-bit 19.0
+Intelc.Register(
+    hosts=[SystemPlatform('posix', 'any'), SystemPlatform('darwin', 'any')],
+    targets=[SystemPlatform('posix', 'x86'), SystemPlatform('darwin', 'x86')],
+    info=[
+        IntelcInfo(
+            version='19.*-*,2020.1.*-2020.*',
+            install_scanner=GenericScanner(
+                [os.path.expanduser('~/intel'), '/opt/intel',],
+                common.intel_19_plus_posix,
+                ['linux/bin/ia32/'],
+                r'icc \(ICC\) (\d+[.\d+]+)',
+                'icc'
+                ),
+            script=ScriptFinder('${INTELC.INSTALL_ROOT}/linux/bin/iccvars.sh',args='-arch ia32 -platform linux'),
+            subst_vars={
+            },
+            shell_vars={
+            },
+            test_file='icc'
+        )
+    ]
+)
+
+# 64-bit 19.0
+Intelc.Register(
+    hosts=[SystemPlatform('posix', 'x86_64'), SystemPlatform('darwin', 'x86_64')],
+    targets=[SystemPlatform('posix', 'x86_64'), SystemPlatform('darwin', 'x86_64')],
+    info=[
+        IntelcInfo(
+            version='19.*-*,2020.1.*-2020.*',
+            install_scanner=GenericScanner(
+                [os.path.expanduser('~/intel'), '/opt/intel',],
+                common.intel_19_plus_posix,
+                ['linux/bin/intel64/'],
+                r'icc \(ICC\) (\d+[.\d+]+)',
+                'icc'
+                ),
+            script=ScriptFinder(
+                '${INTELC.INSTALL_ROOT}/linux/bin/iccvars.sh',
+                args='-arch intel64 -platform linux',
+                remove=(r'_\W*',"POSIXLY_CORRECT")
+                ),
+            subst_vars={
+            },
+            shell_vars={
+            },
+            test_file='icc'
+        )
+    ]
+)
 
 # 32-bit 13.0
 Intelc.Register(
@@ -28,8 +81,8 @@ Intelc.Register(
             },
             shell_vars={
                 'PATH': '${INTELC.INSTALL_ROOT}/bin/ia32/',
-                        'INCLUDE': '${INTELC.INSTALL_ROOT}/compiler/include/',
-                        'LIB': '${INTELC.INSTALL_ROOT}/compiler/lib/ia32/'
+                'INCLUDE': '${INTELC.INSTALL_ROOT}/compiler/include/',
+                'LIB': '${INTELC.INSTALL_ROOT}/compiler/lib/ia32/'
             },
             test_file='icc'
         )
@@ -54,8 +107,8 @@ Intelc.Register(
             },
             shell_vars={
                 'PATH': '${INTELC.INSTALL_ROOT}/bin/intel64/',
-                        'INCLUDE': '${INTELC.INSTALL_ROOT}/compiler/include/',
-                        'LIB': '${INTELC.INSTALL_ROOT}/compiler/lib/intel64'
+                'INCLUDE': '${INTELC.INSTALL_ROOT}/compiler/include/',
+                'LIB': '${INTELC.INSTALL_ROOT}/compiler/lib/intel64'
             },
             test_file='icc'
         )

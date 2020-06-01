@@ -9,6 +9,7 @@ There is also env.SymLink builder is introduced here
 
 import ctypes
 import os
+import subprocess
 
 import parts.api as api
 import parts.common as common
@@ -516,6 +517,7 @@ def _source_scanner():
 
         if not isinstance(source, FileSymbolicLink):
             # This source is not a symlink. So nothing needs to be done
+            # print(1,"here")
             return []
         elif not isinstance(target, FileSymbolicLink):
             # if the source is a symlink and the target is a file
@@ -524,9 +526,25 @@ def _source_scanner():
 
         linkto = source.linkto
         if linkto:
-            # if the target has a linkto property set use it.
+            ret = []
+            tchildren = target.children(scan=0)
+            try:
+                out = subprocess.run("objdump -p {} | grep SONAME".format(source), shell=True,
+                                     check=True, stdout=subprocess.PIPE).stdout.decode().split()[-1]
+                # given a soname and that it is not this node
+                if out and not target.name.endswith(out):
+                    result = target.Entry(out)
+                    ret = [result] if not result in tchildren else []
+
+            except subprocess.CalledProcessError:
+                # something went wrong.. just ignore it and assume that this is not a soname file
+                pass
+
+            # if the target has a linkto property sets use it.
             result = target.Entry(linkto)
-            return [result] if not result in target.children(scan=0) else []
+            ret += [result] if not result in tchildren and result not in ret else []
+
+            return ret
         '''
         #double check this case...
         if isinstance(node, FileSymbolicLink) and node.linkto:

@@ -463,22 +463,23 @@ class parts_addon:
     def _setup_progress_meter(self):
         api.output.verbose_msg("startup", "Setting up show-progress feature")
         if SCons.Script.GetOption('show_progress'):
-             class ProgressCounter:
+            class ProgressCounter:
                 def __init__(self):
-                    self._time=0
-                    self._node=None
+                    self._time = 0
+                    self._node = None
+
                 def __call__(self, node, *args, **kw):
                     if self._time:
-                        tt=time.time() - self._time
+                        tt = time.time() - self._time
                         if time.time() - self._time > 10:
-            
-                            glb.rpter.console.Warning.write( " ****** {0} is took {1} sec to process\n".format(self._node.ID,tt))
-            
+
+                            glb.rpter.console.Warning.write(" ****** {0} is took {1} sec to process\n".format(self._node.ID, tt))
+
                     #glb.rpter.console.Trace.write("Processing {0}\r".format(node.ID))
-                    self._time=time.time()
-                    self._node=node
-             SCons.Script.Progress(ProgressCounter(),1)
-             SCons.Script.Progress(self.def_env['PROGRESS_STR'], 1, file=glb.rpter.console, overwrite=True)
+                    self._time = time.time()
+                    self._node = node
+            SCons.Script.Progress(ProgressCounter(), 1)
+            SCons.Script.Progress(self.def_env['PROGRESS_STR'], 1, file=glb.rpter.console, overwrite=True)
 
     def add_preprocess_logic_queue(self, funcobj):
         self.__post_process_queue.append(funcobj)
@@ -538,7 +539,7 @@ Use -H or --help-options for a list of scons options
             'TARGET_PLATFORM',
             'toolchain',
             'tools',
-            #'mode',
+            # 'mode',
             'CCOPY_LOGIC',
             'BUILD_BRANCH',
             'USE_CACHE_KEY',
@@ -582,7 +583,7 @@ Use -H or --help-options for a list of scons options
             else:
                 md5.update(i.encode())
         # store the ENV value as this has value that can tell us of differences
-        md5.update(common.get_content(self.def_env['ENV']))
+        md5.update(common.get_content(dict(self.def_env['ENV'])))
 
         # we add information about that parts we have defined.
         # a different set gets a different key

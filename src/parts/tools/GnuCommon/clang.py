@@ -30,7 +30,7 @@ clang.Register(
             subst_vars={},
             shell_vars={'PATH': '${CLANG.INSTALL_ROOT}'},
             test_file='clang',
-            opt_pattern='clang\-?([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)'
+            opt_pattern=r'clang\-?([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)'
         )
 
     ]
@@ -51,12 +51,12 @@ clang.Register(
             ],
             opt_dirs=[
                 '/opt/'
-            ],
+            ] + ['/opt/rh/llvm-toolset-{0}/root/usr/bin/'.format(i) for i in range(5, 10)],
             script=None,
             subst_vars={},
             shell_vars={'PATH': '${CLANG.INSTALL_ROOT}'},
             test_file='clang',
-            opt_pattern='clang\-?([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)'
+            opt_pattern=r'clang\-?([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)'
         )
 
     ]

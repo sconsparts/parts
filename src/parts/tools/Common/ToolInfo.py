@@ -112,7 +112,8 @@ class ToolInfo:
                 # process the script directly
                 api.output.verbose_msg("toolinfo", "Getting environment via custom script")
                 if os.path.exists(script):
-                    ret = env.GetScriptVariables(scripts)
+                    # this is a string.. so basic call and hope all works well
+                    ret = env.GetScriptVariables(script)
                 else:
                     # error as no file exits
                     pass
@@ -138,7 +139,8 @@ class ToolInfo:
                                 show_stack=False)
                         ret = {}
                     else:
-                        ret = env.GetScriptVariables(script_data, self.script.args)
+                        api.output.verbose_msgf("toolinfo","Getting value from script")
+                        ret = env.GetScriptVariables(script_data, self.script.args, self.script.keep, self.script.remove)
                 else:
                     ret = {}
 
