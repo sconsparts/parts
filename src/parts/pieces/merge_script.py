@@ -6,6 +6,7 @@ import os
 import re
 import subprocess
 import sys
+import pprint
 
 import parts.api as api
 import parts.glb as glb
@@ -59,7 +60,7 @@ def get_output(script, args=None, shellenv=None):
             if not isinstance(v, str):
                 v = v.encode() if glb.isPY2 else v.decode()
             shellenv[k] = v
-
+    
     api.output.verbose_msg(["merge_script"], "Calling '{}'".format(cmdLine))
     popen = subprocess.Popen(cmdLine, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=shellenv)
 
@@ -76,13 +77,14 @@ def get_output(script, args=None, shellenv=None):
     return output.decode()
 
 
-def parse_output(output, keep=None, remove=None):
+def parse_output(output, keep=None, remove=None, nenv={}):
 
     ret = {}  # this is the data we will return
     # these are the default items we want to remove 
     filter_keys =("LS_COLORS","BASHOPTS","SHELLOPTS","PPID")
     if remove:
         filter_keys = filter_keys + tuple(remove)
+    
     # parse everything
     reg = re.compile('(\\w*)=(.*)', re.I)
     for line in output.splitlines():
@@ -102,12 +104,16 @@ def parse_output(output, keep=None, remove=None):
                     if re.match(regk,key):
                         skip = True
                         break
-                if not skip:
+                if not skip and key == "PATH":
+                    # we want to remove the base default items in the path else later merging can have some odd effects
+                    new_paths = m.group(2).split(os.pathsep)
+                    org_path = nenv.get("PATH","").split(os.pathsep)
+                    ret[key] = os.pathsep.join([path for path in new_paths if path.lower() not in org_path])
+                    
+                elif not skip:
                     ret[key] = m.group(2)
 
-    # see if we need to filter out data
-    if keep is not None:
-        pass
+    api.output.verbose_msg(["merge_script"], "Environment '{}'".format(pprint.pformat(ret)))
 
     return ret
 
@@ -123,7 +129,7 @@ def get_script_env(env, script, args=None, vars=None, remove=None):
         nenv = normalize_env(env['ENV'], [])
 
     output = get_output(env.File(script).abspath, args, nenv)
-    vars = parse_output(output, vars, remove)
+    vars = parse_output(output, vars, remove, nenv)
     return vars
 
 
