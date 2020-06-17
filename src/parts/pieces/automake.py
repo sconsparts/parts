@@ -262,7 +262,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         target_scanner=scanners.depends_sdk_scanner
     )
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$\\$$$$$$$$ORIGIN")}'
-    env.SetDefault(_AUTOMAKE_BUILD_ARGS=SCons.Util.CLVar('LDFLAGS="$LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS" V=1'))
+    env.SetDefault(_AUTOMAKE_BUILD_ARGS=SCons.Util.CLVar('LDFLAGS="$LINKFLAGS $MAKE_LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS" V=1'))
     ret = env.CCommand(
         [
             "$AUTO_MAKE_INSTALL_DESTDIR",
