@@ -602,7 +602,8 @@ class Settings:
             self.vars.Update(env, args=overrides, files=cfg_files, user_defaults=glb_defaults, add_unknown=True)
 
             # call callback function to allow for general csig of this run
-            env["PARTS_RUN_CSIG"] = lambda **kw: glb.engine._cache_key
+            # Note this has to match the signiture else a RTI check will make everything fail in scons
+            env["PARTS_RUN_CSIG"] = lambda target, source, env, for_signature: str(glb.engine._cache_key)
 
             # get the builders
             builders = self._builders

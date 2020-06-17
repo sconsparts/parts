@@ -719,8 +719,8 @@ def def_FS_Dir___init__(klass):
 def_FS_Dir___init__(SCons.Node.FS.Dir)
 
 
-def _my_init(self, value, built_value=None):
-    self.orig_init(value, built_value)
+def _my_init(self, *lst, **kw):
+    self.orig_init(*lst, **kw)
     # may not be the best way.. but works for the moment
     glb.pnodes.AddNodeToKnown(self)
 

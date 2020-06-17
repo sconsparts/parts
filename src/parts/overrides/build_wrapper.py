@@ -41,7 +41,6 @@ def parts_call_(self, env, target=None, source=None, chdir=SCons.Builder._null, 
     found = False
 
     if target or source:
-
         # clean up source value to make it a list as the builder would expect it
         # this help me latter in dealing with the values myself
         # we don't make them real nodes as we don't know what the builder wants
