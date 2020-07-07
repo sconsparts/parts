@@ -4,8 +4,10 @@
 import parts.tools.Common
 import parts.tools.GnuCommon.common
 
-# import SCons.Tool.as as AS
-AS = getattr(__import__('SCons.Tool.as', globals(), locals(), []).Tool, 'as')
+try:
+    import SCons.Tool.asm as AS
+except ImportError:
+    AS = getattr(__import__('SCons.Tool.as', globals(), locals(), []).Tool, 'as')
 
 
 def generate(env):
