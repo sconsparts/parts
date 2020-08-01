@@ -7,6 +7,7 @@ from pathlib import Path
 import parts.api as api
 import SCons.Builder
 import parts.node_helpers as node_helpers
+from parts.pieces.append_action import AppendFile
 import SCons.Scanner.Prog
 import SCons.Defaults
 import scanners
@@ -16,7 +17,7 @@ from SCons.Script.SConscript import SConsEnvironment
 
 def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="configure", prefix=None, configure_args=[],
              auto_configure_args=True, configure_post_actions=None, targets="all", install_targets="install", top_level=True,
-             copy_src=True, copy_top=False, auto_scanner={}, copy_scm=True, **kw):
+             copy_src=True, copy_top=False, auto_scanner={}, copy_scm=True, skip_check=False, check_targets='check', **kw):
     '''
     auto make general logic
     autoreconf- the autoreconf program to call. for some project they have hackie wrapper scripts
@@ -200,7 +201,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                     git_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", includes=["*.git/*"], excludes=[".git/index"])
                     # need to treat ./git/index differently as it state changes and can cause false rebuilds
                     if git_files.files():
-                        git_index = env.File("${CHECK_OUT_DIR}/.git/index")
+                        #git_index = env.File("${CHECK_OUT_DIR}/.git/index")
                         scm_sources = env.CCopy(
                             source=git_files,
                             target=build_dir
@@ -262,7 +263,8 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         target_scanner=scanners.depends_sdk_scanner
     )
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$\\$$$$$$$$ORIGIN")}'
-    env.SetDefault(_AUTOMAKE_BUILD_ARGS=SCons.Util.CLVar('LDFLAGS="$LINKFLAGS $MAKE_LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS" V=1'))
+    env.SetDefault(_AUTOMAKE_BUILD_ARGS=SCons.Util.CLVar(
+        'LDFLAGS="$LINKFLAGS $MAKE_LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS" V=1'))
     ret = env.CCommand(
         [
             "$AUTO_MAKE_INSTALL_DESTDIR",
@@ -285,12 +287,38 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
 
     )
 
+    if not skip_check:
+        api.output.verbose_msg(["automake"], "Generating unit_test for '{name}' with make target {target}".format(name=env.PartName(),target=check_targets))
+        # test target for standard make check from automake
+        env.UnitTest(
+            target="check",  # output file that we want to run
+            # the source we need to "make" the target
+            source=['$AUTO_MAKE_DESTDIR'],
+            builder="CCommand",  # builder name to use to build the target from sources
+            builder_kw=dict(
+                action=[
+                    AppendFile(
+                        '$TARGET',
+                        '#! /bin/bash\n' +
+                        f'pushd {build_dir.abspath}\n' +
+                        'set -x\n' +
+                        'export LD_LIBRARY_PATH=${__env__.Dir("$INSTALL_LIB").abspath}\n' +
+                        'make $_AUTOMAKE_BUILD_ARGS $AUTOMAKE_BUILD_ARGS {target}\n'.format(target=check_targets) +
+                        'set +x\n' +
+                        "popd\n"),
+                    SCons.Defaults.Chmod("$TARGET", 0o755)
+                ],
+            ),
+        )
+    else:
+        api.output.verbose_msg(["automake"], "skipping unit_test generation for '{name}'".format(name=env.PartName()))
+
     # export the install location
     env.ExportItem("DESTDIR_PATH", env.Dir("$AUTO_MAKE_DESTDIR").abspath)
     return ret
 
 
-# adding logic to Scons Enviroment object
+# adding logic to SCons Environment object
 SConsEnvironment.AutoMake = AutoMake
 
 api.register.add_variable('AUTO_MAKE_DESTDIR', '${ABSPATH("destdir")}', 'Defines namespace for building a unit test')

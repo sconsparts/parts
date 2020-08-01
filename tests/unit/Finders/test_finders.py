@@ -3,7 +3,7 @@
 # for easy testing
 import sys
 ##############
-
+import os
 win32 = sys.platform == 'win32'
 import unittest
 from parts.tools.Common.Finders import *
@@ -19,11 +19,12 @@ class TestPathFinder(unittest.TestCase):
         pass
 
     def test_find(self):
+        print(os.getcwd())
         p = PathFinder([
             '../../fakepath',
-            '../../samples'
+            'samples'
         ])
-        self.assertEqual(p(), '../../samples')
+        self.assertEqual(p(), 'samples')
 
     def test_no_find(self):
         p = PathFinder([
@@ -33,7 +34,7 @@ class TestPathFinder(unittest.TestCase):
         self.assertEqual(p(), None)
 
 
-# Enviroment
+# Environment
 
 
 class TestEnvFinder(unittest.TestCase):
@@ -126,16 +127,16 @@ else:
             pass
 
 
-# tests for ScriptFincder object
+# tests for ScriptFinder object
 
 class TestScriptFinder(unittest.TestCase):
 
     def setUp(self):
-        self.env = SCons.Script.Environment(INSTALL_ROOT='./testdata/', tools=[])
+        self.env = SCons.Script.Environment(INSTALL_ROOT='./tests/unit/testdata/', tools=[])
 
     def test_exists(self):
         p = ScriptFinder('${INSTALL_ROOT}testvars.cmd')
-        self.assertEqual(p(self.env), os.path.normpath('./testdata/testvars.cmd'))
+        self.assertEqual(p(self.env), os.path.normpath('./tests/unit/testdata/testvars.cmd'))
 
     def test_no_exists(self):
         p = ScriptFinder('${INSTALL_ROOT}fakevars.cmd')

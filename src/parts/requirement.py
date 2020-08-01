@@ -1,11 +1,8 @@
 
 
-
 import copy
 import hashlib
 
-from future.utils import with_metaclass
-from past.builtins import cmp
 
 import parts.api as api
 import parts.common as common
@@ -19,7 +16,7 @@ _added_types = {}
 class requirement:
 
     def __init__(self, key, internal=False, public=None, policy=None, mapper=None, listtype=None, weight=0, mapto=None, force_internal=False):
-        ''' Sets up the requirment object
+        ''' Sets up the requirement object
 
         @param value The value to import
         @param internal True is the value should not be added to current Parts export table, False otherwise
@@ -69,24 +66,31 @@ class requirement:
 
         self._map_to = mapto
 
-    def value_mapper(self, name, section):
-        return "${{{0}('{1}','{2}','{3}',{4})}}".format(self._mapper, name, section, self.key, self.policy)
+    def value_mapper(self, name, section, optional) -> str:
+        '''
+        return a mapper string to get the result of this requirement
+        '''
+        return f"${{{self._mapper}('{name}','{section}','{self.key}',{self.policy},{optional})}}"
 
     @property
     def mapto(self):
         return self._map_to
 
     @property
-    def is_list(self):
+    def is_list(self) -> bool:
         return self._listtype
 
     @property
-    def is_public(self):
+    def is_public(self) -> bool:
         return self._public
 
     @property
-    def is_internal(self):
+    def is_internal(self) -> bool:
         return self._internal
+
+    @property
+    def is_internal_forced(self) -> bool:
+        return self._force_internal
 
     @property
     def key(self):
@@ -139,12 +143,7 @@ class requirement:
 
     def __hash__(self):
         return hash(self.key)
-
-    # this only works in python2 sort
-    def __cmp__(self, rhs):
-        return cmp(self.key, rhs.key)
-
-    # this is python 3 sort
+    
     def __eq__(self, other):
         return self.key == other.key
 
@@ -287,11 +286,11 @@ class metaREQ(type):
                 api.output.warning_msg("REQ option {0} is deprecated and will be removed, please remove usage.".format(name))
             return copy.deepcopy(_added_types[name][0])(internal=internal)
         if internal:
-            return requirement_internal(name, internal)
-        return requirement(name, internal)
+            return requirement_internal(name, True)
+        return requirement(name)
 
 
-class REQ(with_metaclass(metaREQ, object)):
+class REQ(metaclass = metaREQ):
     Policy = REQPolicy
 
     def __init__(self, lst=[], weight=None):

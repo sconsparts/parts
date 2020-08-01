@@ -1,9 +1,8 @@
 
-
+from typing import Dict
 import os
 import tempfile
 import traceback
-from builtins import map
 from collections import defaultdict
 
 import _thread
@@ -26,8 +25,8 @@ from SCons.Subst import CmdStringHolder
 
 class env_guard:
     __slots__ = ('thread_id',)
-    __depth__ = defaultdict(int)
-    __cache__ = {}
+    __depth__:Dict[int,int] = defaultdict(int)
+    __cache__:Dict[int,int] = {}
 
     def __init__(self, thread_id=None):
         self.thread_id = thread_id or _thread.get_ident()
@@ -99,6 +98,7 @@ class mapper:
             "Failed to map dependency for {0}\n  with Version: {1} config: {2} TARGET_PLATFORM: {3}\n {4}".format(
                 env.PartName(), env.PartVersion(), env['CONFIG'], env['TARGET_PLATFORM'], reason),
             stackframe=self.stackframe,
+            print_once=True,
             exit=False
         )
         if policy == Policy.ReportingPolicy.error:
@@ -113,7 +113,7 @@ class mapper:
 
     def __call__(self, target, source, env, for_signature=False):
 
-        with env_guard() as grd:
+        with env_guard():
             try:
                 key = self._get_cache_hash(env)  # get the sig key
                 ret = glb.subst_cache.get(key)  # do we have an item cached
@@ -137,10 +137,10 @@ class mapper:
                 return ret
             except SystemExit:
                 raise
-            except Exception:
+            except Exception as e:
                 api.output.error_msg(
-                    "Unexpected exception in {0} mapping happened\n mapper: \"{1!r}\"\n{2}".format(
-                        self.name, self, traceback.format_exc()),
+                    "Unexpected exception in {0} mapping happened\n mapper: \"{1!r}\"\n {2}\n{3}".format(
+                        self.name, self, e, traceback.format_exc()),
                     stackframe=self.stackframe,
                     exit=False
                 )
@@ -366,7 +366,7 @@ class part_id_mapper(mapper):
         t = target_type.target_type("name::" + self.part_name)
         t.Properties['version'] = self.ver_range
         t.Properties['platform_match'] = env['TARGET_PLATFORM']
-        match = part_ref.part_ref(t, glb.engine._part_manager._from_env(env).Uses)
+        match = part_ref.PartRef(t, glb.engine._part_manager._from_env(env).Uses)
         if match.hasUniqueMatch:
             pobj = match.UniqueMatch
         else:
@@ -403,7 +403,7 @@ class part_id_export_mapper(mapper):
     '''
     name = 'PARTIDEXPORTS'
 
-    def __init__(self, name, section, part_prop, policy=Policy.REQPolicy.warning):
+    def __init__(self, name, section, part_prop, policy=Policy.REQPolicy.warning,optional=False):
         if __debug__:
             logInstanceCreation(self, 'parts.mappers.part_id_export_mapper')
         mapper.__init__(self)
@@ -411,24 +411,29 @@ class part_id_export_mapper(mapper):
         self.part_prop = part_prop
         self.policy = policy
         self.section = section
+        self.optional = optional
 
     def __repr__(self):
-        return "${{{0}('{1}','{2}','{3}',{4})}}".format(self.name, self.part_name, self.section, self.part_prop, self.policy)
+        return f"${{{self.name}('{self.part_name}','{self.section}','{self.part_prop}',{self.policy},{self.optional})}}"
 
     def _guarded_call(self, target, source, env, for_signature):
         thread_id = _thread.get_ident()
         spacer = "." * env_guard.depth(thread_id)
 
         pobj_org = glb.engine._part_manager._from_env(env)
-        sec = pobj_org.DefiningSection
         api.output.trace_msg(['partexport_mapper', 'mapper'], spacer, 'Expanding value "{0!r}"'.format(self))
 
         # Find matching version pinfo
-        match = part_ref.part_ref(target_type.target_type(self.part_name), pobj_org.Uses)
+        match = part_ref.PartRef(target_type.target_type(self.part_name), pobj_org.Uses)
         if match.hasUniqueMatch:
             pobj = match.UniqueMatch
         elif match.hasStoredMatch:
             pobj = match.StoredUniqueMatch
+        elif not match.hasUniqueMatch and self.optional:
+            api.output.trace_msg(['partexport_mapper', 'mapper'], spacer,
+                                 'Failed to find Part that matches name: {0}'.format(self.part_name))
+            self.name_to_alias_failed(env, match, policy=Policy.REQPolicy.warning)
+            return ''
         else:
             api.output.trace_msg(['partexport_mapper', 'mapper'], spacer,
                                  'Failed to find Part that matches name: {0}'.format(self.part_name))
@@ -451,7 +456,7 @@ class part_id_export_mapper(mapper):
 
         # we need to test if this part has dynamic stuff that is unsafe to cache at this point in time
         dyn_export = penv.get("DYN_EXPORT_FILE")
-        #print("3434 {} dyn_export = {}".format(env.get("PART_ALIAS"),dyn_export))
+        
         # if we have an export test that it is built
         if dyn_export:
             is_export_built = dyn_export.isBuilt or dyn_export.isVisited
@@ -465,11 +470,11 @@ class part_id_export_mapper(mapper):
 
 # deprecated .. better to use PARTSUBST()
 class part_sub_mapper(mapper):
-    ''' This class maps the part vars in the Default enviroment to the actual
+    ''' This class maps the part vars in the Default environment to the actual
     value stored the in default Env PART_INFO map. It then returns the value
     of the property for the requested part alias. This version doesn't have the
     small hack to fix the list subst in SCons. As such it a bit faster is is mostly
-    used for delay substiution of more simple value such as $OUT_BIN which may contain
+    used for delay substitution of more simple value such as $OUT_BIN which may contain
     values not fully filled in.
     '''
     name = 'PARTSUB'
@@ -495,11 +500,11 @@ class part_sub_mapper(mapper):
 
 
 class part_subst_mapper(mapper):
-    ''' This class maps the part vars in the Default enviroment to the actual
+    ''' This class maps the part vars in the Default environment to the actual
     value stored the in default Env PART_INFO map. It then returns the value
     of the property for the requested part target. This version doesn't have the
     small hack to fix the list subst in SCons. As such it a bit faster is is mostly
-    used for delay substiution of more simple value such as $OUT_BIN which may contain
+    used for delay substitution of more simple value such as $OUT_BIN which may contain
     values not fully filled in.
     '''
     name = 'PARTSUBST'
@@ -521,7 +526,7 @@ class part_subst_mapper(mapper):
         thread_id = _thread.get_ident()
         spacer = "." * env_guard.depth(thread_id)
         pobj_org = glb.engine._part_manager._from_env(env)
-        ref = part_ref.part_ref(self.target_str, pobj_org.Uses)
+        ref = part_ref.PartRef(self.target_str, pobj_org.Uses)
         api.output.trace_msgf(['partsubst_mapper', 'mapper'], "{spacer}Mapping target: {0}", self.target_str, spacer=spacer)
         api.output.trace_msgf(['partsubst_mapper', 'mapper'], "{spacer}Has Match: {0}", ref.hasUniqueMatch, spacer=spacer)
         if not ref.hasUniqueMatch or not ref.hasMatch:
@@ -604,7 +609,7 @@ class define_if(mapper):
         self.value = value  # return if var is bool positive
 
     def __repr__(self):
-        return '${{{0}("{1}")}}'.format(self.name, self.var, self.value)
+        return f'${{{self.name}("{self.var},{self.value}")}}'
 
     def _guarded_call(self, target, source, env, for_signature):
         subvalue = env.subst(self.var)
@@ -832,6 +837,8 @@ class runpath_mapper(mapper):
 
                     install_path = env.Dir('$INSTALL_BIN')
                     for comp in sec.Depends:
+                        if not comp.hasUniqueMatch and comp.isOptional:
+                            continue
                         libpath = comp.Section.Env.subst("$INSTALL_LIB")
                         if libpath not in cache:
                             cache.add(libpath)

@@ -9,18 +9,17 @@ import parts.version as version
 from SCons.Debug import logInstanceCreation
 
 
-class part_ref:
+class PartRef:
     """description of class"""
     __slots__ = [
         '__local_space',
         '__target',
         '__matches',
-        '__stored_matches'
+        '__stored_matches',
     ]
 
     def __init__(self, target, local_space=None):
-        if __debug__:
-            logInstanceCreation(self, 'parts.part_ref.part_ref')
+
         self.__local_space = local_space
         if util.isString(target):
             target = target_type.target_type(target)
@@ -30,7 +29,7 @@ class part_ref:
 
     @property
     def Matches(self):
-        # returns all matches we have for this referance
+        # returns all matches we have for this reference
         if not self.__matches:
             # We have not tested yet for a match.
             # query the Part Manager Object to get match information
@@ -92,8 +91,8 @@ class part_ref:
     def Target(self):
         return self.__target
 
-    def TargetStr(self):
-        ret = ''
+    def TargetStr(self) -> str:
+        
         properties = ''
         for k, v in self.Target.Properties.items():
             if k == 'version':
@@ -132,7 +131,7 @@ class part_ref:
         else:
             return "Target {0} and properties of:\n{1}".format(ts, properties)
 
-    def AmbiguousMatchStr(self):
+    def AmbiguousMatchStr(self) -> str:
         matches = ''
         for pobj in self.Matches:
             matches += " Part Alias: {0}\n   Name: {1}\n".format(pobj.Alias, pobj.Name)
@@ -184,4 +183,4 @@ class part_ref:
         )
 
     def str_sig(self):
-        return "{}:{}".format(self.__target.OrignialString, True if self.__local_space else False)
+        return "{}:{}".format(self.__target.OriginalString, True if self.__local_space else False)

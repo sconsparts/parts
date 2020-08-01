@@ -508,7 +508,7 @@ class part_manager:
             print(tmp.ID, "is NOT SETUP!!!!!!!!")
 
         # store setup state if this is a read cache or ignore case, as it might need to load latter as a file
-        # and we will not be able to get the orginal state to "reinit" this component
+        # and we will not be able to get the original state to "reinit" this component
         if tmp.ReadState != glb.load_file:
             tmp_args = new_kw
             tmp_args.update({
@@ -543,7 +543,7 @@ class part_manager:
         new_list = []  # the new target list
         skip_list = []
 
-        def _add_list(_nodestr, orginal_str, target_obj):
+        def _add_list(_nodestr, original_str, target_obj):
             '''
             This is a helper funtions to test if the node is known and or possibly valid
             before we try to add the node to the target list
@@ -554,11 +554,11 @@ class part_manager:
             # elif not glb.pnodes.isKnownNode(_nodestr) and not target_obj.hasAlias:
             #    # This is not defined or known in the cache
             #    # since it is not defined or known to be a valid target we error
-            #    api.output.error_msgf("{0} is an invalid target",orginal_str)#,show_stack=False)
+            #    api.output.error_msgf("{0} is an invalid target",original_str)#,show_stack=False)
 
             new_list.append(_nodestr)
 
-        api.output.verbose_msgf(['loading'], "Orginal BUILD_TARGETS: {0}", SCons.Script.BUILD_TARGETS)
+        api.output.verbose_msgf(['loading'], "original BUILD_TARGETS: {0}", SCons.Script.BUILD_TARGETS)
         for t in SCons.Script.BUILD_TARGETS:
             tobj = target_type(t)
             # first see if this is ambiguous
@@ -777,7 +777,7 @@ class part_manager:
             glb.engine.UpToDateExit()
 
         self.map_scons_target_list(up_to_date)
-        glb.pnodes.clear_node_states()
+        glb.pnodes.ClearNodeStates()
 
     def ProcessSection(self, sec_type, target):
         '''
@@ -796,9 +796,9 @@ class part_manager:
         # parse the target to get any possible concepts
         if target.isPartTarget() == False:
             target.all = True
-            if target.orginal_string not in ['all', '.']:
+            if target.original_string not in ['all', '.']:
                 api.output.warning_msg(
-                    'Target "%s" is unknown to Parts, it may be known to SCons. Force reading all data' % target.orginal_string)
+                    'Target "%s" is unknown to Parts, it may be known to SCons. Force reading all data' % target.original_string)
         if target.concept is None:  # no concept defined
             concept = 'build'
         else:

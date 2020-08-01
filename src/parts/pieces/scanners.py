@@ -46,6 +46,8 @@ def depends_sdkfiles_scanner(node, env, path):
     ret = []
     file_list = []
     for comp in sec.Depends:
+        if not comp.hasUniqueMatch and comp.isOptional:
+            continue
         # get the export.jsn file
         lenv = comp.Section.Env
         export_file = lenv.File(builders.exports.file_name)

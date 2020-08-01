@@ -1,6 +1,5 @@
 
 
-
 import os
 import stat
 import sys
@@ -46,6 +45,9 @@ def unit_test_script_bf(target, source, env):
     with open(target_py.path, 'wb') as f:
 
         cmd = env.subst("$UNIT_TEST_RUN_COMMAND")
+        if cmd.startswith("#"):
+            cmd = cmd[1:]
+        api.output.verbose_msgf(["unit_test.script_generation","unit_test"],'Generating script with command of:\n {}',cmd)
         # UNIT_TEST_ENV may be a dict or a list of (key, value) tuples
         command_env = {}
         for (key, value) in dict(env.get('UNIT_TEST_ENV', {})).items():
@@ -86,11 +88,12 @@ sys.exit(proc.returncode)
 
 
 def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.', make_pdb=True,
-              depends=None, builder="Program", **kw):
+              depends=None, builder="Program", builder_kw={}, **kw):
 
     # to help with user errors
     errors.SetPartStackFrameInfo()
-
+    
+    builder_kw=builder_kw.copy()
     if ("utest::" in env["SUPPRESS_SECTION"] or
             "utest" in env["SUPPRESS_SECTION"]) and \
             SCons.Script.GetOption('section_suppression'):
@@ -114,7 +117,7 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
     # add section to Part container
     parent_obj._AddSection("utest", sec)
     # Set the "current defining section" to the utest section
-    # and save current sectiond to be reset at end of function
+    # and save current section to be reset at end of function
     curr_sec = parent_obj.DefiningSection
     try:
         parent_obj.DefiningSection = sec
@@ -151,17 +154,17 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
         oot_build_dir_node = sec.Env.Dir(oot_build_dir)
 
         def make_node(fstr, node=None):
-            # path is to relative to the src directory
+            # path is to relative to the src directory            
             if fstr.startswith(rel_src_dir):
                 fstr = fstr[len(rel_src_dir) + 1:]
             # abs path to current location of part file calling unit test
             elif fstr.startswith(curr_path):
                 fstr = fstr[len(curr_path) + 1:]
-            # variant form for orginal build section of node
+            # variant form for original build section of node
             elif fstr.startswith(orig_build_dir):
                 if node and (node.srcnode().path == node.path or node.has_builder()):
                     # this is node that is in the build dir
-                    # need to return the orginal object
+                    # need to return the original object
                     return node
                 # this is not best test, but exists allow "legacy" cases
                 # to work, however those cases should probally be changed
@@ -190,7 +193,7 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
                 elif fnode.is_under(scons_dir_node):
                     fstr = scons_dir_node.rel_path(fnode)
                     return oot_build_dir_node.File(fstr)
-            return build_dir_node.File(fstr)
+            return build_dir_node.Entry(fstr)
 
         # map autodepends stuff
         if depends is None:
@@ -214,24 +217,23 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
             elif isinstance(f, SCons.Node.FS.Dir):
                 output.warning_msgf("Cannot build directories in unittest()\n Node={0}\n Skipping...", f.ID)
             elif isinstance(f, SCons.Node.FS.File):
-                # File node will start with the orginal build directory
+                # File node will start with the original build directory
                 # or the start with current path ( ie full path to src)
                 # or it might be equal to some messed up value based on the build directory
                 # caused by the mix of ../ paths
                 fn = make_node(f.path, f)
                 src_files.append(fn)
             elif isinstance(f, SCons.Node.FS.Entry):
-                # Entry (like File) node will start with the orginal build directory
+                # Entry (like File) node will start with the original build directory
                 # or the start with current path ( ie full path to src)
                 # or it might be equal to some messed up value based on the build directory
                 # caused by the mix of ../ paths
                 fn = make_node(f.path, f)
                 src_files.append(fn)
-
             elif util.isString(f):
                 # normalize the path so we get matches on windows and posix based systems
                 f = os.path.normpath(f)
-                fn = make_node(f)
+                fn = make_node(sec.Env.subst(f))
                 src_files.append(fn)
             else:
                 api.output.warning_msg("Unknown type in unit_test() in unit_test.py in Part", env.subst('$PART_NAME'))
@@ -279,10 +281,17 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
             del sec.Env['PDB']
 
         # the unit test we want to build
-        tmp_bld = getattr(sec.Env, builder)
+        tmp_bld = getattr(sec.Env, builder)        
         if tmp_bld is None:
             api.output.error_msg("Builder {0} is not found".format(builder))
-        ret = tmp_bld(target=build_dir + "/" + sec.Env['UNIT_TEST_TARGET_NAME'], source=src_files)
+        api.output.verbose_msgf(['unit_test'],'Using builder "{}"', builder)
+        if 'target' not in builder_kw:
+            builder_kw['target'] = build_dir + "/" + sec.Env['UNIT_TEST_TARGET_NAME']
+        if 'source' not in builder_kw:
+            builder_kw['source'] = src_files
+        api.output.verbose_msgf(['unit_test'],'calling with args {}', builder_kw)
+        ret = tmp_bld(**builder_kw)
+        
 
         # build alias
         build_alias = '${PART_BUILD_CONCEPT}${PART_ALIAS_CONCEPT}${PART_ALIAS}'
@@ -290,10 +299,10 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
 
         tmp = []
         for i in ret:
-            if isinstance(i, SCons.Node.FS.File)or isinstance(i, SCons.Node.Node) or util.isString(i):
-                if common.is_catagory_file(sec.Env, 'INSTALL_LIB_PATTERN', i):
+            if isinstance(i, SCons.Node.FS.File) or isinstance(i, SCons.Node.Node) or util.isString(i):
+                if common.is_category_file(sec.Env, 'INSTALL_LIB_PATTERN', i):
                     tmp += sec.Env.CCopy(target='$INSTALL_LIB', source=i)
-                else:  # if common.is_catagory_file(env, 'SDK_BIN_PATTERN', i):
+                else:  # if common.is_category_file(env, 'SDK_BIN_PATTERN', i):
                     tmp += sec.Env.CCopy(target='$INSTALL_BIN', source=i)
         ret = tmp
 
@@ -376,6 +385,7 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
         errors.ResetPartStackFrameInfo()
     sec.LoadState = glb.load_file
     sec._map_targets()
+    
     return ret
 
 
@@ -389,7 +399,7 @@ def run_utest_return_default(code, env=None, stackframe=None):
     return code
 
 
-# adding logic to Scons Enviroment object
+# adding logic to Scons Environment object
 SConsEnvironment.UnitTest = unit_test
 
 api.register.add_builder('__UTEST__', SCons.Script.Builder(

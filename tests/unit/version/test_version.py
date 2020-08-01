@@ -212,7 +212,7 @@ class TestVersions(unittest.TestCase):
         self.assertTrue(ver1 > ver2)
 
     def test_version_compare_special_both_with_string(self):
-        '''Test version comparison where both have special strings and one is a raw srting.'''
+        '''Test version comparison where both have special strings and one is a raw string.'''
         ver1 = version('1.2.3alpha')
         ver2 = '1.2.3beta'
         self.assertFalse(ver1 == ver2)
@@ -223,7 +223,7 @@ class TestVersions(unittest.TestCase):
         self.assertFalse(ver1 > ver2)
 
     def test_version_compare_special_long_with_string(self):
-        '''Test version comparison with many subparts including specials and one is a raw srting.'''
+        '''Test version comparison with many subparts including specials and one is a raw string.'''
         ver1 = version('1.2.3beta1rc5')
         ver2 = '1.2.3beta1'
         self.assertFalse(ver1 == ver2)
@@ -236,15 +236,15 @@ class TestVersions(unittest.TestCase):
     def test_version_none(self):
         ''' Test version 0.0.0 is None'''
         ver1 = version('0.0.0')
-        self.assertTrue(ver1 is None)
-        self.assertFalse(ver1 is not None)
+        self.assertFalse(ver1 is None)
+        self.assertTrue(ver1 is not None)
         self.assertTrue(ver1 <= None)
         self.assertTrue(ver1 >= None)
         self.assertFalse(ver1 < None)
         self.assertFalse(ver1 > None)
         ver1 = version('0')
-        self.assertTrue(ver1 is None)
-        self.assertFalse(ver1 is not None)
+        self.assertFalse(ver1 is None)
+        self.assertTrue(ver1 is not None)
         self.assertTrue(ver1 <= None)
         self.assertTrue(ver1 >= None)
         self.assertFalse(ver1 < None)
@@ -253,8 +253,8 @@ class TestVersions(unittest.TestCase):
     def test_version_none2(self):
         ''' Test version() is None'''
         ver1 = version()
-        self.assertTrue(ver1 is None)
-        self.assertFalse(ver1 is not None)
+        self.assertFalse(ver1 is None)
+        self.assertTrue(ver1 is not None)
         self.assertTrue(ver1 <= None)
         self.assertTrue(ver1 >= None)
         self.assertFalse(ver1 < None)

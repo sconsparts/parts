@@ -271,7 +271,7 @@ class TestTarget_implied_name6(TestTarget_base):
 
     def setUp(self):
         self.target_string = 'name@k:v@k1:1,2,3,4@k3:hello'
-        self.string = 'name::name@k3:hello@k:v@k1:1,2,3,4'
+        self.string = 'name::name@k:v@k1:1,2,3,4@k3:hello'
         self.ambiguous = False
         self.recursive = False
         self.root_alias = None
@@ -287,7 +287,7 @@ class TestTarget_implied_name7(TestTarget_base):
 
     def setUp(self):
         self.target_string = 'alias@k:v@k1:1,2,3,4@k3:hello'
-        self.string = 'name::alias@k3:hello@k:v@k1:1,2,3,4'
+        self.string = 'name::alias@k:v@k1:1,2,3,4@k3:hello'
         self.ambiguous = False
         self.recursive = False
         self.root_alias = None

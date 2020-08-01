@@ -214,7 +214,7 @@ class target_type:
         else:
             target = str(target)
         self._properties = {}
-        self._orginal_string = target
+        self._original_string = target
         self.__dict__.update(_parse_target(target))
 
     @property
@@ -310,8 +310,8 @@ class target_type:
         return bool(self._properties)
 
     @property
-    def OrignialString(self):
-        return self._orginal_string
+    def OriginalString(self):
+        return self._original_string
 
     @property
     def RootAlias(self):
@@ -369,7 +369,7 @@ class target_type:
     def __str__(self):
         '''
         Return a string form of target with any changed values.
-        Use orginal_string value to get the orginal value used to Intially create this object
+        Use original_string value to get the original value used to Intially create this object
         '''
         s = ''
         if self.hasConcept:

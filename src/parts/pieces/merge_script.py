@@ -51,7 +51,7 @@ def get_output(script, args=None, shellenv=None):
         cmdLine = '. {script} {args} ; set'.format(script=script, args=args if args else '')
         shell = True
     else:
-        raise Exception("Unsuported OS type: " + sys.platform)
+        raise Exception("Unsupported OS type: " + sys.platform)
 
     if shellenv:
         for k, v in shellenv.items():
@@ -64,15 +64,16 @@ def get_output(script, args=None, shellenv=None):
     api.output.verbose_msg(["merge_script"], "Calling '{}'".format(cmdLine))
     popen = subprocess.Popen(cmdLine, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=shellenv)
 
+    
+    if popen.wait() != 0:
+        api.output.error_msg(
+            "Getting values of environment values of '{}' failed because of return code not equal to 0".format(script))
+    
     # Use the .stdout and .stderr attributes directly because the
     # .communicate() method uses the threading module on Windows
     # and won't work under Pythons not built with threading.
     stdout = popen.stdout.read()
-
-    if popen.wait() != 0:
-        api.output.error_msg(
-            "Getting values of environment values of '{}' failed because of return code not equal to 0".format(script))
-
+    
     output = stdout
     return output.decode()
 

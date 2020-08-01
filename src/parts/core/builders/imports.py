@@ -19,8 +19,10 @@ def PartImportsAction(target, source, env):
 
     # generate the data
     for comp in sec.Depends:
+        if not comp.hasUniqueMatch and comp.isOptional:
+            continue
         for r in comp.Requires:
-            map_val = r.value_mapper(comp.PartRef.Target, comp.SectionName)
+            map_val = r.value_mapper(comp.PartRef.Target, comp.SectionName, comp.isOptional)
             value = env.subst(map_val)
             if r.key in data:
                 if value and value not in data[r.key]:
@@ -47,9 +49,10 @@ def depend_scanner(node, env, path):
     sec = glb.engine._part_manager.section_from_env(env)
     ret = []
     for comp in sec.Depends:
+        if not comp.hasUniqueMatch and comp.isOptional:
+            continue
         # add the expected depend on the export file
         ret.append(comp.Section.Env.File(exports.file_name))
-
         # map the higher level aliases
         for requirement in comp.Requires:
             value = comp.Section.Exports.get(requirement.key)

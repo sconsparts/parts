@@ -15,7 +15,7 @@ def Part_factory(arg1=None, parts_file=None, mode=[], vcs_type=None, default=Fal
                  alias=None, name=None, *lst, **kw):
     ''' This  function acts a factory to help with Part creation.
     This way control over making a new Part or getting the existing Part
-    can be better controled
+    can be better controlled
     '''
 
     # handle common case:part(alias,file)
@@ -65,10 +65,10 @@ def SubPart_factory(env, arg1=None, parts_file=None, mode=[], vcs_type=None, def
 # This is what we want to be setup in parts
 
 
-# adding logic to Scons Enviroment object
+# adding logic to Scons Environment object
 SConsEnvironment.Part = SubPart_factory
 
-# add configuartion varaible needed for part
+# add configuration variable needed for part
 api.register.add_variable('PART_BUILD_CONCEPT', 'build${ALIAS_SEPARATOR}', 'Namespace used to just build a given target')
 
 api.register.add_variable('ALIAS_POSTFIX', '', ' ')

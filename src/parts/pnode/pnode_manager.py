@@ -1,7 +1,7 @@
 
 
-
 import os
+from typing import Dict, Optional, List
 from builtins import map
 
 import parts.api as api
@@ -45,16 +45,18 @@ class _node_info:
 
 
 class manager:
-    """description of class"""
+    """
+    This class act a a manager for all nodes. SCons has independent manager for some of the nodes
+    This provides number of "issues". To help address this the problem we define this class to handle
+    all the SCons node as well all the Part nodes objects.
+    """
 
     _node_types = {}
 
     def __init__(self):
-        if __debug__:
-            logInstanceCreation(self)
-        self.__known_pnodes = {}   # ID:node:parts.pnode
-        self.__known_nodes = {}   # ID:SCons.Node.Node
-        self.__aliases = {}  # ID:Alais node
+        self.__known_pnodes: Dict[str, pnode.PNode] = {}
+        self.__known_nodes: Dict[str, SCons.Node.Node] = {}
+        self.__aliases: Dict[str, SCons.Node.Alias] = {}
         self.__store_all = False
 
         # cached states
@@ -74,51 +76,91 @@ class manager:
                 # clear out the cache
                 datacache.StoreData("nodeinfo", {})
 
-    def TotalNodes(self):
+    @property
+    def TotalNodes(self) -> int:
+        '''
+        Total number of known SCons nodes
+        '''
         return len(self.__known_nodes)
 
-    def TotalPnodes(self):
+    @property
+    def TotalPnodes(self) -> int:
+        '''
+        Total number of known part nodes
+        '''
         return len(self.__known_pnodes)
 
-    def clear_node_states(self):
+    def ClearNodeStates(self) -> int:
+        '''
+        Clear any state the SCons nodes have to force everything to be 
+        regenerated.
+        '''
         for node in self.__known_nodes.values():
             node.clear_memoized_values()
 
-    def isKnownNode(self, ID):
+    def isKnownNode(self, ID: str) -> bool:
+        '''
+        Is this node known yet
+        '''
         return ID in self.__known_nodes
 
-    def isKnownPNode(self, ID):
+    def isKnownPNode(self, ID: str) -> bool:
+        '''
+        Is this Part or section node known yet
+        '''
         return ID in self.__known_pnodes
 
-    def isKnownAliasStored(self, ID):
+    def isKnownAliasStored(self, ID: str) -> bool:
+        '''
+        Is this Alias node known from state in the cache?
+        '''
         data = self._get_cache()
         if data:
             return ID in data.get('aliases', {})
         return False
 
-    def isKnownNodeStored(self, ID):
+    def isKnownNodeStored(self, ID: str) -> bool:
+        '''
+        Is this SCons node known from state in the cache?
+        '''
         data = self._get_cache()
         if data:
             return ID in data.get('known_nodes', {})
         return False
 
-    def isKnownPNodeStored(self, ID):
+    def isKnownPNodeStored(self, ID: str) -> bool:
+        '''
+        Is this Part or section node known from state in the cache?
+        '''
         data = self._get_cache()
         if data:
             return ID in data.get('known_pnodes', {})
         return False
 
-    def GetNode(self, ID, create=None):
-        try:
+    def GetNode(self, ID: str, create = None) -> Optional[SCons.Node.Node]:
+        '''
+        return a node object. If the node is not defined yet, we create a 
+        node object and fill in some information based on state in the cache
+        '''
+        if self.isKnownNode(ID):
+            # get the node from known nodes
             return self.__known_nodes[ID]
-        except KeyError:
-            if self.isKnownNodeStored(ID):
-                return self.LoadNodeStored(ID)
-            elif create:
-                return self.Create(create, ID)
+        elif self.isKnownNodeStored(ID):
+            # if we have state on this
+            # return the node from the stored info
+            return self.LoadNodeStored(ID)
+        elif create:
+            # we don't have any information
+            # create a node as requested
+            return self.Create(create, ID)
+        # no node is known or requested to be created
         return None
 
-    def GetPNode(self, ID, create=None):
+    def GetPNode(self, ID: str, create = None) -> Optional[pnode.PNode]:
+        '''
+        return a pnode object. If the pnode is not defined yet, we create a 
+        node object and fill in some information based on state in the cache
+        '''
         if self.isKnownPNode(ID):
             return self.__known_pnodes[ID]
         elif self.isKnownPNodeStored(ID):
@@ -127,7 +169,10 @@ class manager:
             return self.Create(create, ID)
         return None
 
-    def LoadNodeStored(self, ID):
+    def LoadNodeStored(self, ID: str) -> Optional[SCons.Node.Node]:
+        '''
+        Load a node object based on the information stored in the cache
+        '''
         data = self._get_cache()
         if data:
             # get info on the type
@@ -137,7 +182,10 @@ class manager:
             return node
         return None
 
-    def LoadPNodeStored(self, ID):
+    def LoadPNodeStored(self, ID: str) -> Optional[pnode.PNode]:
+        '''
+        Load a pnode object based on what is stored in the cache
+        '''
         data = self._get_cache()
         if data:
             # get info on the type
@@ -147,7 +195,10 @@ class manager:
             return node
         return None
 
-    def GetAliasStoredInfo(self, ID):
+    def GetAliasStoredInfo(self, ID: str) -> Optional[SCons.Node.Alias.Alias]:
+        '''
+        Create a Alias node based on what is stored in cache
+        '''
         data = self._get_cache()
         if data:
             try:
@@ -156,43 +207,58 @@ class manager:
                 pass
         return None
 
-    def GetStoredNodeInfo(self, node):
+    def GetStoredNodeInfo(self, node: SCons.Node.Node):
+        '''
+        Retrive the stored node information for the given node
+        '''
         return self.GetStoredNodeIDInfo(node.ID)
 
-    def GetStoredNodeIDInfo(self, nodeID):
+    def GetStoredNodeIDInfo(self, ID: str):
+        '''
+        Retrive the stored node information based on the ID
+        '''
         data = self._get_cache()
         if data:
             try:
-                return picklehelpers.loads(data['known_nodes'][nodeID]['pinfo'])
+                return picklehelpers.loads(data['known_nodes'][ID]['pinfo'])
             except KeyError:
                 return None
             except (TypeError, picklehelpers.UnpicklingError):
                 # Old-style cache. Convert it into new one
-                data = data['known_nodes'][nodeID]
+                data = data['known_nodes'][ID]
                 result = data['pinfo']
                 data['pinfo'] = picklehelpers.dumps(result)
                 return result
         return None
 
-    def GetStoredPNodeInfo(self, node):
+    def GetStoredPNodeInfo(self, node: pnode.PNode):
+        '''
+        Get the stored info for this pnode
+        '''
         return self.GetStoredPNodeIDInfo(node.ID)
 
-    def GetStoredPNodeIDInfo(self, nodeID):
+    def GetStoredPNodeIDInfo(self, ID: str):
+        '''
+        Get the stored info for this pnode based on the ID
+        '''
         data = self._get_cache()
         if data:
             try:
-                return picklehelpers.loads(data['known_pnodes'][nodeID]['pinfo'])
+                return picklehelpers.loads(data['known_pnodes'][ID]['pinfo'])
             except KeyError:
                 return None
             except (TypeError, picklehelpers.UnpicklingError):
                 # Old-style cache. Convert it into new one
-                data = data['known_pnodes'][nodeID]
+                data = data['known_pnodes'][ID]
                 result = data['pinfo']
                 data['pinfo'] = picklehelpers.dumps(result)
                 return result
         return None
 
-    def GetAllKnownStoredNodeIDs(self):
+    def GetAllKnownStoredNodeIDs(self) -> Optional[List[str]]:
+        '''
+        Return a list of all known node object IDs
+        '''
         data = self._get_cache()
         if data:
             try:
@@ -203,26 +269,39 @@ class manager:
         return None
 
     # methods to allow us to track SCons.Nodes
-    def AddNodeToKnown(self, node):
+    def AddNodeToKnown(self, node) -> None:
+        '''
+        Add node to known nodes
+        '''
         self.__known_nodes[node.ID] = node
 
-    def AddPNodeToKnown(self, node):
+    def AddPNodeToKnown(self, node) -> None:
+        '''
+        Add pnode to known pnodes
+        '''
         self.__known_pnodes[node.ID] = node
 
     def AddAlias(self, node):
+        '''
+        Add Alias to known node alias
+        '''
         self.__aliases[node.ID] = node
-
-    def Aliases(self):
-        return self.__aliases
 
     # factory methods
     @classmethod
-    def RegisterNodeType(klass, node_type, create_func=None):
+    def RegisterNodeType(klass, node_type, create_func=None) -> None:
+        '''
+        Register a factory class/function to be used to construct a given type of node.
+        '''
+        # we have a function use it instead of the class __init__ functions
         if create_func is None:
             create_func = pnode.pnode_factory
         klass._node_types[node_type] = create_func
 
     def Create(self, ntype, *lst, **kw):
+        '''
+        Create the node object
+        '''
         return self._node_types[ntype](ntype, *lst, **kw)
 
     def _get_cache(self):
@@ -343,7 +422,7 @@ class manager:
         elif (not goodexit) or (build_mode == 'question'):
             datacache.ClearCache("nodeinfo")
 
-    # this would mirror simular logic in the SCOns.Node classes
+    # this would mirror similar logic in the SCOns.Node classes
     # the goal here is to not load these Nodes as the memory hit
     # of these objects because of imple details is to high
     # which has a side effect of slowing down the build.

@@ -145,6 +145,8 @@ class TestRequirement(unittest.TestCase):
         for i in tmp:
             if i.key == 'CPPPATH':
                 self.assertEqual(i.is_internal, False)
+            elif i.is_internal_forced:
+                pass # if force internal we want to skip as it maybe true or false
             else:
                 self.assertEqual(i.is_internal, True)
 
@@ -154,6 +156,8 @@ class TestRequirement(unittest.TestCase):
         for i in tmp:
             if i.key == 'CPPPATH':
                 self.assertEqual(i.is_internal, False)
+            elif i.is_internal_forced:
+                pass # if force internal we want to skip as it maybe true or false
             else:
                 self.assertEqual(i.is_internal, True)
 
@@ -163,6 +167,8 @@ class TestRequirement(unittest.TestCase):
         for i in tmp:
             if i.key == 'CPPPATH':
                 self.assertEqual(i.is_internal, False)
+            elif i.is_internal_forced:
+                pass # if force internal we want to skip as it maybe true or false
             else:
                 self.assertEqual(i.is_internal, True)
 
@@ -172,6 +178,8 @@ class TestRequirement(unittest.TestCase):
         for i in tmp:
             if i.key == 'CPPPATH':
                 self.assertEqual(i.is_internal, False)
+            elif i.is_internal_forced:
+                pass # if force internal we want to skip as it maybe true or false
             else:
                 self.assertEqual(i.is_internal, True)
 

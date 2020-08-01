@@ -25,6 +25,6 @@ def Part_DefaultEnvironment(*args, **kw):
 # this updates some internal calls that can happen
 SCons.Script.DefaultEnvironment = Part_DefaultEnvironment
 # this allows use to update th "global" DefaultEnvironment in the SConstruct
-# this is needed as the "pointer" to the orginal functions is already set
+# this is needed as the "pointer" to the original functions is already set
 # my overide does not change this value in the globals
 api.register.add_global_object('DefaultEnvironment', Part_DefaultEnvironment)

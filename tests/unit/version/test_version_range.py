@@ -142,7 +142,7 @@ class TestVersionRange(unittest.TestCase):
 
         self.assertEqual(range.bestVersion(verlist), '1.0')
 
-        verlist.append(1.7)
+        verlist.append("1.7")
         self.assertEqual(range.bestVersion(verlist), '1.7')
 
         verlist.append(2.4)

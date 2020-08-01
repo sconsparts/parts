@@ -2,8 +2,6 @@
 
 import copy
 
-from past.builtins import cmp
-
 import parts.api as api
 import parts.api.output as output
 import parts.common as common
@@ -350,7 +348,7 @@ class ToolSetting:
 
         # clone env so we test with out messing up current state
         tenv = env.Clone(**kw)
-        # get cache key for this enviroment setup
+        # get cache key for this environment setup
         key = self.get_cache_key(tenv)
         # Get version value
         version = env.get(self.version_tag, None)
@@ -548,7 +546,7 @@ class ToolSetting:
             # store it in cache
             ret = (shell_env, _env[self.name]._rebind(None, None))
             self.shell_cache[cache_key] = ret
-            # test to see if orginal version and install_root are None is so make a special key for them
+            # test to see if original version and install_root are None is so make a special key for them
             # this is case a tool chain uses the same setup, but they did not overide the install_Root and version
             # in this case this run woudl store a key of version=None ans root=None but after this was applied
             # this next run would have an install root, and a version of None ( given this was what they set in the toolchain

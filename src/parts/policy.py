@@ -1,5 +1,5 @@
 
-
+import parts.api as api
 # clean up more...
 
 
@@ -22,7 +22,16 @@ class REQPolicy(Policy):
     error = 4
 
 
-class VCSPolicy(Policy):
+class SCMPolicy(Policy):
     warning = 1
     error = 2
     update = 3
+# to be removed when safe
+VCSPolicy = SCMPolicy
+
+
+api.register.add_global_parts_object("REQPolicy", REQPolicy)
+api.register.add_global_object("REQPolicy", REQPolicy)
+
+api.register.add_global_parts_object("SCMPolicy", VCSPolicy)
+api.register.add_global_object("SCMPolicy", VCSPolicy)

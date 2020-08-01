@@ -559,7 +559,7 @@ def get_found_includes_dir(self, env, scanner, path):
     if not scanner:
         return []
     if self.builder is SCons.Node.FS.MkdirBuilder and not self.isVisited:
-        # #### notes from orginal function on "default" behavior we want to
+        # #### notes from original function on "default" behavior we want to
         # #### keep if this the default scanner. We only change it to not
         # #### clear() when the node is visited
 

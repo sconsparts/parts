@@ -375,12 +375,12 @@ def InstallTarget(env, source, sub_dir='', no_pkg=False, create_sdk=True, **kw):
             else:
                 ret = [i]
 
-            if common.is_catagory_file(env, 'INSTALL_LIB_PATTERN', i):
+            if common.is_category_file(env, 'INSTALL_LIB_PATTERN', i):
                 top_dir = '$INSTALL_LIB'
                 category = 'LIB'
                 expottype = 'INSTALLLIB'
                 sdk_mapping_set.add((expottype, 'SDKLIB'))
-            elif common.is_catagory_file(env, 'INSTALL_BIN_PATTERN', i):
+            elif common.is_category_file(env, 'INSTALL_BIN_PATTERN', i):
                 top_dir = '$INSTALL_BIN'
                 category = 'BIN'
                 expottype = 'INSTALLBIN'
@@ -405,14 +405,14 @@ def InstallTarget(env, source, sub_dir='', no_pkg=False, create_sdk=True, **kw):
                         ret = env.SdkTarget([d], sub_dir)
                     else:
                         ret = [d]
-                    if common.is_catagory_file(env, 'INSTALL_LIB_PATTERN', d):
+                    if common.is_category_file(env, 'INSTALL_LIB_PATTERN', d):
                         top_dir = '$INSTALL_LIB'
                         itmp = InstallItem(env, top_dir, ret, new_sub_dir,
                                            no_pkg=no_pkg, create_sdk=create_sdk, **get_args('LIB', **kw))
                         env.ExportItem('INSTALLLIB', itmp, create_sdk, True)
                         installed_files += itmp
                         sdk_mapping_set.add(('INSTALLLIB', 'SDKLIB'))
-                    elif common.is_catagory_file(env, 'INSTALL_BIN_PATTERN', d):
+                    elif common.is_category_file(env, 'INSTALL_BIN_PATTERN', d):
                         top_dir = '$INSTALL_BIN'
                         itmp = InstallItem(env, top_dir, ret, new_sub_dir,
                                            no_pkg=no_pkg, create_sdk=create_sdk, **get_args('BIN', **kw))

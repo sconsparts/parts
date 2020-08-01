@@ -1,13 +1,6 @@
 
-
-import _thread
-
 import parts.api as api
-import parts.common as common
-import parts.core as core
-import parts.glb as glb
-import parts.mappers as mappers
-import parts.requirement as requirement
+
 import SCons.Script
 from SCons.Debug import logInstanceCreation
 
@@ -21,7 +14,7 @@ class map_build_context:
     This is turned off at the moment...
     '''
 
-    def __init__(self, pobj):
+    def __init__(self, pobj:'part.part'):
         if __debug__:
             logInstanceCreation(self)
         self.pobj = pobj
@@ -32,5 +25,5 @@ class map_build_context:
         self.pobj._config_context_files.update(self.pobj.Env['_CONFIG_CONTEXT'])
 
 
-# add configuartion varaible
+# add configuration variables
 api.register.add_bool_variable('AUTO_RPATH', True, 'Controls if RPath values are automatically added to path')

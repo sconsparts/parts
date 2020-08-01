@@ -1,19 +1,19 @@
 
-
-
 import hashlib
 
 import parts.api as api
 import parts.errors as errors
 import parts.glb as glb
 import parts.policy as policies
+import parts.part_ref as part_ref
 import parts.requirement as requirement
+from parts.pnode.nilpart import NilPart
 from SCons.Debug import logInstanceCreation
 
 
 class dependent_ref:
-    """This Class allows us to map a dependancy between two different components
-    A dependancy allows certain data items, to be defined by the requirements, to
+    """This Class allows us to map a dependency between two different components
+    A dependency allows certain data items, to be defined by the requirements, to
     be shared between the two environments defining each section
     """
     __slots__ = [
@@ -24,10 +24,11 @@ class dependent_ref:
         '__rsigs',
         '__section',
         '__part',
-        '__stored_matches'
+        '__stored_matches',
+        '__optional'
     ]
 
-    def __init__(self, part_ref, section, requires):
+    def __init__(self, part_ref:part_ref.PartRef, section, requires, optional=False):
         if __debug__:
             logInstanceCreation(self)
 
@@ -43,6 +44,7 @@ class dependent_ref:
         self.__section = None
         self.__part = None
         self.__stored_matches = None
+        self.__optional = optional
 
     @property
     def StackFrame(self):
@@ -53,12 +55,16 @@ class dependent_ref:
         return self.__part_ref
 
     @property
-    def SectionName(self):
+    def SectionName(self) -> str:
         return self.__sectionname
 
     @property
     def Requires(self):
         return self.__requires
+
+    @property
+    def isOptional(self) -> bool:
+        return self.__optional
 
     @property
     def Part(self):
@@ -67,8 +73,12 @@ class dependent_ref:
         else:
             if self.__part_ref.hasUniqueMatch:
                 self.__part = self.__part_ref.UniqueMatch
-            elif self.__part_ref.hasMatch == False:
+            elif not self.__part_ref.hasMatch and not self.__optional:
                 api.output.error_msg(self.NoMatchStr(),stackframe=self.StackFrame)
+            elif not self.__part_ref.hasMatch and self.__optional:
+                # this component is viewed as optional
+                api.output.warning_msg(self.NoMatchStr(),stackframe=self.StackFrame, print_once=True)
+                self.__part = NilPart()
             elif self.__part_ref.hasAmbiguousMatch:
                 api.output.error_msg(self.AmbiguousMatchStr(),stackframe=self.StackFrame)
         return self.__part

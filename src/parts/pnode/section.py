@@ -6,7 +6,6 @@ import sys
 from builtins import filter
 
 import _thread
-from past.builtins import cmp
 
 import parts.api as api
 import parts.common as common
@@ -23,11 +22,11 @@ import parts.target_type as target_type
 import SCons.Node
 
 
-class section(pnode.pnode):
+class section(pnode.PNode):
     """description of class"""
     __slots__ = [
         '_ID',
-        '__depends',  # what we depend on directly (ie explictly), as list (order needed) of ComponentRef objects
+        '__depends',  # what we depend on directly (ie explicitly), as list (order needed) of ComponentRef objects
         '__full_depends',  # what depend on directly and indirectly
 
         '__exports',  # value we will export
@@ -589,6 +588,7 @@ pnode_manager.manager.RegisterNodeType(utest_section)
 
 
 def scmp(x, y):
-    xp = glb.pnodes.GetPNode(glb.pnodes.GetPNode(x.Stored.PartID).Stored.RootID)
-    yp = glb.pnodes.GetPNode(glb.pnodes.GetPNode(y.Stored.PartID).Stored.RootID)
-    return cmp(xp._order_value, yp._order_value)
+    1/0  # todo remove this code
+    #xp = glb.pnodes.GetPNode(glb.pnodes.GetPNode(x.Stored.PartID).Stored.RootID)
+    #yp = glb.pnodes.GetPNode(glb.pnodes.GetPNode(y.Stored.PartID).Stored.RootID)
+    #return cmp(xp._order_value, yp._order_value)

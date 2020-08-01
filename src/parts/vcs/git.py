@@ -75,14 +75,14 @@ class git(base):
 
         super(git, self).__init__(repository, server)
 
-    @base.canMirror.getter
+    @property
     def canMirror(self) -> bool:
         '''
         Returns True if we can make a mirror locally on disk
         '''
         return True
 
-    @base.hasMirror.getter
+    @property
     def hasMirror(self) -> bool:
         '''
         Returns true if there is a mirror found
@@ -91,7 +91,7 @@ class git(base):
         return cache_dir.exists()
 
     @property
-    def MirrorPath(self) -> str:
+    def MirrorPath(self) -> Path:
         return Path(self._env.subst("$SCM_GIT_CACHE_DIR")) / self.Server / self.Repository
 
     def _branch_changed(self, data):
@@ -103,7 +103,7 @@ class git(base):
     def _server_changed(self, data):
         return data['server'] != self.FullPath
 
-    @base.FullPath.getter
+    @property
     def FullPath(self):
         if not self._full_path:
             protocol = self._protocol if self._protocol else self._env['GIT_PROTOCOL']
@@ -115,7 +115,7 @@ class git(base):
                 api.output.error_msgf("Unknown git protocol provided. Must be 'https' or 'git'")
         return self._full_path
 
-    @base.Server.getter
+    @property
     def Server(self):
         ''' git property override to getting server data'''
         if self._server is not None:
@@ -143,9 +143,6 @@ class git(base):
         '''
         Update an exiting mirror
         '''
-
-        git_out_path = self.MirrorPath
-        clone_path = self.FullPath
 
         strval = 'cd {mirror} && {0} fetch --force'.format(git.gitpath, mirror=self.MirrorPath)
         cmd = 'cd {mirror} && "{0}" fetch --force'.format(git.gitpath, mirror=self.MirrorPath)
@@ -495,6 +492,8 @@ class git(base):
         if failed:
             return self.do_force_logic()
 
+        return None
+
     def do_force_logic(self) -> Optional['str']:
         ''' call for testing if what is one disk matches what the SConstruct says should be used
 
@@ -526,6 +525,7 @@ class git(base):
                     api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Disk branch does not match")
                     return 'Branch on disk is different than the one requested for Parts "%s"\n On disk: %s\n requested: %s' % (
                         self._pobj.Alias, data['branch'], branch)
+        return None
 
     def UpdateEnv(self):
         '''
@@ -622,7 +622,7 @@ class version_from_tag:
             regex = re.compile(r'\d+\.\d+(?:\.\d+)*')
 
         if not tags:
-            api.output.warning_msg("Git tag not found. Using default value: {}".format(default))
+            api.output.warning_msg("Git tag not found. Using default value: {}".format(self.env.subst(default)))
             return default
 
         if not converter:

@@ -10,7 +10,6 @@ import traceback
 import types
 from builtins import zip
 
-from past.builtins import cmp
 
 import parts.core.builders as builders
 import parts.core.util as util
@@ -46,7 +45,7 @@ def safe_visited_call(node):
             node.reset_executor()
 
 
-class part(pnode.pnode):
+class part(pnode.PNode):
     """description of class"""
 
     __slots__ = [
@@ -58,7 +57,7 @@ class part(pnode.pnode):
         # Debug stack for where this part was called
         '__stackframe',
 
-        # basic attibutes
+        # basic attributes
         '__ID',
         '__file',         # the Parts file
         '__src_path',      # The Source path ( the path of the _file
@@ -306,7 +305,7 @@ class part(pnode.pnode):
         return self.__alias
     alias = Alias
 
-    @pnode.pnode.ID.getter
+    @property
     def ID(self):
         if self.__ID is None:
             self.__ID = self.__alias
@@ -1377,7 +1376,8 @@ class part(pnode.pnode):
                     'timestamp': i.get_timestamp()
                 })
         info.ConfigContext = tmp
-        info.kw = common.wrap_to_string(self.__kw)
+        #info.kw = common.wrap_to_string(self.__kw)
+        1/0 # need to fix this
         try:
             vcs_obj = self.__vcs if self.__vcs else self.__root.__vcs
             info.vcs_cache_filename = vcs_obj._cache_filename
@@ -1502,6 +1502,5 @@ def diff_env(env, env2, ignore_keys=[]):
         if complex_compare(d1[k], d2[k], env):
             ret[k] = d2[k]
     return ret
-
 
 pnode_manager.manager.RegisterNodeType(part)

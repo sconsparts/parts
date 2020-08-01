@@ -21,8 +21,11 @@ toolArch = 'x86_64' if has64bit else 'x86'
 class TestToolSettings(unittest.TestCase):
 
     def setUp(self):
-        self.env = SCons.Script.Environment(tools=[], HOST_PLATFORM=HostSystem(),
-                                            TARGET_PLATFORM=HostSystem())
+        self.env = SCons.Script.Environment(
+            tools=[],
+            HOST_PLATFORM=HostSystem(),
+            TARGET_PLATFORM=HostSystem()
+        )
 
     def test_exists(self):
         """Creates dummy tool 'mycl' and tests that it exists for specified platform"""
@@ -34,10 +37,10 @@ class TestToolSettings(unittest.TestCase):
             info=[
                 ToolInfo(
                     version='0.0',
-                    install_scanner=[PathFinder([r'./testdata'])],
+                    install_scanner=[PathFinder([r'./tests/unit/testdata'])],
                     script=None,
                     subst_vars={},
-                    shell_vars={'PATH': r'./testdata/vc/bin'},
+                    shell_vars={'PATH': r'./tests/unit/testdata/vc/bin'},
                     test_file='cl.exe'
                 )
             ]
@@ -59,18 +62,18 @@ class TestToolSettings(unittest.TestCase):
             info=[
                 ToolInfo(
                     version='0.0',
-                    install_scanner=[PathFinder([r'./testdata'])],
+                    install_scanner=[PathFinder([r'./tests/unit/testdata'])],
                     script=None,
                     subst_vars={},
-                    shell_vars={'PATH': r'./testdata/vc/bin'},
+                    shell_vars={'PATH': r'./tests/unit/testdata/vc/bin'},
                     test_file='cl.exe'
                 ),
                 ToolInfo(
                     version='1.0',
-                    install_scanner=[PathFinder([r'./testdata'])],
+                    install_scanner=[PathFinder([r'./tests/unit/testdata'])],
                     script=None,
                     subst_vars={},
-                    shell_vars={'PATH': r'./testdata/vc/bin'},
+                    shell_vars={'PATH': r'./tests/unit/testdata/vc/bin'},
                     test_file='cl.exe'
                 ),
             ]
@@ -91,18 +94,18 @@ class TestToolSettings(unittest.TestCase):
             info=[
                 ToolInfo(
                     version='0.0',
-                    install_scanner=[PathFinder([r'./testdata'])],
+                    install_scanner=[PathFinder([r'./tests/unit/testdata'])],
                     script=None,
                     subst_vars={},
-                    shell_vars={'PATH': r'./testdata/vc/bin'},
+                    shell_vars={'PATH': r'./tests/unit/testdata/vc/bin'},
                     test_file='cl.exe'
                 ),
                 ToolInfo(
                     version='1.0',
-                    install_scanner=[PathFinder([r'./testdata'])],
+                    install_scanner=[PathFinder([r'./tests/unit/testdata'])],
                     script=None,
                     subst_vars={},
-                    shell_vars={'PATH': r'./testdata/vc/bin'},
+                    shell_vars={'PATH': r'./tests/unit/testdata/vc/bin'},
                     test_file='cl.exe'
                 ),
             ]
@@ -123,17 +126,17 @@ class TestToolSettings(unittest.TestCase):
             info=[
                 ToolInfo(
                     version='0.0',
-                    install_scanner=[PathFinder([r'./testdata'])],
+                    install_scanner=[PathFinder([r'./tests/unit/testdata'])],
                     script=None,
                     subst_vars={},
-                    shell_vars={'PATH': r'./testdata/vc/bin'},
+                    shell_vars={'PATH': r'./tests/unit/testdata/vc/bin'},
                     test_file='cl.exe'
                 )
             ]
         )
 
         shellEnv, tsEnv = ts.get_shell_env(self.env)
-        self.assertEqual(tsEnv['INSTALL_ROOT'], 'testdata')
+        self.assertEqual(tsEnv['INSTALL_ROOT'], 'tests/unit/testdata')
         self.assertEqual(tsEnv['TOOL'], 'cl.exe')
         self.assertEqual(tsEnv['VERSION'], '0.0')
 

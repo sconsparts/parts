@@ -43,8 +43,6 @@ import string
 import sys
 from builtins import filter, map, range, zip
 
-from past.builtins import cmp
-
 import parts.tools.Common
 import SCons.Builder
 import SCons.Node.FS

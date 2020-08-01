@@ -53,7 +53,10 @@ class VersionPart:
                 num2 = rhs.weight
         except AttributeError:
             num2 = rhs
-
+        if isinstance(num1, str):
+            num2 = str(num2)
+        elif isinstance(num2,str):
+            num1 = str(num1)
         return comp(num1, num2)
 
     def __eq__(self, rhs):
@@ -338,7 +341,7 @@ class version:
             return ".".join([isinstance(x, tuple) and "".join(map(str, x)) or str(x) for x in self.parts[key]])
         else:
             tmp = self.parts[key]
-            return isinstance(tmp, tuple) and "".join(map(str, tmp))or str(tmp)
+            return isinstance(tmp, tuple) and "".join(map(str, tmp)) or str(tmp)
 
     def __len__(self):
         ''' Returns the length, or number of "dot" number that are contained in this version'''
@@ -529,12 +532,12 @@ class version_range:
         # we aren't in the range if any range excluded it
         return (not self.hasInclude or included) and not excluded
 
-    def bestVersion(self, list):
+    def bestVersion(self, lst):
         '''
         Finds the best version that is in this range from a list of versions.
         The "best" version is defined as the highest version number in the list.
         '''
-        for v in reversed(sorted(list)):
+        for v in sorted([str(i) for i in lst], reverse=True):
             if v in self:
                 return version(v)
 

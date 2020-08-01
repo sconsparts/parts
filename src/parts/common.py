@@ -6,7 +6,6 @@
 
 import fnmatch
 import getpass
-import imp
 import os
 import string
 import sys
@@ -320,36 +319,36 @@ def make_unique_str(obj):
 # For others returns str(obj)
 
 
-def wrap_to_string(obj):
-    return _wrap_to_string(obj, set())
+# def wrap_to_string(obj):
+#     return _wrap_to_string(obj, set())
 
 
-def _wrap_to_string(obj, knownObjIds):
-    if id(obj) in knownObjIds:
-        return '...'
+# def _wrap_to_string(obj, knownObjIds):
+#     if id(obj) in knownObjIds:
+#         return '...'
 
-    knownObjIds.add(id(obj))
-    if util.isDictionary(obj):
-        return dict([[_wrap_to_string(k, knownObjIds),
-                      _wrap_to_string(v, knownObjIds)] for k, v in obj.items()])
-    elif util.isList(obj):
-        return [_wrap_to_string(i, knownObjIds) for i in obj]
-    elif isinstance(obj, tuple):
-        return tuple([_wrap_to_string(i, knownObjIds) for i in obj])
-    elif isinstance(obj, types.FunctionType):
-        return 'function %s (%s)' % (str(obj.__name__),
-                                     ','.join(_wrap_to_string(obj.__code__.co_varnames, knownObjIds)))
-    elif isinstance(obj, type):
-        return 'class %s %s' % (str(obj.__name__), _wrap_to_string(obj.__dict__, knownObjIds))
-    else:
-        return str(obj)
+#     knownObjIds.add(id(obj))
+#     if util.isDictionary(obj):
+#         return dict([[_wrap_to_string(k, knownObjIds),
+#                       _wrap_to_string(v, knownObjIds)] for k, v in obj.items()])
+#     elif util.isList(obj):
+#         return [_wrap_to_string(i, knownObjIds) for i in obj]
+#     elif isinstance(obj, tuple):
+#         return tuple([_wrap_to_string(i, knownObjIds) for i in obj])
+#     elif isinstance(obj, types.FunctionType):
+#         return 'function %s (%s)' % (str(obj.__name__),
+#                                      ','.join(_wrap_to_string(obj.__code__.co_varnames, knownObjIds)))
+#     elif isinstance(obj, type):
+#         return 'class %s %s' % (str(obj.__name__), _wrap_to_string(obj.__dict__, knownObjIds))
+#     else:
+#         return str(obj)
 
 
-def is_catagory_file(env, cat, file):
+def is_category_file(env, cat, file):
     ''' this function is the master function for finding a if a file matches a type pattern.'''
     '''This function returns True if the argument looks like a file that would be copied to a LIB directory'''
     try:
-        return is_catagory_file(env, cat, file.attributes.FilterAs)
+        return is_category_file(env, cat, file.attributes.FilterAs)
     except AttributeError:
         patterns = env[cat]
         for i in patterns:

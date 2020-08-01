@@ -195,7 +195,7 @@ class Variables(dict, object):
 
         # File overides
         # next set the value specified in the options file
-        # keep as SCons has it orginally
+        # keep as SCons has it originally
         if files is None:
             files = self._files
         for filename in files:

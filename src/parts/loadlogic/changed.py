@@ -97,7 +97,7 @@ class Changed(base.Base):
             # so we avoid issues with custom data passing form
             # dependent Parts
             sections_to_load = [x for x in self.sections_to_load]
-            sections_to_load.sort(section.scmp)
+            sections_to_load.sort(section.scmp)  #todo this needs to be fixed once i try to get working again
             total = len(sections_to_load)
             for cnt, s in enumerate(sections_to_load):
                 api.output.console_msg("Loading {0:.1%} ({1}/{2} sections) \033[K".format((cnt * 1.0) / total, cnt, total))
@@ -106,7 +106,7 @@ class Changed(base.Base):
         return self._up_to_date
 
     def isNodeChanged(self, section_info, nodeid, _indent=1):
-        # this does a recusive node check to see if
+        # this does a recursive node check to see if
         # this node or it children are out of date
         # we go depth first as this overall allows us to
         # reduce the number of edge checks that may need to be do.
@@ -498,7 +498,7 @@ class Changed(base.Base):
     def RemapDependent(self, depends_info):
         ''' Returns the new dependent section we would map to'''
         # use dependent info to create dependent_ref
-        dref = dependent_ref.dependent_ref(part_ref.part_ref(depends_info.PartRefStr),
+        dref = dependent_ref.dependent_ref(part_ref.PartRef(depends_info.PartRefStr),
                                            depends_info.SectionName,
                                            depends_info.Requires
                                            )

@@ -1,7 +1,5 @@
 
 
-from future.utils import native_str
-
 import SCons.Node
 import SCons.Util
 
@@ -51,7 +49,7 @@ def isTuple(obj):
 
 
 def isString(obj):
-    return isinstance(obj, native_str) or SCons.Util.is_String(obj)
+    return isinstance(obj, str) or SCons.Util.is_String(obj)
 
 
 def isBool(obj):

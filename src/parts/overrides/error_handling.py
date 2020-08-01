@@ -13,7 +13,7 @@ OrigSConscript_exception = _SConscript.SConscript_exception
 
 def PartSConscript_exception(file=None):
     ''' this is silly in general, but is done to allow the remapping of stream
-    to work better as the orginal code get the stream before I remap it as it is
+    to work better as the original code get the stream before I remap it as it is
     a default option. This prevents sys.stderr from being used but rather my
     stderr to be used.'''
 

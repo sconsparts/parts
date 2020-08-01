@@ -5,8 +5,9 @@ import re
 import stat
 import subprocess
 import sys
+from pathlib import Path
 import traceback
-from typing import List, Union, Optional
+from typing import List, Union, Optional, cast
 
 import parts.api as api
 import parts.common as common
@@ -122,6 +123,13 @@ class base:
         return False
 
     @property
+    def MirrorPath(self) -> Path:
+        '''
+        Returns path object to the mirror
+        '''
+        raise NotImplementedError
+
+    @property
     def useCache(self) -> bool:
         '''
         Returns true if there is a mirror found
@@ -208,9 +216,9 @@ class base:
     def _has_target_match(self, update_option: Union[bool, List[str]]) -> bool:
 
         if util.isList(update_option):
-            for i in update_option:
+            for i in cast(List[str],update_option):
                 target = target_type.target_type(i)
-                tmp = part_ref.part_ref(target)
+                tmp = part_ref.PartRef(target)
                 if tmp.hasStoredMatch or tmp.hasMatch:
                     if self._pobj in tmp.StoredMatches or self._pobj in tmp.Matches:
                         return True
@@ -240,7 +248,7 @@ class base:
 
         if self.canMirror and self.useCache:
             update: Union[bool, List[str]] = self._env.GetOption('update_mirror')
-            src_update = self._env.GetOption('update')
+            # src_update = self._env.GetOption('update')
             # check that we have a cache directory
             if not self.hasMirror:
                 # no cache exists so create it

@@ -13,8 +13,6 @@ import re
 import subprocess
 import sys
 
-from past.builtins import cmp
-
 import parts.api as api
 import parts.common as common
 import parts.core as core
@@ -46,7 +44,6 @@ def UpdateValidArchList():
     for k, v in glb.arch_map.items():
         if k not in glb.valid_arch:
             glb.valid_arch.append(k)
-    #glb.valid_arch.sort(lambda a, b: cmp(len(b), len(a)))
     glb.valid_arch.sort(key=lambda x: len(x))
     UpdatePlatformRegEx()
 
@@ -55,7 +52,6 @@ def UpdateValidOSList():
     for k, v in glb.os_map.items():
         if k not in glb.valid_os:
             glb.valid_os.append(k)
-    #glb.valid_os.sort(lambda a, b: cmp(len(b), len(a)))
     glb.valid_os.sort(key=lambda x: len(x))
     UpdatePlatformRegEx()
 

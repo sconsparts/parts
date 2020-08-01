@@ -2,19 +2,13 @@
 This file is what python loads when the user say import parts
 This file will import main.py and main will do the rest of work needed
 '''
-
-
-# deal with py2 and py3 import issues
-from future import standard_library
-standard_library.install_aliases()
-
 import sys
 import os
 import re
 import subprocess
 
 try:
-    import SCons.Script
+    import SCons
     script=False
 except ImportError:
     script=True

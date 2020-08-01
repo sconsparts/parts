@@ -6,4 +6,4 @@ env.DependsOn([
                Component('part1',requires=REQ.DEFAULT(internal=True))
                ])
 
-env.VerboseMessage(['gtest'],env['CPPPATH'],env['CPPPATH']==["${{PARTIDEXPORTS('name::part1@config:debug@platform_match:{0}@version:*','build','CPPPATH',0)}}".format(env['TARGET_PLATFORM'])])
+env.VerboseMessage(['gtest'],env['CPPPATH'],env['CPPPATH']==["${{PARTIDEXPORTS('name::part1@config:debug@platform_match:{0}@version:*','build','CPPPATH',0,False)}}".format(env['TARGET_PLATFORM'])])

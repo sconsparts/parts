@@ -18,7 +18,6 @@ setup(name="scons-parts",
       },
 
       install_requires=[
-          "future",
           "scons"
       ],
 

@@ -19,8 +19,10 @@ def PartDynImportsAction(target, source, env):
 
     # generate the data
     for comp in sec.Depends:
+        if not comp.hasUniqueMatch and comp.isOptional:
+            continue
         for r in comp.Requires:
-            map_val = r.value_mapper(comp.PartRef.Target, comp.SectionName)
+            map_val = r.value_mapper(comp.PartRef.Target, comp.SectionName, comp.isOptional)
             value = env.subst(map_val)
             if r.key in data:
                 if value and value not in data[r.key]:
@@ -50,6 +52,8 @@ def depend_dyn_scanner(node, env, path):
     sec = pobj.Section(env["PART_SECTION"])
     ret = []
     for comp in sec.Depends:
+        if not comp.hasUniqueMatch and comp.isOptional:
+                continue
         tmp = comp.Section.Env.File(dyn_exports.file_name)
         api.output.verbose_msgf(["import-dyn-scanner", "scanner"], " Adding node {0}", tmp.ID)
         ret.append(tmp)

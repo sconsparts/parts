@@ -323,10 +323,10 @@ def Sdk(env, source, sub_dir='', add_to_path=True, auto_add_libs=True, use_src_d
                 the_file = i.attributes.FilterAs
             except AttributeError:
                 the_file = i
-            if common.is_catagory_file(env, 'SDK_LIB_PATTERN', the_file):
+            if common.is_category_file(env, 'SDK_LIB_PATTERN', the_file):
                 out += SdkLib(env, [i], sub_dir=sub_dir, auto_add_libs=auto_add_libs,
                               add_to_path=add_to_path, use_src_dir=use_src_dir, create_sdk=create_sdk)
-            elif common.is_catagory_file(env, 'SDK_BIN_PATTERN', the_file):
+            elif common.is_category_file(env, 'SDK_BIN_PATTERN', the_file):
                 out += SdkBin(env, [i], sub_dir=sub_dir, create_sdk=create_sdk)
             else:
                 # print 'Miss', i
@@ -334,7 +334,7 @@ def Sdk(env, source, sub_dir='', add_to_path=True, auto_add_libs=True, use_src_d
         elif isinstance(i, pattern.Pattern):
             for td in i.sub_dirs():
                 for d in i.files(td):
-                    if common.is_catagory_file(env, 'SDK_LIB_PATTERN', d):
+                    if common.is_category_file(env, 'SDK_LIB_PATTERN', d):
                         if td != '':
                             tmp = SdkItem(env, '$SDK_LIB', [d], os.path.join(str(sub_dir), str(td)),
                                           '', [(Xp.EXPORT_TYPES.FILE, 'LIBS'), (Xp.EXPORT_TYPES.PATH, 'LIBPATH')],
@@ -349,7 +349,7 @@ def Sdk(env, source, sub_dir='', add_to_path=True, auto_add_libs=True, use_src_d
                             env.ExportItem('SDKLIB', tmp, create_sdk, True)
                         out += tmp
 
-                    elif common.is_catagory_file(env, 'SDK_BIN_PATTERN', d):
+                    elif common.is_category_file(env, 'SDK_BIN_PATTERN', d):
                         if td != '':
                             tmp = SdkItem(env, '$SDK_BIN', [d],
                                           os.path.join(str(sub_dir), str(td)), '', [],

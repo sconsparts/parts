@@ -242,28 +242,28 @@ if sys.platform == 'win32':
     os.remove = win32_rm
     os.unlink = win32_rm
 
-    _orginal_listdir = os.listdir
+    _original_listdir = os.listdir
 
     def listdir(dir):
         if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
             dir = str("\\\\?\\" + os.path.abspath(dir))
-        return _orginal_listdir(dir)
+        return _original_listdir(dir)
     os.listdir = listdir
 
-    _orginal_stat = os.stat
+    _original_stat = os.stat
 
     def stat(dir):
         if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
             dir = str("\\\\?\\" + os.path.abspath(dir))
-        return _orginal_stat(dir)
+        return _original_stat(dir)
     os.stat = stat
 
-    _orginal_mkdir = os.mkdir
+    _original_mkdir = os.mkdir
 
     def mkdir(dir, mode=0o777):
         if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
             dir = str("\\\\?\\" + os.path.abspath(dir))
-        return _orginal_mkdir(dir, mode)
+        return _original_mkdir(dir, mode)
     os.mkdir = mkdir
 
     def abspath(dir):

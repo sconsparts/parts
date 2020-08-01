@@ -86,7 +86,7 @@ def build_func(manager, target):
 
     for p in plst:
         if p is None:
-            output.error_msg("Target \"%s\" was not found as a Part" % target.orginal_string)
+            output.error_msg("Target \"%s\" was not found as a Part" % target.original_string)
         # Call config phase to get dependance information
         elif p._has_section_defined('build') == False:
             output.error_msg("Part does not have section build defined")

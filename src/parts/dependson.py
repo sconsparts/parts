@@ -1,5 +1,4 @@
-
-
+from typing import Union, List, cast
 
 import parts.api as api
 import parts.api.requirement  # this is need to have some data set at start correctly
@@ -14,19 +13,19 @@ import parts.part_ref as part_ref
 import parts.target_type as target_type
 import parts.version as version
 import SCons.Script
-from parts.requirement import REQ
+import parts.requirement as requirement
 from SCons.Debug import logInstanceCreation
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
 
 
-def Component(env, name, version_range=None, requires=REQ.DEFAULT, section="build"):
+def Component(env, name, version_range=None, requires: requirement.REQ = requirement.REQ.DEFAULT, section="build", optional: bool = False) -> dependent_ref.dependent_ref:
 
-    # fix up the name string.
+    # Resolve value in the name string is any
     name = env.subst(name)
     # if this start with alias. we want to us it not name::
     # If it does not start with name we want to add it
-    if name.startswith("name::") == False and name.startswith("alais::") == False:
+    if name.startswith("name::") == False and name.startswith("alias::") == False:
         name = 'name::{0}'.format(name)
 
     # make it a target
@@ -105,8 +104,8 @@ def Component(env, name, version_range=None, requires=REQ.DEFAULT, section="buil
         trg.Properties['config'] = str(env['CONFIG'])
     else:
         api.output.trace_msg(['component'], "Target defined config mapping of:", trg.Properties['config'])
-
-    return dependent_ref.dependent_ref(part_ref.part_ref(trg, localspace), section, requires)
+    
+    return dependent_ref.dependent_ref(part_ref.PartRef(trg, localspace), section, requires, optional)
 
 
 class ComponentEnv:
@@ -116,11 +115,11 @@ class ComponentEnv:
             logInstanceCreation(self)
         self.env = env
 
-    def __call__(self, name, version_range=None, requires=REQ.DEFAULT):
-        return self.env.Component(name, version_range, requires)
+    def __call__(self, name, version_range=None, requires=requirement.REQ.DEFAULT, section="build", optional: bool = False):
+        return self.env.Component(name, version_range, requires, section, optional)
 
 
-def depends_on_classic(env, depends):
+def depends_on_classic(env, depends: Union[dependent_ref.dependent_ref, List[dependent_ref.dependent_ref]]):
     '''
     This form requires that all dependance get defined by a "mapper" object.
     This allow for delay processing that is required as at any given time this
@@ -132,18 +131,18 @@ def depends_on_classic(env, depends):
     if pobj is None:
         return
 
-    # check to see if we need to some funky preloads as we map the dependancy values
+    # check to see if we need to some funky preloads as we map the dependency values
     # this is needed to help case of Parts files changes that might have added
-    # new dependancy values. We let the loader deal with the issues.
-    # the dependancy mapping logic for the classic case stays unchanged
+    # new dependency values. We let the loader deal with the issues.
+    # the dependency mapping logic for the classic case stays unchanged
     glb.engine._part_manager.Loader.process_depends(pobj, depends)
 
     api.output.verbose_msg('dependson', "Mapping data to Part", pobj.Name, pobj.DefiningSection.Name)
     # depends that get passed on
     if util.isList(depends) == False:
-        depends = [depends]
+        depends = [cast(dependent_ref.dependent_ref,depends)]
 
-    for comp in depends:
+    for comp in cast(List[dependent_ref.dependent_ref],depends):
         # quick error check
         if pobj.Name == comp.PartRef.Target.Name and pobj.DefiningSection.Name == comp.SectionName:
             api.output.warning_msg("Part depends on with itself")
@@ -172,7 +171,7 @@ def depends_on_classic(env, depends):
                 except KeyError:
                     tmpspace[i] = common.namespace()
                     tmpspace = tmpspace[i]
-            map_val = r.value_mapper(comp.PartRef.Target, comp.SectionName)
+            map_val = r.value_mapper(comp.PartRef.Target, comp.SectionName, comp.isOptional)
             # builders.imports.map_imports_depends(env,map_val)
             tmpspace[r.key] = map_val
 
@@ -265,4 +264,4 @@ SConsEnvironment.Component = Component
 # allow us to add component to parts as a global objects
 api.register.add_global_parts_object('DependsOn', dependsOnEnv, True)
 api.register.add_global_parts_object('Component', ComponentEnv, True)
-api.register.add_global_parts_object('REQ', REQ)
+api.register.add_global_parts_object('REQ', requirement.REQ)
