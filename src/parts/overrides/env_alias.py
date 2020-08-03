@@ -1,12 +1,14 @@
 
 
 
-import parts.common as common
-import parts.glb as glb
 import SCons.Environment
 import SCons.Node
-from parts.core import util
 from SCons.Script.SConscript import SConsEnvironment
+
+import parts.common as common
+import parts.glb as glb
+import parts.api as api
+from parts.core import util
 
 
 def Parts_Alias(self, target, source=[], action=None, **kw):
@@ -21,7 +23,9 @@ def Parts_Alias(self, target, source=[], action=None, **kw):
                 section_str = self.subst("${PART_SECTION}::")
                 # check that we want to modify this target
                 if not t.startswith(section_str) and not t.startswith("run_utest::") and not t.startswith("build::"):
-                    ret += self._orig_Alias("${{PART_SECTION}}::alias::${{PART_ALIAS}}::{0}".format(target), source, action, **kw)
+                    tmp = self._orig_Alias("${{PART_SECTION}}::alias::${{PART_ALIAS}}::{0}".format(target), source, action, **kw)
+                    api.output.verbose_msg(["alias","overrides"],f"Generated Alias: {tmp[0].ID}",print_once=True)
+                    ret += tmp
                     continue
             except KeyError:
                 pass
@@ -38,8 +42,9 @@ def Parts_Alias(self, target, source=[], action=None, **kw):
                 del tmp.executor
         except AttributeError:
             pass
-
-        tmp = self._orig_Alias(target, source, action, **kw)
+        
+        tmp = self._orig_Alias(target, source, action, **kw)        
+        api.output.verbose_msg(["alias","overrides"],f"Generated Alias: {tmp[0].ID}",print_once=True)
         ret += tmp
         #ret += self._orig_Alias(target, source, action, **kw)
     return ret

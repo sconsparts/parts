@@ -88,12 +88,13 @@ sys.exit(proc.returncode)
 
 
 def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.', make_pdb=True,
-              depends=None, builder="Program", builder_kw={}, **kw):
+              depends=None, builder="Program", builder_kw=None, **kw):
 
     # to help with user errors
     errors.SetPartStackFrameInfo()
+    if not builder_kw:
+        builder_kw={}
     
-    builder_kw=builder_kw.copy()
     if ("utest::" in env["SUPPRESS_SECTION"] or
             "utest" in env["SUPPRESS_SECTION"]) and \
             SCons.Script.GetOption('section_suppression'):
@@ -125,7 +126,7 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
         # tweak Environment
         sec.Env['UNIT_TEST_TARGET'] = target
 
-        # setup the varible with paths
+        # setup the variable with paths
         curr_path = env.AbsDir('.')
         rel_src_dir = common.relpath(env.AbsDir(src_dir), curr_path)
         if src_dir != '.':
@@ -215,7 +216,12 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
                     fn = make_node(i)
                     src_files.append(fn)
             elif isinstance(f, SCons.Node.FS.Dir):
-                output.warning_msgf("Cannot build directories in unittest()\n Node={0}\n Skipping...", f.ID)
+                if builder == "Program":
+                    output.warning_msgf("Cannot build directories in unittest() with Program builder.\n Node={0}\n Skipping...", f.ID)
+                elif src_dir != '.':
+                    output.warning_msgf("Cannot use directory nodes when src_dir is set in unittest().\n Node={0}\n Skipping...", f.ID)
+                else:
+                    src_files.append(f)
             elif isinstance(f, SCons.Node.FS.File):
                 # File node will start with the original build directory
                 # or the start with current path ( ie full path to src)
