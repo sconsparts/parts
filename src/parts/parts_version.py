@@ -1,2 +1,2 @@
 
-_PARTS_VERSION = '0.15.7'
+_PARTS_VERSION = '0.15.8'
