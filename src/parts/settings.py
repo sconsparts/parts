@@ -302,7 +302,7 @@ class Settings:
         '''Constructs a --<option> argument that expects some bool value
         @param option Name of the option
         @param default The default value of this option
-        @param explict The user has to say --key=true, --key will not work
+        @param explicit The user has to say --key=true, --key will not work
         @param dest The name of the value we use to get this value
         @param help The help text for this option
 
@@ -455,9 +455,9 @@ class Settings:
 
     def Environment(self, **kw):
         '''
-        This makes a copy of environment with the toolchain and configruation set on it
+        This makes a copy of environment with the toolchain and configuration set on it
         given the user is not setting tools directly. This if for Raw Scons file
-        compatibilty. Otherwise we try to use any tools in our toolchain.
+        compatibility. Otherwise we try to use any tools in our toolchain.
         '''
         return self._env_const_ref(**kw).Clone()
 
@@ -602,7 +602,7 @@ class Settings:
             self.vars.Update(env, args=overrides, files=cfg_files, user_defaults=glb_defaults, add_unknown=True)
 
             # call callback function to allow for general csig of this run
-            # Note this has to match the signiture else a RTI check will make everything fail in scons
+            # Note this has to match the signature else a RTI check will make everything fail in scons
             env["PARTS_RUN_CSIG"] = lambda target, source, env, for_signature: str(glb.engine._cache_key)
 
             # get the builders
@@ -610,7 +610,7 @@ class Settings:
             # set builders
             env['BUILDERS'].update(builders)
 
-            # stuff to zap.. backwards compatiblity
+            # stuff to zap.. backwards compatibility
             #env["ARCHITECTURE"] = deprecated("ARCHITECTURE", "TARGET_ARCH", env['TARGET_ARCH'])
             #env["config"] = deprecated("config", "CONFIG", env['CONFIG'])
 
@@ -679,7 +679,7 @@ class Settings:
             env['ENV']['HOMEPATH'] = str(env['PART_USER_DIR'])
             env['ENV']['USERNAME'] = env['PART_USER']
         elif env['HOST_PLATFORM'] == 'posix':
-            if 'LD_LIBRARY_PATH' in os.environ:          
+            if 'LD_LIBRARY_PATH' in os.environ:
                 env['ENV']['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']
             env['ENV']['HOME'] = os.environ['HOME']
             env['ENV']['LANG'] = os.environ.get("LANG","en_US.UTF-8")

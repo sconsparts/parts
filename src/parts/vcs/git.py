@@ -242,7 +242,7 @@ class git(base):
                     ' update with -scm-retry or --scm-clean'.format(out_dir),
                     show_stack=False)
         else:
-            if data['modified'] and not do_clean:
+            if data['modified'] and (not self._env['SCM_IGNORE_MODIFIED'] or not do_clean):
                 # check that we don't have modification locally. if we do complain to be safe
                 api.output.error_msg(
                     'Local modification found in "{0}".\n Manually commit and push changes or\n update with --scm-clean'.format(
@@ -419,6 +419,7 @@ class git(base):
         returns None if it passes, returns a string to possible print tell why it failed
         '''
         api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Doing existence check")
+        
         if self.PartFileExists and os.path.exists(os.path.join(self.CheckOutDir.abspath, '.git')):
             return None
         api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Existence check failed")
@@ -503,12 +504,12 @@ class git(base):
         # test for existence
         tmp = self.do_exist_logic()
         if tmp:
-            api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Existence checked failed")
+            api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Existence check failed")
             return tmp
         data = self.get_git_data()
         if data:
             if data['server'] != self.FullPath:
-                api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Disk checked failed")
+                api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Disk check failed")
                 return 'Server on disk is different than the one requested for Parts "%s"\n On disk: %s\n requested: %s' % (
                     self._pobj.Alias, data['server'], self.FullPath)
 
@@ -708,12 +709,16 @@ def GetGitData(env, checkoutdir=None, patched=False):
     # get the server we will pull from
     ret, data = base.command_output('cd {1} && "{0}" remote -v'.format(git.gitpath, checkoutdir))
     if not ret:
+        repo_type = '(fetch)'
+        # if we are caching the repo.. use the push repo instead
+        if env['USE_SCM_CACHE']:            
+            repo_type = '(push)'
         data.replace('\r\n', '\n')
         lines = data.split('\n')
         for line in lines:
             tmp = line.split()
 
-            if tmp[0] == 'origin' and tmp[2] == '(fetch)':
+            if tmp[0] == 'origin' and tmp[2] == repo_type:
                 server = tmp[1]
                 break
 

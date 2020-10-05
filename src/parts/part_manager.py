@@ -34,6 +34,7 @@ class part_manager:
         self.sections = glb.sections
         self.parts = {}  # a dictionary of all parts objects by there alias value
         self.__name_to_alias = {}  # a dictionary of a known Parts name and possible alias that match
+        self.__alt_names = {} # This is a name mapping. Allows for mapping a part name as something different
         self.__to_map_parts = []  # stuff that needs to be mapped, else it is wasted space
         # used to help prevent wasting time on cases of incomplete cache data
         self.__hasStored = SCons.Script.GetOption("parts_cache")
@@ -567,7 +568,7 @@ class part_manager:
                 # first we try to see if the name can be matched
                 ta = target_type("alias::" + str(t))
                 tn = target_type("name::" + str(t))
-                if self.__name_to_alias.get(tn.Name):
+                if self.__name_to_alias.get(self.__alt_names.get(tn.Name,tn.Name)):
                     # we are sure this is a Parts value
                     tobj = tn
                 # see if this is an alias value
@@ -602,7 +603,7 @@ class part_manager:
             elif tobj.Name:
                 # This case can have multipul matches
                 # get a list of known alias that have this name
-                alias_lst = self.__name_to_alias.get(tobj.Name)
+                alias_lst = self.__name_to_alias.get(self.__alt_names.get(tobj.Name,tobj.Name))
 
                 if alias_lst is None:
                     # we might have a case in which this item is not loaded
@@ -908,7 +909,7 @@ class part_manager:
     def MappingSig(self, name):
 
         md5 = hashlib.md5()
-        for i in self.__name_to_alias[name]:
+        for i in self.__name_to_alias[self.__alt_names.get(name,name)]:
             md5.update(i.encode())
         return md5.hexdigest()
 
@@ -1213,7 +1214,7 @@ class part_manager:
         '''
         if name is None:
             return self.__name_to_alias
-        return self.__name_to_alias.get(name, set([]))
+        return self.__name_to_alias.get(self.__alt_names.get(name,name), set([]))
 
     def add_name_alias(self, name, alias, oldname=None):
         try:
@@ -1467,3 +1468,14 @@ class part_manager:
 
         # Now we want to update the stored information
         datacache.ClearCache(save=True)
+
+    def MapPartAs(self,name:str,toName:str):
+        self.__alt_names[name]=toName
+
+def MapPartAs(name:str,toName:str):
+    '''
+    Maps any reference of part name X to name Y
+    '''
+    glb.engine._part_manager.MapPartAs(name,toName)
+
+api.register.add_global_object('MapPartNameAs', MapPartAs)

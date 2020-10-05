@@ -94,7 +94,7 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
     errors.SetPartStackFrameInfo()
     if not builder_kw:
         builder_kw={}
-    
+
     if ("utest::" in env["SUPPRESS_SECTION"] or
             "utest" in env["SUPPRESS_SECTION"]) and \
             SCons.Script.GetOption('section_suppression'):
@@ -155,7 +155,7 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
         oot_build_dir_node = sec.Env.Dir(oot_build_dir)
 
         def make_node(fstr, node=None):
-            # path is to relative to the src directory            
+            # path is to relative to the src directory
             if fstr.startswith(rel_src_dir):
                 fstr = fstr[len(rel_src_dir) + 1:]
             # abs path to current location of part file calling unit test
@@ -183,7 +183,7 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
                 fstr = fstr[len(rel_build_dir) + 1:]
             # start with #
             elif fstr.startswith("#"):
-                fnode = sec.Env.File(fstr)
+                fnode = sec.Env.Entry(fstr)
                 # is this under the current part directory
                 if fnode.is_under(curr_path):
                     fstr = curr_path.rel_path(fnode)
@@ -218,7 +218,7 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
             elif isinstance(f, SCons.Node.FS.Dir):
                 if builder == "Program":
                     output.warning_msgf("Cannot build directories in unittest() with Program builder.\n Node={0}\n Skipping...", f.ID)
-                elif src_dir != '.':
+                elif src_dir != curr_path:
                     output.warning_msgf("Cannot use directory nodes when src_dir is set in unittest().\n Node={0}\n Skipping...", f.ID)
                 else:
                     src_files.append(f)
@@ -287,7 +287,7 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
             del sec.Env['PDB']
 
         # the unit test we want to build
-        tmp_bld = getattr(sec.Env, builder)        
+        tmp_bld = getattr(sec.Env, builder)
         if tmp_bld is None:
             api.output.error_msg("Builder {0} is not found".format(builder))
         api.output.verbose_msgf(['unit_test'],'Using builder "{}"', builder)
@@ -297,7 +297,7 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
             builder_kw['source'] = src_files
         api.output.verbose_msgf(['unit_test'],'calling with args {}', builder_kw)
         ret = tmp_bld(**builder_kw)
-        
+
 
         # build alias
         build_alias = '${PART_BUILD_CONCEPT}${PART_ALIAS_CONCEPT}${PART_ALIAS}'
@@ -391,7 +391,7 @@ def unit_test(env, target, source, command_args=None, data_src=None, src_dir='.'
         errors.ResetPartStackFrameInfo()
     sec.LoadState = glb.load_file
     sec._map_targets()
-    
+
     return ret
 
 

@@ -301,6 +301,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                         '$TARGET',
                         '#! /bin/bash\n' +
                         f'pushd {build_dir.abspath}\n' +
+                        'set -e\n' +
                         'set -x\n' +
                         'export LD_LIBRARY_PATH=${__env__.Dir("$INSTALL_LIB").abspath}\n' +
                         'make $_AUTOMAKE_BUILD_ARGS $AUTOMAKE_BUILD_ARGS {target}\n'.format(target=check_targets) +

@@ -112,7 +112,7 @@ class namespace(dict, bindable):
         Rebind the environment to a new one.
         There does not seem a way to have this happen in a clone
         as from what I can see semi_deep_copy does not pass a new env
-        Howevere I have updated the overrides to handle the clone of objects
+        However I have updated the overrides to handle the clone of objects
         that are bindable to the env to be cloned and handled better.
         '''
         tmp = namespace(**self.copy())

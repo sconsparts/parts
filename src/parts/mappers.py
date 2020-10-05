@@ -195,7 +195,7 @@ def _sub_lst(env, obj, thread_id):
 
 
 def sub_lst(env, lst, thread_id, recurse=True):
-    ''' 
+    '''
     Utility function to help with returning list from env.subst() as this function
     doesn't like the returning of lists.
     '''
@@ -456,7 +456,7 @@ class part_id_export_mapper(mapper):
 
         # we need to test if this part has dynamic stuff that is unsafe to cache at this point in time
         dyn_export = penv.get("DYN_EXPORT_FILE")
-        
+
         # if we have an export test that it is built
         if dyn_export:
             is_export_built = dyn_export.isBuilt or dyn_export.isVisited
@@ -612,7 +612,12 @@ class define_if(mapper):
         return f'${{{self.name}("{self.var},{self.value}")}}'
 
     def _guarded_call(self, target, source, env, for_signature):
-        subvalue = env.subst(self.var)
+        try:
+            subvalue = env.subst(self.var)
+        except Exception as e:
+            subvalue = None
+            api.output.verbose_msgf(['defineif_mapper', 'mapper','debug'], "Exception was caught during define_if mapper:\n {}", e)
+
         if subvalue:
             return self.value
         return ""

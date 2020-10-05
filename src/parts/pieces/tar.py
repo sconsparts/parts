@@ -45,7 +45,7 @@ def tar(target, source, env, type):
 
 
 def CCopyStringFunc(target, source, env):
-    return "Creating Achieve file: {} containing {} files ".format(target[0], len(source))
+    return "Creating Archive file: {} containing {} files ".format(target[0], len(source))
 
 
 TarAction = SCons.Action.Action(lambda target, source, env: tar(target, source, env, 'w'),

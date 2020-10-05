@@ -330,7 +330,7 @@ class base:
                         # report the warning
                         api.output.warning_msg(ret, show_stack=False)
                         api.output.warning_msg(
-                            "Add --update to force update for merge and potential loss of local changes", show_stack=False)
+                            "Add --update to force update for merge and potential loss of local changes", show_stack=True)
                 elif pol == 'checkout-error':
                     ret_val = False
                     if self.do_exist_logic():
@@ -339,11 +339,11 @@ class base:
                         # report the error
                         api.output.error_msg(ret, show_stack=False, exit=False)
                         api.output.error_msg(
-                            "Add --update to force update for merge and potential loss of local changes", show_stack=False)
+                            "Add --update to force update for merge and potential loss of local changes", show_stack=True)
                 elif pol == 'message-update':
                     ret_val = True
                     api.output.print_msg(ret)
-                    if self.is_modified():
+                    if self.is_modified() and not self._env['SCM_IGNORE_MODIFIED']:
                         api.output.error_msg(mod_msg, show_stack=False)
                     elif os.path.exists(self.CheckOutDir.abspath):
                         api.output.print_msg(
@@ -351,7 +351,7 @@ class base:
                 elif pol == 'warning-update':
                     ret_val = True
                     api.output.warning_msg(ret, show_stack=False)
-                    if self.is_modified():
+                    if self.is_modified() and not self._env['SCM_IGNORE_MODIFIED']:
                         api.output.error_msg(mod_msg, show_stack=False)
                     elif os.path.exists(self.CheckOutDir.abspath):
                         api.output.warning_msg('No local modification detected in "{0}", updating...'.format(
@@ -359,7 +359,7 @@ class base:
                 elif pol == 'update':
                     ret_val = True
                     api.output.verbose_msg(['scm.update','scm'], ret)
-                    if self.is_modified():
+                    if self.is_modified() and not self._env['SCM_IGNORE_MODIFIED']:
                         api.output.error_msg(mod_msg, show_stack=False)
                     elif os.path.exists(self.CheckOutDir.abspath):
                         api.output.verbose_msg(
@@ -660,6 +660,8 @@ api.register.add_bool_variable('UPDATE_ALL', False, 'Controls if Parts will upda
 api.register.add_variable('CHECK_OUT_ROOT', '#_vcs', 'Root directory to place checked out data')
 api.register.add_variable('CHECK_OUT_DIR', '$VCS_DIR', 'Full path used for any given checked out item')
 api.register.add_variable('VCS_DIR', '$VCS.CHECKOUT_DIR', '')
+
+api.register.add_bool_variable('SCM_IGNORE_MODIFIED',False, '')
 
 api.register.add_variable('SCM_CACHE_ROOT_DIR', '$PART_USER_DIR/.cache/parts/scm', '')
 api.register.add_bool_variable('USE_SCM_CACHE', False, '')

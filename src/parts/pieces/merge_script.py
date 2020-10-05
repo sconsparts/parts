@@ -1,6 +1,5 @@
 
 
-
 import copy
 import os
 import re
@@ -60,32 +59,30 @@ def get_output(script, args=None, shellenv=None):
             if not isinstance(v, str):
                 v = v.encode() if glb.isPY2 else v.decode()
             shellenv[k] = v
-    
-    api.output.verbose_msg(["merge_script"], "Calling '{}'".format(cmdLine))
-    popen = subprocess.Popen(cmdLine, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=shellenv)
 
+    api.output.verbose_msg(["merge_script"], "Calling '{}'".format(cmdLine))
+    popen = subprocess.run(cmdLine, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=shellenv)
     
-    if popen.wait() != 0:
+    if popen.returncode != 0:
         api.output.error_msg(
             "Getting values of environment values of '{}' failed because of return code not equal to 0".format(script))
-    
+
     # Use the .stdout and .stderr attributes directly because the
     # .communicate() method uses the threading module on Windows
     # and won't work under Pythons not built with threading.
-    stdout = popen.stdout.read()
-    
-    output = stdout
+    output = popen.stdout
+
     return output.decode()
 
 
 def parse_output(output, keep=None, remove=None, nenv={}):
 
     ret = {}  # this is the data we will return
-    # these are the default items we want to remove 
-    filter_keys =("LS_COLORS","BASHOPTS","SHELLOPTS","PPID")
+    # these are the default items we want to remove
+    filter_keys = ("LS_COLORS", "BASHOPTS", "SHELLOPTS", "PPID", "POSIXLY_CORRECT")
     if remove:
         filter_keys = filter_keys + tuple(remove)
-    
+
     # parse everything
     reg = re.compile('(\\w*)=(.*)', re.I)
     for line in output.splitlines():
@@ -95,22 +92,22 @@ def parse_output(output, keep=None, remove=None, nenv={}):
             if keep:
                 # see if we need to filter out data
                 for regk in keep:
-                    if re.match(regk,key):
-                        ret[key] = m.group(2) 
+                    if re.match(regk, key):
+                        ret[key] = m.group(2)
                         break
             else:
                 # take everything that should not be skipped
                 skip = False
                 for regk in filter_keys:
-                    if re.match(regk,key):
+                    if re.match(regk, key):
                         skip = True
                         break
                 if not skip and key == "PATH":
                     # we want to remove the base default items in the path else later merging can have some odd effects
                     new_paths = m.group(2).split(os.pathsep)
-                    org_path = nenv.get("PATH","").split(os.pathsep)
+                    org_path = nenv.get("PATH", "").split(os.pathsep)
                     ret[key] = os.pathsep.join([path for path in new_paths if path.lower() not in org_path])
-                    
+
                 elif not skip:
                     ret[key] = m.group(2)
 
@@ -136,16 +133,16 @@ def get_script_env(env, script, args=None, vars=None, remove=None):
 
 def merge_script_vars(env, script, args=None, vars=None, remove=None):
     '''
-    This merges the data retieved from the script in to the Enviroment
+    This merges the data retrieved from the script in to the Environment
     by prepending it.
     script is the name of the script, args is optional arguments to pass
-    vars are var we want to retrieve, if None it will retieve everything found
+    vars are var we want to retrieve, if None it will retrieve everything found
     '''
     shell_env = get_script_env(env, script, args, vars, remove)
     for k, v in shell_env.items():
         env.PrependENVPath(k, v, delete_existing=1)
 
 
-# adding logic to Scons Enviroment object
+# adding logic to Scons Environment object
 SConsEnvironment.MergeScriptVariables = merge_script_vars
 SConsEnvironment.GetScriptVariables = get_script_env

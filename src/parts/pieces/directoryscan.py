@@ -234,6 +234,26 @@ def ScanDirectory(env, default_dir, defaults=True, callbacks=[], extra_scanner=N
                 env.Pattern(src_dir=node.Dir("libexec"), includes=["*"]),
             ],
         ),
+        InstallManPage=dict(
+            source=lambda node, env, default=None: [
+                env.Pattern(src_dir=node.Dir("share/man"), includes=["*"]),
+            ],
+        ),
+        InstallDoc=dict(
+            source=lambda node, env, default=None: [
+                env.Pattern(src_dir=node.Dir("share/doc"), includes=["*"]),
+            ],
+        ),
+        InstallMessage=dict(
+            source=lambda node, env, default=None: [
+                env.Pattern(src_dir=node.Dir("share/nls"), includes=["*"]),
+            ],
+        ),
+        InstallData=dict(
+            source=lambda node, env, default=None: [
+                env.Pattern(src_dir=node.Dir("share/"), includes=["*"], excludes=['nls/*','man/*','doc/*']),
+            ],
+        ),
     )
 
     # this generates the name of the side effect jsn file that stores state about what this scanned

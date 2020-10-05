@@ -210,7 +210,7 @@ class part(pnode.PNode):
         # how we can get the source, None is local
         self.__vcs = vcs_t
         # the file for this part, if any
-        self.__file = file
+        self.__file = str(file)
         # the src_path we need to make sure SCons as no issues when loading the Part file
         self.__src_path = None
         # this is how we can depend on this object
@@ -682,7 +682,7 @@ class part(pnode.PNode):
                 # if there is no version difference, we will get an ambigous error message later when we try to build,
                 # via same outputs, or via mapper function not having more than one match.
                 md5 = hashlib.md5()
-
+                
                 md5.update(self.__env.subst(self.__file).encode())
                 md5.update(self.__env_diff_sig.encode())
                 path_sig = md5.hexdigest()[-4:]

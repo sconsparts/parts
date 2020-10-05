@@ -15,6 +15,7 @@ import parts.api.output
 import parts.common as common
 import parts.core.util as util
 import parts.core.builders  # load the core builders
+import parts.core.util.getcontent as getcontent
 import parts.datacache as datacache
 import parts.errors as errors
 import parts.events as events
@@ -522,12 +523,12 @@ Use -H or --help-options for a list of scons options
         except KeyError:
             pass
 
-        md5 = hashlib.md5()
-
+        data = {}
         # get overides Variables
         vars = {}
         # vars=copy.deepcopy(glb.defaultoverides)
         vars.update(SCons.Script.ARGUMENTS)
+
         # stuff that is getting mapped in more than one way
         # that needs to be white listed from being part of the cache key
         white_list = [
@@ -545,10 +546,11 @@ Use -H or --help-options for a list of scons options
             'USE_CACHE_KEY',
             'SVN_REVISION',
         ]
+        data['variables'] = {}
         for k, v in vars.items():
             if k not in white_list:
-                tmp = common.get_content(v)
-                md5.update((k).encode() + tmp)
+                tmp = getcontent.asStr(v)
+                data['variables'][k]=tmp
 
         # set of --options
         # list of arguments we want to process as they might effect build state
@@ -564,34 +566,43 @@ Use -H or --help-options for a list of scons options
             # 'tool_chain', # we use the different value to get a better match for this
             # 'target_platform' # we get this from the def_env
         ]
+        data['options']={}
         for k in args_to_process:
             v = SCons.Script.Main.OptionsParser.defaults[k]
             if v != getattr(SCons.Script.Main.OptionsParser.values, k):
-                tmp = common.get_content(v)
-                md5.update((k).encode() + tmp)
-
-                # print k,v,getattr(SCons.Script.Main.OptionsParser.values,k)
+                tmp = getcontent.asStr(v)
+                data['options'][k]=tmp
 
         # this stuff makes up the core key
-        md5.update(self.def_env.subst("${CONFIG},${HOST_PLATFORM},${TARGET_PLATFORM}").encode())
-        # the thought is that the exact tool path are chached
-        # so changes to cli tools are seen as different
+        data["platform"] = self.def_env.subst("${CONFIG},${HOST_PLATFORM},${TARGET_PLATFORM}")
+
+        # we want to test which builders we are setting by default
+        data["configured_tools"]=[]
+
         for i in self.def_env['CONFIGURED_TOOLS']:
-            tmp = self.def_env.get(i.upper())
+            tmp = self.def_env.get(i.upper().replace("+","X"))
             if tmp:
-                md5.update(common.get_content(tmp))
+                data["configured_tools"].append(getcontent.asStr(tmp))
             else:
-                md5.update(i.encode())
+                data["configured_tools"].append(i)
+
+
         # store the ENV value as this has value that can tell us of differences
-        md5.update(common.get_content(dict(self.def_env['ENV'])))
+        #data['ENV']=getcontent.asStr(dict(self.def_env['ENV']))
+        #md5.update(getcontent.asStr(dict(self.def_env['ENV'])))
+        # Add default environment csig value...
 
         # we add information about that parts we have defined.
         # a different set gets a different key
+        data['parts'] = []
         for pobj in list(self.__part_manager.parts.values()):
             if pobj.isRoot:
-                md5.update(pobj.ID.encode())
+                data['parts'].append(pobj.ID)
 
+        md5 = hashlib.md5()
+        md5.update(getcontent.asStr(data).encode())
         self.__cache_key = md5.hexdigest()
+
 
     @property
     def _cache_key(self):

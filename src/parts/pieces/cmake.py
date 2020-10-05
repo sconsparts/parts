@@ -22,10 +22,10 @@ def CMake(env, destdir=None, auto_scanner={}, **kw):
     if destdir:
         env["CMAKE_DESTDIR"] = env.Dir(destdir).abspath
     cmake_install_dir = env.Dir("$CMAKE_DESTDIR")
-    env["CMAKE"] = "cmake"
+    env.SetDefault(CMAKE='cmake')
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$$$$$$$ORIGIN")}'
 
-    env["_CMAKE_ARGS"] = '\
+    env.SetDefault(_CMAKE_ARGS='\
         -DCMAKE_INSTALL_PREFIX=$CMAKE_DESTDIR\
         ${define_if("$DESTDIR_PATH","-DCMAKE_PREFIX_PATH=\\"")}${MAKEPATH("$DESTDIR_PATH",";")}${define_if("$DESTDIR_PATH","\\"")}\
         -DCMAKE_INSTALL_LIBDIR=lib\
@@ -36,6 +36,7 @@ def CMake(env, destdir=None, auto_scanner={}, **kw):
         -DCMAKE_CXX_COMPILER=$CXX\
         -DCMAKE_C_COMPILER=$CC\
         $CMAKE_ARGS'
+                   )
 
     # generate the build files
     out = env.CCommand(
@@ -59,8 +60,9 @@ def CMake(env, destdir=None, auto_scanner={}, **kw):
     )
     cmake_build_files = ["CMakeLists.txt"]
     src_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=cmake_build_files+[".git/*"]).files()
-    env["_CMAKE_MAKE_ARGS"] = 'VERBOSE=1\
+    env.SetDefault(_CMAKE_MAKE_ARGS='VERBOSE=1\
         $(-j{jobs}$)'.format(jobs=env.GetOption('num_jobs'))
+                   )
 
     ret = env.CCommand(
         [
@@ -68,7 +70,7 @@ def CMake(env, destdir=None, auto_scanner={}, **kw):
         ],
         out+src_files,
         [
-            "cd ${SOURCE.dir} ; cmake --build . --config Release --target install -- $_CMAKE_MAKE_ARGS"
+            "cd ${SOURCE.dir} ; $CMAKE --build . --config Release --target install -- $_CMAKE_MAKE_ARGS"
         ],
         source_scanner=scanners.null_scanner,
         target_factory=env.Dir,

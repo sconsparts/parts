@@ -152,8 +152,8 @@ def ChipArchitecture():
     '''
         ChipArchitecture
 
-        returns the chip archecture
-        Returns High level value for the archecture being used
+        returns the chip architecture
+        Returns High level value for the architecture being used
         which is often more useful. Knowing if you have a
         ia32, x64, ia64 in general is more intertesting
         than know if it is an P3 or P4
@@ -221,7 +221,7 @@ class SystemPlatform(common.bindable):
 
     @OS.setter
     def OS(self, x):
-        self._env[self.key + "_OS"] = x
+        self._env[self.key + "_OS"] = MapOS(x)
 
     @property
     def ARCH(self):
@@ -229,7 +229,7 @@ class SystemPlatform(common.bindable):
 
     @ARCH.setter
     def ARCH(self, x):
-        self._env[self.key + "_ARCH"] = x
+        self._env[self.key + "_ARCH"] = MapArchitecture(x)
 
     def _bind(self, env, key):
         # this is a bit of a hack to forward stuff in SCons as it should be in
@@ -247,9 +247,9 @@ class SystemPlatform(common.bindable):
 
     def _rebind(self, env, key):
 
-        # only want to do this for Target as host in "inmutable"
+        # only want to do this for Target as host in "immutable"
         # this allows us to clone TARGET_ARCH or TARGET_OS correctly
-        # we DON"T want HOST to be changed, it should be inmutable.
+        # we DON"T want HOST to be changed, it should be immutable.
         if key == "TARGET_PLATFORM":
             tmp = SystemPlatform(os=env["TARGET_OS"] if "TARGET_OS" in env else self.OS,
                                  arch=env["TARGET_ARCH"] if "TARGET_ARCH" in env else self.ARCH)
@@ -258,21 +258,24 @@ class SystemPlatform(common.bindable):
         tmp._bind(env, key)
         return tmp
 
-    def __eq__(self, rhs):
+    def __eq__(self, rhs) -> bool:
         if core.util.isString(rhs):
-            rhs = target_convert(rhs, base=self)
+            rhs = target_convert(rhs, base=self, error=False)
 
-        return (self.OS == rhs.OS or
-                'any' == rhs.OS or
-                'any' == self.OS) and \
-            (self.ARCH == rhs.ARCH or
-                'any' == rhs.ARCH or
-                'any' == self.ARCH)
+        if rhs:
+            return (self.OS == rhs.OS or
+                    'any' == rhs.OS or
+                    'any' == self.OS) and \
+                (self.ARCH == rhs.ARCH or
+                    'any' == rhs.ARCH or
+                    'any' == self.ARCH)
+        return False
 
-    def __ne__(self, rhs):
+
+    def __ne__(self, rhs) -> bool:
         return (not self.__eq__(rhs))
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.OS + "-" + self.ARCH
 
     __repr__ = __str__
@@ -280,7 +283,7 @@ class SystemPlatform(common.bindable):
     def __hash__(self):
         return hash(str(self))
 
-    def _is_native(self):
+    def _is_native(self) -> bool:
         return 'any' != self.OS and 'any' != self.ARCH
 
     # because of the mapping to ENV we have to do our own copy
@@ -325,7 +328,7 @@ def target_convert(str_val, raw_val=None, base=None, error=True):
     return ret
 
 
-# add configuartion varaible
+# add configuration variable
 #api.register.add_variable('OSBITNESS',str(OSBit()),'to be removed??')
 api.register.add_variable(['TARGET_PLATFORM', 'target_platform', 'target'],
                           SystemPlatform(glb._host_platform.OS, glb._host_platform.ARCH),

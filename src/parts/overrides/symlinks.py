@@ -530,7 +530,7 @@ def _source_scanner():
             tchildren = target.children(scan=0)
             try:
                 out = subprocess.run("objdump -p {} | grep SONAME".format(source), shell=True,
-                                     check=True, stdout=subprocess.PIPE).stdout.decode().split()[-1]
+                                     check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE).stdout.decode().split()[-1]
                 # given a soname and that it is not this node
                 if out and not target.name.endswith(out):
                     result = target.Entry(out)
