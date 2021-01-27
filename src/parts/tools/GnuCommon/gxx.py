@@ -25,7 +25,8 @@ gxx.Register(
             ],
             opt_dirs=[
                 '/opt/'
-            ] + ['/opt/rh/devtoolset-{0}/root/usr/bin/'.format(i) for i in range(3, 10)],
+            ] + ['/opt/rh/devtoolset-{0}/root/usr/bin/'.format(i) for i in range(3, 10)
+                 ] + ['/opt/rh/gcc-toolset-{0}/root/usr/bin/'.format(i) for i in range(9, 20)],
             script=None,
             subst_vars={},
             shell_vars={'PATH': '${GXX.INSTALL_ROOT}'},
