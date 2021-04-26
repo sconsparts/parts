@@ -11,9 +11,9 @@ import scanners
 from SCons.Script.SConscript import SConsEnvironment
 
 
-def CMake(env, destdir=None, auto_scanner={}, ignore=[], **kw):
+def CMake(env, destdir=None, cmakedir=None, auto_scanner={}, ignore=[], **kw):
     '''
-
+        cmakedir - directory containing cmakelis.txt in parent repo
     '''
 
     env = env.Clone(**kw)
@@ -38,10 +38,11 @@ def CMake(env, destdir=None, auto_scanner={}, ignore=[], **kw):
         $CMAKE_ARGS'
                    )
 
+    cmake_file = "${CHECK_OUT_DIR}/" +  cmake_dir + "/CMakeLists.txt"
     # generate the build files
     out = env.CCommand(
         [build_dir.File("Makefile")],
-        ["${CHECK_OUT_DIR}/CMakeLists.txt"],
+        [cmake_file],
         [
             # delete the directory as it can contains cached data
             SCons.Defaults.Delete(build_dir),
