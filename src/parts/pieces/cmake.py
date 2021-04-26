@@ -38,7 +38,11 @@ def CMake(env, destdir=None, cmakedir=None, auto_scanner={}, ignore=[], **kw):
         $CMAKE_ARGS'
                    )
 
-    cmake_file = "${CHECK_OUT_DIR}/" +  cmake_dir + "/CMakeLists.txt"
+    if cmakedir:
+        cmake_file = "${CHECK_OUT_DIR}/" +  str(cmakedir) + "/CMakeLists.txt"
+    else:
+        cmake_file = "${CHECK_OUT_DIR}/CMakeLists.txt"
+
     # generate the build files
     out = env.CCommand(
         [build_dir.File("Makefile")],
