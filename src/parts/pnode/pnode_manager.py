@@ -4,6 +4,10 @@ import os
 from typing import Dict, Optional, List
 from builtins import map
 
+import parts.common as common
+import parts.core.util as util
+from parts.target_type import target_type
+from parts.core.states import LoadState
 import parts.api as api
 import parts.datacache as datacache
 import parts.glb as glb
@@ -65,7 +69,7 @@ class manager:
         # map the events
         glb.engine.CacheDataEvent += self.Store
         glb.engine.PostProcessEvent += self._set_store_state
-        #glb.engine.PostProcessEvent += self.StoreAllPNodes
+        # glb.engine.PostProcessEvent += self.StoreAllPNodes
 
     def _set_store_state(self, mode):
         from ..loadlogic import all
@@ -92,7 +96,7 @@ class manager:
 
     def ClearNodeStates(self) -> int:
         '''
-        Clear any state the SCons nodes have to force everything to be 
+        Clear any state the SCons nodes have to force everything to be
         regenerated.
         '''
         for node in self.__known_nodes.values():
@@ -137,9 +141,9 @@ class manager:
             return ID in data.get('known_pnodes', {})
         return False
 
-    def GetNode(self, ID: str, create = None) -> Optional[SCons.Node.Node]:
+    def GetNode(self, ID: str, create=None) -> Optional[SCons.Node.Node]:
         '''
-        return a node object. If the node is not defined yet, we create a 
+        return a node object. If the node is not defined yet, we create a
         node object and fill in some information based on state in the cache
         '''
         if self.isKnownNode(ID):
@@ -156,9 +160,9 @@ class manager:
         # no node is known or requested to be created
         return None
 
-    def GetPNode(self, ID: str, create = None) -> Optional[pnode.PNode]:
+    def GetPNode(self, ID: str, create=None) -> Optional[pnode.PNode]:
         '''
-        return a pnode object. If the pnode is not defined yet, we create a 
+        return a pnode object. If the pnode is not defined yet, we create a
         node object and fill in some information based on state in the cache
         '''
         if self.isKnownPNode(ID):
@@ -287,38 +291,70 @@ class manager:
         '''
         self.__aliases[node.ID] = node
 
+    def KnownSections(self):
+        return {pnode for pnode in self.__known_pnodes.values() if util.isSection(pnode)}
+            
+
+    def TargetToSections(self, target: target_type):
+        '''
+        Maps a target_type to one or more section objects. Returns None if not mapping was found.
+        '''
+
+        # make key to get item
+        api.output.trace_msg(['target_to_section'], f'Target to resolve {target}')
+        if target.Alias and not target.isRecursive:
+            return [self.__known_pnodes.get(f"{target.Section}::{target.Alias}")]
+        elif target.Alias and not target.isRecursive:
+            filter_key = f"{target.Section}::{target.Alias}"
+        else:
+            # This is some concept as build:: utest:: these all are mapped to the
+            # section object that defines them
+            # concept search
+            filter_key = f"{target.Section}::"
+        ret= []
+        api.output.trace_msg(['target_to_section'], f'Using filter key of: {filter_key}')
+        for key, value in self.__known_pnodes.items():
+            if key.startswith(filter_key):
+                ret.append(value)
+        api.output.trace_msgf(['target_to_section'], 'Returning {}',common.DelayVariable(lambda:[i.ID for i in ret]))
+        return ret
+
+
     # factory methods
-    @classmethod
+    @ classmethod
     def RegisterNodeType(klass, node_type, create_func=None) -> None:
         '''
         Register a factory class/function to be used to construct a given type of node.
         '''
         # we have a function use it instead of the class __init__ functions
         if create_func is None:
-            create_func = pnode.pnode_factory
-        klass._node_types[node_type] = create_func
+            create_func= pnode.pnode_factory
+        klass._node_types[node_type]= create_func
 
     def Create(self, ntype, *lst, **kw):
         '''
         Create the node object
         '''
-        return self._node_types[ntype](ntype, *lst, **kw)
+        try:
+            return self._node_types[ntype](ntype, *lst, **kw)
+        except KeyError:
+            api.output.error_msg(f"Unknown type {ntype} given to pnode manager Create function")
 
     def _get_cache(self):
-        stored_data = datacache.GetCache("nodeinfo")
+        stored_data= datacache.GetCache("nodeinfo")
         if not stored_data:
-            stored_data = dict()
+            stored_data= dict()
             datacache.StoreData("nodeinfo", stored_data)
         return stored_data
 
     def _set_cache(self, key, value):
-        stored_data = self._get_cache()
-        valuestostore = {} if stored_data is None else stored_data
-        valuestostore[key] = value
+        stored_data= self._get_cache()
+        valuestostore= {} if stored_data is None else stored_data
+        valuestostore[key]= value
         datacache.StoreData("nodeinfo", valuestostore)
 
     def store_value(self, node, _info, valuestostore):
-        valuestostore[node.ID] = {
+        valuestostore[node.ID]= {
             'type': node.__class__,
             'pinfo': picklehelpers.dumps(_info)
         }
@@ -379,7 +415,7 @@ class manager:
             except KeyError:
                 pass
         # This file was loaded, so we want to store information we have on it
-        elif (pnode.LoadState == glb.load_file):
+        elif (pnode.LoadState == LoadState.FILE):
             sd = pnode.GenerateStoredInfo()
             self.store_value(pnode, sd, valuestostore)
 
@@ -388,7 +424,7 @@ class manager:
     def StoreAllPNodes(self, build_mode):
         # this is mapped to the PostProcessEvent event to store all Pnode information we have
         for node in list(self.__known_pnodes.values()):
-            if node.LoadState == glb.load_file:
+            if node.LoadState == LoadState.FILE:
                 self.StorePNode(node)
 
     def Store(self, goodexit, build_mode='build'):
@@ -567,7 +603,7 @@ class manager:
 
     def isNodeIDFileBased(self, nodeid):
 
-        info = self.GetStoredNodeIDInfo(nodeid)
+        info=self.GetStoredNodeIDInfo(nodeid)
         if not info and self.isKnownNode(nodeid):
             return isinstance(self.GetNode(nodeid), SCons.Node.FS.Base)
         elif info:
@@ -575,20 +611,20 @@ class manager:
         return False
 
     def GetChangedRootPartIDsSinceLastRun(self):
-        ret = set([])
-        stored_data = self._get_cache()
+        ret=set([])
+        stored_data=self._get_cache()
         if stored_data is None:
             return ret
-        pnodes = stored_data.get('known_pnodes', {})
+        pnodes=stored_data.get('known_pnodes', {})
         for data in pnodes.values():
             try:
-                pinfo = picklehelpers.loads(data['pinfo'])
+                pinfo=picklehelpers.loads(data['pinfo'])
             except (TypeError, picklehelpers.UnpicklingError):
-                pinfo = data['pinfo']
-                data['pinfo'] = picklehelpers.dumps(pinfo)
+                pinfo=data['pinfo']
+                data['pinfo']=picklehelpers.dumps(pinfo)
             if isinstance(pinfo, part_info.part_info):
                 # if so test the Part file state
-                tmp = pinfo.File
+                tmp=pinfo.File
                 if self.hasNodeRelationChanged(tmp['name'], tmp):
                     ret.add(pinfo.RootID)
         return ret
@@ -596,20 +632,20 @@ class manager:
 
 def node_to_str(node):
     if isinstance(node, SCons.Node.FS.File):
-        t = node.path
-        t = t.replace(os.sep, '/')
+        t=node.path
+        t=t.replace(os.sep, '/')
         return t
     elif isinstance(node, SCons.Node.FS.Dir):
-        t = node.path
-        t = t.replace(os.sep, '/')
+        t=node.path
+        t=t.replace(os.sep, '/')
         return t
     elif isinstance(node, SCons.Node.FS.Entry):
-        t = node.path
-        t = t.replace(os.sep, '/')
+        t=node.path
+        t=t.replace(os.sep, '/')
         return t
     elif SCons.Util.is_String(node):
-        t = node
-        t = t.replace(os.sep, '/')
+        t=node
+        t=t.replace(os.sep, '/')
         return t
     elif isinstance(node, SCons.Node.Python.Value):
         return node.value

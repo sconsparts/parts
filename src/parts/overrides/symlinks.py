@@ -517,7 +517,6 @@ def _source_scanner():
 
         if not isinstance(source, FileSymbolicLink):
             # This source is not a symlink. So nothing needs to be done
-            # print(1,"here")
             return []
         elif not isinstance(target, FileSymbolicLink):
             # if the source is a symlink and the target is a file

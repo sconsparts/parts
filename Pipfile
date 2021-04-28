@@ -5,14 +5,12 @@ name = "pypi"
 
 [packages]
 scons = "*"
-future = "*"
-scons-parts = {path = ".",editable = true}
-nox = "*"
-pytest = "*"
+scons-parts = {editable = true, path = "."}
 
 [dev-packages]
+nox = "*"
 autest = "*"
-pylint = "*"
-"autopep8" = "*"
-mypy = "*"
 pytest = "*"
+pylama = "*"
+mypy = "*"
+autopep8 = "*"

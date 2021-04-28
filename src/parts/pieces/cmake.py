@@ -11,7 +11,7 @@ import scanners
 from SCons.Script.SConscript import SConsEnvironment
 
 
-def CMake(env, destdir=None, auto_scanner={}, **kw):
+def CMake(env, destdir=None, auto_scanner={}, ignore=[], **kw):
     '''
 
     '''
@@ -59,7 +59,12 @@ def CMake(env, destdir=None, auto_scanner={}, **kw):
         target_scanner=scanners.depends_sdk_scanner
     )
     cmake_build_files = ["CMakeLists.txt"]
-    src_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=cmake_build_files+[".git/*"]).files()
+    
+    # make sure this is a list
+    if not isinstance(ignore, list):
+        ignore = []
+
+    src_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=cmake_build_files+[".git/*"]+ignore).files()
     env.SetDefault(_CMAKE_MAKE_ARGS='VERBOSE=1\
         $(-j{jobs}$)'.format(jobs=env.GetOption('num_jobs'))
                    )
@@ -87,7 +92,7 @@ def CMake(env, destdir=None, auto_scanner={}, **kw):
     return ret
 
 
-# adding logic to Scons Enviroment object
+# adding logic to Scons Environment object
 SConsEnvironment.CMake = CMake
 
 api.register.add_variable('CMAKE_DESTDIR', '${ABSPATH("destdir")}', 'Defines location to install bits from the CMake')

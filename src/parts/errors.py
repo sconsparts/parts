@@ -67,7 +67,7 @@ def SetPartStackFrameInfo(use_existing=False):
         glb.part_frame.insert(0, (part_frame.f_code.co_filename, lineno, part_frame.f_code.co_name, line))
 
     finally:
-        # We delete frame and part_frame here to avoid leaking refernce to frame
+        # We delete frame and part_frame here to avoid leaking reference to frame
         # such leaks "can cause your program to create reference cycles. Once a
         # reference cycle has been created, the lifespan of all objects which
         # can be accessed from the objects which form the cycle can become much

@@ -25,8 +25,8 @@ from SCons.Subst import CmdStringHolder
 
 class env_guard:
     __slots__ = ('thread_id',)
-    __depth__:Dict[int,int] = defaultdict(int)
-    __cache__:Dict[int,int] = {}
+    __depth__: Dict[int, int] = defaultdict(int)
+    __cache__: Dict[int, int] = {}
 
     def __init__(self, thread_id=None):
         self.thread_id = thread_id or _thread.get_ident()
@@ -190,7 +190,7 @@ def _sub_lst(env, obj, thread_id):
                 # should not happen I think .. probally a bug at the moment in the subst engine
                 tmp = [tmp]
             ret.append(tmp)
-
+    
     return ret
 
 
@@ -199,23 +199,27 @@ def sub_lst(env, lst, thread_id, recurse=True):
     Utility function to help with returning list from env.subst() as this function
     doesn't like the returning of lists.
     '''
-    def do_sub_lst():
-        with env_guard(thread_id):
-            spacer = "." * env_guard.depth(thread_id)
-            api.output.trace_msg(['sub_lst', 'mapper'], spacer, "sub_lst getting value for", lst)
-            ret = []
-            for v in lst[:]:
-                tmp = _sub_lst(env, v, thread_id)
-                if tmp and util.isList(tmp[0]):
-                    common.extend_unique(ret, tmp,)
-                else:
-                    common.append_unique(ret, tmp)
+    
+    with env_guard(thread_id):
+        spacer = "." * env_guard.depth(thread_id)
+        api.output.trace_msg(['sub_lst', 'mapper'], spacer, "sub_lst getting value for", lst)
+        ret = []
+        for v in lst[:]:
+            tmp = _sub_lst(env, v, thread_id)
+            if tmp and util.isList(tmp[0]):
+                common.extend_unique(ret, tmp,)
+            else:
+                common.append_unique(ret, tmp)
 
-            api.output.trace_msg(['sub_lst', 'mapper'], spacer, "sub_lst returning", ret)
+        api.output.trace_msg(['sub_lst', 'mapper'], spacer, "sub_lst returning", ret)
 
-            return ret
+        #if util.isList(ret[0]):
+            #for sublst in ret:
+                #if util.isList(sublst):
+                    #sublst[:] = env.Flatten(sublst)
 
-    return do_sub_lst()
+        return ret
+
 
 
 def _concat(prefix, _list, suffix, env, f=lambda x: x, target=None, source=None):
@@ -338,7 +342,7 @@ class part_mapper(mapper):
 
 class part_id_mapper(mapper):
     ''' This class maps the part name and version range to the correct alias in
-    the Default enviroment to the actual value stored the in default Env PART_INFO map.
+    the Default Environment to the actual value stored the in default Env PART_INFO map.
     It then returns the value of the property for the requested part alias.
     It has to do a small hack to replace a the property in the actual Env else a SCons
     issue with subst and lists causes the subst to fail.
@@ -362,7 +366,7 @@ class part_id_mapper(mapper):
         spacer = "." * env_guard.depth(thread_id)
         api.output.trace_msg(['partid_mapper', 'mapper'], spacer, 'Expanding value "{0!r}"'.format(self))
 
-        # Find matching verion pinfo
+        # Find matching version pinfo
         t = target_type.target_type("name::" + self.part_name)
         t.Properties['version'] = self.ver_range
         t.Properties['platform_match'] = env['TARGET_PLATFORM']
@@ -403,7 +407,7 @@ class part_id_export_mapper(mapper):
     '''
     name = 'PARTIDEXPORTS'
 
-    def __init__(self, name, section, part_prop, policy=Policy.REQPolicy.warning,optional=False):
+    def __init__(self, name, section, part_prop, policy=Policy.REQPolicy.warning, optional=False):
         if __debug__:
             logInstanceCreation(self, 'parts.mappers.part_id_export_mapper')
         mapper.__init__(self)
@@ -616,7 +620,7 @@ class define_if(mapper):
             subvalue = env.subst(self.var)
         except Exception as e:
             subvalue = None
-            api.output.verbose_msgf(['defineif_mapper', 'mapper','debug'], "Exception was caught during define_if mapper:\n {}", e)
+            api.output.verbose_msgf(['defineif_mapper', 'mapper', 'debug'], "Exception was caught during define_if mapper:\n {}", e)
 
         if subvalue:
             return self.value
@@ -919,130 +923,6 @@ class pkgrunpath_mapper(mapper):
         return ret
 
 
-class TempFileMunge(mapper):
-
-    """A callable class.  You can set an Environment variable to this,
-    then call it with a string argument, then it will perform temporary
-    file substitution on it.  This is used to circumvent the long command
-    line limitation.
-
-    By default, the name of the temporary file used begins with a
-    prefix of '@'.  This may be configred for other tool chains by
-    setting '$TEMPFILEPREFIX'.
-
-    env["TEMPFILEPREFIX"] = '-@'        # diab compiler
-    env["TEMPFILEPREFIX"] = '-via'      # arm tool chain
-
-    This is the Parts overide of the SCons version of this class
-    to address a some complex issues with path handling when on
-    windows and using GNU like tool chains
-
-    todo.. push back into SCons
-
-    """
-    class result(str, CmdStringHolder):
-        literal = False
-
-        def __new__(cls, prefix, native_tmp, id):
-            return super(TempFileMunge.result, cls).__new__(cls, prefix + native_tmp)
-
-        def __init__(self, prefix, native_tmp, id):
-            self.id = ("Using tempfile " + native_tmp + " for command line:\n" + id)
-            self.native_tmp = native_tmp
-
-        def __del__(self):
-            try:
-                os.unlink(self.native_tmp)
-            except AttributeError:
-                pass
-
-        @property
-        def data(self):
-            return str(self)
-
-    name = 'TEMPFILE'
-
-    def __init__(self, cmd, force_posix_paths=False):
-        if __debug__:
-            logInstanceCreation(self, 'parts.mappers.TempFileMunge')
-        self.cmd = cmd
-        self.force_posix_paths = force_posix_paths
-
-    def __call__(self, target, source, env, for_signature):
-        if for_signature:
-            # If we're being called for signature calculation, it's
-            # because we're being called by the string expansion in
-            # Subst.py, which has the logic to strip any $( $) that
-            # may be in the command line we squirreled away.  So we
-            # just return the raw command line and let the upper
-            # string substitution layers do their thing.
-            return self.cmd
-
-        # Now we're actually being called because someone is actually
-        # going to try to execute the command, so we have to do our
-        # own expansion.
-        cmd = env.subst_list(self.cmd, SCons.Subst.SUBST_CMD, target, source)[0]
-        try:
-            maxline = int(env.subst('$MAXLINELENGTH'))
-        except ValueError:
-            maxline = 2048
-
-        length = 0
-        for c in cmd:
-            length += len(c)
-        if length <= maxline:
-            return self.cmd
-
-        # We do a normpath because mktemp() has what appears to be
-        # a bug in Windows that will use a forward slash as a path
-        # delimiter.  Windows's link mistakes that for a command line
-        # switch and barfs.
-        #
-        # We use the .lnk suffix for the benefit of the Phar Lap
-        # linkloc linker, which likes to append an .lnk suffix if
-        # none is given.
-        (fd, tmp) = tempfile.mkstemp('.lnk', text=True)
-        native_tmp = SCons.Util.get_native_path(os.path.normpath(tmp))
-
-        if env['SHELL'] and env['SHELL'] == 'sh':
-            # The sh shell will try to escape the backslashes in the
-            # path, so unescape them.
-            native_tmp = native_tmp.replace('\\', '/')
-
-        prefix = env.subst('$TEMPFILEPREFIX')
-        if not prefix:
-            prefix = '@'
-
-        args = list(map(SCons.Subst.quote_spaces, cmd[1:]))
-        data = " ".join(args)
-        # This is a little bit of a hack as it could mess up switches using '\'
-        # however this is unlikely as windows uses / or - for switchs and posix uses - or --
-        if self.force_posix_paths:
-            data = data.replace('\\', '/')
-        os.write(fd, data + "\n")
-        os.close(fd)
-        command_id = ' '.join((SCons.Subst.quote_spaces(cmd[0]), data))
-        command_args = self.result(prefix, native_tmp, command_id)
-        # XXX Using the SCons.Action.print_actions value directly
-        # like this is bogus, but expedient.  This class should
-        # really be rewritten as an Action that defines the
-        # __call__() and strfunction() methods and lets the
-        # normal action-execution logic handle whether or not to
-        # print/execute the action.  The problem, though, is all
-        # of that is decided before we execute this method as
-        # part of expanding the $TEMPFILE construction variable.
-        # Consequently, refactoring this will have to wait until
-        # we get more flexible with allowing Actions to exist
-        # independently and get strung together arbitrarily like
-        # Ant tasks.  In the meantime, it's going to be more
-        # user-friendly to not let obsession with architectural
-        # purity get in the way of just being helpful, so we'll
-        # reach into SCons.Action directly.
-        if SCons.Action.print_actions:
-            print(command_args.id)
-        return [cmd[0], command_args]
-
-
 # these are some basic string items
 class replace_mapper(mapper):
     ''' replace a character in subst value'''
@@ -1089,9 +969,5 @@ api.register.add_mapper(relpath_mapper)
 api.register.add_mapper(runpath_mapper)
 api.register.add_mapper(pkgrunpath_mapper)
 api.register.add_mapper(replace_mapper)
-
-
-# seems to be fixed in Scons
-# api.register.add_mapper(TempFileMunge)
 
 api.register.add_bool_variable('MAPPER_BAD_ALIAS_AS_WARNING', True, 'Controls if a missing alias is an error or a warning')

@@ -1,7 +1,6 @@
 # defines WiX tools chain
 
 
-
 def wix_setup(env, ver):
 
     env['WIX_VERSION'] = ver

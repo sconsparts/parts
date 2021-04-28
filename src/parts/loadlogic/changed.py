@@ -3,6 +3,7 @@
 import os
 import time
 
+from parts.core.states import LoadState
 import parts.api as api
 import parts.config as config
 import parts.datacache as datacache
@@ -97,7 +98,7 @@ class Changed(base.Base):
             # so we avoid issues with custom data passing form
             # dependent Parts
             sections_to_load = [x for x in self.sections_to_load]
-            sections_to_load.sort(section.scmp)  #todo this needs to be fixed once i try to get working again
+            sections_to_load.sort(section.scmp)  # todo this needs to be fixed once i try to get working again
             total = len(sections_to_load)
             for cnt, s in enumerate(sections_to_load):
                 api.output.console_msg("Loading {0:.1%} ({1}/{2} sections) \033[K".format((cnt * 1.0) / total, cnt, total))
@@ -169,7 +170,7 @@ class Changed(base.Base):
                     section = glb.pnodes.GetPNode(secID)
                     if section:
                         self.sections_to_load.add(section)
-                        section.ReadState = glb.load_cache
+                        section.ReadState = LoadState.CACHE
                 self._known_nodes[nodeid] = True
 
             # if everything is still good we want to check the edge inforation for this node
@@ -237,7 +238,7 @@ class Changed(base.Base):
     def CheckTargets(self):
         '''
         This is the main function that figures out what we want to process or not process based on the fact we have
-        new part and exsiting part file have changed
+        new part and existing part file have changed
         '''
 
         ########################################################################
@@ -345,9 +346,9 @@ class Changed(base.Base):
                 self.SetToLoad(dep_sec, "force_load was set to True")
                 self.SetDependsToCacheLoad(dep_sec)
             elif dep_sec not in self.sections_to_load:
-                dep_sec.ReadState = glb.load_cache
+                dep_sec.ReadState = LoadState.CACHE
                 self.sections_to_load.add(dep_sec)
-                if dep_sec.ReadState == glb.load_cache:
+                if dep_sec.ReadState == LoadState.CACHE:
                     api.output.verbose_msg(
                         ['update_check'],
                         '{0} is set to be loaded from cache because it is a dependent of {1} which is out of date'.format(
@@ -392,14 +393,14 @@ class Changed(base.Base):
         or skip in some form.
 
         The depends information that is checked:
-        1) is the dependednt section the same as the one we would have mapped
+        1) is the dependent section the same as the one we would have mapped
         2) given the dependent section is up-to-date ( not needed to be loaded)
             is the exports provided by the section changed
         3) Given the above is still ok, did a pattern that was called in the
-            section have a possible change on disk that would casue a need
+            section have a possible change on disk that would cause a need
             for a rescan, and rebuild of stuff that the scan might have returned
         4) along the way if we see the dependent section is out of date we are out of date
-            as well. hwoever we still have to check all dependents as we need to know
+            as well. however we still have to check all dependents as we need to know
             everything we may have to load, as we don't store this information, since
             a simple change may map the section relationships.
         '''
@@ -434,8 +435,8 @@ class Changed(base.Base):
                 new_depends = self.RemapDependent(dep_info)
                 if new_depends.ID != dep_info.SectionID:
                     # this is a new mapping, so we need to do a few things
-                    # 1) set this sectiond to load
-                    self.SetToLoad(sec, "Dependancy change or was remapped to new value")
+                    # 1) set this sections to load
+                    self.SetToLoad(sec, "Dependency change or was remapped to new value")
                     # 2) we need to modify our state to have this items in it instead
                     # of the existing information
                     dep_info.Update(new_depends)
@@ -460,7 +461,7 @@ class Changed(base.Base):
             elif self.isSectionMarkedChanged(dep_sec):
                 dep_sec_changed == True
             elif dep_info.ESig != dep_sec.Stored.ESig and req_changed:
-                # elif dependancy exports changed we want to see if the requirements we
+                # elif dependency exports changed we want to see if the requirements we
                 # have really changed
                 dep_sec_changed = self.hasDepedentTreeRequirementsChanged(sec, dep_info, dep_sec, dep_requirements)
 
@@ -484,7 +485,7 @@ class Changed(base.Base):
         if section_info.changed is None:
             api.output.verbose_msg(['update_check'], '{0} is out of date because: "{1}"'.format(sec.ID, reason))
             section_info.changed = reason
-            sec.ReadState = glb.load_file
+            sec.ReadState = LoadState.FILE
             self._up_to_date = False
             self.sections_to_load.add(sec)
 
@@ -511,13 +512,13 @@ class Changed(base.Base):
         return dref.StoredMatchingSections[0]
 
     def hasDepedentTreeRequirementsChanged(self, psec, info, sec, requirements):
-        '''Test the requirements we have the dependancy tree
+        '''Test the requirements we have the dependency tree
         Only has to recurse if the esig value is different, else we can ignore this
         '''
         dep_changed = False
         changed = False
         for dep_info in sec.Stored.DependsOn:
-             # get section object
+            # get section object
             dep_sec = glb.pnodes.GetPNode(dep_info.SectionID)
             if self._section_info[sec.ID].depend_esig_changed:
                 # there was some dependent with a esig change so we want to recurse
@@ -554,8 +555,8 @@ class Changed(base.Base):
         reqs = requirements
         rsigs = depends_info.RSigs
 
-        # we test each requirment signiture (rsig) we have and see if that data
-        # in export data signiture (esig) has changed from our last run
+        # we test each requirement signature (rsig) we have and see if that data
+        # in export data signature (esig) has changed from our last run
 
         # for each requirement
         for req in reqs:
@@ -585,7 +586,7 @@ class Changed(base.Base):
         except KeyError:
             # next we test the build context files
             for tool, file_list in stored_cfg_data.items():
-                    # get the files we would use in this run for a given tool
+                # get the files we would use in this run for a given tool
                 cfg_files = config.get_defining_config_files(
                     sec.Stored.Part.Stored.Config,
                     tool,

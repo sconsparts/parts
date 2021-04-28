@@ -15,7 +15,9 @@ import parts.reporter as reporter   # isort:skip
 # start up reporter
 glb.rpter = reporter.reporter()     # isort:skip
 
-import parts.build_section as build_section
+#import parts.build_section as build_section
+import parts.metasection.buildsection
+import parts.metasection.unittestsection
 import parts.config as config
 import parts.engine as engine  # get engine
 import parts.filters as filters
@@ -25,7 +27,7 @@ import parts.parts as parts
 import parts.pattern as pattern
 import parts.poptions as poptions
 import parts.tool_mapping as tool_mapping
-import parts.vcs as vcs
+import parts.scm as scm
 import parts.version as version
 import parts.version_info as version_info
 
@@ -44,5 +46,5 @@ glb.engine.Start()  # sets up everything
 # this will be viewed as global function to the user in the Sconstruct file
 globals().update(glb.globals)
 
-# empty target for checking out vcs logic code only
+# empty target for checking out scm logic code only
 SCons.Script.Alias('extract_sources')

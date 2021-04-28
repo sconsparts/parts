@@ -24,10 +24,10 @@ rpm_reg = r"([\w_.-]+)-([\w.]+)-([\w_.]+)[.](\w+)\.rpm"
 
 
 def rpm_scan_check(node, env):
-    api.output.verbose_msgf(["rpm-scanner", "scanner"], "Scanner Check {} - started", node.ID)
+    api.output.verbose_msg(["rpm-scanner", "scanner"], f"Scanner Check {node.ID} - started")
     # we can scan given the children all all built or up to date
     ret = not node_helpers.has_children_changed(node)
-    api.output.verbose_msgf(["rpm-scanner", "scanner"], "Scanner Check {}: {}", node.ID, ret)
+    api.output.verbose_msg(["rpm-scanner", "scanner"], f"Scanner Check {node.ID}: {ret}")
     return ret
 
 
@@ -41,16 +41,17 @@ def rpm_group_values(env, dir, target, source, arg=None):
 
     for node in source:
         # This needs to be a child check as the group state file
-        # has no real soures, it all based on implicted values
+        # has no real soures, it all based on implicit values
         # This mean that it would only rebuild if a new file was added
         # We need to make sure we only give back files if all the inputs
-        # to the group file are defined. Since a rebuilt child may not cause 
+        # to the group file are defined. Since a rebuilt child may not cause
         # this file to rebuild ( same md5), so we check the children instead.
+
         if not node_helpers.has_children_changed(node) and os.path.exists(node.ID):
             with open(node.ID, "r") as infile:
                 data = json.load(infile)
                 for json_node in data:
-                    n = util.make_node(json_node,env)
+                    n = util.make_node(json_node, env)
                     if n.exists():
                         ret.append(n)
 
@@ -299,8 +300,8 @@ def rpmarch(env, target_arch):
                 new_target_arch = arch_map_rpm[target_arch]
 
     except KeyError:
-            # implicit mapping: when the given architecture is none,
-            # the key maps to the platform system architecture
+        # implicit mapping: when the given architecture is none,
+        # the key maps to the platform system architecture
         arch_map_rpm[target_arch] = implicit_rpm_mapping(target_arch)
         new_target_arch = arch_map_rpm[target_arch]
     return new_target_arch
@@ -337,7 +338,7 @@ def rpm_emitter(target, source, env):
         api.output.error_msg(
             "RPM target files must be in format of <name>-<version>-<release>.<arch>.rpm\n current format of value of target file is '{0}'".format(target[0].name))
 
-    # export the version for the rpm we are generating 
+    # export the version for the rpm we are generating
     target_version = grps.group(2)
     env.ExportItem("PKG_RPM_VERSION", target_version)
 
@@ -389,21 +390,21 @@ api.register.add_variable('RPM_DEVEL_EXT', "-devel", "")
 
 def RpmPackage_wrapper(env, target, source=None, **kw):
 
-    # api checks 
+    # api checks
     if not source and "sources" in kw:
         source = kw["sources"]
         del kw["sources"]
         api.output.warning_msg("Builders should use 'source' not 'sources'")
 
-    target_arch = env.subst(kw.get("TARGET_ARCH",""))
+    target_arch = env.subst(kw.get("TARGET_ARCH", ""))
     if target_arch and not platform_info.ValidatePlatform(target_arch):
         api.output.warning_msgf("{} is not a known defined TARGET_ARCH", target_arch)
         del kw["TARGET_ARCH"]
-        
+
     env = env.Clone(**kw)
 
     if target_arch:
-        env['TARGET_ARCH'] = target_arch  
+        env['TARGET_ARCH'] = target_arch
     ####################
     # get the dist value
     try:
@@ -415,11 +416,11 @@ def RpmPackage_wrapper(env, target, source=None, **kw):
     if ("DIST" in env and env.subst('$DIST') == "%{?dist}") or ("DIST" not in env):
         env["DIST"] = dist
     # map arch to value the RPM will want to use
-    #if not platform_info.ValidatePlatform(env['TARGET_ARCH']):
+    # if not platform_info.ValidatePlatform(env['TARGET_ARCH']):
         #api.output.warning_msgf("{} is not a known defined TARGET_ARCH", env['TARGET_ARCH'])
     env['TARGET_ARCH'] = rpmarch(env, env['TARGET_ARCH'])
     api.output.verbose_msgf(['rpm'], "mapping architecture to rpm value of: {0}", env['TARGET_ARCH'])
-    
+
     return env._RPMPackage(target, source, **kw)
 
 

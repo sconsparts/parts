@@ -1,0 +1,15 @@
+Import('*')
+PartVersion('1.0.0')
+PartName('hello')
+
+build.DependsOn(['print_msg'])
+
+
+@build(env['TARGET_PLATFORM']=="x86_64")
+@build.Group("foo")
+@build
+def source(env):
+    print("hell02")
+    ret=env.Program("hello","hello.c")
+    env.InstallTarget(ret)
+print(13,source)

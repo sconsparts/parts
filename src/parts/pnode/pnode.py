@@ -1,10 +1,9 @@
 
 
-
 import parts.errors as errors
 import parts.glb as glb
 from SCons.Debug import logInstanceCreation
-
+from parts.core.states import LoadState
 
 class PNode:
     """description of class"""
@@ -19,7 +18,7 @@ class PNode:
     def __init__(self):
         if __debug__:
             logInstanceCreation(self)
-        self.__load_state = glb.load_none
+        self.__load_state = LoadState.NONE
         self._remove_cache = False
         # state
         self.__is_loading = False
@@ -88,15 +87,30 @@ def pnode_factory(klass, *lst, **kw):
 
     # from input figure out the ID to get the node
     # and if we need to setup the node with passed in data
-    id, setup = klass._process_arg(*lst, **kw)
+
+    # new section code... could mean we can remove this function
+    register = kw.get("register_node",True)
+    if "register_node" in kw:
+        del kw["register_node"]
+    # make the class
+    ret = klass(*lst, **kw)
+    # setup the node
+    ret._setup_(*lst, **kw)
+    # register it
+    if register:
+        glb.pnodes.AddPNodeToKnown(ret)
+
+    # Code that was based on caching state... turned off
+
+    '''id, setup = klass._process_arg(*lst, **kw)
     if id and setup and glb.pnodes.isKnownPNode(id):
         # we have the node .. Get it
         ret = glb.pnodes.GetPNode(id)
-        if ret.LoadState == glb.load_cache and ret.ReadState == glb.load_file:
+        if ret.LoadState == LoadState.CACHE and ret.ReadState == LoadState.FILE:
             # this is a case of promotion from a cache to file load state
             # when this happens we want to regenerate the node
             ret.__init__(*lst, **kw)
-            ret.LoadState = glb.load_cache
+            ret.LoadState = LoadState.CACHE
         # setup the node
         ret._setup_(*lst, **kw)
 
@@ -138,12 +152,12 @@ def pnode_factory(klass, *lst, **kw):
                 # we want to recall __init__ on the object
                 # because we have new "better" init state
                 ret.__init__(*lst, **kw)
-            elif ret.LoadState == glb.load_cache and ret.ReadState == glb.load_file:
+            elif ret.LoadState == LoadState.CACHE and ret.ReadState == LoadState.FILE:
                 # this is a case of promotion from a cache to file load state
                 # when this happens we want to regenerate the node
                 ret.__init__(*lst, **kw)
                 setup = True  # this should be set to True
-                ret.LoadState = glb.load_cache
+                ret.LoadState = LoadState.CACHE
         else:
             # else this is not a known node
             # return the node we have and register it
@@ -152,6 +166,7 @@ def pnode_factory(klass, *lst, **kw):
         if setup and not ret.isSetup:
             # setup the node
             ret._setup_(*lst, **kw)
+    '''
 
     return ret
 

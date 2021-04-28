@@ -27,8 +27,8 @@ def generate(env):
     # set up shell env for running compiler
     parts.tools.AoccCommon.aocc.MergeShellEnv(env)
 
-    env['CC'] = parts.tools.Common.toolvar('clang', ('AMD','aocc'), env=env)
-    env['CXX'] = parts.tools.Common.toolvar('clang++', ('AMD','aocc',), env=env)
+    env['CC'] = parts.tools.Common.toolvar('clang', ('AMD', 'aocc'), env=env)
+    env['CXX'] = parts.tools.Common.toolvar('clang++', ('AMD', 'aocc',), env=env)
 
     env['SHOBJSUFFIX'] = '.pic.o'
     env['OBJSUFFIX'] = '.o'

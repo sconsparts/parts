@@ -271,7 +271,6 @@ class SystemPlatform(common.bindable):
                     'any' == self.ARCH)
         return False
 
-
     def __ne__(self, rhs) -> bool:
         return (not self.__eq__(rhs))
 

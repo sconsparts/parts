@@ -1,12 +1,11 @@
+import SCons.Script
+from parts.pieces.merge_script import *
+import unittest
 import sys
 import os
 import copy
 win32 = sys.platform == 'win32'
 
-import unittest
-from parts.pieces.merge_script import *
-import SCons.Script
-import sys
 is_win32 = False
 is_linux = False
 is_darwin = False
@@ -44,7 +43,8 @@ class TestMergeScript(unittest.TestCase):
     if is_win32:
         def test_get_output(self):
             norm_env = normalize_env(self.env['ENV'])
-            output = get_output(os.path.join('./tests/unit/testdata', 'testvars.cmd'), args='dummy_arg1 dummy_arg2', shellenv=norm_env)
+            output = get_output(os.path.join('./tests/unit/testdata', 'testvars.cmd'),
+                                args='dummy_arg1 dummy_arg2', shellenv=norm_env)
             # print 'output=' + str(output)
             expectedOutput = []
             expectedOutput.append(r'ARGTEST=dummy_arg1')
@@ -55,10 +55,11 @@ class TestMergeScript(unittest.TestCase):
                 self.assertNotEqual(output.find(expectedOutputItem), -1)
     elif is_linux or is_darwin:
         def test_get_output(self):
-            output = get_output(os.path.join('./tests/unit/testdata', 'testvars.sh'), args='dummy_arg1 dummy_arg2', shellenv=self.env['ENV'])
+            output = get_output(os.path.join('./tests/unit/testdata', 'testvars.sh'),
+                                args='dummy_arg1 dummy_arg2', shellenv=self.env['ENV'])
             print('output=' + str(output))
             expectedOutput = []
-            #expectedOutput.append(r'ARGTEST=dummy_arg1')
+            # expectedOutput.append(r'ARGTEST=dummy_arg1')
             expectedOutput.append(r"INCLUDE='/usr/bin/joe/myinclude/INCLUDE:/opt/foo/INCLUDE:oddvar:::like this'")
             expectedOutput.append(r'LIB=/opt/someplace:/usr/bin/joe/myinclude/LIB:/opt/foo/lib:')
             expectedOutput.append(r'LIBPATH=/opt/someplace:')
@@ -108,7 +109,8 @@ key8 == var8
             self.assertEqual(len(r), 0)
             self.assertEqual(r.get('DUMMY', None), None)
 
-            r = get_script_env(self.env, os.path.join('./tests/unit/testdata', 'testvars.cmd'), args='dummy_arg1 dummy_arg2', vars=None)
+            r = get_script_env(self.env, os.path.join('./tests/unit/testdata', 'testvars.cmd'),
+                               args='dummy_arg1 dummy_arg2', vars=None)
             expectedOutput = {}
             expectedOutput['ARGTEST'] = r'dummy_arg1'
             expectedOutput['INCLUDE'] = r'C:\Program Files (x86)\joe\myinclude\INCLUDE;C:\foo\INCLUDE;oddvar;;;like this'
@@ -153,7 +155,8 @@ key8 == var8
             self.assertEqual(len(r), 0)
             self.assertEqual(r.get('DUMMY', None), None)
 
-            r = get_script_env(self.env, os.path.join('./tests/unit/testdata', 'testvars.sh'), args='dummy_arg1 dummy_arg2', vars=None)
+            r = get_script_env(self.env, os.path.join('./tests/unit/testdata', 'testvars.sh'),
+                               args='dummy_arg1 dummy_arg2', vars=None)
             expectedOutput = {}
             expectedOutput['ARGTEST'] = r'dummy_arg1'
             expectedOutput['INCLUDE'] = r"'/usr/bin/joe/myinclude/INCLUDE:/opt/foo/INCLUDE:oddvar:::like this'"

@@ -441,7 +441,7 @@ api.register.add_global_parts_object('PrintWarning', user_report_warning)
 api.register.add_global_parts_object('PrintMessage', user_print_msg)
 api.register.add_global_parts_object('VerboseMessage', user_verbose)
 
-# adding logic to Scons Enviroment object
+# adding logic to Scons Environment object
 SConsEnvironment.PrintError = user_report_error_env
 SConsEnvironment.PrintWarning = user_report_warning_env
 SConsEnvironment.PrintMessage = user_print_msg_env

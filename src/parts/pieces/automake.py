@@ -55,7 +55,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                 and returns a tuple of (build_files, source_files) Where
                 build_files are the files we need as sources to make the finial makefile
                 source_file any sources that are copied to the build_dir and would cause the make command to re-run
-                the builder will make source files an explicit prepresiqute for the finial expected generate buildfile
+                the builder will make source files an explicit prerequisite for the finial expected generate buildfile
                 to build correct
     copy_scm - Copy the scm directory (currently this mean only .git) when coping the source over when copy_src is True.
                 This takes extra time and space but may be needed if the automake tool query git for information which
@@ -287,8 +287,10 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
 
     )
 
+    skip_check=True
     if not skip_check:
-        api.output.verbose_msg(["automake"], "Generating unit_test for '{name}' with make target {target}".format(name=env.PartName(),target=check_targets))
+        api.output.verbose_msg(["automake"], "Generating unit_test for '{name}' with make target {target}".format(
+            name=env.PartName(), target=check_targets))
         # test target for standard make check from automake
         env.UnitTest(
             target="check",  # output file that we want to run

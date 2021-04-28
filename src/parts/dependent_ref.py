@@ -17,18 +17,19 @@ class dependent_ref:
     be shared between the two environments defining each section
     """
     __slots__ = [
-        '__part_ref',
-        '__sectionname',
-        '__requires',
-        '__stackframe',
-        '__rsigs',
-        '__section',
-        '__part',
+        '__part_ref', # the PartRef object
+        '__sectionname', # the sections we want to match in the dependent part
+        '__requires', # stuff we want to map
+        '__stackframe', # debug stack frame info
+        '__rsigs', # requirement signature | May not be needed any more
+        '__section', # the section we match
+        '__part', # The part we match
         '__stored_matches',
-        '__optional'
+        '__classically_mapped', # this was mapped via the "classic" mapper logic
+        '__optional' # if this depend optional? ie we can skip it if not found
     ]
 
-    def __init__(self, part_ref:part_ref.PartRef, section, requires, optional=False):
+    def __init__(self, part_ref: part_ref.PartRef, section, requires, optional=False):
         if __debug__:
             logInstanceCreation(self)
 
@@ -45,6 +46,7 @@ class dependent_ref:
         self.__part = None
         self.__stored_matches = None
         self.__optional = optional
+        self.__classically_mapped = False
 
     @property
     def StackFrame(self):
@@ -67,6 +69,14 @@ class dependent_ref:
         return self.__optional
 
     @property
+    def isClassicallyMapped(self):
+        return self.__classically_mapped
+
+    @isClassicallyMapped.setter
+    def isClassicallyMapped(self, val):
+        self.__classically_mapped = val
+
+    @property
     def Part(self):
         if self.__part:
             return self.__part
@@ -74,13 +84,13 @@ class dependent_ref:
             if self.__part_ref.hasUniqueMatch:
                 self.__part = self.__part_ref.UniqueMatch
             elif not self.__part_ref.hasMatch and not self.__optional:
-                api.output.error_msg(self.NoMatchStr(),stackframe=self.StackFrame)
+                api.output.error_msg(self.NoMatchStr(), stackframe=self.StackFrame)
             elif not self.__part_ref.hasMatch and self.__optional:
                 # this component is viewed as optional
-                api.output.warning_msg(self.NoMatchStr(),stackframe=self.StackFrame, print_once=True)
+                api.output.warning_msg(self.NoMatchStr(), stackframe=self.StackFrame, print_once=True)
                 self.__part = NilPart()
             elif self.__part_ref.hasAmbiguousMatch:
-                api.output.error_msg(self.AmbiguousMatchStr(),stackframe=self.StackFrame)
+                api.output.error_msg(self.AmbiguousMatchStr(), stackframe=self.StackFrame)
         return self.__part
 
     @property
@@ -168,7 +178,7 @@ class dependent_ref:
 
     # this should be a safe API for users
     def DelaySubst(self, value, policy=policies.REQPolicy.warning):
-        return self.PartRef.delaysubst(value, policy)
+        return self.PartRef.delaysubst(value, self.SectionName , policy)
 
     def str_sig(self):
         return "{}:{}:{}".format(self.__part_ref.str_sig(), self.__sectionname, self.__requires.csig())

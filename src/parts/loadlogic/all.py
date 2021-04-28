@@ -4,6 +4,7 @@ import time
 
 import parts.api as api
 import parts.glb as glb
+from parts.core.states import LoadState, FileStyle
 from parts.pnode import part
 from SCons.Debug import logInstanceCreation
 
@@ -49,7 +50,10 @@ class All(base.Base):  # task_master type
             self.__tasks.append(load_parts_task(v, self.pmgr, self))
 
     def __call__(self):
+
+        # get all the root parts we have defined
         parts_to_load = list(self.pmgr.parts.values())
+        # sort them so they load in the order they are defined
         parts_to_load.sort(key=lambda x: x._order_value)
 
         total = len(parts_to_load) * 1.0
@@ -59,11 +63,11 @@ class All(base.Base):  # task_master type
         # that state, so any promotions forms of cache to file
         # happen correctly
         t1 = time.time()
+        
+        # we want to read all the known part files
+        
         for pobj in parts_to_load:
-            # print 8769, pobj.ID, pobj.isLoading, pobj.ReadState, pobj.LoadState, pobj._remove_cache
-            pobj.UpdateReadState(glb.load_file)
-            pobj.isLoading = False
-        for pobj in parts_to_load:
+            # have the part manager read the given part
             self.pmgr.LoadPart(pobj)
             api.output.console_msg("Loading {0:.2%} \033[K".format(cnt / total, cnt, total))
             cnt += 1
@@ -73,5 +77,23 @@ class All(base.Base):  # task_master type
             api.output.verbose_msgf(['loading', 'load_stats'],
                                     "Loaded {0} Parts\n Total time:{1} sec\n Time per part:{2}", num_parts, tt, tt / num_parts)
         api.output.print_msg("Loaded {0} Parts".format(num_parts,))
+
+        # then we want to see based on our target which sections we want to process
+        # given this is an all loader we load all sections
+
+        # we need to know what sections are defined
+
+        # Given we have some .. we want to start loading these sections
+
+
+        for ID, pobj in self.pmgr.parts.items():
+            if pobj.Format == FileStyle.CLASSIC:
+                # this is a classic format
+                # do basic mappings
+                pobj._map_exports()
+                pobj._setup_sdk()
+                pobj._map_targets()
+
+
         # we are loading everything..so we don't want to exit early
         return False

@@ -18,7 +18,7 @@ config.VersionRange("*",
                         INSTALL_BIN_PATTERN=['*'],
                         SDK_BIN_PATTERN=['*'],
                         # setup linux paths in tmp files
-                        CXXCOM='${TEMPFILE("$CXX -o $TARGET -c $CXXFLAGS $CCFLAGS $_CCCOMCOM $SOURCES",force_posix_paths=True)}',
-                        SHCXXCOM='${TEMPFILE("$SHCXX -o $TARGET -c $SHCXXFLAGS $SHCCFLAGS $_CCCOMCOM $SOURCES",force_posix_paths=True)}',
+                        CXXCOM='${TEMPFILE("$CXX -o $TARGET -c $CXXFLAGS $CCFLAGS $_CCCOMCOM $SOURCES",force_posix_paths=True, "$CXXCOMSTR")}',
+                        SHCXXCOM='${TEMPFILE("$SHCXX -o $TARGET -c $SHCXXFLAGS $SHCCFLAGS $_CCCOMCOM $SOURCES",force_posix_paths=True, "$SHCXXCOM")}',
                     ),
                     )

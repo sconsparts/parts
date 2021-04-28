@@ -4,7 +4,6 @@
 # be used on a users system
 
 
-
 import codecs
 from builtins import map, zip
 
@@ -48,7 +47,7 @@ def _EncodeFile(env, target, source, target_encoding, source_encoding='utf-8'):
                             )
 
 
-# adding logic to Scons Enviroment object
+# adding logic to Scons Environment object
 SConsEnvironment.EncodeFile = _EncodeFile
 
 

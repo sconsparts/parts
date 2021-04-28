@@ -53,10 +53,11 @@ def depend_dyn_scanner(node, env, path):
     ret = []
     for comp in sec.Depends:
         if not comp.hasUniqueMatch and comp.isOptional:
-                continue
-        tmp = comp.Section.Env.File(dyn_exports.file_name)
-        api.output.verbose_msgf(["import-dyn-scanner", "scanner"], " Adding node {0}", tmp.ID)
-        ret.append(tmp)
+            continue
+        if comp.Section.hasDynamicExports:
+            tmp = comp.Section.Env.File(dyn_exports.file_name)
+            api.output.verbose_msgf(["import-dyn-scanner", "scanner"], " Adding node {0}", tmp.ID)
+            ret.append(tmp)
 
     return ret
 
@@ -68,13 +69,16 @@ def map_dyn_imports(env, section=None):
     if not section:
         section = glb.engine._part_manager._from_env(env).Section(env["PART_SECTION"])
 
-    targets = env._part_dyn_imports_(
-        # the output should be resolve based on the environment of the section
-        section.Env.subst(file_name),
-        # sources are a value that holds a mostly readable hash of the depends
-        [],
-        section=section,
-    )
+    targets = []
+    # generate a dynamic import if we have depends and if we have a depends that has dynamic_export
+    if section.Depends and section.hasDynamicExports:
+        targets = env._part_dyn_imports_(
+            # the output should be resolve based on the environment of the section
+            section.Env.subst(file_name),
+            # sources are a value that holds a mostly readable hash of the depends
+            [],
+            section=section,
+        )
 
     return targets
 

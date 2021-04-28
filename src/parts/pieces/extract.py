@@ -186,7 +186,7 @@ class _TarInfoProxy(_ArcInfoProxy):
         return self._item.linkname
 
     def extract(self, nodes):
-        super(self.__class__, self).extract(nodes)
+        super().extract(nodes)
 
         # Tar file contains some additional info on each file.
         # Update it as well.
@@ -203,7 +203,7 @@ class _ZipInfoProxy(_ArcInfoProxy):
     __slots__ = []
 
     def __init__(self, zipfile, zipinfo, index):
-        super(self.__class__, self).__init__(zipfile, zipinfo, index)
+        super().__init__(zipfile, zipinfo, index)
 
     def __str__(self):
         return self._item.filename

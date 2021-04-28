@@ -1,6 +1,5 @@
 
 
-
 # if posix
 from . import intelc_posix
 # if windows

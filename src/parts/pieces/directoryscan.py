@@ -1,6 +1,5 @@
 
 
-
 import hashlib
 import os
 import json
@@ -45,10 +44,15 @@ def DynScanPath(env, node, target, source, args):
     # this insures that values that are defined by dependents that are
     # being dynamic as well go off correctly so we can make our up-to-date
     # check correct run those scanners
-    for s in source:
-        # todo??
-        # double check if we are a depends already!!!!
-        env.Depends(s, env.File(_builders.dyn_imports.file_name))
+    section = glb.engine._part_manager.section_from_env(env)
+    #if not section.DefiningPhase or section.Depends:
+    if section.Depends:
+        dyn_import_file = env.File(_builders.dyn_imports.file_name)
+        for s in source:
+            # only add if the node is a target as adding to a node that has no builder
+            # has no effect and makes a ugly tree
+            if s.has_builder():
+                env.Depends(s, dyn_import_file)
     return ()
 
 
@@ -81,8 +85,8 @@ def _DynamicDirScanner(node, env, path, args):
             WriteScanResultStateAction
         )
 
-    # did the node have explict changes
-    changed = node_helpers.has_changed(node, skip_implict=True)
+    # did the node have explicit changes
+    changed = node_helpers.has_changed(node, skip_implicit=True)
     if not changed and node.ID in cache:
         api.output.verbose_msgf(["scandirectory-scanner", "scanner"], "Returning cache {0}", node.ID)
         # if we are up-to-date or are built and we are in the cache
@@ -251,7 +255,7 @@ def ScanDirectory(env, default_dir, defaults=True, callbacks=[], extra_scanner=N
         ),
         InstallData=dict(
             source=lambda node, env, default=None: [
-                env.Pattern(src_dir=node.Dir("share/"), includes=["*"], excludes=['nls/*','man/*','doc/*']),
+                env.Pattern(src_dir=node.Dir("share/"), includes=["*"], excludes=['nls/*', 'man/*', 'doc/*']),
             ],
         ),
     )
@@ -270,11 +274,19 @@ def ScanDirectory(env, default_dir, defaults=True, callbacks=[], extra_scanner=N
     env.SideEffect(state_file_name, default_dir)
     env.Clean(default_dir, default_dir)
     # because we know this is dynamic we need to define
-    # that the dyn.import.jsn need to be generated for this file
-    # env._map_dyn_imports_()
-    # map this file to the dyn.exports.jsn file
+    # that the dyn.scan.{hash}.jsn need to be generated as a source to the dyn.exports.jsn file
+    # the scanner will call a builder that will cause this file to be generated.
+    # the existence of this file and environment variable allow us to know the exports are not fully known
+    # yet for the section defining this parts. 
+    # As note.. The engine will check export_file node for sources to define that we have dynamic exports
+    # I hope this should allow for a generic way for other "dynamic" builders to be defined as all we have to 
+    # do is add a new node to be built and used as a source to this dyn export file builder.
     export_file = env._map_dyn_export_(state_file_name)
+    # this allow us to have a quick way in the mappers that it is safe to cache the resulting subst() call
+    # by checking that this file node is built
     glb.engine._part_manager.section_from_env(env).Env["DYN_EXPORT_FILE"] = env["DYN_EXPORT_FILE"] = export_file[0]
+    glb.engine._part_manager.section_from_env(env).hasDynamicExports = True
+    #
     extras = dict(
         use_scan_defaults=use_scan_defaults,
         scan_callbacks=scan_callbacks,

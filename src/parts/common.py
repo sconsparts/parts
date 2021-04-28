@@ -3,13 +3,13 @@
 ##########
 
 
-
 import fnmatch
 import getpass
 import os
 import string
 import sys
 import types
+from typing import Sequence, TypeVar, Union, List
 from builtins import range
 
 import parts.core.util as util
@@ -73,7 +73,7 @@ class dformat(DelayVariable):
             logInstanceCreation(self)
 
         def tmp(): return sfmt.format(*lst, **kw)
-        super(dformat, self).__init__(tmp)
+        super().__init__(tmp)
 
 
 class namespace(dict, bindable):
@@ -197,7 +197,10 @@ def matches(value, includes, excludes=None):
     return match
 
 
-def make_list(obj):
+T = TypeVar('T')
+
+
+def make_list(obj: Union[T, Sequence[T]]) -> List[T]:
     '''
     The purpose of this function is to make the obj into a list if it is not
     already one. It will flatten as well

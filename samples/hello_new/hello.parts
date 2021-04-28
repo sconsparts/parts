@@ -1,0 +1,19 @@
+Import('*')
+
+PartName("hello")
+PartVersion("1.0.0")
+
+DependsOn([])
+
+#@build2.emit() # this should error out
+
+
+@build.configure
+def foo(conf):
+    print("Called Config")
+
+@build.source
+def build(env):
+    print("Called build-source")
+    ret=env.Program("hello","hello.c")
+    env.InstallTarget(ret)

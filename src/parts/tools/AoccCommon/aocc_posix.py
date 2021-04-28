@@ -17,12 +17,12 @@ aocc.Register(
         ToolInfo(
             version='2.*',
             install_scanner=GenericScanner(
-                [os.path.expanduser('~'),os.path.expanduser('~/AMD'),'/opt/AMD',],
+                [os.path.expanduser('~'), os.path.expanduser('~/AMD'), '/opt/AMD', ],
                 amd_2_posix,
                 ['bin'],
                 r'AOCC[_LVM.]+(\d+[.\d+]+)',
                 'clang'
-                ),
+            ),
             script=ScriptFinder('${AOCC.INSTALL_ROOT}/setenv_AOCC.sh'),
             subst_vars={
             },

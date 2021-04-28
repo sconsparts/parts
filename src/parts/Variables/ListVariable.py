@@ -1,6 +1,5 @@
 
 
-
 from builtins import filter, map
 
 import SCons.Errors

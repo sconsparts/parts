@@ -130,23 +130,23 @@ def SdkItem(env, target_dir, source, sub_dir='', post_fix='', export_info=[], ad
         use_src_dir = True
 
     if pobj is not None:
-
+        sec = pobj.DefiningSection
         # Process the Export of data values
         for _type, _prop in export_info:
             # add missing properties in map
             # if (_prop in pobj.DefiningSection.Exports) == False:
-                #pobj.DefiningSection.Exports[_prop] = [[]]
+            #pobj.DefiningSection.Exports[_prop] = [[]]
             # might add case that allow export of all directories
             if _type == Xp.EXPORT_TYPES.PATH and add_to_path == True:
-                target_paths += Xp.export_path(env, [dest_dir], source_dir, pobj, _prop, use_src_dir, create_sdk)
+                target_paths += Xp.export_path(env, [dest_dir], source_dir, sec, _prop, use_src_dir, create_sdk)
                 # This line is a hack till we can get a BKM out
-                target_paths += Xp.export_path(env, [target_dir], source_dir, pobj, _prop, use_src_dir, create_sdk)
+                target_paths += Xp.export_path(env, [target_dir], source_dir, sec, _prop, use_src_dir, create_sdk)
             elif _type == Xp.EXPORT_TYPES.PATH and add_to_path == False:
-                target_paths += Xp.export_path(env, [target_dir], source_dir, pobj, _prop, use_src_dir, create_sdk)
+                target_paths += Xp.export_path(env, [target_dir], source_dir, sec, _prop, use_src_dir, create_sdk)
             elif _type == Xp.EXPORT_TYPES.FILE and auto_add_file == True:
-                files = Xp.export_file(env, targets, pobj, _prop)
+                files = Xp.export_file(env, targets, sec, _prop)
             elif _type == Xp.EXPORT_TYPES.PATH_FILE:
-                files = Xp.export_file_path(env, targets, pobj, _prop, ((create_sdk == False) or use_src_dir))
+                files = Xp.export_file_path(env, targets, sec, _prop, ((create_sdk == False) or use_src_dir))
             else:
                 pass
         if create_sdk == True:
@@ -169,7 +169,7 @@ def SdkItem(env, target_dir, source, sub_dir='', post_fix='', export_info=[], ad
         # in cases of dynamic scanner.. we want to map some targets
         if env.get("_PARTS_DYN"):
             # This maps the data to the section of this part.
-            section = pobj.Section(env["PART_SECTION"])
+            section = pobj.DefiningSection
             section._map_target(targets, tmp)
 
     errors.ResetPartStackFrameInfo()
@@ -318,7 +318,7 @@ def Sdk(env, source, sub_dir='', add_to_path=True, auto_add_libs=True, use_src_d
     source = SCons.Script.Flatten(source)
     out = []
     for i in source:
-        if isinstance(i, SCons.Node.FS.File)or isinstance(i, SCons.Node.Node) or util.isString(i):
+        if isinstance(i, SCons.Node.FS.File) or isinstance(i, SCons.Node.Node) or util.isString(i):
             try:
                 the_file = i.attributes.FilterAs
             except AttributeError:
@@ -472,7 +472,7 @@ def CreateSDK_Emit(target, source, env):
     return (tout, source)
 
 
-# adding logic to Scons Enviroment object
+# adding logic to Scons Environment object
 SConsEnvironment.SdkInclude = SdkInclude
 SConsEnvironment.SdkLib = SdkLib
 SConsEnvironment.SdkBin = SdkBin

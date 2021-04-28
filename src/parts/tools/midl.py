@@ -32,7 +32,6 @@ selection method.
 #
 
 
-
 import string
 
 import parts.api.output as output

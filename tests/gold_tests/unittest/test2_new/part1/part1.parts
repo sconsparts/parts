@@ -1,0 +1,6 @@
+Import('*')
+
+@unit_test.Group("mygroup")
+def run(env, test):
+    test.Sources = ['test.c']
+

@@ -83,7 +83,7 @@ def AppendPackageGroupCriteria(name, func):
     name = SCons.Script.DefaultEnvironment().subst(name)
     try:
         settings.DefaultSettings().vars['PACKAGE_GROUP_FILTER'].Default[name].extend(common.make_list(func))
-    except Exception:
+    except KeyError:
         settings.DefaultSettings().vars['PACKAGE_GROUP_FILTER'].Default[name] = common.make_list(func)
     return PackageGroup(name)
 
@@ -93,7 +93,7 @@ def PrependPackageGroupCriteria(name, func):
     try:
         settings.DefaultSettings().vars['PACKAGE_GROUP_FILTER'].Default[name] = common.make_list(
             func) + settings.DefaultSettings().vars['PACKAGE_GROUP_FILTER'].Default[name]
-    except Exception:
+    except KeyError:
         settings.DefaultSettings().vars['PACKAGE_GROUP_FILTER'].Default[name] = common.make_list(func)
     return PackageGroup(name)
 
@@ -109,7 +109,7 @@ def AppendPackageGroupCriteriaEnv(env, name, func):
     name = env.subst(name)
     try:
         env['PACKAGE_GROUP_FILTER'][name].extend(common.make_list(func))
-    except Exception:
+    except KeyError:
         env['PACKAGE_GROUP_FILTER'][name] = common.make_list(func)
     return PackageGroup(name)
 
@@ -118,7 +118,7 @@ def PrependPackageGroupCriteriaEnv(env, name, func):
     name = env.subst(name)
     try:
         env['PACKAGE_GROUP_FILTER'][name] = common.make_list(func) + env['PACKAGE_GROUP_FILTER'][name]
-    except Exception:
+    except KeyError:
         env['PACKAGE_GROUP_FILTER'][name] = common.make_list(func)
     return PackageGroup(name)
 
@@ -237,7 +237,7 @@ def _filter_node(node, filters, metainfo):
     api.output.verbose_msgf(["packaging"], "Filtering node {0}", node.ID)
     new_groups = set(metainfo.get('groups', set()))
     default_no_pkg = metainfo.get('no_package', False)
-    no_pkg=default_no_pkg
+    no_pkg = default_no_pkg
     for _filter in filters:
         grps = _filter(node)
         if grps:
@@ -249,7 +249,7 @@ def _filter_node(node, filters, metainfo):
                 api.output.verbose_msgf(["packaging-filter"],
                                         "Node filter mapped {0} to group={1}, no_pkg={2}", node.ID, group, no_pkg)
                 get_group_set(group, no_pkg).add(node)
-                new_groups.add(group)        
+                new_groups.add(group)
 
     if None in new_groups:
         get_group_set(None, no_pkg).remove(node)
@@ -370,7 +370,7 @@ SConsEnvironment.AppendPackageGroupCriteria = AppendPackageGroupCriteriaEnv
 SConsEnvironment.PrependPackageGroupCriteria = PrependPackageGroupCriteriaEnv
 
 
-# these tell the packging system locations to use on the user to map install location for a real install on that system
+# these tell the packaging system locations to use on the user to map install location for a real install on that system
 # basically it maps the INSTALL_ROOT to the current "real system" location to use in the packaging code
 # TODO ... update the Var to map based on target platform
 api.register.add_variable('PACKAGE_ROOT', "/", "")

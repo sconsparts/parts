@@ -2,6 +2,7 @@
 
 import time
 
+from parts.core.states import LoadState
 import parts.api as api
 import parts.errors as errors
 import parts.glb as glb
@@ -71,7 +72,7 @@ class NoDepends(base.Base):  # task_master type
                 self.hasStored = False
 
             # set read state for this section
-            sec.ReadState = glb.load_file
+            sec.ReadState = LoadState.FILE
             if stored_data.Part.Stored.Parent:
                 try:
                     tmp = glb.pnodes.GetPNode(stored_data.Part.Stored.Parent.Stored.SectionIDs[sec.Name])
@@ -84,13 +85,13 @@ class NoDepends(base.Base):  # task_master type
                 # but in general with classic formats (maybe new as well.. don't know yet)
                 # we want to load the Build sections as well.
                 tmp = glb.pnodes.GetPNode("build::{0}".format(stored_data.PartID))
-                tmp.ReadState = glb.load_cache
+                tmp.ReadState = LoadState.CACHE
                 self.sections.append(tmp)
 
             # for each of the dependents we need to set the depends as cache load
             for dep in stored_data.DependsOn:
                 dsec = glb.pnodes.GetPNode(dep.SectionID)
-                dsec.ReadState = glb.load_cache
+                dsec.ReadState = LoadState.CACHE
                 if dsec not in sec_to_load:
                     sec_to_load.append(dsec)
 
@@ -100,13 +101,13 @@ class NoDepends(base.Base):  # task_master type
         total = len(sec_to_load) * 1.0
         cnt = 0
         for sec in sec_to_load:
-            if sec.ReadState == glb.load_cache:
+            if sec.ReadState == LoadState.CACHE:
                 self.pmgr.LoadSection(sec)
                 api.output.console_msg("Loading {0:.2%} ({1}/{2} sections) \033[K".format(cnt / total, cnt, total))
                 cnt += 1
 
         for sec in sec_to_load:
-            if sec.ReadState == glb.load_file:
+            if sec.ReadState == LoadState.FILE:
                 self.pmgr.LoadSection(sec)
                 api.output.console_msg("Loading {0:.2%} ({1}/{2} sections) \033[K".format(cnt / total, cnt, total))
                 cnt += 1

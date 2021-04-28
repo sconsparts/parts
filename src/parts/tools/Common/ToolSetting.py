@@ -169,7 +169,7 @@ class ToolSetting:
 
     def query_for_known(self, env, key):
         '''
-        This will query for known defaults based on enviroment value that
+        This will query for known defaults based on Environment value that
         could have been set by the user such as the <tool>_INSTALL_ROOT or
         <tool>_USE_SCRIPT. It will cache this data to help speed up the build.
         This should not be an issue as the scripts and environment should not
@@ -256,7 +256,7 @@ class ToolSetting:
 
     def query_for_exact(self, env, key, version):
         '''
-        This will query for known defaults based on enviroment value that
+        This will query for known defaults based on Environment value that
         could have been set by the user such as the <tool>_INSTALL_ROOT or
         <tool>_USE_SCRIPT. It will cache this data to help speed up the build.
         This should not be an issue as the scripts and environment should not
@@ -472,7 +472,7 @@ class ToolSetting:
 
     def get_shell_env(self, env):
         '''
-        This function returns the shell enviroment to be merged into the
+        This function returns the shell Environment to be merged into the
         final SCons environment
 
         The trick with this function is that it really just gets data that was
@@ -480,7 +480,7 @@ class ToolSetting:
         a match or not. The Key holds data on everything but the version
         the cache_key adds the version
         '''
-        # get cache key for this enviroment setup
+        # get cache key for this Environment setup
         key = self.get_cache_key(env)
         _v = version = env.get(self.version_tag, None)
         cache_key = str(version) + key

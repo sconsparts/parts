@@ -154,15 +154,14 @@ class parts_addon:
         self._setup_variables()
         # setup command line arguments
         self._setup_arguments()
-        # setup default Enviroment overides
+        # setup default Environment overides
         api.output.verbose_msg("startup", "Creating default environment")
         SCons.Script.DefaultEnvironment()
         # turn off all default building of any items without a target, or until
         # default is called again to set one. ( ie the default by Scons is '.' which is everything)
         self.def_env.Default('')
-        self.def_env.EnsureSConsVersion(3, 1, 1)
-        # self._setup_defenv()
-
+        self.def_env.EnsureSConsVersion(4, 1, 0)
+        
         # try to setup all logger
         self._setup_logger()
         # generate help text
@@ -182,7 +181,7 @@ class parts_addon:
         # this is a hack to get around an issue with stuff like the extract builder that would create
         # a a.sconsign.dblite file in the wrong directory as a side effect of the variant direct change of
         # the CWD bug in SCons
-        #self.def_env.File(get_Sconstruct_files()[0]).get_csig()
+        # self.def_env.File(get_Sconstruct_files()[0]).get_csig()
 
     def ShutDown(self):
 
@@ -280,7 +279,7 @@ class parts_addon:
 
                 # clear the datacache for certain cases that we don't need to touch any more
                 # to save memory
-                datacache.ClearCache(key="vcs")
+                datacache.ClearCache(key="scm")
 
                 if sys.platform == 'win32':
                     # Allow us to prevent error dialog boxes.. useful for running programs such as tests
@@ -455,7 +454,7 @@ class parts_addon:
         api.output.trace_msg("logger_option", "logger =", SCons.Script.GetOption('logger'))
         api.output.trace_msg("show_progress_option", "show_progress =", SCons.Script.GetOption('show_progress'))
         api.output.trace_msg("parts_cache_option", "parts_cache =", SCons.Script.GetOption('parts_cache'))
-        api.output.trace_msg("vcs_jobs_option", "vcs_jobs =", SCons.Script.GetOption('vcs_jobs'))
+        api.output.trace_msg("scm_jobs_option", "scm_jobs =", SCons.Script.GetOption('scm_jobs'))
         api.output.trace_msg("update_option", "update =", SCons.Script.GetOption('update'))
 
     # def _setup_sdk(self):
@@ -550,7 +549,7 @@ Use -H or --help-options for a list of scons options
         for k, v in vars.items():
             if k not in white_list:
                 tmp = getcontent.asStr(v)
-                data['variables'][k]=tmp
+                data['variables'][k] = tmp
 
         # set of --options
         # list of arguments we want to process as they might effect build state
@@ -566,30 +565,29 @@ Use -H or --help-options for a list of scons options
             # 'tool_chain', # we use the different value to get a better match for this
             # 'target_platform' # we get this from the def_env
         ]
-        data['options']={}
+        data['options'] = {}
         for k in args_to_process:
             v = SCons.Script.Main.OptionsParser.defaults[k]
             if v != getattr(SCons.Script.Main.OptionsParser.values, k):
                 tmp = getcontent.asStr(v)
-                data['options'][k]=tmp
+                data['options'][k] = tmp
 
         # this stuff makes up the core key
         data["platform"] = self.def_env.subst("${CONFIG},${HOST_PLATFORM},${TARGET_PLATFORM}")
 
         # we want to test which builders we are setting by default
-        data["configured_tools"]=[]
+        data["configured_tools"] = []
 
         for i in self.def_env['CONFIGURED_TOOLS']:
-            tmp = self.def_env.get(i.upper().replace("+","X"))
+            tmp = self.def_env.get(i.upper().replace("+", "X"))
             if tmp:
                 data["configured_tools"].append(getcontent.asStr(tmp))
             else:
                 data["configured_tools"].append(i)
 
-
         # store the ENV value as this has value that can tell us of differences
-        #data['ENV']=getcontent.asStr(dict(self.def_env['ENV']))
-        #md5.update(getcontent.asStr(dict(self.def_env['ENV'])))
+        # data['ENV']=getcontent.asStr(dict(self.def_env['ENV']))
+        # md5.update(getcontent.asStr(dict(self.def_env['ENV'])))
         # Add default environment csig value...
 
         # we add information about that parts we have defined.
@@ -602,7 +600,6 @@ Use -H or --help-options for a list of scons options
         md5 = hashlib.md5()
         md5.update(getcontent.asStr(data).encode())
         self.__cache_key = md5.hexdigest()
-
 
     @property
     def _cache_key(self):

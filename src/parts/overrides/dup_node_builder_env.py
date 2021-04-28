@@ -4,7 +4,7 @@
 # message is hard to deal with by default and it does not know of "part/components"
 # We also make what Component "owns" these node for faster checks latter.
 
-
+import parts.common as common
 import parts.api as api
 import parts.errors as errors
 import parts.glb as glb
@@ -21,11 +21,20 @@ def parts_node_errors(builder, env, tlist, slist):
 
     #print("source:", [str(i) for i in slist])
     #print("target:", [str(i) for i in tlist])
-    pobj = glb.engine._part_manager._from_env(env)
-    if pobj:
-        tag_part_info(tlist + slist, pobj)
-        pobj.DefiningSection.Targets.extend(tlist)
-        pobj.DefiningSection.Sources.extend(slist)
+    section = glb.engine._part_manager.section_from_env(env)
+    
+    if section:
+        tag_part_info(tlist + slist, section.Part)
+        # add the node to known targets or sources or the given section
+        section.Targets.update(tlist)
+        section.Sources.update(slist)
+        def_phase = section.DefiningPhase
+
+        if def_phase:
+            # store the item with the phase only
+            section.GroupedTargets.setdefault(def_phase,set()).update(tlist)
+            section.GroupedSources.setdefault(def_phase,set()).update(slist)
+
 
     # make sure we can record that nodes before we stop SCons registering the values here
     # we throw an exception to allow Parts to handle the allow_duplicate feature for all builders
@@ -50,7 +59,7 @@ def parts_node_errors(builder, env, tlist, slist):
             if builder.multi:
                 if t.get_executor() is None:
                     api.output.warning_msg(
-                        "Executor is None for node '{}'.\n This is a sign that there is a order dependancy that is incorrect in the mutli builder used to generate this target".format(t.ID), show_stack=False)
+                        "Executor is None for node '{}'.\n This is a sign that there is a order dependency that is incorrect in the mutli builder used to generate this target".format(t.ID), show_stack=False)
                     del t.executor
                 if t.get_executor() and (t.builder != builder or t.get_executor().get_all_targets() != tlist):
                     error = True
@@ -81,34 +90,50 @@ SCons.Builder._node_errors = parts_node_errors
 
 
 def tag_part_info(node_list, pobj):
+    '''
+    Tags the node with information we will want to have stored for fast loads later
+    This functions will tag each node with the component sections that it is a part of
+    It will also tag the directory of the node with this information as well.
+
+    NOte this is not used at the moment as I have to reimple the stored cache info    
+    '''
     for node in node_list:
+
+        # tag the node with sections that it is a part of.
         alias = pobj.Alias
         section = pobj.DefiningSection
+        
+        # get meta node info
         data = metatag.MetaTagValue(node, 'components', ns='partinfo', default={})
-
         # Tag this node with information about the Parts and Section that would care about it
+        # ideally the section should be enough to do fileters on.
         data.setdefault(alias, set()).add(section)
-
+        # Store the info
         metatag.MetaTag(node, 'partinfo', components=data)
 
         # Tag Parent Directory nodes
+        # only do this if the current node is a file/diretory type node
         if isinstance(node, SCons.Node.FS.Base):
             if isinstance(node, SCons.Node.FS.Entry):
                 dnode = node.get_dir()
             else:
                 dnode = node.Dir('.')
-            while True:
 
-                data = metatag.MetaTagValue(dnode, 'components', ns='partinfo', default={})
-                # check to see if this directory has this information already
-                # if so we can exit
+            # go up the directory chain and set values
+            # This allows for directory node targets to know what set of sections/parts have to be 
+            # loaded
+            while True:
+                data = metatag.MetaTagValue(dnode, 'components', ns='partinfo', default={})                
                 sections = data.setdefault(alias, set())
+                # we do this check as the directory chain may be long and there is a high
+                # chance that this information is already set on the directory node.
+                # if that is the case, all the parents have been set as well. so we we can 
+                # just break out of the loop
                 if section in sections:
                     break
-
                 sections.add(section)
-                metatag.MetaTag(dnode, 'partinfo', components=data)
 
+                # should be check to see if we are at the top
                 if dnode == dnode.Dir('..'):
                     break
                 dnode = dnode.Dir('..')

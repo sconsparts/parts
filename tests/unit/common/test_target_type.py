@@ -573,12 +573,12 @@ class TestParseTarget(unittest.TestCase):
     def test_parse_concept2(self):
         '''Testing parsing of concept utest::'''
         tmp = target_type._parse_target("utest::")
-        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'utest', '_recursive': True})
+        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test', '_recursive': True})
 
     def test_parse_concept3(self):
         '''Testing parsing of concept run_utest:: maps to utest::'''
         tmp = target_type._parse_target("run_utest::")
-        self.assertEqual(tmp, {'_concept': 'run_utest', '_section': 'utest', '_recursive': True})
+        self.assertEqual(tmp, {'_concept': 'run_utest', '_section': 'unit_test', '_recursive': True})
 
     def test_parse_concept_special1(self):
         '''Testing parsing of concept name::'''
@@ -655,7 +655,7 @@ class TestParseTarget(unittest.TestCase):
     def test_parse_alias4(self):
         '''Testing parsing of utest::alias::foo'''
         tmp = target_type._parse_target("utest::alias::foo")
-        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'utest', '_recursive': False, '_alias': 'foo'})
+        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test', '_recursive': False, '_alias': 'foo'})
 
     def test_parse_alias5(self):
         '''Testing parsing of alias::foo::'''
@@ -675,7 +675,7 @@ class TestParseTarget(unittest.TestCase):
     def test_parse_alias8(self):
         '''Testing parsing of utest::alias::foo::'''
         tmp = target_type._parse_target("utest::alias::foo::")
-        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'utest', '_recursive': True, '_alias': 'foo'})
+        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test', '_recursive': True, '_alias': 'foo'})
 
     def test_parse_name1(self):
         '''Testing parsing of name::foo'''
@@ -695,12 +695,12 @@ class TestParseTarget(unittest.TestCase):
     def test_parse_name4(self):
         '''Testing parsing of utest::name::foo'''
         tmp = target_type._parse_target("utest::name::foo")
-        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'utest', '_recursive': False, '_name': 'foo', '_properties': {}})
+        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test', '_recursive': False, '_name': 'foo', '_properties': {}})
 
     def test_parse_name5(self):
         '''Testing parsing of utest::foo'''
         tmp = target_type._parse_target("utest::foo")
-        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'utest', '_recursive': False, '_name': 'foo', '_properties': {}})
+        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test', '_recursive': False, '_name': 'foo', '_properties': {}})
 
     def test_parse_name6(self):
         '''Testing parsing of name::foo'''
@@ -720,23 +720,23 @@ class TestParseTarget(unittest.TestCase):
     def test_parse_name8(self):
         '''Testing parsing of utest::name::foo::'''
         tmp = target_type._parse_target("utest::name::foo::")
-        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'utest', '_recursive': True, '_name': 'foo', '_properties': {}})
+        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test', '_recursive': True, '_name': 'foo', '_properties': {}})
 
     def test_parse_name10(self):
         '''Testing parsing of utest::foo::'''
         tmp = target_type._parse_target("utest::foo::")
-        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'utest', '_recursive': True, '_name': 'foo', '_properties': {}})
+        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test', '_recursive': True, '_name': 'foo', '_properties': {}})
 
     def test_parse_name_properties1(self):
         '''Testing parsing of utest::name::c@k:v@k1:1,2,3,4@k3:hello::'''
         tmp = target_type._parse_target("utest::name::c@k:v@k1:1,2,3,4@k3:hello::")
-        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'utest', '_recursive': True, '_name': 'c',
+        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test', '_recursive': True, '_name': 'c',
                                '_properties': {'k3': 'hello', 'k': 'v', 'k1': ['1', '2', '3', '4']}})
 
     def test_parse_name_properties2(self):
         '''Testing parsing of utest::name::c@k:v@k1:1,2,3,4@k3:hello'''
         tmp = target_type._parse_target("utest::name::c@k:v@k1:1,2,3,4@k3:hello")
-        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'utest', '_recursive': False, '_name': 'c',
+        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test', '_recursive': False, '_name': 'c',
                                '_properties': {'k3': 'hello', 'k': 'v', 'k1': ['1', '2', '3', '4']}})
 
     def test_parse_name_properties3(self):
@@ -778,32 +778,32 @@ class TestParseTarget(unittest.TestCase):
     def test_special1(self):
         '''Testing parsing of utest::::test'''
         tmp = target_type._parse_target("utest::::test")
-        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'utest', '_recursive': False, '_groups': ['test']})
+        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test', '_recursive': False, '_groups': ['test']})
 
     def test_special2(self):
         '''Testing parsing of utest::alias::::test'''
         tmp = target_type._parse_target("utest::alias::::test")
-        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'utest', '_recursive': False, '_groups': ['test']})
+        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test', '_recursive': False, '_groups': ['test']})
 
     def test_special3(self):
         '''Testing parsing of utest::name::::test'''
         tmp = target_type._parse_target("utest::name::::test")
-        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'utest', '_recursive': False, '_groups': ['test']})
+        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test', '_recursive': False, '_groups': ['test']})
 
     def test_special4(self):
         '''Testing parsing of utest::::test::'''
         tmp = target_type._parse_target("utest::::test::")
-        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'utest', '_recursive': True, '_groups': ['test']})
+        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test', '_recursive': True, '_groups': ['test']})
 
     def test_special5(self):
         '''Testing parsing of utest::alias::::test::'''
         tmp = target_type._parse_target("utest::alias::::test::")
-        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'utest', '_recursive': True, '_groups': ['test']})
+        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test', '_recursive': True, '_groups': ['test']})
 
     def test_special6(self):
         '''Testing parsing of utest::name::::test::'''
         tmp = target_type._parse_target("utest::name::::test::")
-        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'utest', '_recursive': True, '_groups': ['test']})
+        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test', '_recursive': True, '_groups': ['test']})
 
     def test_special7(self):
         '''Testing parsing of build::::'''

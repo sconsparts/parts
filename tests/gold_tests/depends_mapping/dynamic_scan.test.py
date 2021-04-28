@@ -16,7 +16,7 @@ Test.AddUpdateCheck('all', '--use-env')
 tr=Test.AddBuildRun('all', '--use-env')
 # define file that exists
 scons_file = tr.Disk.File("part3/sconstruct")
-# append some text, defaut logic to write before
+# append some text, default logic to write before
 # we start is good enough for test
 scons_file.WriteAppendOn(
     '''

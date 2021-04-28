@@ -143,7 +143,7 @@ class requirement:
 
     def __hash__(self):
         return hash(self.key)
-    
+
     def __eq__(self, other):
         return self.key == other.key
 
@@ -176,7 +176,7 @@ class requirement_set:
 
     def __init__(self, lst, weight=-1000):
         '''Construct a new requirement set object
-         @param lst The set of value to add. The values can be a string to an existing defined requirement set, or a requriement object
+         @param lst The set of value to add. The values can be a string to an existing defined requirement set, or a requirement object
          @param weight The weight to give every object in this set.
 
          It is important to note that the lst object is copied. We have to make sure all objects we might change state on, are not shared.
@@ -290,7 +290,7 @@ class metaREQ(type):
         return requirement(name)
 
 
-class REQ(metaclass = metaREQ):
+class REQ(metaclass=metaREQ):
     Policy = REQPolicy
 
     def __init__(self, lst=[], weight=None):
@@ -309,7 +309,7 @@ class REQ(metaclass = metaREQ):
             try:
                 # this allow stuff at the end of to win
                 # and allow value in "sets" to have lesser weight
-                # than explict values
+                # than explicit values
                 if self.__data[i.key]._weight <= i._weight:
                     tmp.remove(i)
                     tmp.add(i)

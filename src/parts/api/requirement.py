@@ -134,7 +134,7 @@ DefineRequirementSet('RPM_PACKAGE_RUNPATH', [requirement('RPM_PACKAGE_RUNPATH', 
 
 
 DefineRequirementSet('PKG_RPM_VERSION', [requirement('PKG_RPM_VERSION', public=False, listtype=False,
-                                             policy=REQ.Policy.ignore, internal=True, force_internal=True)])
+                                                     policy=REQ.Policy.ignore, internal=True, force_internal=True)])
 DefineRequirementSet('PKG_RPM', [requirement('PKG_RPM', public=False, listtype=False,
                                              policy=REQ.Policy.ignore, internal=True, force_internal=True)])
 DefineRequirementSet('PKG_RPM_DEVEL', [requirement('PKG_RPM_DEVEL', public=False,
@@ -150,6 +150,9 @@ DefineRequirementSet('CFLAGS', [requirement('CFLAGS', public=True, policy=REQ.Po
 DefineRequirementSet('CCFLAGS', [requirement('CCFLAGS', public=True, policy=REQ.Policy.ignore)])
 DefineRequirementSet('LINKFLAGS', [requirement('LINKFLAGS', public=True, policy=REQ.Policy.ignore)])
 DefineRequirementSet('LIBPATH', [requirement('LIBPATH', public=True, policy=REQ.Policy.ignore)])
+# change this back before release
+#DefineRequirementSet('RPATHLINK', [requirement('RPATHLINK', public=True,
+                                               #policy=REQ.Policy.ignore, listtype=True, internal=False, force_internal=True)])
 DefineRequirementSet('RPATHLINK', [requirement('RPATHLINK', public=True,
                                                policy=REQ.Policy.ignore, listtype=True, internal=False, force_internal=True)])
 

@@ -14,7 +14,7 @@ class map_build_context:
     This is turned off at the moment...
     '''
 
-    def __init__(self, pobj:'part.part'):
+    def __init__(self, pobj: 'part.Part'):
         if __debug__:
             logInstanceCreation(self)
         self.pobj = pobj

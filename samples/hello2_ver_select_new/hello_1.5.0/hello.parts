@@ -1,0 +1,10 @@
+Import('*')
+PartVersion('1.5.0')
+PartName('hello1.5.0')
+DependsOn([Component('print_msg','1.*,!1.5.2')])
+
+@build.source
+def build(env):
+    print("called 1.5.0")
+    ret=env.Program('${PART_NAME}',"hello.c")
+    env.InstallTarget(ret)

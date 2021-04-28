@@ -1,6 +1,5 @@
 
 
-
 import SCons.Errors
 
 from .variable import Variable

@@ -92,7 +92,7 @@ class PartRef:
         return self.__target
 
     def TargetStr(self) -> str:
-        
+
         properties = ''
         for k, v in self.Target.Properties.items():
             if k == 'version':
@@ -175,12 +175,8 @@ class PartRef:
         self.__stored_matches = None
 
     # this should be a safe API for users
-    def delaysubst(self, value, policy=policies.REQPolicy.warning):
-        return '${{PARTSUBST("{target}","{val}",{policy})}}'.format(
-            target=self.Target,
-            val=value,
-            policy=policy
-        )
+    def delaysubst(self, value, section, policy=policies.REQPolicy.warning):
+        return f'${{PARTSUBST("{self.Target}","{value}","{section}", {policy})}}'
 
     def str_sig(self):
         return "{}:{}".format(self.__target.OriginalString, True if self.__local_space else False)

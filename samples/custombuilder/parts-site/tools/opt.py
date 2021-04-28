@@ -98,7 +98,7 @@ SConsEnvironment.InstallOpt = InstallOpt
 
 # setup some requirements
 # note !! Code to is not implemented yet to allow the user to add a item to the "Default" set yet.
-# Any items added here has to explictly requested at this time. This will be addressed.
+# Any items added here has to explicitly requested at this time. This will be addressed.
 # likewise the ability to have REQ.INSTALLFILES, REQ.SDKFILES need to be addressed still
 from parts.api.requirement import requirement, requirement_internal, DefineRequirementSet, REQ
 DefineRequirementSet('OPT', [requirement('OPT', public=True, policy=REQ.Policy.ignore, listtype=True)])

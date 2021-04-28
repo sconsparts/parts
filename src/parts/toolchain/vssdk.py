@@ -1,6 +1,5 @@
 
 
-
 def vssdk_setup(env, ver):
     env['VSSDK_VERSION'] = ver
 

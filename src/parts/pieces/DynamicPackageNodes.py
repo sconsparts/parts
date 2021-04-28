@@ -31,10 +31,10 @@ global_file_name = "$PARTS_SYS_DIR/package.groups.jsn"
 
 def DynamicPackageNodes(_env, source):
     '''
-    This file defines all the files that will be packagable for any given group
+    This file defines all the files that will be packageable for any given group
     It is in the depend chain for creating any package that we need to generate
     '''
-    # make sure we have a common environment for this mutli build
+    # make sure we have a common environment for this multi build
     # is it needs to be defined at a "global" level
     env = glb.engine.def_env
     # this defines the
@@ -52,7 +52,7 @@ def DynamicPackageNodes(_env, source):
 
 def WritePackageGroupFiles(target, source, env):
     # This write out all the files that would be install
-    # orginized by the groups
+    # organized by the groups
     with open(target[0].get_path(), 'w') as outfile:
         data = json.dumps(
             dict(
@@ -116,9 +116,9 @@ def GroupBuilder(env, source, no_pkg=False, **kw):
 
 def GroupBuilderAction(target, source, env):
     # get the group name from the target file name
-    
+
     group_name = ".".join(target[0].name.split(".")[2:-1])
-    
+
     new_sources, no_pkg = env.GetFilesFromPackageGroups(target, [group_name])
     if not env.get("no_pkg", False):
         target[0].attributes.GroupFiles = new_sources
@@ -143,17 +143,17 @@ def emit(target, source, env):
 
 def GroupNodesScanner(node, env, path):
 
-    api.output.verbose_msg(["groupbuilder-scanner", "scanner", "scanner-called"], "called {}".format(node.ID))
+    api.output.verbose_msg(["groupbuilder.scanner", "scanner", "scanner-called"], "called {}".format(node.ID))
 
     # This is the default group we depend on unless the node has a meta value saying that this
     # can be defined on the export.jsn file of this part instead. This can prevent the building of all
     # components that are doing dynamic build action before this file can be generated correctly.
     local = env.MetaTagValue(node, 'local_group', 'parts', False)
     if local:
-        api.output.verbose_msg(["groupbuilder-scanner", "scanner"], "Mapping {} as local".format(node.ID))
+        api.output.verbose_msg(["groupbuilder.scanner", "scanner"], "Mapping {} as local".format(node.ID))
         ret = [env.File(env['_local_export_file'])]
     else:
-        api.output.verbose_msg(["groupbuilder-scanner", "scanner"], "Mapping {} as global".format(node.ID))
+        api.output.verbose_msg(["groupbuilder.scanner","groupbuilder.scanner.global", "scanner"], "Mapping {} as global".format(node.ID))
         ret = [env.File(global_file_name)]
 
     # make sure the groups are sorted
@@ -167,9 +167,10 @@ def GroupNodesScanner(node, env, path):
     api.output.verbose_msgf(["groupbuilder-scanner", "scanner"], "Returned {}", common.DelayVariable(lambda: [i.ID for i in ret]))
     return ret
 
-#".".join(target[0].name.split(".")[2:-1])
+
 api.register.add_builder('_GroupBuilder', SCons.Builder.Builder(
-    action=SCons.Action.Action(GroupBuilderAction, "Looking up files in package group '${'.'.join(TARGET.name.split(\'.\')[2:-1])}'"),
+    action=SCons.Action.Action(
+        GroupBuilderAction, "Looking up files in package group '${'.'.join(TARGET.name.split(\'.\')[2:-1])}'"),
     target_factory=SCons.Node.FS.File,
     source_factory=SCons.Node.Python.Value,
     emitter=emit,

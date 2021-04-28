@@ -2,6 +2,7 @@
 
 import time
 
+from parts.core.states import LoadState
 import parts.api as api
 import parts.errors as errors
 import parts.glb as glb
@@ -64,7 +65,7 @@ class Target(base.Base):  # task_master type
             return False
 
         for pobj in list(self.pmgr.parts.values()):
-            if pobj.ReadState == glb.load_file:
+            if pobj.ReadState == LoadState.FILE:
                 self.__tasks.append(load_parts_task(pobj, self.pmgr, self))
 
     def __call__(self):
@@ -78,6 +79,6 @@ class Target(base.Base):  # task_master type
         parts_to_load = list(self.pmgr.parts.values())
         parts_to_load.sort(part.pcmp)
         for pobj in parts_to_load:
-            if pobj.ReadState == glb.load_file:
+            if pobj.ReadState == LoadState.FILE:
                 self.pmgr.LoadPart(pobj)
         return False

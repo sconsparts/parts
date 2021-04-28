@@ -2,18 +2,47 @@
 
 import parts.glb as glb
 import SCons.Script
+from parts.core.states import GroupLogic
 
 from . import output
 
 
-def add_section(section):
+def add_section(*, metasection, phases, target_mapping_logic=GroupLogic.DEFAULT):
     '''
     Called to add a new section type
 
     @param section The mapper object to add globally
 
     '''
-    glb.sections.add(section)
+    from parts.metasection.metasection import MetaSection
+    from parts.metasection.sectiondefinition import SectionDefinition
+
+    # check that this is a section object
+    if not issubclass(metasection, MetaSection):
+        output.warning_msg(f"{metasection} needs to derive from parts.pnode.metasection.MetaSection")
+
+    # given all the checks are ok. Store a SectionDefinition
+    section_def = SectionDefinition(
+        metasection=metasection, 
+        phaseinfo = phases,
+        target_mapping_logic=target_mapping_logic
+        )
+
+    glb.section_definitions[section_def.Name] = section_def
+
+    # add concept to known concept list for target processing later
+    section_name = metasection.name
+    for concept in metasection.concepts:
+        # at the moment one concept to section.. may change that later
+        if concept not in glb.known_concepts:
+            output.verbose_msg(['section'], f"Mapping {concept} to section {section_name}")
+            glb.known_concepts[concept] = section_name
+        else:
+            output.warning_msg(f"{concept} is already mapped to section {glb.known_concepts[concept]}..\
+                \n Skipping mapping to section {section_name}")
+
+    # bind the definition to the class
+    metasection.definition = section_def
 
 
 def add_mapper(mapper):
@@ -59,7 +88,7 @@ def add_builder(name, builder):
         builder.name
     except AttributeError:
         builder.name = name
-    if (name in glb.builders) == False:
+    if name not in glb.builders:
         glb.builders[name] = builder
     else:
         output.warning_msg('Builder "{0}" was already defined. Ignoring new definition.'.format(name), show_stack=False)

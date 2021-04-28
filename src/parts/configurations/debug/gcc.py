@@ -21,7 +21,7 @@ config.VersionRange("3-7",
 
 config.VersionRange("7-*",
                     append=ConfigValues(
-                        CCFLAGS=['-fdiagnostics-color=always','-O2'],
+                        CCFLAGS=['-fdiagnostics-color=always', '-O2'],
                         CPPDEFINES=['NDEBUG']
                     )
                     )

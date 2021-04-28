@@ -1,4 +1,4 @@
-from typing import Union, List, cast
+from typing import Union, List, cast, Sequence, TypeVar
 
 import parts.api as api
 import parts.api.requirement  # this is need to have some data set at start correctly
@@ -104,7 +104,7 @@ def Component(env, name, version_range=None, requires: requirement.REQ = require
         trg.Properties['config'] = str(env['CONFIG'])
     else:
         api.output.trace_msg(['component'], "Target defined config mapping of:", trg.Properties['config'])
-    
+
     return dependent_ref.dependent_ref(part_ref.PartRef(trg, localspace), section, requires, optional)
 
 
@@ -125,33 +125,29 @@ def depends_on_classic(env, depends: Union[dependent_ref.dependent_ref, List[dep
     This allow for delay processing that is required as at any given time this
     is call we don't really know all the Parts object that could exist. So we leave
     a "calling" card for what we want to find in this place.
-    '''
+    '''   
     errors.SetPartStackFrameInfo()
-    pobj = glb.engine._part_manager._from_env(env)
-    if pobj is None:
+    
+    sobj = glb.engine._part_manager.section_from_env(env)
+    if sobj is None:
         return
-
-    # check to see if we need to some funky preloads as we map the dependency values
-    # this is needed to help case of Parts files changes that might have added
-    # new dependency values. We let the loader deal with the issues.
-    # the dependency mapping logic for the classic case stays unchanged
-    glb.engine._part_manager.Loader.process_depends(pobj, depends)
-
-    api.output.verbose_msg('dependson', "Mapping data to Part", pobj.Name, pobj.DefiningSection.Name)
+ 
+    api.output.verbose_msg('dependson', "Mapping data to {sobj.ID}")
     # depends that get passed on
     if util.isList(depends) == False:
-        depends = [cast(dependent_ref.dependent_ref,depends)]
+        depends = [cast(dependent_ref.dependent_ref, depends)]
 
-    for comp in cast(List[dependent_ref.dependent_ref],depends):
+    for comp in cast(List[dependent_ref.dependent_ref], depends):
         # quick error check
-        if pobj.Name == comp.PartRef.Target.Name and pobj.DefiningSection.Name == comp.SectionName:
+        if sobj.Part.Name == comp.PartRef.Target.Name and sobj.Name == comp.SectionName:
             api.output.warning_msg("Part depends on with itself")
             api.output.print_msg("Skipping the definition of dependence to SCons")
             continue
         api.output.verbose_msg('dependson', " Component", comp.PartRef.Target.Name)
-        # glb.engine.add_preprocess_logic_queue(
-        #functors.map_depends(pobj.DefiningSection.Env, comp.PartRef, comp.SectionName, comp.Requires, comp.StackFrame)
-        # )
+
+        # we have something to map. To help with the newer logic we add a value to the section
+        # we would be mapping to, so it is known we have stuff here
+        comp.isClassicallyMapped = True
 
         for r in comp.Requires:
             ## import logic
@@ -194,34 +190,41 @@ def depends_on_classic(env, depends: Union[dependent_ref.dependent_ref, List[dep
             # if this is not internal we add to the current component export table
             if r.is_internal == False:
                 api.output.verbose_msg('dependson', "  exporting", r.key, map_val)
-                if r.key not in pobj.DefiningSection.Exports and r.is_list:
-                    pobj.DefiningSection.Exports[r.key] = [[]]
+                if r.key not in sobj.Exports and r.is_list:
+                    sobj.Exports[r.key] = [[]]
 
                 if r.is_list:
-                    pobj.DefiningSection.Exports[r.key] = common.extend_unique(pobj.DefiningSection.Exports[r.key], [[map_val]])
+                    sobj.Exports[r.key] = common.extend_unique(sobj.Exports[r.key], [[map_val]])
                 else:
-                    pobj.DefiningSection.Exports[r.key] = map_val
-                api.output.verbose_msg('dependson', "  Exported values", pobj.DefiningSection.Exports[r.key])
-
-    # map up rpath with this.. ( need to fix up the Mac)
-    # if env['TARGET_PLATFORM'] != 'win32' and env['TARGET_PLATFORM'] != 'darwin':
-        # glb.engine.add_preprocess_logic_queue(functors.map_rpath_part(env))
-        #glb.engine.add_preprocess_logic_queue(functors.map_rpath_link_part(env, pobj.DefiningSection))
+                    sobj.Exports[r.key] = map_val
+                api.output.verbose_msg('dependson', "  Exported values", sobj.Exports[r.key])
 
     errors.ResetPartStackFrameInfo()
 
 
-def depends_on(env, depends):
+def depends_on(env, depends: Union[str, Component, Sequence[Union[str , Component]]]) -> None:
+    '''
+    This is the generic DependsOn function. There are a section version which are more optimized as they don't
+    need to worry about backward compatibility. This version has to do use mappers to allow for delayed resolution
+    of values.
+    '''
+    # check that we are calling this as intended .. ie not in a section callback function
+    # env???
 
-    pobj = glb.engine._part_manager._from_env(env)
-    if pobj is None:
-        print("fill me in")
+    if glb.processing_sections:
+        output.error_msg("DependsOn cannot be called with a Section callback function")
+    # do we have anything? 
+    if not depends:
         return
+
+    # need check that we are only be called while the part is being read.
+    # in the new sections we don't want this to be called when we are processing a section
+    # We want to make sure all known depends are define after the part files are read in.
+    # todo...
 
     depends_list = []
     # make this a list if it is not already
-    if util.isList(depends) == False:
-        depends = [depends]
+    depends = common.make_list(depends)
 
     # make any string a component object
     for i in depends:
@@ -230,21 +233,39 @@ def depends_on(env, depends):
         else:
             depends_list.append(i)
 
-    # set the target platform in case we want to acces the part object this
-    # would produce latter
-    # for i in depends_list:
-        # i.target=env['TARGET_PLATFORM']
-        # i.local_space=pobj.Uses
-
-    # set what we depend on
+    ########################################
+    ## set what we depend on 
     # this will be resolved latter when we process the Parts objects
 
-    pobj.DefiningSection.Depends = depends_list
+    # Get the part object mapped to this environment
+    sobj = glb.engine._part_manager.section_from_env(env)
+    if sobj is None:
+        # should not happen.. need some more testing to make sure we can define a clever case
+        # todo make test case for this
+        api.output.error_msg("Unexpected! DependsOn called and no defining secion was found! Please report this issue.")
+        
 
-    # if this is classic case we will want to resolve now.
-    if pobj.isClassicFormat:
-        # do classic mapper connections to get data where we needed it
-        depends_on_classic(env, depends_list)
+    # add these depends to the sections dependents
+    sobj.Depends = depends_list
+
+    # for backwards compatibility we need to call the "old" mapper logic for resolving values
+    # ideally going forward this code is only called when we have builders that add exportable item
+    # as part of the build process. At the moment there are clear cases for this.. but it should not be common
+    # unless this DependsOn() and we set a value to say assume that we are using a new format, we have to
+    # assume that something might depend on the older logic.
+    
+    # update this later
+    #if sobj.isClassicFormat: # change this function so we can assume it false at some point
+    # do classic mapper connections to get data where we needed it
+    depends_on_classic(env, depends_list)
+
+def resolve_depends(sobj):
+
+    # get depends
+    depends = sobj.Depends
+
+    
+
 
 
 class dependsOnEnv:
@@ -258,7 +279,7 @@ class dependsOnEnv:
         return self.env.DependsOn(depends)
 
 
-# adding logic to Scons Enviroment object
+# adding logic to Scons Environment object
 SConsEnvironment.DependsOn = depends_on
 SConsEnvironment.Component = Component
 # allow us to add component to parts as a global objects

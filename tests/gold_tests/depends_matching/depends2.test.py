@@ -1,5 +1,5 @@
 Test.Summary = '''
-Checks that we are able to make the correct dependancy of A with B
+Checks that we are able to make the correct dependance of A with B
 '''
 
 Setup.Copy.FromDirectory('match-basic.2')

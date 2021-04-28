@@ -1,6 +1,5 @@
 
 
-
 def gxx_setup(env, ver):
     if env.get('GXX_VERSION') is None:
         env['GXX_VERSION'] = ver

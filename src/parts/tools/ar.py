@@ -1,7 +1,6 @@
 # Stub file to update env for ar tool
 
 
-
 import parts.tools.Common
 import parts.tools.GnuCommon.common
 import SCons.Tool.ar

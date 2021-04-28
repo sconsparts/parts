@@ -50,9 +50,13 @@ def depend_scanner(node, env, path):
     ret = []
     for comp in sec.Depends:
         if not comp.hasUniqueMatch and comp.isOptional:
+            # nothing was found and this was an optional depends
+            # so we can skip this
             continue
         # add the expected depend on the export file
-        ret.append(comp.Section.Env.File(exports.file_name))
+        export_file = comp.Section.Env.File(exports.file_name)
+        api.output.verbose_msg(["import-scanner", "scanner"],f"  mapping {export_file.ID}")
+        ret.append(comp.Section.Env.File(export_file))
         # map the higher level aliases
         for requirement in comp.Requires:
             value = comp.Section.Exports.get(requirement.key)
@@ -68,13 +72,15 @@ file_name = "$PARTS_SYS_DIR/${PART_ALIAS}.${PART_SECTION}.imports.jsn"
 
 
 def map_imports(env, section):
-    targets = env._part_imports_(
-        # the output should be resolve based on the environment of the section
-        section.Env.subst(file_name),
-        # sources are a value that holds a mostly readable hash of the depends
-        [],  # [env.Value(d.str_sig()) for d in section.Depends],
-        section=section,
-    )
+    targets = []
+    if section.Depends:
+        targets = env._part_imports_(
+            # the output should be resolve based on the environment of the section
+            section.Env.subst(file_name),
+            # sources are a value that holds a mostly readable hash of the depends
+            [],  # [env.Value(d.str_sig()) for d in section.Depends],
+            section=section,
+        )
     return targets
 
 

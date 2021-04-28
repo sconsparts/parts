@@ -352,7 +352,7 @@ def smart_link(source, target, env, for_signature):
 
 def generate(env):
     """Add Builders and construction variables for ar to an Environment."""
-    SCons.Tool.createSharedLibBuilder(env)
+    SCons.Tool.createSharedLibBuilder(env, shlib_suffix='$SHLIBSUFFIX')
     SCons.Tool.createProgBuilder(env)
 
     # Set-up ms tools paths for default version
@@ -388,6 +388,7 @@ def generate(env):
     env.SetDefault(WIN32EXPSUFFIX='.exp')
     env.SetDefault(WINDOWSEXPPREFIX='${WIN32EXPPREFIX}')
     env.SetDefault(WINDOWSEXPSUFFIX='${WIN32EXPSUFFIX}')
+    env['WINDOWS_INSERT_DEF'] = 0
 
     env.SetDefault(WINDOWSSHLIBMANIFESTPREFIX='')
     env.SetDefault(WINDOWSSHLIBMANIFESTSUFFIX='${SHLIBSUFFIX}.manifest')
@@ -400,33 +401,16 @@ def generate(env):
     env.SetDefault(REGSVRCOM='$REGSVR $REGSVRFLAGS ${TARGET.windows}')
     env.SetDefault(REGISTEREXECOM='${TARGET.windows} /regserver')
 
+    env['WINDOWS_EMBED_MANIFEST'] = 0
     env.SetDefault(MT=parts.tools.Common.toolvar('mt', ('mt',), env=env))
-    env.SetDefault(MTFLAGS='')
-    env.SetDefault(EMBEDMANIFESTDLLCOM='$MT $MTFLAGS -outputresource:${TARGET};2 -manifest ${TARGET}.manifest')
-    env.SetDefault(EMBEDMANIFESTPROGCOM='$MT $MTFLAGS -outputresource:${TARGET};1 -manifest ${TARGET}.manifest')
+    env.SetDefault(MTFLAGS='/nologo')
+    # Note: use - here to prevent build failure if no manifest produced.
+    # This seems much simpler than a fancy system using a function action to see
+    # if the manifest actually exists before trying to run mt with it.
+    env.SetDefault(EMBEDMANIFESTDLLCOM='-$MT $MTFLAGS -manifest ${TARGET}.manifest $_MANIFEST_SOURCES -outputresource:$TARGET;1')
+    env.SetDefault(EMBEDMANIFESTPROGCOM='-$MT $MTFLAGS -manifest ${TARGET}.manifest $_MANIFEST_SOURCES -outputresource:$TARGET;2')
 
-    #env.SetDefault(MAKECERT ='makecert')
-    #env.SetDefault(MAKECERTFLAGS ='-sk "$SIGNING.STORAGE.PRIVATE" -ss "$SIGNING.STORAGE.PUBLIC" -n "$SIGNING.NAME"')
-    #env.SetDefault(MAKECERTCOM ='$MAKECERT $MAKECERTFLAGS')
 
-    #env.SetDefault(SIGNTOOL =parts.tools.Common.toolvar('signtool', ('signtool',), env = env))
-    #env.SetDefault(SIGNTOOLFLAGS ='')
-
-    #env.SetDefault(SIGN ='$SIGNTOOL sign')
-    #env.SetDefault(SIGNFLAGS ='/q /a /s "$SIGNING.STORAGE.PUBLIC" /csp "$SIGNING.STORAGE.PROVIDER" /kc "$SIGNING.STORAGE.PRIVATE"')
-    #env.SetDefault(SIGNCOM ='$SIGN $SIGNFLAGS "$TARGET"')
-
-    # env.SetDefault(SIGNING =common.namespace(USERNAME = os.getenv('USERNAME', 'unknown'),
-    #                                  STORAGE = common.namespace(PRIVATE = 'codesign',
-    #                                                             PUBLIC = 'codesign',
-    #                                                             PROVIDER = 'Microsoft Strong Cryptographic Provider'),
-    #                                  NAME = 'CN=$SIGNING.USERNAME,OU=$SIGNING.ORGNAME,O=$SIGNING.COMPANY,E=$SIGNING.EMAIL',
-    #                                  ORGNAME = 'unknown',
-    #                                  COMPANY = 'unknown',
-    #                                  EMAIL = 'unknown',
-    #                                  ENABLED = False,
-    #                                  GENCERT = True)
-    #               )
 
     # Loadable modules are on Windows the same as shared libraries, but they
     # are subject to different build parameters (LDMODULE* variables).
@@ -442,7 +426,11 @@ def generate(env):
     env.SetDefault(LDMODULEEMITTER=[ldmodEmitter])
     env.SetDefault(LDMODULECOM=compositeLdmodAction)
 
-    #api.output.print_msg("Configured Tool %s\t for version <%s> target <%s>"%('mslink',env['MSVC']['VERSION'],env['TARGET_PLATFORM']))
+    # Issue #3350
+    # Change tempfile argument joining character from a space to a newline
+    # mslink will fail if any single line is too long, but is fine with many lines
+    # in a tempfile
+    env['TEMPFILEARGJOIN'] = os.linesep
 
 
 def exists(env):

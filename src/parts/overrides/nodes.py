@@ -85,6 +85,11 @@ def wrap_MkdirFunc(function):
 wrap_MkdirFunc(SCons.Node.FS.MkdirFunc)
 
 
+def _repr_(self):
+    return f"<{self.__class__.__name__} object ID:{self.ID} at {id(self)}>"
+
+Node.__repr__ = _repr_
+
 class wrapper:
 
     def __init__(self, binfo, ninfo=None):
@@ -117,7 +122,7 @@ def action_changed(self, binfo=None, indent=0):
         return False
 
     if self.has_builder():  # check to be safe that this has a builder
-            # then we need to have stored information else this is viewed as changed
+        # then we need to have stored information else this is viewed as changed
 
         if not binfo:
             if not self.has_stored_info():
@@ -233,7 +238,7 @@ SCons.Node.FS.Dir.get_timestamp = get_timestamp_dir
 def update_binfo_dir(self):
     ''' 
     This is generally only a function needed for Directory nodes
-    as only directory nodes can be built and have implict items added
+    as only directory nodes can be built and have implicit items added
     after the fact that could cause false rebuilds on the second pass
     of a build.
     Here we want to re-store the information after we clear the binfo
@@ -284,7 +289,7 @@ def visited_dir(self):
     else:
         # there is a bug in SCons at the moment in which a target scanner would not have
         # executed yet for this node ( or not applied as expected). This would cause the
-        # implicted depends to be missing causing a false rebuild on the next pass.
+        # implicited depends to be missing causing a false rebuild on the next pass.
         # this forces everything to be clean up before we try to store the binfo
         self.implicit = []
         self.implicit_set = set([])

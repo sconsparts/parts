@@ -47,7 +47,10 @@ def print_msgf(sfmt, *lst, **kw):
 
 def _verbose_pre(_func, catagory, *lst, **kw):
     if glb.rpter.isSetup == False:
-        glb.rpter.verbose = SCons.Script.GetOption('verbose')
+        try:
+            glb.rpter.verbose = SCons.Script.GetOption('verbose')
+        except AttributeError:
+            glb.rpter.verbose = []    
     if glb.rpter.verbose is None:
         glb.rpter.verbose = []
     _func(catagory, *lst, **kw)

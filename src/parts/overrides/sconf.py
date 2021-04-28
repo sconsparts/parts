@@ -1,6 +1,5 @@
 ﻿
 
-
 import SCons.SConf
 
 # test to see if we have the function.. else backport it

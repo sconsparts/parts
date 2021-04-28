@@ -2,22 +2,24 @@
 import json
 from .is_a import isAlias, isValue, isFile, isDir, isSymLink, isEntry
 
-def json_type(node):
-        if isSymLink(node):
-            return "S"
-        elif isFile(node):
-            return "F"
-        elif isDir(node):
-            return "D"
-        elif isAlias(node):
-            return "A"
-        elif isValue(node):
-            return "V"
-        elif isEntry(node):
-            return "E"
 
-def make_node(json_node,env):
-    name=json_node["name"]
+def json_type(node):
+    if isSymLink(node):
+        return "S"
+    elif isFile(node):
+        return "F"
+    elif isDir(node):
+        return "D"
+    elif isAlias(node):
+        return "A"
+    elif isValue(node):
+        return "V"
+    elif isEntry(node):
+        return "E"
+
+
+def make_node(json_node, env):
+    name = json_node["name"]
     string_type = json_node["type"]
     if string_type == "S":
         return env.FileSymbolicLink(name)
@@ -31,7 +33,6 @@ def make_node(json_node,env):
         return env.Value(name)
     elif string_type == "E":
         return env.Entry(name)
-
 
 
 class SetNodeEncode(json.JSONEncoder):

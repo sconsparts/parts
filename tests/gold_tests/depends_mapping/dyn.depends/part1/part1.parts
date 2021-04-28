@@ -7,7 +7,7 @@ copyed = env.CCopy(
     target="$BUILD_DIR/build"
 )
 
-dir = env.CCommand(
+outdir = env.CCommand(
     "destdir",
     copyed,
     [
@@ -17,6 +17,6 @@ dir = env.CCommand(
     target_factory=env.Dir,
     target_scanner=env.ScanDirectory("destdir",)
 )
-env.Clean(dir,dir)
+env.Clean(outdir,outdir)
 
 

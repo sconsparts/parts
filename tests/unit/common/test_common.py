@@ -105,4 +105,4 @@ class TestRelPath(unittest.TestCase):
     def test_path4(self):  # Possible Bug: it actually returns "\\" but I am giving it a Linux path
         relative_path = relpath('/opt/opt/opt/opt/opt/opt/opt/opt/opt/opt/opt/opt/opt/opt/opt/opt/product',
                                 '/opt/opt/opt/opt/opt/opt/opt/opt/opt/opt/opt/opt/opt/opt/opt/')
-        self.assertEqual(relative_path, os.path.normpath('opt/product'))
+        self.assertEqual(relative_path, os.path.normpath('../opt/product'))

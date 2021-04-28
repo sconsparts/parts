@@ -2,7 +2,6 @@
 # $Id: doxygen.py 23243 2008-05-30 15:15:40Z eleskine $
 
 
-
 import fnmatch
 import os
 import re

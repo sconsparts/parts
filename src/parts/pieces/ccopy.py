@@ -1,7 +1,6 @@
 # pylint: disable=missing-docstring
 
 
-
 import copy
 import errno
 import os
@@ -33,14 +32,11 @@ class CopyBuilderDescription:
         self.ccopyName = ccopyName
         self.copyFunctions = copyFunctions
 
-# CopyBuilderDescription = namedtuple('CopyBuilderDescription',
- #                                   'builderName ccopyName copyFunctions')
-
 
 if sys.platform == 'win32':
-    import msvcrt
     import ctypes
-    from ctypes.wintypes import BOOLEAN, LPWSTR, DWORD, BOOL, FILETIME, HANDLE
+    import msvcrt
+    from ctypes.wintypes import BOOL, BOOLEAN, DWORD, FILETIME, HANDLE, LPWSTR
 
     # taken from MSDN
     ERROR_INVALID_FUNCTION = 1
@@ -266,6 +262,7 @@ def CCopyStringFunc(target, source, env):
 
 def CCopyEmit(target, source, env):
     target, source = target[0], source[0]
+    # print(type(target),type(source),target.ID,source.ID)
     target.must_be_same(type(source))
     return [target], [source]
 
@@ -500,7 +497,7 @@ def generateCopyBuilder(description):
         return tmp
 
     def _do_nothing_scan(node, env, path):
-        "prevent implict scanner from working"
+        "prevent implicit scanner from working"
         return []
 
     api.register.add_builder(

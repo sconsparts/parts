@@ -1,6 +1,5 @@
 
 
-
 import SCons.Environment
 import SCons.Node
 from SCons.Script.SConscript import SConsEnvironment
@@ -10,8 +9,12 @@ import parts.glb as glb
 import parts.api as api
 from parts.core import util
 
-
+g_concepts = None
 def Parts_Alias(self, target, source=[], action=None, **kw):
+    global g_concepts
+    if not g_concepts:
+        g_concepts=tuple(f'{concept}::' for concept in glb.known_concepts.keys())
+        
     targets = common.make_list(target)
     ret = []
     for target in targets:
@@ -20,11 +23,11 @@ def Parts_Alias(self, target, source=[], action=None, **kw):
             try:
                 self["PART_SECTION"]  # checks that this is a "part" else we don't want to do this
                 t = self.subst(target)
-                section_str = self.subst("${PART_SECTION}::")
+                
                 # check that we want to modify this target
-                if not t.startswith(section_str) and not t.startswith("run_utest::") and not t.startswith("build::"):
+                if not t.startswith(g_concepts):
                     tmp = self._orig_Alias("${{PART_SECTION}}::alias::${{PART_ALIAS}}::{0}".format(target), source, action, **kw)
-                    api.output.verbose_msg(["alias","overrides"],f"Generated Alias: {tmp[0].ID}",print_once=True)
+                    api.output.verbose_msg(["alias", "overrides"], f"Generated Alias: {tmp[0].ID}", print_once=True)
                     ret += tmp
                     continue
             except KeyError:
@@ -42,9 +45,9 @@ def Parts_Alias(self, target, source=[], action=None, **kw):
                 del tmp.executor
         except AttributeError:
             pass
-        
-        tmp = self._orig_Alias(target, source, action, **kw)        
-        api.output.verbose_msg(["alias","overrides"],f"Generated Alias: {tmp[0].ID}",print_once=True)
+
+        tmp = self._orig_Alias(target, source, action, **kw)
+        api.output.verbose_msg(["alias", "overrides"], f"Generated Alias: {tmp[0].ID}", print_once=True)
         ret += tmp
         #ret += self._orig_Alias(target, source, action, **kw)
     return ret

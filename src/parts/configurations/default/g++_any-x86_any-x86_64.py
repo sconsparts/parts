@@ -20,7 +20,7 @@ config.VersionRange(
     ),
     # RUN_PATH setting for this platform toolchain
     replace=ConfigValues(
-       _RPATHSTR='${JOIN("$RUNPATHS",":")}',
+        _RPATHSTR='${JOIN("$RUNPATHS",":")}',
         RPATHLINK=[],
         _RPATHLINKSTR='${MAKEPATH("$RPATHLINK",":",False,True)}',
         _ABSRPATHLINKSTR='${MAKEPATH("$RPATHLINK",":",True,True)}',

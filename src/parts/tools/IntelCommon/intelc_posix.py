@@ -19,13 +19,13 @@ Intelc.Register(
         IntelcInfo(
             version='19.*-*,2020.1.*-2020.*',
             install_scanner=GenericScanner(
-                [os.path.expanduser('~/intel'), '/opt/intel',],
+                [os.path.expanduser('~/intel'), '/opt/intel', ],
                 common.intel_19_plus_posix,
                 ['linux/bin/ia32/'],
                 r'icc \(ICC\) (\d+[.\d+]+)',
                 'icc'
-                ),
-            script=ScriptFinder('${INTELC.INSTALL_ROOT}/linux/bin/iccvars.sh',args='-arch ia32 -platform linux'),
+            ),
+            script=ScriptFinder('${INTELC.INSTALL_ROOT}/linux/bin/iccvars.sh', args='-arch ia32 -platform linux'),
             subst_vars={
             },
             shell_vars={
@@ -43,17 +43,17 @@ Intelc.Register(
         IntelcInfo(
             version='19.*-*,2020.1.*-2020.*',
             install_scanner=GenericScanner(
-                [os.path.expanduser('~/intel'), '/opt/intel',],
+                [os.path.expanduser('~/intel'), '/opt/intel', ],
                 common.intel_19_plus_posix,
                 ['linux/bin/intel64/'],
                 r'icc \(ICC\) (\d+[.\d+]+)',
                 'icc'
-                ),
+            ),
             script=ScriptFinder(
                 '${INTELC.INSTALL_ROOT}/linux/bin/iccvars.sh',
                 args='-arch intel64 -platform linux',
-                remove=(r'_\W*',"POSIXLY_CORRECT")
-                ),
+                remove=(r'_\W*', "POSIXLY_CORRECT")
+            ),
             subst_vars={
             },
             shell_vars={

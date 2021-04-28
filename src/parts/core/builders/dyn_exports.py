@@ -36,11 +36,11 @@ def PartDynExportsAction(target, source, env):
 def map_dyn_export(env, source):
 
     section = glb.engine._part_manager._from_env(env).Section(env["PART_SECTION"])
-
-    tmp = section.Env._part_dyn_exports_(
+       
+    ret = section.Env._part_dyn_exports_(
         # the output should be resolve based on the environment of the section
         section.Env.File(file_name),
-
+    
         # I believe we want this to depend on other .jsn files we generated
         # some of the jsn file might be sync points for dynamic builders
         # only these dynamic builder will generate files that are not part
@@ -49,8 +49,8 @@ def map_dyn_export(env, source):
         source,
     )
     # dyn.export.jsn files are a source to making export.jsn
-    env._map_export_(tmp)
-    return tmp
+    env._map_export_(ret)
+    return ret
 
 
 def source_scanner(node, env, path):

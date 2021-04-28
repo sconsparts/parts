@@ -1,6 +1,5 @@
 
 
-
 from parts.tools.Common.ToolInfo import ToolInfo
 from parts.tools.Common.ToolSetting import ToolSetting
 from parts.version import version_range

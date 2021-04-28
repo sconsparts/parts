@@ -45,7 +45,7 @@ class html(logger.Logger):
         if file.endswith(".html") == False:
             file += ".html"
         self.m_file = open(os.path.join(dir, file), "w")
-        super(html, self).__init__(dir, file)
+        super().__init__(dir, file)
 
         self.colors = SCons.Script.GetOption('use_color')
         self.fg_color = color.White

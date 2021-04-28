@@ -5,6 +5,10 @@ and with not using platform_indpendent (default case). Use of sub-parts to to ma
 complex stressing the logic in better
 '''
 
+# note on the test .. currently we are redoing the internals.. so --load-logic may not stay around
+# because of this items below maybe disabled.. will need to review and clean up test as needed
+
+
 Setup.Copy.FromTemplate('independent_subparts_common_shared')
 
 t = Test.AddTestRun("build-all")
@@ -45,7 +49,8 @@ Test.AddUpdateCheck("A::")
 
 # target "all" some state files for the root common.part 
 # that should not have been built yet
-Test.AddOutOfDateCheckParts()
+# -- This is disabled with the rework in the internals.. --
+#Test.AddOutOfDateCheckParts() 
 
 Test.AddBuildRun()
 

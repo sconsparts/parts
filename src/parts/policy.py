@@ -26,12 +26,10 @@ class SCMPolicy(Policy):
     warning = 1
     error = 2
     update = 3
-# to be removed when safe
-VCSPolicy = SCMPolicy
 
 
 api.register.add_global_parts_object("REQPolicy", REQPolicy)
 api.register.add_global_object("REQPolicy", REQPolicy)
 
-api.register.add_global_parts_object("SCMPolicy", VCSPolicy)
-api.register.add_global_object("SCMPolicy", VCSPolicy)
+api.register.add_global_parts_object("SCMPolicy", SCMPolicy)
+api.register.add_global_object("SCMPolicy", SCMPolicy)

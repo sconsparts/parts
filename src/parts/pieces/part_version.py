@@ -1,5 +1,5 @@
 
-
+from parts.core.states import LoadState
 import parts.api as api
 import parts.api.output as output
 import parts.glb as glb
@@ -24,7 +24,7 @@ def part_version(env, ver=None, _warn=True):
     ret = version.version(ver)
     if part_obj._cache.get('name_must_be_set') == True:
         api.output.error_msg("The Part version has to be set before any calls to Part()")
-    if part_obj.Version != '0.0.0' and ret != part_obj.Version and part_obj.LoadState != glb.load_cache:
+    if part_obj.Version != '0.0.0' and ret != part_obj.Version and part_obj.LoadState != LoadState.CACHE:
         api.output.warning_msgf("Version already set to {0}, ignoring new value of {1}".format(part_obj.Root.Version, ret))
         return part_obj.Version
 
@@ -59,6 +59,6 @@ class _PartVersion:
 # add global for new format
 api.register.add_global_parts_object('PartVersion', _PartVersion, True)
 
-# adding logic to Scons Enviroment object
+# adding logic to Scons Environment object
 SConsEnvironment.PartVersion = part_version
 SConsEnvironment.PartShortVersion = get_part_short_version

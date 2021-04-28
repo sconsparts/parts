@@ -32,7 +32,6 @@ selection method.
 #
 
 
-
 import parts.api.output as output
 import parts.tools.Common
 import SCons.Defaults
@@ -54,11 +53,9 @@ def generate(env):
 
     env['AR'] = parts.tools.Common.toolvar('lib', ('lib',), env=env)
     env['ARFLAGS'] = SCons.Util.CLVar('/nologo')
-    env['ARCOM'] = "${TEMPFILE('$AR $ARFLAGS /OUT:$TARGET $SOURCES')}"
+    env['ARCOM'] = "${TEMPFILE('$AR $ARFLAGS /OUT:$TARGET $SOURCES','$ARCOMSTR')}"
     env['LIBPREFIX'] = ''
     env['LIBSUFFIX'] = '.lib'
-    #api.output.print_msg("Configured Tool %s\t for version <%s> target <%s>"%('mslib',env['MSVC']['VERSION'],env['TARGET_PLATFORM']))
-
 
 def exists(env):
     return msvc.Exists(env, 'lib')

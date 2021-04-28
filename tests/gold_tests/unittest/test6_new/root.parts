@@ -1,0 +1,9 @@
+Import('*')
+
+PartName('root')
+PartVersion('1.0.0')
+
+env.Part('utest', 'utest.parts')
+env.Part('main', 'main.parts')
+env.Part('empty', 'empty.parts')
+

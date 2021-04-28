@@ -1,0 +1,20 @@
+Import('*')
+
+PartVersion('1.0.0')
+PartName('print_msg')
+
+
+@build
+def source(env):
+    #files
+    cpp_files=['print_msg.c']
+
+    if env['TARGET_PLATFORM']['OS']=='win32':
+        env.Append(CPPDEFINES= ['WINDOW_OS'])
+    env.Append(CPPDEFINES= ['PRINT_EXPORTS'])
+
+    outputs=env.SharedLibrary('print_msg',cpp_files)
+
+    env.InstallTarget(outputs)
+
+    env.SdkInclude(['print_msg.h'])

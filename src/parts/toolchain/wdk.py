@@ -1,7 +1,6 @@
 # defines tools chain wdk
 
 
-
 def wdk_setup(env, ver):
     env['WDK_VERSION'] = ver
 

@@ -49,5 +49,5 @@ def CCommand(self, target, source, action, **kw):
 api.register.add_global_parts_object('ProgramScanner', SCons.Scanner.Prog.ProgramScanner())
 api.register.add_global_object('ProgramScanner', SCons.Scanner.Prog.ProgramScanner())
 
-# adding logic to Scons Enviroment object
+# adding logic to Scons Environment object
 SConsEnvironment.CCommand = CCommand

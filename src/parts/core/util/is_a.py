@@ -1,8 +1,14 @@
 
-
 import SCons.Node
 import SCons.Util
 
+def isPart(obj):
+    import parts.pnode.part
+    return isinstance(obj, parts.pnode.part.Part)
+
+def isSection(obj):
+    import parts.pnode.section
+    return isinstance(obj, parts.pnode.section.Section)
 
 def isNode(obj):
     return isinstance(obj, (SCons.Node.Alias.Alias, SCons.Node.FS.Entry, SCons.Node.FS.Dir, SCons.Node.FS.File, SCons.Node.FS.FileSymbolicLink, SCons.Node.Python.Value))
@@ -31,14 +37,11 @@ def isAlias(obj):
 def isSymLink(obj):
     return isinstance(obj, SCons.Node.FS.FileSymbolicLink)
 
-
 def isList(obj):
     return SCons.Util.is_List(obj)
 
-
 def isSet(obj):
     return isinstance(obj, set)
-
 
 def isDictionary(obj):
     return SCons.Util.is_Dict(obj)

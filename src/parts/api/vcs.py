@@ -1,3 +1,3 @@
 
 
-from parts.vcs import vcs
+from parts.scm import scm

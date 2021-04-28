@@ -2,6 +2,7 @@ from setuptools import setup, find_packages
 import sys
 
 sys.path.append("./src/parts")
+
 import parts_version
 
 setup(name="scons-parts",
@@ -26,18 +27,24 @@ setup(name="scons-parts",
           '': ['*.txt'],
 
       },
-             # see classifiers
-        # http://pypi.python.org/pypi?%3Aaction=list_classifiers
-         classifiers=[
-            'Development Status :: 5 - Production/Stable',
-            'Environment :: Console',
-            'Intended Audience :: Developers',
-            'License :: OSI Approved :: MIT License',
-            'Operating System :: OS Independent',
-            'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.5',
-            'Programming Language :: Python :: 3.6',
-            'Programming Language :: Python :: 3.7',
-            'Topic :: Terminals',
-            ],
+      # see classifiers
+      # http://pypi.python.org/pypi?%3Aaction=list_classifiers
+      classifiers=[
+          'Development Status :: 5 - Production/Stable',
+          'Environment :: Console',
+          'Intended Audience :: Developers',
+          'License :: OSI Approved :: MIT License',
+          'Operating System :: OS Independent',
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8',
+          'Programming Language :: Python :: 3.9',
+          'Topic :: Terminals',
+      ],
+       project_urls={
+        #"Documentation": "",
+        "Source Code": "https://bitbucket.org/sconsparts/parts",
+        #"Bug Tracker": "",
+    },
       )

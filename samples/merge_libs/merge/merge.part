@@ -7,7 +7,7 @@ env.DependsOn([Component('A',requires=REQ.SDKLIB),Component('B',requires=REQ.SDK
 
 # ideally the env['LIBS'] has what we want. But since the real world
 # will probally depend on other stuff so it will want to get the A 
-# and B values explictly not implictly
+# and B values explicitly not implicitly
 
 a_lib=env.subst("${DEPENDS.A.SDKLIB}")
 b_lib=env.subst("${DEPENDS.B.SDKLIB}")

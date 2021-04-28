@@ -88,9 +88,9 @@ class part_spawner:
         ENV = {}
         for k, v in Env.items():
             if not isinstance(k, str):
-                k = k.encode() if glb.isPY2 else k.decode()
+                k = k.decode()
             if not isinstance(v, str):
-                v = v.encode() if glb.isPY2 else v.decode()
+                v = v.decode()
             ENV[k] = v
 
         # get the part_logger
@@ -160,8 +160,6 @@ class part_logger:
             self.lock = threading.RLock()
 
     def __init__(self, env):
-        if __debug__:
-            logInstanceCreation(self, 'parts.part_logger.part_logger')
         self.env = env
         self.reporter = glb.rpter
         self.block_text = SCons.Script.GetOption('num_jobs') > 1

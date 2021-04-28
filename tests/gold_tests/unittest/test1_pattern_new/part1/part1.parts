@@ -1,0 +1,7 @@
+Import('*')
+PartName("part1")
+
+
+@unit_test.Group("mygroup")
+def run(env, test):
+    test.Sources = env.Pattern(src_dir= "../utest", includes = 'test*.c')

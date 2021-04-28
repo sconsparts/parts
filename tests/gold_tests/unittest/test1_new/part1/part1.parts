@@ -1,0 +1,7 @@
+Import('*')
+PartName("part1")
+
+
+@unit_test.Group("mygroup")
+def run(env, test):
+    test.Target = env.Program('mytest', [env.AbsFileNode('../utest/test.c')])

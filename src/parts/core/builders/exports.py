@@ -17,7 +17,7 @@ def PartExportsAction(target, source, env):
     section = glb.engine._part_manager._from_env(env).Section(env["PART_SECTION"])
 
     data = {}
-    # create data sctructure for the exported data
+    # create data structure for the exported data
     for k, v in section.Exports.items():
         v = env.Flatten(v)
         if v != []:
@@ -34,8 +34,8 @@ def PartExportsAction(target, source, env):
 
 def map_export(env, source):
 
-    section = glb.engine._part_manager._from_env(env).Section(env["PART_SECTION"])
-
+    section = glb.engine._part_manager.section_from_env(env)
+       
     targets = section.Env._part_exports_(
         # the output should be resolve based on the environment of the section
         section.Env.File(file_name),

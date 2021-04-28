@@ -112,7 +112,7 @@ def StripXMLCommentsAs(env, target, source, **kw):
     return output
 
 
-# adding logic to Scons Enviroment object
+# adding logic to Scons Environment object
 SConsEnvironment.StripXMLComments = StripXMLComments
 SConsEnvironment.StripXMLCommentsAs = StripXMLCommentsAs
 

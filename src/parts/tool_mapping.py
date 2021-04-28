@@ -1,6 +1,5 @@
 
 
-
 import os
 
 import parts.api as api
@@ -116,7 +115,7 @@ def _ToolChain(env, chainlist):
         # not have the MS compiler add its value to the environment
         # when the Configuration() call happens
         if configured:
-            # apply the tool to the enviroment
+            # apply the tool to the Environment
             configured_tools.append(tool_name)
         tool = SCons.Tool.Tool(tool_name, toolpath=env['toolpath'])
         env['_BUILD_CONTEXT_FILES'].add(tool.generate.__code__.co_filename)
@@ -135,7 +134,7 @@ def tool_converter(str_val, raw_val):
     raise "Invalid tool value '%s'" % raw_val
 
 
-# adding logic to Scons Enviroment object
+# adding logic to Scons Environment object
 SConsEnvironment.ToolChain = _ToolChain
 
 

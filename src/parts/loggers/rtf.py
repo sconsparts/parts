@@ -48,7 +48,7 @@ class rtf(logger.Logger):
         self.colors = SCons.Script.GetOption('use_color')
         self.fg_color = 0
         self.writeheader()
-        super(rtf, self).__init__(dir, file)
+        super().__init__(dir, file)
 
     def writeheader(self):
         self.m_file.write("{\\rtf1\\fbidis\\ansi\\ansicpg1252")

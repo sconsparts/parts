@@ -1,13 +1,8 @@
 
-from typing import Optional
+from typing import Optional,Dict
 import os
 import sys
 
-isPY2 = sys.version_info < (3, 0)
-
-load_none = 0
-load_cache = 1
-load_file = 2
 
 build_context_files = set()
 
@@ -21,11 +16,22 @@ env_cache = {}
 # global object to add to parts call
 parts_objs = {}
 parts_objs_env = {}
-known_concepts = []
+known_concepts:Dict[str,str] = {}
 
 
 # state object of what is being processed.
-part_being_processed = []
+#part_being_processed = []
+
+# known concepts based on section being defined
+# maps a concept to section. a section can define
+# many different concepts
+known_concepts = {
+    #'utest': 'utest',
+    #'run_utest': 'utest',
+    #'build': 'build'
+}
+
+processing_sections=False
 
 # set of the part we know we want to build
 buildable_part = set()
@@ -40,7 +46,7 @@ mappers = {}
 # these are the global functions we define to the SConstruct
 globals = {}
 # these are all the sections that have been defined
-sections = set()
+section_definitions = {}
 # subst cache to help with speed up build
 subst_cache = {}
 

@@ -1,5 +1,6 @@
-
-
+from __future__ import annotations
+from typing import Optional
+import enum
 import copy
 import hashlib
 import os
@@ -10,7 +11,7 @@ import traceback
 import types
 from builtins import zip
 
-
+from parts.core.states import LoadState, FileStyle
 import parts.core.builders as builders
 import parts.core.util as util
 import parts.pnode.part_info as part_info
@@ -45,7 +46,7 @@ def safe_visited_call(node):
             node.reset_executor()
 
 
-class part(pnode.PNode):
+class Part(pnode.PNode):
     """description of class"""
 
     __slots__ = [
@@ -59,19 +60,19 @@ class part(pnode.PNode):
 
         # basic attributes
         '__ID',
-        '__file',         # the Parts file
-        '__src_path',      # The Source path ( the path of the _file
-        '__version',      # the version of this part
-        '__name',         # the name of this part (foo.bar.goo)
-        '__alias',        # the alias of this part (foo0.bar0.goo0)
-        '__short_name',   # the short name of this parts (goo)
-        '__short_alias',  # the short name of this parts (goo0)
-        '__parent',       # the parent part object, else None
-        '__root',         # the root part object, might be self
-        '__subparts',      # dictionary of sub-parts
+        '__file',           # the Parts file
+        '__src_path',       # The Source path ( the path of the _file
+        '__version',        # the version of this part
+        '__name',           # the name of this part (foo.bar.goo)
+        '__alias',          # the alias of this part (foo0.bar0.goo0)
+        '__short_name',     # the short name of this parts (goo)
+        '__short_alias',    # the short name of this parts (goo0)
+        '__parent',         # the parent part object, else None
+        '__root',           # the root part object, might be self
+        '__subparts',       # dictionary of sub-parts
 
-        '__mode',          # special build values
-        '__uses',      # list of Parts that this we want to map to first
+        '__mode',           # special build values
+        '__uses',           # list of Parts that this we want to map to first
         '__settings',       # The setting object used to create the environment
         '__env',            # the prime SCons Environment
         '__platform_match',  # this is how we can depend on this object
@@ -105,8 +106,9 @@ class part(pnode.PNode):
         # packaging stuff
         '__package_group',  # the package group this maps to
 
-        # VCS stuff
-        '__vcs',  # The information on how to check out this Part, None to use as file as local path.
+        # SCM stuff
+        '__scm',  # The information on how to check out this Part, None to use as file as local path.
+        '__extern_scm',  # this is for out or repo build files based builds
 
         # compatibility stuff
         '__sdk_or_installed_called',  # this is to help with issues with unit tests sub parts in classic format
@@ -117,9 +119,9 @@ class part(pnode.PNode):
     ]
     # constructor
 
-    def __init__(self, file=None, mode=[], vcs_t=None, default=False,
+    def __init__(self, file=None, mode=[], scm_t=None, default=False,
                  append={}, prepend={}, create_sdk=True, package_group=None, alias=None, name=None,
-                 Settings=None,
+                 Settings=None, extern=None,
                  **kw):
 
         self.__ID = kw.pop('ID', None)
@@ -142,7 +144,7 @@ class part(pnode.PNode):
         self.__sdk_files = []
         # the name of the SDK file we will make.. if any
         self.__sdk_file = None
-        
+
         self.__env_diff = None
         # packaging stuff
         # what package group to add this to
@@ -157,7 +159,7 @@ class part(pnode.PNode):
         # self.__Processed=False
 
         # this is the style/format the part file used
-        self.__format = None
+        self.__format = FileStyle.UNKNOWN
 
         # everything we depend on, implicit and explicit,
         # contain component objects.. change to part and component mix latter??
@@ -176,7 +178,7 @@ class part(pnode.PNode):
 
         # data we will cache later
         self.__cache = {}
-        # the sections we can define in a part
+        # the sections that are defined in a Part
         self.__sections = {}
         # the environment object for the Part
         self.__env = None
@@ -208,7 +210,10 @@ class part(pnode.PNode):
         self.__config_context_files = {}
 
         # how we can get the source, None is local
-        self.__vcs = vcs_t
+        self.__scm = scm_t
+        # extern mapping if any
+        self.__extern_scm = extern
+
         # the file for this part, if any
         self.__file = str(file)
         # the src_path we need to make sure SCons as no issues when loading the Part file
@@ -233,8 +238,8 @@ class part(pnode.PNode):
         try:
             self.__read_state = self.__read_state
         except Exception:
-            self.__read_state = glb.load_none
-        super(part, self).__init__()
+            self.__read_state = LoadState.NONE
+        super(Part, self).__init__()
 
     @staticmethod
     def _process_arg(**kw):
@@ -277,23 +282,24 @@ class part(pnode.PNode):
         return self.__src_path
 
     @property
-    def Version(self):  # mutable
+    def Version(self) -> version.version:  # mutable
         """Get the current version."""
         if self.isRoot:
             return self.__version
         return self.__root.Version
 
     @Version.setter
-    def Version(self, version):
+    def Version(self, version: version.version) -> None:
         if self.isRoot:
             self.__version = version
         else:
             self.__root.Version = version
 
+    # compatibility
     version = Version
 
     @property  # readonly as it based on full version
-    def ShortVersion(self):
+    def ShortVersion(self) -> str:
         """Get the current short version."""
         return self.__root.__version[0:2]
 
@@ -317,21 +323,21 @@ class part(pnode.PNode):
         return self.__short_alias
 
     @property
-    def Name(self):  # read only non-mutable as it based on short name and parent
+    def Name(self) -> str:  # read only non-mutable as it based on short name and parent
         """Get the current parent Part name."""
         if self.__name is None:
             self.ShortName = self.__short_alias
         return self.__name
 
     @property  # readonly
-    def ShortName(self):
+    def ShortName(self) -> str:
         """Get the current parent Part name."""
         if self.__short_name is None:
             self.ShortName = self.__short_alias
         return self.__short_name
 
     @ShortName.setter
-    def ShortName(self, val):
+    def ShortName(self, val: str) -> None:
         self._set_name(val)
 
     # For backward compatibility
@@ -351,24 +357,24 @@ class part(pnode.PNode):
             glb.engine._part_manager.add_name_alias(self.__name, self.__alias)
 
     @property  # readonly mutable
-    def Parent(self):
+    def Parent(self) -> Optional[part]:
         """Get the current parent Part, or None if there is no parent"""
         return self.__parent
 
     @property  # readonly mutable
-    def Root(self):
+    def Root(self) -> Part:
         """Get the current root Part."""
         return self.__root
 
     @property  # readonly non-mutable #remove?
-    def ParentName(self):
+    def ParentName(self) -> Optional[str]:
         """Get the current parent Part name."""
         if self.__parent is None:
             return None
         return self.__parent.Name
 
     @property  # readonly non-mutable #remove?
-    def RootName(self):
+    def RootName(self) -> str:
         """Get the current root Part name."""
         return self.__root.Name
 
@@ -402,7 +408,7 @@ class part(pnode.PNode):
                         p = glb.engine._part_manager._from_alias(p)
                         if p is None:
                             api.output.error_msg('Cannot use non existing Part "%s"' % tmp_alias)
-                    elif isinstance(p, part):
+                    elif isinstance(p, Part):
                         # just a Validation check
                         pass
                     else:
@@ -492,19 +498,19 @@ class part(pnode.PNode):
         return self.__force_load
 
     @property
-    def Format(self):
+    def Format(self) -> FileStyle:
         return self.__format
 
     @Format.setter
-    def Format(self, s):
+    def Format(self, style: FileStyle):
         '''
         currently set to new or classic.. need to clean up latter to something better
         '''
-        self.__format = s
+        self.__format = style
 
     @property
     def isClassicFormat(self):
-        return self.__format == 'classic' or self.__format is None
+        return self.__format == FileStyle.CLASSIC or self.__format == FileStyle.UNKNOWN
 
     @property
     def isRoot(self):
@@ -521,12 +527,8 @@ class part(pnode.PNode):
         return self.__is_default_target
 
     @property
-    def isVisited(self):
-        return self.LoadState == glb.load_file
-
-    @isVisited.setter
-    def isVisited(self, value):
-        pass
+    def isVisited(self) -> bool:
+        return self.LoadState == LoadState.FILE
 
     # packaging stuff
     @property
@@ -534,11 +536,15 @@ class part(pnode.PNode):
         '''the Package group this Part is mapped to'''
         return self.__package_group
 
-    # vcs stuff
+    # scm stuff
     @property
-    def Vcs(self):
-        """return the VCS object"""
-        return self.__vcs
+    def Scm(self):
+        """return the Scm object"""
+        return self.__scm
+
+    @property
+    def ExternScm(self):
+        return self.__extern_scm
 
     # some compatibility stuff
     @property
@@ -585,10 +591,7 @@ class part(pnode.PNode):
     def DefiningSection(self):
         if self.__defining_section:
             return self.__defining_section
-        try:
-            return self.__sections['build']
-        except KeyError:
-            pass
+
         return self.__classic_section
 
     @DefiningSection.setter
@@ -596,18 +599,21 @@ class part(pnode.PNode):
         self.__defining_section = sec
 
     def Section(self, case):
-        try:
-            return self.__sections[case]
-        except KeyError:
-            return self.__classic_section
+        return self.__sections[case]
+        
+
+    @property
+    def Sections(self):
+        return self.__sections
 
     # hack till we get new format stuff working...
+
     def _AddSection(self, name, obj):
         self.__sections[name] = obj
 
     # re look at this function when we add new format
-    def _hasTargetFiles(self):
-        return self.__classic_section.Targets != set([])
+    def _hasTargetFiles(self) -> bool:
+        return bool(self.__classic_section.Targets)
 
     # see if we can remove the env arg latter
     def _setup_(self, _env=None, *lst, **kw):
@@ -633,7 +639,7 @@ class part(pnode.PNode):
                 append=self.__append.copy(),
                 **self.__kw.copy()
             )
-
+        
         else:
             self.__env = _env
 
@@ -664,7 +670,7 @@ class part(pnode.PNode):
                 )
 
             diff.update(diff_env(base_env, self.__env, ['requires']))
-            
+
             if diff != {}:
 
                 md5 = hashlib.md5()
@@ -679,10 +685,10 @@ class part(pnode.PNode):
                 self.__env_mini_diff_sig = ''
                 # since we we can load the same part from different directories, we assume a version difference
                 # we don't know what the difference is yet (as the part file is not read). We md5 the path to make a difference
-                # if there is no version difference, we will get an ambigous error message later when we try to build,
+                # if there is no version difference, we will get an ambiguous error message later when we try to build,
                 # via same outputs, or via mapper function not having more than one match.
                 md5 = hashlib.md5()
-                
+
                 md5.update(self.__env.subst(self.__file).encode())
                 md5.update(self.__env_diff_sig.encode())
                 path_sig = md5.hexdigest()[-4:]
@@ -720,11 +726,16 @@ class part(pnode.PNode):
             dir_tmp = self.__env.Dir('#')
         else:
             dir_tmp = self.__env.Dir(self.__parent.__src_path)
-        
-        # setup vcs object. We always have one. null_t is the default
-        self.__vcs._setup_(self)  # update env with vcs level defines
-        if self.isRoot:
-            self.__file = dir_tmp.File(self.__vcs.PartFileName)
+
+        # setup scm object. We always have one. null_t is the default
+        self.__scm._setup_(self)  # update env with scm level defines
+
+        if self.isRoot and self.ExternScm:
+            # set up the extern scm
+            self.__extern_scm._setup_(self)
+            self.__file = dir_tmp.File(self.__extern_scm.PartFileName)
+        elif self.isRoot:
+            self.__file = dir_tmp.File(self.__scm.PartFileName)
         else:
             self.__file = dir_tmp.File(self.__env.subst(self.__file))  # the Parts file to read in
 
@@ -754,7 +765,7 @@ class part(pnode.PNode):
 
         self.__config_match = not self.__kw.get('config_independent', False)
 
-        self.__classic_section = glb.pnodes.Create(section.build_section, self)
+        #self.__classic_section = glb.pnodes.Create(section.build_section, self)
         self.__is_setup = True
 
     def _merge(self, otherobj):
@@ -781,7 +792,7 @@ class part(pnode.PNode):
         if self.__package_group is not None:
             packaging.PackageGroup(self.__package_group, self.__alias)
 
-        # Setup the enviroment BUILD_DIR in the LIBPATH
+        # Setup the Environment BUILD_DIR in the LIBPATH
         # might need more.. to add as needed
         libpath = ['$BUILD_DIR']
         self.__env.Append(LIBPATH=libpath)
@@ -795,11 +806,11 @@ class part(pnode.PNode):
                 pass
             elif m in self.__mode:
                 # if self.isRoot:
-                    # api.output.warning_msgf(
-                        #'Mode value "{val}" was defined globally and locally. This may cause ambiguous dependency matching',
-                        # val=m,
-                        # id=self.ID
-                    # )
+                # api.output.warning_msgf(
+                #'Mode value "{val}" was defined globally and locally. This may cause ambiguous dependency matching',
+                # val=m,
+                # id=self.ID
+                # )
                 pass
             else:
                 self.__mode.append(m)
@@ -861,7 +872,7 @@ class part(pnode.PNode):
                     'alias': self.__short_alias,
                     'parts_file': sdkname,
                     'mode': self.__mode,
-                    'vcs_type': None,
+                    'scm_type': None,
                     'default': self.__set_as_default_target,
                     'append': self.__append,
                     'prepend': self.__prepend,
@@ -958,7 +969,7 @@ class part(pnode.PNode):
             '''
             Enter the context.
             '''
-            SCons.Script.BUILD_TARGETS = part.build_target_wrapper(
+            SCons.Script.BUILD_TARGETS = Part.build_target_wrapper(
                 SCons.Script.BUILD_TARGETS)
             return self
 
@@ -991,63 +1002,81 @@ class part(pnode.PNode):
         # and check at the end if we processed a new format or an old format
         # error on mixed formats??
 
-        if self.LoadState == glb.load_file:
+        if self.LoadState == LoadState.FILE:
             print("\033[1;32m %s was already read" % self.__alias)
             return
-        if self.LoadState == glb.load_cache and self.__classic_section is None:
+        if self.LoadState == LoadState.CACHE and self.__classic_section is None:
             # print "promotion state from cache to file"
             try:
                 glb.pnodes.Create(part, **self._cache['init_state'])
             except Exception:
                 pass
 
-        if self.LoadState < glb.load_file:
-            # final set up for environment
-            self.__classic_section.Reset()
-            for s in self.__sections.values():
-                s.Reset()
-            env = self.__classic_section.Env
-            # setup what we want to export
-            # global objects
-            export_map = glb.parts_objs
-            # global object that need to be mapped
-            for k, v in glb.parts_objs_env.items():
-                export_map[k] = v(env)
-            # add the sections
-            # we do this when we read as there might have been new sections dynamically added
-            # for s in glb.sections:
-            #    self.__sections[s.name]=s.Type()(env)
-            # export_map.update(self.__sections)
-
-            # add the environment
-            export_map['env'] = env
-            env._log_keys = True
+        if self.LoadState < LoadState.FILE:
             # sort of ugly.. but SCon was to aggressive here in storing state
             try:
                 del self.__file._memo['stat']
             except KeyError:
                 pass
+ 
+            # setup what we want to export to the part file
+            # global objects
+            export_map = glb.parts_objs
+            
+            # add the sections
+            # we do this when we read as there might have been new sections dynamically added
+            sections_proxies = {}
+            for name, definition in glb.section_definitions.items():
+                proxy = definition.CreateProxy(env=self.Env)
+                sections_proxies[definition.Name] = proxy
+                if definition.Name == "build":
+                    # pre-create a build/default Section object
+                    # needed for backwards compatibility.
+                    self.__sections[definition.Name] = self.__classic_section = glb.pnodes.Create(section.Section, proxy=proxy, pobj=self,)                    
+                if definition.Name == "unit_test":
+                    # pre-create a build/default Section object
+                    # needed for backwards compatibility.
+                    unit_test = glb.pnodes.Create(section.Section, proxy=proxy, pobj=self, register_node=False)
+                    unit_test_proxy = proxy
+
+                    # this is a hack to allow unit test to work..  We store the proxies in a cache
+                    self.__cache['unit_test'] = proxy, unit_test
+
+            # define the sections for this part
+            export_map.update(sections_proxies)
+            # the default environment
+            env = self.__classic_section.Env
+            
+            # global object that need to be mapped
+            for k, v in glb.parts_objs_env.items():
+                export_map[k] = v(env)
+
+            # add the environment
+            export_map['env'] = env
+            env._log_keys = True  # this allow us to set what is different in the environment
+
+            # ####################################
+            # this is to setup variant directories
             bdir = env.Dir(env.subst('$BUILD_DIR'))
             env['BUILD_DIR_NODE'] = bdir
-            st = time.time()
             sdir = env.Dir(self.__src_path)
             bk_path = sys.path
             sys.path = [sdir.abspath] + bk_path
-
             # variant dir for file out of parts tree but under Sconstruct
-            env.VariantDir(env.Dir(env.subst('$OUTOFTREE_BUILD_DIR')), "#", self.__env['duplicate_build'])
+            env.VariantDir(env.Dir('$OUTOFTREE_BUILD_DIR'), "#", self.__env['duplicate_build'])
             # variant dir for file out of Sconstruct tree but under the root
             # this does not cover windows drives that are different from the current drive c:\
-            env.VariantDir(env.Dir(env.subst('$ROOT_BUILD_DIR')), "/", self.__env['duplicate_build'])
+            env.VariantDir(env.Dir('$ROOT_BUILD_DIR'), "/", self.__env['duplicate_build'])
 
+            st = time.time()
             if (glb.engine._build_mode == 'build') or (os.path.exists(self.__file.srcnode().abspath) == True):
                 if os.path.exists(self.__file.srcnode().abspath) == False:
                     api.output.error_msg('Parts file ' + self.__file.srcnode().abspath +
                                          " was not found.", stackframe=self.__stackframe)
 
+                ######################################
                 # Call the part file
-                with self.part_loading_context(self.__file,
-                                               SCons.Script.GetOption('keep_going')) as context:
+                with self.part_loading_context(self.__file, SCons.Script.GetOption('keep_going')) as context:
                     errors.ResetPartStackFrameInfo()
                     self.__env.SConscript(
                         self.__file,
@@ -1056,6 +1085,7 @@ class part(pnode.PNode):
                         duplicate=self.__env['duplicate_build'],
                         exports=export_map
                     )
+                # a check on context to see if stuff went wrong or was messed with
                 if context.build_targets_accessed:
                     # Remember the BUILD_TARGETS state
                     self.BuildTargets = set(
@@ -1065,53 +1095,38 @@ class part(pnode.PNode):
             api.output.verbose_msg(['part_read'], 'Parts file {0} read time: {1}'.format(
                 self.__file.srcnode().abspath, time.time() - st))
 
-            sections = list(self.__sections.values())+[self.__classic_section]
+            # check the sections to see if we have valid sections and if so they get added to the __section variable
+            for name, proxysec in sections_proxies.items():
+                # get the definition
+                definition = glb.section_definitions[name]
+                # the sections had something defined
+                # we will validate all the phases at different point
+                sec = None
+                if name == "build":
+                    # Should be added already
+                    pass
+                elif name == "unit_test" and definition.isDefined(proxysec):
+                    # this is special case for compatibility.
+                    # might be added already if in compatibility case
+                    # however it would not be registered yet
+                    sec = unit_test
+                    glb.pnodes.AddPNodeToKnown(sec)
+                elif definition.isDefined(proxysec):
+                    # make a new section
+                    sec = glb.pnodes.Create(section.Section, proxy=proxysec, pobj=self,)
+                if sec:
+                    self.__sections[name] = sec
 
-            # for each section we want to build a ${PART_ALIAS}.${PART_SECTION}.exports.jsn
-            # it has to be built off of the "default" environment
-            #print("Part",self.Env,self.Env.get_csig())
-            for section in sections:
-                #print("Section",section.Env,section.Env.get_csig())
-                # get the top level targets as we want to map these to the component by default
-                [section._map_target(t) for t in section.TopLevelTargets()]
-                # Add some default values to the export table
-                section.Exports["EXISTS"] = section.Alias
-                # define the import builder for all items that will be imported
-                import_out = builders.imports.map_imports(env, section)[0]
-                dyn_import_out = builders.dyn_imports.map_dyn_imports(env, section)[0]
-                # map targets with a depends on the imports, so they are mapped
-                # in the environment before the target tries to build
-                # ideally I would like to avoid this, but this allows everything to move forward
-                # improvement that we can make on this are:
-                # 1) have a sec.bottom_level_targets to reduce the set we add to
-                # 2) have a way to force resolution of a node being build/up-to-date given
-                #    There are nodes that are dynamically resolved in the task-master logic
-                for target in section.Targets:
-                    # if the target is not the import file and not an
-                    # Alias we want to add a depends on the import
-                    # file so that all "imported" values get resolved
-                    if target != import_out and not util.isAlias(target):
-                        # print("mapping",target,import_out)
-                        section.Env.Depends(target, import_out)
-                # for each section we also want to define a export file
-                # that defines everything we will export from the component
-                # to any component that might depend on it
-
-                # this need to be dependent on the import file
-                export_jsn = env._map_export_(import_out)
-                env._map_dyn_export_(dyn_import_out)
-
-                # define the top level aliases mappings
-                section._map_target(export_jsn)
-                # define node for the packages to bind to if needed
-                env.DynamicPackageNodes(export_jsn)
+            # clean up cache key that we don't need anymore                    
+            del self.__cache['unit_test']
 
             # we tag the Directory nodes so we can latter sort unknown items faster, by checking the directory ownership
             env._log_keys = False
 
             # set file as read
-            self.__classic_section.LoadState = glb.load_file
-
+            # todo .. need to relook at the need for this!
+            self.__classic_section.LoadState = LoadState.FILE
+            
             # hack to help with compatibility issues as we fixed up the mapping table.
             if self.__classic_section.Env.get('PART_REVERSE_EXPORTS_LIBS') == True:
                 try:
@@ -1121,6 +1136,47 @@ class part(pnode.PNode):
 
             sys.path = bk_path
 
+    '''def _map_exports(self):
+        1/0
+        #sections = list(self.__sections.values())+ [self.__classic_section]
+        sections = [self.__classic_section]
+        env = self.__classic_section.Env
+        for section in sections:
+            # print("Section",section.Env,section.Env.get_csig())
+            # get the top level targets as we want to map these to the component by default
+            [section._map_target(t) for t in section.TopLevelTargets()]
+            # Add some default values to the export table
+            section.Exports["EXISTS"] = section.Alias
+            # define the import builder for all items that will be imported
+            import_out = builders.imports.map_imports(env, section)[0]
+            dyn_import_out = builders.dyn_imports.map_dyn_imports(env, section)[0]
+            # map targets with a depends on the imports, so they are mapped
+            # in the environment before the target tries to build
+            # ideally I would like to avoid this, but this allows everything to move forward
+            # improvement that we can make on this are:
+            # 1) have a sec.bottom_level_targets to reduce the set we add to
+            # 2) have a way to force resolution of a node being build/up-to-date given
+            #    There are nodes that are dynamically resolved in the task-master logic
+            for target in section.Targets:
+                # if the target is not the import file and not an
+                # Alias we want to add a depends on the import
+                # file so that all "imported" values get resolved
+                if target != import_out and not util.isAlias(target):
+                    # print("mapping",target,import_out)
+                    section.Env.Depends(target, import_out)
+            # for each section we also want to define a export file
+            # that defines everything we will export from the component
+            # to any component that might depend on it
+
+            # this need to be dependent on the import file
+            export_jsn = env._map_export_(import_out)
+            env._map_dyn_export_(dyn_import_out)
+
+            # define the top level aliases mappings
+            section._map_target(export_jsn)
+            # define node for the packages to bind to if needed
+            env.DynamicPackageNodes(export_jsn)
+    '''
     # sections based API's
     def _has_section_defined(self, name):
         '''
@@ -1128,7 +1184,7 @@ class part(pnode.PNode):
         return None if the file has not been read (ie this is unknown)
         otherwise it returns True or False
         '''
-        if self.LoadState == glb.load_none:
+        if self.LoadState == LoadState.NONE:
             return name in self.__sections
         return None
 
@@ -1139,24 +1195,24 @@ class part(pnode.PNode):
         2) return true or false if any sections are good
         Error reporting! If we have bad sections we throw an expections
         '''
-        return False
+
         # reduce
         for name, obj in self.__sections.items():
             # see if the section was even called
-            if obj.isSet():
+            if obj.isDefined:
                 # if so is it valid() in that non optional phases
                 # have been called
-                if not obj.isValid():
+                if not obj.isValid:
                     # We have an error
                     api.output.error_msg(
                         "Section %s did not define all required phases!\n Define phases are:%s\n Required Phases are:%s" % [
                             name,
                             obj.FoundPhases(),
                             RequiredPhases()])
-            else:
+            # else:
                 # we don't have anything in the section as it was not called
                 # in this case remove it
-                del self.__sections[name]
+                #del self.__sections[name]
         return self.__sections != {}
 
     def _has_section_phase_been_called(self, section, phase):
@@ -1212,24 +1268,24 @@ class part(pnode.PNode):
             # check that stored data exists
             if data is None:
                 self.__cache['hasFileChanged'] = True
-                self.UpdateReadState(glb.load_file)
+                self.UpdateReadState(LoadState.FILE)
                 return True
             # Get File Node
             tmp = glb.pnodes.GetNode(data.File['name'], SCons.Node.FS.File)
             if tmp is None:
                 self.__cache['hasFileChanged'] = True
-                self.UpdateReadState(glb.load_file)
+                self.UpdateReadState(LoadState.FILE)
                 return True
             # does this node look different
             if tmp.changed_since_last_build(tmp, tmp.make_ninfo_from_dict(data.File)):
                 self.__cache['hasFileChanged'] = True
-                self.UpdateReadState(glb.load_file)
+                self.UpdateReadState(LoadState.FILE)
                 return True
             # does the parent look different
             try:
                 if not data.Parent.isFileUpToDate():
                     self.__cache['hasFileChanged'] = True
-                    self.UpdateReadState(glb.load_file)
+                    self.UpdateReadState(LoadState.FILE)
                     return True
             except AttributeError:
                 pass
@@ -1247,18 +1303,18 @@ class part(pnode.PNode):
         return self.__read_state
 
     @property
-    def SubPartReadState(self):
+    def SubPartReadState(self) -> LoadState:
         # check that stored data is exits
         data = self.Stored
         if data is None:
-            return glb.load_file
-        state = glb.load_none
+            return LoadState.FILE
+        state = LoadState.NONE
         for name in data.SubPartIDs:
             sub = glb.pnodes.GetPNode(name)
             if sub:
                 if sub.ReadState > state:
                     state = sub.ReadState
-                if state >= glb.load_file:
+                if state >= LoadState.FILE:
                     break
             else:
                 api.output.verbose_msg(
@@ -1377,10 +1433,10 @@ class part(pnode.PNode):
                 })
         info.ConfigContext = tmp
         #info.kw = common.wrap_to_string(self.__kw)
-        1/0 # need to fix this
+        1/0  # need to fix this
         try:
-            vcs_obj = self.__vcs if self.__vcs else self.__root.__vcs
-            info.vcs_cache_filename = vcs_obj._cache_filename
+            scm_obj = self.__scm if self.__scm else self.__root.__scm
+            info.scm_cache_filename = scm_obj._cache_filename
         except Exception:
             pass
         info.BuildTargets = self.BuildTargets
@@ -1503,4 +1559,5 @@ def diff_env(env, env2, ignore_keys=[]):
             ret[k] = d2[k]
     return ret
 
-pnode_manager.manager.RegisterNodeType(part)
+
+pnode_manager.manager.RegisterNodeType(Part)

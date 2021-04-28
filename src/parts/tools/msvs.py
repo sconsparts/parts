@@ -32,7 +32,6 @@ selection method.
 #
 
 
-
 import base64
 import hashlib
 import ntpath

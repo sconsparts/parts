@@ -50,6 +50,6 @@ class _PartName:
 # add global for new format
 api.register.add_global_parts_object('PartName', _PartName, True)
 
-# adding logic to Scons Enviroment object
+# adding logic to Scons Environment object
 SConsEnvironment.PartName = part_name
 SConsEnvironment.PartShortName = get_part_short_name

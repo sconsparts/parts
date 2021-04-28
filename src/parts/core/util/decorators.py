@@ -5,6 +5,20 @@ import atexit
 import functools
 
 
+class classproperty:
+    """
+    Decorator that the make a class level property. By design it is read only
+    """
+    def __init__(self, method=None):
+        self.classmethod = method
+
+    def __get__(self, instance, cls=None):
+        return self.classmethod(cls)
+
+    def getter(self, method):
+        self.classmethod = method
+        return self
+
 def overrideFunction(parent, functionName, returnOriginal=False):
     '''
     The decorator to ease overriding functions in a module or methods in a class.

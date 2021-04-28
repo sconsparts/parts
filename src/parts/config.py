@@ -4,7 +4,6 @@ some helpfunction to help dump data, or get the correct configuration data
 '''
 
 
-
 import copy
 import os
 import traceback
@@ -436,7 +435,7 @@ def found_config_files(name, tool, host, target):
     typeName = 'config{0}'.format(name)
 
     for path in pathList:
-         # for each path we need to see if the module we might care about exists here
+        # for each path we need to see if the module we might care about exists here
         loc_modules = load_module.get_possible_modules([path])
         for configName in name_list:
             if configName in loc_modules:
@@ -737,7 +736,7 @@ def isConfigBasedOn(env, name):
     return _isconfigbasedon(env, name, env.subst('$CONFIG'))
 
 
-# adding logic to Scons Enviroment object
+# adding logic to Scons Environment object
 SConsEnvironment.isConfigBasedOn = isConfigBasedOn
 SConsEnvironment.Configuration = apply_config
 

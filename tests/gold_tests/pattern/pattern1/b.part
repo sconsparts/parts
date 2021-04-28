@@ -1,0 +1,6 @@
+Import("*")
+
+files = Pattern(includes="*.cpp").files()
+
+env.StaticLibrary(files)
+

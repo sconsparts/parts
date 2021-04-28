@@ -18,18 +18,18 @@ class EXPORT_TYPES:
     PATH_FILE = 3
 
 
-def export_path(env, target_dirs, source_dirs, pobj, prop, use_src=False, create_sdk=True):
+def export_path(env, target_dirs, source_dirs, sobj, prop, use_src=False, create_sdk=True):
 
-    # We have three case basicaly of type of paths we pass
+    # We have three case basically of type of paths we pass
     # 1) is the SDK/final path for the file
     # 2) is the build path for the file
     # 3) is the source path of the file
     ret = []
     try:
-        tmp = pobj.DefiningSection.Exports[prop][0]  # we assume that this is only used in cases of list
+        tmp = sobj.Exports[prop][0]  # we assume that this is only used in cases of list
     except KeyError:
-        pobj.DefiningSection.Exports[prop] = [[]]
-        tmp = pobj.DefiningSection.Exports[prop][0]
+        sobj.Exports[prop] = [[]]
+        tmp = sobj.Exports[prop][0]
     if use_src:  # ie use Raw Source Directories
         for s in source_dirs:
             # setting up the libpaths
@@ -73,7 +73,7 @@ def export_path(env, target_dirs, source_dirs, pobj, prop, use_src=False, create
 _reg = re.compile(r'[\w\-\.]*.so.([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)', re.I)
 
 
-def export_file(env, targets, pobj, prop):
+def export_file(env, targets, sobj, prop):
     ret = []
     for target in targets:
         if util.isString(target):
@@ -90,13 +90,13 @@ def export_file(env, targets, pobj, prop):
         elif getattr(target.attributes, 'FilterAs', None):
             continue
         try:
-            pobj.DefiningSection.Exports[prop][0] += [file]
+            sobj.Exports[prop][0] += [file]
         except KeyError:
-            pobj.DefiningSection.Exports[prop] = [[file]]
+            sobj.Exports[prop] = [[file]]
     return ret
 
 
-def export_file_path(env, targets, pobj, prop, use_src):
+def export_file_path(env, targets, sobj, prop, use_src):
     ret = []
     prop_val = []
     for t in targets:
@@ -107,11 +107,11 @@ def export_file_path(env, targets, pobj, prop, use_src):
         ret.append(final_path)
         if use_src == False:
             # use build directory
-            if build_path not in pobj.DefiningSection.Exports[prop]:
+            if build_path not in sobj.Exports[prop]:
                 prop_val.append(build_path)
-        elif final_path not in pobj.DefiningSection.Exports[prop]:
+        elif final_path not in sobj.Exports[prop]:
             prop_val.append(final_path)
-    env.ExportItem(prop, prop_val, create_sdk=False, map_as_depenance=True)
+    env.ExportItem(prop, prop_val, create_sdk=False, map_as_dependance=True)
     return ret
 
 
@@ -149,7 +149,7 @@ def ExportLIBS(env, values, create_sdk=True):
     return ExportItem(env, 'LIBS', values, create_sdk)
 
 
-def ExportItem(env, variable, values, create_sdk=True, map_as_depenance=False):  # , public=False):
+def ExportItem(env, variable, values, create_sdk=True, map_as_dependance=False):  # , public=False):
     '''
 
     @param env The current environment
@@ -164,7 +164,7 @@ def ExportItem(env, variable, values, create_sdk=True, map_as_depenance=False): 
     '''
 
     errors.SetPartStackFrameInfo(True)
-    pobj = glb.engine._part_manager._from_env(env)
+    sobj = glb.engine._part_manager.section_from_env(env)
 
     # test to see if the variable or value should be a list.
     # ie if the variable is a list in the Environment, we want this to be a list here
@@ -174,31 +174,29 @@ def ExportItem(env, variable, values, create_sdk=True, map_as_depenance=False): 
         if variable in ('CPPPATH', 'LIBPATH'):
             values = env.arg2nodes(values, env.fs.Dir)
         #map(lambda x:  _map_group(x,variable),values)
-        if (variable in pobj.DefiningSection.Exports) == False:
-            pobj.DefiningSection.Exports[variable] = [[]]
+        if (variable in sobj.Exports) == False:
+            sobj.Exports[variable] = [[]]
         # this is not a list already.. make it one
-        if util.isList(pobj.DefiningSection.Exports[variable]) == False:
-            tmp = [common.make_list(pobj.DefiningSection.Exports[variable])]
-            pobj.DefiningSection.Exports[variable] = tmp
-            api.output.verbose_msgf(['export'], "Exporting from part {0}:\n {1} = {2}", pobj.Name, variable, [str(v) for v in tmp])
+        if util.isList(sobj.Exports[variable]) == False:
+            tmp = [common.make_list(sobj.Exports[variable])]
+            sobj.Exports[variable] = tmp
+            api.output.verbose_msg(['export'], f"Exporting from {sobj.ID}:\n {variable} = {[str(v) for v in tmp]}")
 
         # add our values
-        # common.extend_unique(pobj.DefiningSection.Exports[variable],values)
-        pobj.DefiningSection.Exports[variable][0] += values
-        api.output.verbose_msgf(['export'], "Exporting from part {0}:\n {1} = {2}", pobj.Name, variable, [str(v) for v in values])
+        # common.extend_unique(sobj.Exports[variable],values)
+        sobj.Exports[variable][0] += values
+        api.output.verbose_msg(['export'], f"Exporting from {sobj.ID}:\n {variable} = {[str(v) for v in values]}")
 
     else:
-        if variable in pobj.DefiningSection.Exports:
+        if variable in sobj.Exports:
             api.output.verbose_msg(
                 ['export'],
-                'Part "{0}" already as variable "{1}" in export table, overriding with new value'.format(
-                    pobj.Name,
-                    variable))
-        pobj.DefiningSection.Exports[variable] = values
-        api.output.verbose_msgf(['export'], "Exporting from part {0}:\n {1} = {2}", pobj.Name, variable, values)
+                f'"{sobj.ID}" already has variable "{variable}" in export table, overriding with new value')
+        sobj.Exports[variable] = values
+        api.output.verbose_msg(['export'], f"Exporting from {sobj.ID}:\n {variable} = {values}")
 
-    if map_as_depenance:
-        common.append_unique(pobj.DefiningSection.ExportAsDepends, variable)
+    if map_as_dependance:
+        common.append_unique(sobj.ExportAsDepends, variable)
         # remove this as this does not work with "dynamic" builders and requires a post_install_queue
         # which we want to kill/obsolete
         # if values:
@@ -210,11 +208,11 @@ def ExportItem(env, variable, values, create_sdk=True, map_as_depenance=False): 
         create_sdk = False
 
     if create_sdk:
-        pobj._create_sdk_data.append(('ExportItem', [variable, values, False, map_as_depenance]))
+        sobj.Part._create_sdk_data.append(('ExportItem', [variable, values, False, map_as_dependance]))
     errors.ResetPartStackFrameInfo()
 
 
-# adding logic to Scons Enviroment object
+# adding logic to Scons Environment object
 SConsEnvironment.ExportCPPPATH = ExportCPPPATH
 SConsEnvironment.ExportLIBPATH = ExportLIBPATH
 SConsEnvironment.ExportCPPDEFINES = ExportCPPDEFINES

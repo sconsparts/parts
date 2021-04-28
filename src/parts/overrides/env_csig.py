@@ -104,10 +104,15 @@ def get_csig(env, force=False) -> str:
         # get value dictionary to handle special keys
         key_handler = env.get("ENV_KEY_HANDLER", {})
         md5 = hashlib.md5()
-        for key, value in env.items():
-            handler = key_handler.get(key, default_handler)
-            # handler functions returns some string we can add to the hash
-            md5.update(handler(key, value, env).encode())
+        try:
+            #print(len(env.Dictionary()))
+            for key, value in env.items():
+                handler = key_handler.get(key, default_handler)
+                # handler functions returns some string we can add to the hash
+                md5.update(handler(key, value, env).encode())
+        except:
+            print("Oh no",len(env.Dictionary()))
+            raise
         csig = md5.hexdigest()
         env._env_csig = csig
 

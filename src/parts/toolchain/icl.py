@@ -1,7 +1,6 @@
 # defines tools chain icl ( as in the Intel Compiler windows)
 
 
-
 def icl_setup(env, ver):
     env['INTELC_VERSION'] = ver
 

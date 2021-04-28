@@ -55,7 +55,7 @@ class VersionPart:
             num2 = rhs
         if isinstance(num1, str):
             num2 = str(num2)
-        elif isinstance(num2,str):
+        elif isinstance(num2, str):
             num1 = str(num1)
         return comp(num1, num2)
 

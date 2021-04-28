@@ -1,18 +1,18 @@
 
-
+from typing import Optional
 
 import parts.api as api
 import parts.common as common
 import parts.core as core
 import parts.glb as glb
 import parts.pnode as pnode
-import parts.vcs as vcs
+import parts.scm as scm
 from SCons.Script.SConscript import SConsEnvironment
 
 
-def Part_factory(arg1=None, parts_file=None, mode=[], vcs_type=None, default=False,
+def Part_factory(arg1=None, parts_file=None, mode=[], scm_type=None, default=False,
                  append={}, prepend={}, create_sdk=True, package_group=None,
-                 alias=None, name=None, *lst, **kw):
+                 alias=None, name=None, extern: Optional[scm.base.base] = None, *lst, **kw):
     ''' This  function acts a factory to help with Part creation.
     This way control over making a new Part or getting the existing Part
     can be better controlled
@@ -23,13 +23,22 @@ def Part_factory(arg1=None, parts_file=None, mode=[], vcs_type=None, default=Fal
         parts_file = arg1
     elif arg1 and parts_file and alias is None:
         alias = arg1
-    if vcs_type is None:
-        vcs_type=vcs.null.null_t("#")
 
-    tmp = glb.pnodes.Create(pnode.part.part, file=parts_file, mode=mode, vcs_t=vcs_type,
+    if extern:
+        extern.isExtern = True
+
+    if scm_type is None:
+        # check for compatibility
+        if "vcs_type" in kw:
+            scm_type = kw["vcs_type"]
+            del kw["vcs_type"]
+        else:
+            scm_type = scm.null.null_t("#")
+
+    tmp = glb.pnodes.Create(pnode.part.Part, file=parts_file, mode=mode, scm_t=scm_type,
                             default=default, append=append, prepend=prepend,
                             create_sdk=create_sdk, package_group=package_group,
-                            name=name, alias=alias, **kw)
+                            name=name, alias=alias, extern=extern, **kw)
 
     if tmp.isSetup:
         glb.engine._part_manager._add_part(tmp)
@@ -37,10 +46,11 @@ def Part_factory(arg1=None, parts_file=None, mode=[], vcs_type=None, default=Fal
     return [tmp]
 
 
-def SubPart_factory(env, arg1=None, parts_file=None, mode=[], vcs_type=None, default=False,
+def SubPart_factory(env, arg1=None, parts_file=None, mode=[], scm_type=None, default=False,
                     append={}, prepend={}, create_sdk=True, package_group=None, alias=None, name=None,
                     **kw):
-
+    if glb.processing_sections:
+        output.error_msg("Part cannot be called with a Section callback function.")
     # handle common case:part(alias,file)
     if arg1 and parts_file is None:
         parts_file = arg1
@@ -52,7 +62,7 @@ def SubPart_factory(env, arg1=None, parts_file=None, mode=[], vcs_type=None, def
         alias,
         env.subst(parts_file),
         mode,
-        vcs_type,
+        scm_type,
         default,
         append,
         prepend,
@@ -61,6 +71,29 @@ def SubPart_factory(env, arg1=None, parts_file=None, mode=[], vcs_type=None, def
         **kw
     )
 
+
+class subpart_wrapper:
+    def __init__(self, env):
+        self.env = env
+
+    def __call__(self, arg1=None, parts_file=None, mode=[], scm_type=None, default=False,
+                 append={}, prepend={}, create_sdk=True, package_group=None, alias=None, name=None,
+                 **kw):
+        return SubPart_factory(
+            self.env,
+            arg1,
+            parts_file,
+            mode,
+            scm_type,
+            default,
+            append,
+            prepend,
+            create_sdk,
+            package_group,
+            alias,
+            name,
+            **kw
+        )
 
 # This is what we want to be setup in parts
 
@@ -98,4 +131,5 @@ api.register.add_variable(
     'Full path used to for building a given build configuration/variant for files outside the part directory tree')
 
 api.register.add_global_object('Part', Part_factory)
-api.register.add_global_object('part', Part_factory)
+api.register.add_global_object('part', Part_factory) # compat
+api.register.add_global_parts_object('Part', subpart_wrapper, True)

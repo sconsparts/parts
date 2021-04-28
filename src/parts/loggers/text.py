@@ -1,6 +1,5 @@
 
 
-
 import os
 
 import parts.logger as logger
@@ -12,7 +11,7 @@ class text(logger.Logger):
         if os.path.exists(dir) == False:
             os.makedirs(dir)
         self.m_file = open(os.path.join(dir, file), "w")
-        super(text, self).__init__(dir, file)
+        super().__init__(dir, file)
 
     def logout(self, msg):
         with self._lock:

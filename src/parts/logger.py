@@ -44,7 +44,7 @@ class Logger:
 class QueueLogger(Logger):
 
     def __init__(self, dir="", file=""):
-        super(QueueLogger, self).__init__(dir, file)
+        super().__init__(dir, file)
         self.queue = []
 
     def logout(self, msg):

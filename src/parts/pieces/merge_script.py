@@ -2,10 +2,11 @@
 
 import copy
 import os
+import pprint
 import re
 import subprocess
 import sys
-import pprint
+from typing import Optional, List, Tuple, Any
 
 import parts.api as api
 import parts.glb as glb
@@ -55,14 +56,14 @@ def get_output(script, args=None, shellenv=None):
     if shellenv:
         for k, v in shellenv.items():
             if not isinstance(k, str):
-                k = k.encode() if glb.isPY2 else k.decode()
+                k = k.decode()
             if not isinstance(v, str):
-                v = v.encode() if glb.isPY2 else v.decode()
+                v = v.decode()
             shellenv[k] = v
 
     api.output.verbose_msg(["merge_script"], "Calling '{}'".format(cmdLine))
     popen = subprocess.run(cmdLine, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=shellenv)
-    
+
     if popen.returncode != 0:
         api.output.error_msg(
             "Getting values of environment values of '{}' failed because of return code not equal to 0".format(script))
@@ -75,11 +76,11 @@ def get_output(script, args=None, shellenv=None):
     return output.decode()
 
 
-def parse_output(output, keep=None, remove=None, nenv={}):
+def parse_output(output: str, keep: Optional[List[str]] = None, remove=None, nenv={}):
 
     ret = {}  # this is the data we will return
     # these are the default items we want to remove
-    filter_keys = ("LS_COLORS", "BASHOPTS", "SHELLOPTS", "PPID", "POSIXLY_CORRECT")
+    filter_keys: Tuple[Any, ...] = ("LS_COLORS", "BASHOPTS", "SHELLOPTS", "PPID", "POSIXLY_CORRECT")
     if remove:
         filter_keys = filter_keys + tuple(remove)
 

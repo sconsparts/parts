@@ -634,7 +634,7 @@ def InstallPkgData(env, source, sub_dir='', no_pkg=False, create_sdk=True, packa
     return installed_files
 
 
-# adding logic to Scons Enviroment object
+# adding logic to Scons Environment object
 SConsEnvironment.InstallAPI = InstallAPI
 SConsEnvironment.InstallBin = InstallBin
 SConsEnvironment.InstallConfig = InstallConfig

@@ -136,7 +136,7 @@ class TestToolSettings(unittest.TestCase):
         )
 
         shellEnv, tsEnv = ts.get_shell_env(self.env)
-        self.assertEqual(tsEnv['INSTALL_ROOT'], 'tests/unit/testdata')
+        self.assertEqual(tsEnv['INSTALL_ROOT'], os.path.normpath('tests/unit/testdata'))
         self.assertEqual(tsEnv['TOOL'], 'cl.exe')
         self.assertEqual(tsEnv['VERSION'], '0.0')
 

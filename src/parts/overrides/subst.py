@@ -3,7 +3,6 @@
 # something for the user of old versions that are still broken
 
 
-
 import collections
 
 import SCons.Subst

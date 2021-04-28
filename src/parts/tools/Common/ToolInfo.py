@@ -1,6 +1,5 @@
 
 
-
 import os
 from builtins import range
 
@@ -31,7 +30,7 @@ class ToolInfo:
         self.script = script
 
         # the dictionary of value we need to add for correct subsitution of
-        # final value for the enviroment.. ignored in cases of script handling
+        # final value for the Environment.. ignored in cases of script handling
         self.subst_vars = subst_vars
 
         # The dictionary of values we want to add to the running environment
@@ -139,7 +138,7 @@ class ToolInfo:
                                 show_stack=False)
                         ret = {}
                     else:
-                        api.output.verbose_msgf("toolinfo","Getting value from script")
+                        api.output.verbose_msgf("toolinfo", "Getting value from script")
                         ret = env.GetScriptVariables(script_data, self.script.args, self.script.keep, self.script.remove)
                 else:
                     ret = {}

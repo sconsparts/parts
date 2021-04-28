@@ -2,7 +2,7 @@
 #import platform_info
 
 # it deal with the logic of different ways to setup/configure/defines
-# a set of setting used to define a Environment contect to build within
+# a set of setting used to define a Environment context to build within
 
 
 import copy
@@ -298,7 +298,7 @@ class Settings:
     def AddOption(self, *lst, **kw):
         return SCons.Script.AddOption(*lst, **kw)
 
-    def BoolOption(self, name, default=None, explict=False, dest=None, help=''):
+    def BoolOption(self, name, default=None, explicit=False, dest=None, help=''):
         '''Constructs a --<option> argument that expects some bool value
         @param option Name of the option
         @param default The default value of this option
@@ -325,13 +325,13 @@ class Settings:
 
         return SCons.Script.AddOption(name,
                                       dest=dest,
-                                      nargs=explict and 1 or '?',
+                                      nargs=explicit and 1 or '?',
                                       callback=lambda option, opt, value, parser: opt_bool(option, opt, value, parser, dest),
                                       type='string',
                                       action='callback',
                                       help=help)
 
-    def FeatureOption(self, name, default=True, explict=False, dest=None, help=''):
+    def FeatureOption(self, name, default=True, explicit=False, dest=None, help=''):
 
         if default != True and default != False:
             print("Error Default value for Feature has to be a True or False value")
@@ -682,7 +682,7 @@ class Settings:
             if 'LD_LIBRARY_PATH' in os.environ:
                 env['ENV']['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']
             env['ENV']['HOME'] = os.environ['HOME']
-            env['ENV']['LANG'] = os.environ.get("LANG","en_US.UTF-8")
+            env['ENV']['LANG'] = os.environ.get("LANG", "en_US.UTF-8")
             env['ENV']['USER'] = env['PART_USER']
 
         # add path to current Python being used, so we use this instead of some other version

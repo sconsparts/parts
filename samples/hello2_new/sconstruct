@@ -1,0 +1,6 @@
+import time
+st=time.time()
+from parts import *
+print(f"load time {time.time()-st}")
+Part('hello','hello/hello.parts')
+Part('print','print_msg/print_msg.parts')

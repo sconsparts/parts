@@ -1,0 +1,15 @@
+Import('*')
+
+PartName('utest')
+
+build.DependsOn([Component('root.main', env.PartVersion(), REQ.EXISTS)])
+
+unit_test.DependsOn([
+    Component('root.utest', section="build"),
+    Component('root.empty', env.PartVersion(), REQ.EXISTS)
+    ])
+
+@unit_test.Group("test1")
+def run(env, test):
+    test.Target = env.Program('test', 'utest-main.cpp')
+    test.DataFiles = env.AbsFileNode('${INSTALL_BIN}/${PROGPREFIX}main${PROGSUFFIX}')

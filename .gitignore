@@ -9,6 +9,8 @@ parts.egg-info/
 .tox/
 .nox/
 _sandbox/
+doc/source/_build/
+src/scons_parts.egg-info
 
 .mypy_cache/
 

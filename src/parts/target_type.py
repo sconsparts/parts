@@ -9,20 +9,13 @@ import parts.glb as glb
 import SCons.Node.FS
 from SCons.Debug import logInstanceCreation
 
-# move to glb once we have new formats working
-__known_concepts = {
-    'utest': 'utest',
-    'run_utest': 'utest',
-    'build': 'build'
-}
-
 
 def is_concepts(val):
-    return val in __known_concepts
+    return val in glb.known_concepts
 
 
 def map_concept(val):
-    return __known_concepts[val]
+    return glb.known_concepts[val]
 
 
 def get_concept(tlst):
@@ -36,13 +29,24 @@ def get_concept(tlst):
         return {'_section': 'build', '_recursive': False, '_ambiguous': True,
                 '_name': tlst[0]}, []
     # special case of alias:: or name::
-    if len(tlst) == 2 and tlst[0] in ['name', 'alias'] and not tlst[1]:
+    if len(tlst) == 2 and tlst[0] in ('name', 'alias') and not tlst[1]:
         return {'_section': 'build'}, ['']
     # some concept would have to be xxx:: else we assume it is a name
     elif is_concepts(tlst[0]) and len(tlst) > 1:
         # we have a concept defined
         section = map_concept(tlst[0])
         return {'_concept': tlst[0], '_section': section}, tlst[1:]
+    # this is to deal with the case where we have concept::alias::ID or concept::name::name
+    # but the concept is bad
+    elif not is_concepts(tlst[0]) and len(tlst) > 2 and tlst[1] in ('name', 'alias'):
+        api.output.error_msg(
+            f'Invalid target! "{tlst[0]}" is not defined as a known target concept.\n General form <concept>::<part_ref>::<group>',
+            show_stack=False
+            )
+    # case in which this is not a concept, could be a name or alias.. something like foo::
+    elif not is_concepts(tlst[0]) and tlst[0] not in ('name', 'alias') and len(tlst) == 2:
+        return {'_section': 'build', '_recursive': True, '_ambiguous': True}, tlst
+
 
     # set default concept
     # value is hard coded at the moment
@@ -219,6 +223,10 @@ class target_type:
 
     @property
     def Concept(self):
+        '''
+        This is the concept as in run_utest.. the sections would be utest as it handled run_utest
+        return None if not set else the concept provided
+        '''
         try:
             return self._concept
         except AttributeError:
@@ -226,6 +234,7 @@ class target_type:
 
     @Concept.setter
     def Concept(self, value):
+        
         if not value:
             try:
                 del self._concept
@@ -240,6 +249,10 @@ class target_type:
 
     @property
     def Section(self):
+        '''
+        This is the section that should handle the defined concept.
+        returns the section for the provided concept else defaults to "build"
+        '''
         try:
             return self._section
         except AttributeError:
@@ -365,6 +378,15 @@ class target_type:
             del self._ambiguous
         except AttributeError:
             pass
+
+    def MapToAliasTarget(self,alias:str) -> "target_type":
+        '''
+        Creates a new target object that replaces name with the alias provided
+        '''
+        if self.isAmbiguous:
+            raise RuntimeError("target is ambiguous. Cannot create a alias based target")
+        return target_type(self._original_string.replace(f"name::{self.Name}",f"alias::{alias}"))
+
 
     def __str__(self):
         '''

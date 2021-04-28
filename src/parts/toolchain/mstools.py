@@ -4,7 +4,6 @@
 # version of compatibility needed
 
 
-
 def cl_setup(env, ver):
     env['MSVC_VERSION'] = ver
     env['MSVS_VERSION'] = ver

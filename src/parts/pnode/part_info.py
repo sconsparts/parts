@@ -35,7 +35,7 @@ class part_info(stored_info.stored_info):
         '__config_context',      # Information off all file that defined configuration information that had been called in any section of this Part - good after file read
         '__force_load',          # does this need to be loaded for file if it is a dependency, not cache - good after file read
         '__kw',                  # random stuff passed in - good after file read
-        '__vcs_cache_filename',  # information about cache file that has information about VCS state for this Parts, if any. - good after file read
+        '__scm_cache_filename',  # information about cache file that has information about SCM state for this Parts, if any. - good after file read
         '__build_targets',       # How does this Part care about SCons.Script.BUILD_TARGET values
     ]
 
@@ -63,7 +63,7 @@ class part_info(stored_info.stored_info):
         self.__config_context = []
         self.__force_load = False
         self.__kw = {}
-        self.__vcs_cache_filename = None
+        self.__scm_cache_filename = None
 
     @property
     def Name(self):
@@ -242,12 +242,12 @@ class part_info(stored_info.stored_info):
         self.__kw = val
 
     @property
-    def VcsCacheFilename(self):
-        return self.__vcs_cache_filename
+    def ScmCacheFilename(self):
+        return self.__scm_cache_filename
 
-    @VcsCacheFilename.setter
-    def VcsCacheFilename(self, val):
-        self.__vcs_cache_filename = val
+    @ScmCacheFilename.setter
+    def ScmCacheFilename(self, val):
+        self.__scm_cache_filename = val
 
     @property
     def Parent(self):

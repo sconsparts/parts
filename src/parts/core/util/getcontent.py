@@ -5,6 +5,7 @@ from . import is_a as util
 import parts.settings
 import parts.api as api
 
+
 def asStr(obj) -> str:
     '''
     Turns the object in to a string that we can use express what this object is
@@ -72,6 +73,6 @@ def asStr(obj) -> str:
             ret = obj.__class__
         except AttributeError:
             # well I don't know what it is at the moment
-            api.output.warning_msgf("Unknown type of {type} in core.get_content()",type=type(obj))
+            api.output.warning_msgf("Unknown type of {type} in core.get_content()", type=type(obj))
             return None
     return ret

@@ -51,7 +51,7 @@ try:
     # This is what we want to be setup in parts
     from SCons.Script.SConscript import SConsEnvironment
 
-    # adding logic to Scons Enviroment object
+    # adding logic to Scons Environment object
     SConsEnvironment.PartVersionString = parts_version_text_env
     SConsEnvironment.IsPartsExtensionVersionBeta = is_parts_version_beta_env
     SConsEnvironment.PartsExtensionVersion = PartsExtensionVersion_env

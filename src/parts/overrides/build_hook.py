@@ -13,7 +13,7 @@ scons_build_targets = SCons.Script.Main._build_targets
 
 def _build_targets(fs, options, targets, target_top):
 
-        # call engine
+    # call engine
     if glb.engine.Process(fs, options, targets, target_top) == False:
         ret = None
     else:

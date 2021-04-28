@@ -1,0 +1,8 @@
+Import('*')
+
+PartName('empty')
+
+@build
+def source(env):
+    env.InstallTarget(env.Program('empty', 'main.cpp'))
+

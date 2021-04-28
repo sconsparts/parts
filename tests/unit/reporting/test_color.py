@@ -24,7 +24,7 @@ class TestConsoleColor(unittest.TestCase):
 
     def test_color_create2(self):
 
-        # test the creation logic, default logic,implict
+        # test the creation logic, default logic,implicit
         c = ConsoleColor()
         self.assertEqual(c.Background(), Default)
         self.assertEqual(c.Foreground(), Default)
@@ -38,7 +38,7 @@ class TestConsoleColor(unittest.TestCase):
 
     def test_color_create4(self):
 
-        # test the creation logic, default logic explict
+        # test the creation logic, default logic explicit
         c = ConsoleColor(Default, Default)
         self.assertEqual(c.Background(), Default)
         self.assertEqual(c.Foreground(), Default)

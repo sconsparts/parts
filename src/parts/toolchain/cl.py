@@ -1,7 +1,6 @@
 # defines tools chain cl ( as in microsft CL)
 
 
-
 def cl_setup(env, ver):
 
     env['MSVC_VERSION'] = ver

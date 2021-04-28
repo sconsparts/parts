@@ -393,7 +393,7 @@ SCons.Script.AddOption("--ccopy", '--ccopy-logic', '--copy-logic',
                        help='Control how Parts copy logic will work must be hard-soft-copy,soft-hard-copy, soft-copy, hard-copy, copy')
 
 #########################################################################
-# SCM managment
+# SCM management
 
 # update source on disk
 SCons.Script.AddOption(
@@ -422,13 +422,13 @@ SCons.Script.AddOption(
 # allows update to make a clean state
 SCons.Script.AddOption(
     "--enable-scm-clean", "--scm-clean", "--enable-vcs-clean", "--vcs-clean",
-    dest='vcs_clean',
+    dest='scm_clean',
     default=False,
     nargs='?',
-    callback=lambda option, opt, value, parser: opt_bool(option, opt, value, parser, 'vcs_clean'),
+    callback=lambda option, opt, value, parser: opt_bool(option, opt, value, parser, 'scm_clean'),
     type='string',
     action='callback',
-    help='Controls if VCS update should ensure a clean, unmodifed, factory defaults update.'
+    help='Controls if SCM update should ensure a clean, unmodified, factory defaults update.'
 )
 
 # allow retry when updating items on disl
@@ -437,7 +437,7 @@ SCons.Script.AddOption(
     "--scm-retry",
     "--enable-vcs-retry",
     "--vcs-retry",
-    dest='vcs_retry',
+    dest='scm_retry',
     default=False,
     nargs='?',
     callback=lambda option,
@@ -448,7 +448,7 @@ SCons.Script.AddOption(
         opt,
         value,
         parser,
-        'vcs_retry'),
+        'scm_retry'),
     type='string',
     action='callback',
     help='Controls if an failure with a SCM update or checkout is allow to retry the update by removing the existing code')
@@ -457,7 +457,7 @@ SCons.Script.AddOption(
 SCons.Script.AddOption(
     "--scm-logic",
     "--vcs-logic",
-    dest='vcs_logic',
+    dest='scm_logic',
     default='check',
     nargs=1,
     type='choice',
@@ -470,7 +470,7 @@ SCons.Script.AddOption(
     help='Control logic of how Parts will automatically do SCM up date checks. Values must be none, exists, check, force')
 
 SCons.Script.AddOption("--scm-job", '--scmj', '--sj', "--vcs-job", '--vcsj', '--vj',
-                       dest='vcs_jobs',
+                       dest='scm_jobs',
                        default=0,
                        nargs=1,
                        type='int',
@@ -501,7 +501,7 @@ SCons.Script.AddOption("--cfg-file", "--config-file",
 
 # policy values
 SCons.Script.AddOption("--scm-policy", "--vcs-policy",
-                       dest='vcs_policy',
+                       dest='scm_policy',
                        default='message-update',
                        nargs=1,
                        type='choice',
@@ -527,11 +527,11 @@ def post_option_setup():
 
 SCons.Script.SConsOptions.SConsValues.settable.extend(
     [
-        'vcs_logic',
-        'vcs_policy',
-        'vcs_jobs',
-        'vcs_retry',
-        'vcs_clean',
+        'scm_logic',
+        'scm_policy',
+        'scm_jobs',
+        'scm_retry',
+        'scm_clean',
         'update',
         'ccopy_logic',
         'use_color',

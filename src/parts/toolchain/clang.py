@@ -1,6 +1,5 @@
 
 
-
 def clang_setup(env, ver):
     if env.get('CLANG_VERSION') is None:
         env['CLANG_VERSION'] = ver

@@ -9,18 +9,19 @@ import subprocess
 
 try:
     import SCons
-    script=False
+    script = False
 except ImportError:
-    script=True
+    script = True
     try:
-        path = re.search(r'engine path: \[\'([\\\:/\w\.\-]*)',subprocess.check_output("scons --version",shell=True).decode(),re.MULTILINE).groups()[0]
+        path = re.search(r'engine path: \[\'([\\\:/\w\.\-]*)',
+                         subprocess.check_output("scons --version", shell=True).decode(), re.MULTILINE).groups()[0]
     except subprocess.CalledProcessError:
         path = None
-    
+
     if path:
         path = os.path.split(path)[0]
         sys.path = [path]+sys.path
-        print("Scons found at:",path)
+        print("Scons found at:", path)
     else:
         print("Scons not found! Did you install it? Is the Python environment setup correctly to see it?")
 
