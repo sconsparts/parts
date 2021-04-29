@@ -843,6 +843,7 @@ class part_manager:
         import pprint
         glb.processing_sections=True
         num_sec=len(order_sections)
+        start_total=time.time()
         for cnt, sobj in enumerate(order_sections):
             # Process each sections
             # Given no new sections are defined this is basically a noop call
@@ -852,13 +853,13 @@ class part_manager:
             api.output.verbose_msg(['loading', 'load_stats'], f"Section {sobj.ID} took {time.time() - st:.04} seconds ")
             
 
-            # after the section is processed we map various items
-            # map the export data builder/or store data?
-            # note... this allow dynamic builder to work as it
-            # maps the dyn.json files used to delay other build items
-            # that depend on the builder target to be built for getting new sources in a scanner call
-        
-        print(f"Total sections: {num_sec} Total known nodes: {glb.pnodes.TotalNodes}")
+        # after the section is processed we map various items
+        # map the export data builder/or store data?
+        # note... this allow dynamic builder to work as it
+        # maps the dyn.json files used to delay other build items
+        # that depend on the builder target to be built for getting new sources in a scanner call
+        api.output.verbose_msg(["loading","load_stats"], f"Loaded {num_sec} sections in {time.time() - start_total}")
+        api.output.print_msg(f"Total sections: {num_sec} Total known nodes: {glb.pnodes.TotalNodes}")
             # map target alias values
         glb.processing_sections=False
         #has_new_sections = False

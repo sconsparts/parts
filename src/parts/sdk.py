@@ -3,17 +3,19 @@
 import datetime
 import os
 
+import SCons.Script
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
+
 import parts.api as api
 import parts.common as common
+import parts.core.scanners as scanners
 import parts.core.util as util
 import parts.errors as errors
 import parts.exportitem as Xp
 import parts.glb as glb
 import parts.node_helpers as node_helpers
 import parts.pattern as pattern
-import SCons.Script
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 g_sdked_files = set([])
 
@@ -503,7 +505,9 @@ api.register.add_builder('__CreateSDKBuilder__', SCons.Builder.Builder(
     action=SCons.Script.Action(CreateSDK_BF, CreateSDK_StrF,
                                varlist=['PART_NAME', 'ALIAS']),
     emitter=CreateSDK_Emit,
-    target_scanner=SCons.Scanner.Base(CreateSDK_SF)
+    target_scanner=SCons.Scanner.Base(CreateSDK_SF),
+    source_scanner=scanners.NullScanner,
+
 ))
 # add configuartion varaible
 api.register.add_variable("DATE_STAMP", datetime.datetime.now().strftime('%Y%m%d%H%M'), '')

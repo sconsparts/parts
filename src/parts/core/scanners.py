@@ -1,10 +1,11 @@
 # this is a set of scanner that are generally useful
-import parts.api as api
 import json
+
+import parts.api as api
+import parts.common as common
+import parts.core.builders as builders
 import parts.glb as glb
 import parts.node_helpers as node_helpers
-import parts.core.builders as builders
-import parts.common as common
 import SCons.Script
 
 # this is a general scanner for files on disk.
@@ -25,7 +26,7 @@ def SourceScanner(patterns):
     return SCons.Script.Scanner(scanner_func)
 
 
-null_scanner = SCons.Script.Scanner(function=lambda *lst, **kw: [])
+NullScanner = SCons.Script.Scanner(function=lambda *lst, **kw: [], name="NullScanner")
 
 #####
 
@@ -72,16 +73,16 @@ def depends_sdkfiles_scanner(node, env, path):
     return finial_ret
 
 
-depends_sdk_scanner = SCons.Script.Scanner(depends_sdkfiles_scanner)
+DependsSdkScanner = SCons.Script.Scanner(depends_sdkfiles_scanner, name="DependsSdkScanner")
 
 
-api.register.add_global_parts_object("NoneScanner", null_scanner)
-api.register.add_global_object("NoneScanner", null_scanner)
-api.register.add_global_parts_object("NullScanner", null_scanner)
-api.register.add_global_object("NullScanner", null_scanner)
+api.register.add_global_parts_object("NoneScanner", NullScanner)
+api.register.add_global_object("NoneScanner", NullScanner)
+api.register.add_global_parts_object("NullScanner", NullScanner)
+api.register.add_global_object("NullScanner", NullScanner)
 
-api.register.add_global_parts_object("DependsSdkScanner", depends_sdk_scanner)
-api.register.add_global_object("DependsSdkScanner", depends_sdk_scanner)
+api.register.add_global_parts_object("DependsSdkScanner", DependsSdkScanner)
+api.register.add_global_object("DependsSdkScanner", DependsSdkScanner)
 
 api.register.add_global_parts_object("SourceScanner", SourceScanner)
 api.register.add_global_object("SourceScanner", SourceScanner)

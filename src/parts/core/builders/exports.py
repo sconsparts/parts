@@ -3,11 +3,13 @@
 import json
 
 import parts.api as api
+import parts.core.scanners as scanners
 import parts.glb as glb
 import parts.pnode.dependent_info as dependent_info
-from .. import util
 import SCons.Script
 from SCons.Script.SConscript import SConsEnvironment
+
+from .. import util
 
 file_name = "${PARTS_SYS_DIR}/${PART_ALIAS}.${PART_SECTION}.exports.jsn"
 
@@ -35,7 +37,7 @@ def PartExportsAction(target, source, env):
 def map_export(env, source):
 
     section = glb.engine._part_manager.section_from_env(env)
-       
+
     targets = section.Env._part_exports_(
         # the output should be resolve based on the environment of the section
         section.Env.File(file_name),
@@ -62,6 +64,7 @@ api.register.add_builder('_part_exports_', SCons.Builder.Builder(
     target_factory=SCons.Node.FS.File,
     source_factory=SCons.Node.FS.Entry,
     source_scanner=SCons.Script.Scanner(source_scanner, name="export-scan"),
+    target_scanner=scanners.NullScanner,
     multi=1
 ))
 

@@ -13,6 +13,7 @@ import subprocess
 
 import parts.api as api
 import parts.common as common
+import parts.core.scanners as scanners
 import parts.metatag as metatag
 import SCons.Node.FS
 from parts.core import util
@@ -644,7 +645,8 @@ api.register.add_builder('__make_link__', SCons.Builder.Builder(
     source_factory=SCons.Node.FS.Entry,
     single_source=1,
     emitter=make_link_Emit,
-    target_scanner=symlink_scanner
+    target_scanner=symlink_scanner,
+    source_scanner=scanners.NullScanner,
 ))
 
 

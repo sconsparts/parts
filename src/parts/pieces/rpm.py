@@ -1,5 +1,6 @@
 import parts.api as api
 import SCons.Script
+import parts.core.scanners as scanners
 
 rpm_action = SCons.Action.Action([
     'mkdir -p ${TARGET.dir}/BUILD',
@@ -13,5 +14,7 @@ api.register.add_builder('_rpm', SCons.Builder.Builder(
     action=rpm_action,
     source_factory=SCons.Node.FS.Entry,
     target_factory=SCons.Node.FS.File,
+    source_scanner=scanners.NullScanner,
+    target_scanner=scanners.NullScanner,
     suffix='.rpm')
 )

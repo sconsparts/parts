@@ -11,6 +11,7 @@ import parts.core.util as util
 import parts.errors
 import parts.glb as glb
 import SCons.Script
+import parts.core.scanners as scanners
 
 
 def file_section_wrapper(env, key):
@@ -413,4 +414,6 @@ api.register.add_builder('_rpmspec', SCons.Builder.Builder(
     action=rpmspec_action,
     source_factory=SCons.Node.FS.File,
     target_factory=SCons.Node.FS.File,
+    source_scanner=scanners.NullScanner,
+    target_scanner=scanners.NullScanner,
 ))

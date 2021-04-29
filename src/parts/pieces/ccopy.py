@@ -15,6 +15,7 @@ import parts.common as common
 import parts.core.util as util
 import parts.overrides.symlinks as symlinks
 import parts.pattern as pattern
+import parts.core.scanners as scanners
 import SCons.Script
 from SCons.Script.SConscript import SConsEnvironment
 
@@ -496,10 +497,6 @@ def generateCopyBuilder(description):
         tmp = CCopyFunc(target, source, env, doCopy)
         return tmp
 
-    def _do_nothing_scan(node, env, path):
-        "prevent implicit scanner from working"
-        return []
-
     api.register.add_builder(
         description.builderName,
         SCons.Builder.Builder(
@@ -512,7 +509,7 @@ def generateCopyBuilder(description):
             source_factory=SCons.Node.FS.Entry,
             emitter=CCopyEmit,
             target_scanner=symlinks.symlink_scanner,
-            source_scanner=SCons.Script.Scanner(_do_nothing_scan, name="part_null_scanner"),
+            source_scanner=scanners.NullScanner,
             name='CCOPY'
         )
     )

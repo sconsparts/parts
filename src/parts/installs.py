@@ -1,10 +1,16 @@
 
 
-import os
 import json
+import os
+
+import SCons.Script
+import SCons.Tool.install
+# This is what we want to be setup in parts
+from SCons.Script.SConscript import SConsEnvironment
 
 import parts.api as api
 import parts.common as common
+import parts.core.scanners as scanners
 import parts.core.util as util
 import parts.errors as errors
 import parts.exportitem as exportitem
@@ -12,10 +18,6 @@ import parts.glb as glb
 import parts.pattern as pattern
 import parts.platform_info as platform_info
 import parts.sdk as sdk
-import SCons.Script
-import SCons.Tool.install
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 # need better configuration control
 # these function will hopfully be replaced later once a better solution shows it self
@@ -286,6 +288,8 @@ api.register.add_builder('_InstallManifest', SCons.Builder.Builder(
     action=SCons.Action.Action(json_manifest_builder, "Writing manifest out files to be installed"),
     target_factory=SCons.Node.FS.File,
     source_factory=SCons.Node.Python.Value,
+    source_scanner=scanners.NullScanner,
+    target_scanner=scanners.NullScanner,
     multi=True
 ))
 

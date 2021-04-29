@@ -2,14 +2,16 @@
 import json
 
 import parts.api as api
-import parts.glb as glb
 import parts.common as common
-import parts.packaging as packaging
-import parts.core.util as util
-import parts.node_helpers as node_helpers
 import parts.core.builders as builders
+import parts.core.scanners as scanners
+import parts.core.util as util
+import parts.glb as glb
+import parts.node_helpers as node_helpers
+import parts.packaging as packaging
 import SCons.Script
 from SCons.Script.SConscript import SConsEnvironment
+
 ##################################
 # defines two builders
 #
@@ -153,7 +155,8 @@ def GroupNodesScanner(node, env, path):
         api.output.verbose_msg(["groupbuilder.scanner", "scanner"], "Mapping {} as local".format(node.ID))
         ret = [env.File(env['_local_export_file'])]
     else:
-        api.output.verbose_msg(["groupbuilder.scanner","groupbuilder.scanner.global", "scanner"], "Mapping {} as global".format(node.ID))
+        api.output.verbose_msg(["groupbuilder.scanner", "groupbuilder.scanner.global",
+                                "scanner"], "Mapping {} as global".format(node.ID))
         ret = [env.File(global_file_name)]
 
     # make sure the groups are sorted
@@ -175,6 +178,7 @@ api.register.add_builder('_GroupBuilder', SCons.Builder.Builder(
     source_factory=SCons.Node.Python.Value,
     emitter=emit,
     target_scanner=SCons.Script.Scanner(GroupNodesScanner),
+    source_scanner=scanners.NullScanner,
 ))
 
 SConsEnvironment.GroupBuilder = GroupBuilder

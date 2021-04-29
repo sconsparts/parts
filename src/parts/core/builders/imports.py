@@ -3,11 +3,13 @@
 import json
 
 import parts.api as api
+import parts.core.scanners as scanners
 import parts.glb as glb
 import parts.pnode.dependent_info as dependent_info
+import SCons.Script
+
 from .. import util
 from . import exports
-import SCons.Script
 
 
 def PartImportsAction(target, source, env):
@@ -55,7 +57,7 @@ def depend_scanner(node, env, path):
             continue
         # add the expected depend on the export file
         export_file = comp.Section.Env.File(exports.file_name)
-        api.output.verbose_msg(["import-scanner", "scanner"],f"  mapping {export_file.ID}")
+        api.output.verbose_msg(["import-scanner", "scanner"], f"  mapping {export_file.ID}")
         ret.append(comp.Section.Env.File(export_file))
         # map the higher level aliases
         for requirement in comp.Requires:
@@ -90,4 +92,6 @@ api.register.add_builder('_part_imports_', SCons.Builder.Builder(
     target_factory=SCons.Node.FS.File,
     source_factory=SCons.Node.Python.Value,
     target_scanner=SCons.Script.Scanner(depend_scanner, name="import-scan"),
+    source_scanner=scanners.NullScanner,
+
 ))

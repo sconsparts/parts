@@ -4,6 +4,7 @@ import os
 import zipfile
 
 import parts.api as api
+import parts.core.scanners as scanners
 import SCons.Script
 
 
@@ -62,7 +63,14 @@ def CCopyStringFunc(target, source, env):
 
 ZipAction = SCons.Action.Action(zip, CCopyStringFunc, varlist=['BUILD_DIR', 'SRC_DIR', 'src_dir'])
 
-api.register.add_builder('ZipFile', SCons.Builder.Builder(action=ZipAction,
-                                                          source_factory=SCons.Node.FS.Entry,
-                                                          source_scanner=SCons.Defaults.DirScanner,
-                                                          suffix='.zip', multi=1))
+api.register.add_builder(
+    'ZipFile',
+    SCons.Builder.Builder(
+        action=ZipAction,
+        source_factory=SCons.Node.FS.Entry,
+        source_scanner=SCons.Defaults.DirScanner,
+        target_scanner=scanners.NullScanner,
+        suffix='.zip',
+        multi=1
+    )
+)

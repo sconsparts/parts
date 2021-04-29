@@ -3,12 +3,14 @@
 import json
 
 import parts.api as api
+import parts.core.scanners as scanners
 import parts.glb as glb
 import parts.pnode.dependent_info as dependent_info
-from .. import util
-from . import dyn_imports
 import SCons.Script
 from SCons.Script.SConscript import SConsEnvironment
+
+from .. import util
+from . import dyn_imports
 
 file_name = "${PARTS_SYS_DIR}/${PART_ALIAS}.${PART_SECTION}.dyn.exports.jsn"
 
@@ -36,11 +38,11 @@ def PartDynExportsAction(target, source, env):
 def map_dyn_export(env, source):
 
     section = glb.engine._part_manager._from_env(env).Section(env["PART_SECTION"])
-       
+
     ret = section.Env._part_dyn_exports_(
         # the output should be resolve based on the environment of the section
         section.Env.File(file_name),
-    
+
         # I believe we want this to depend on other .jsn files we generated
         # some of the jsn file might be sync points for dynamic builders
         # only these dynamic builder will generate files that are not part
@@ -65,6 +67,8 @@ api.register.add_builder('_part_dyn_exports_', SCons.Builder.Builder(
     target_factory=SCons.Node.FS.File,
     source_factory=SCons.Node.FS.Entry,
     #source_scanner=SCons.Script.Scanner(source_scanner, name="dyn-export-scan"),
+    source_scanner=scanners.NullScanner,
+    target_scanner=scanners.NullScanner,
     multi=1
 ))
 

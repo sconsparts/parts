@@ -1,21 +1,22 @@
 
 
+import json
 import operator
 import os
 import platform
 import re
-import json
 import shutil
 import subprocess
 from builtins import filter
 
 import parts.api as api
 import parts.common as common
+import parts.core.scanners as scanners
 import parts.core.util as util
 import parts.errors as errors
+import parts.glb as glb
 import parts.node_helpers as node_helpers
 import parts.platform_info as platform_info
-import parts.glb as glb
 import SCons.Script
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
@@ -378,6 +379,7 @@ api.register.add_builder('_RPMPackage', SCons.Builder.Builder(
     source_factory=SCons.Node.Python.Value,
     target_factory=SCons.Node.FS.File,
     target_scanner=RPMScanner,
+    source_scanner=scanners.NullScanner,
     emitter=rpm_emitter,
     suffix='.rpm')
 )

@@ -5,6 +5,7 @@ import subprocess
 
 import parts.api as api
 import parts.common as common
+import parts.core.scanners as scanners
 import parts.core.util as util
 import parts.overrides.symlinks as symlinks
 import SCons.Defaults
@@ -105,6 +106,7 @@ api.register.add_builder(
         action=set_runpath_action,
         single_source=True,
         target_scanner=symlinks.symlink_scanner,
+        source_scanner=scanners.NullScanner,
         name="set-rpath"
     )
 )

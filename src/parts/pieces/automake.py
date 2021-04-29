@@ -10,7 +10,7 @@ import parts.node_helpers as node_helpers
 from parts.pieces.append_action import AppendFile
 import SCons.Scanner.Prog
 import SCons.Defaults
-import scanners
+import parts.core.scanners as scanners
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
 
@@ -259,8 +259,8 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         auto_conf_buildfile,
         depends,
         configure_cmds,
-        source_scanner=scanners.null_scanner,
-        target_scanner=scanners.depends_sdk_scanner
+        source_scanner=scanners.NullScanner,
+        target_scanner=scanners.DependsSdkScanner
     )
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$\\$$$$$$$$ORIGIN")}'
     env.SetDefault(_AUTOMAKE_BUILD_ARGS=SCons.Util.CLVar(
@@ -276,7 +276,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
             $(-j{jobs}$)'.format(target=targets, jobs=env.GetOption('num_jobs')),
             'cd ${{SOURCE.dir}} ; make {install} $AUTOMAKE_INSTALL_ARGS'.format(install=install_targets)
         ],
-        source_scanner=scanners.null_scanner,
+        source_scanner=scanners.NullScanner,
         target_factory=env.Dir,
         target_scanner=env.ScanDirectory(
             "$AUTO_MAKE_INSTALL_DESTDIR",

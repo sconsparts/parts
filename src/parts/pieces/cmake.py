@@ -6,7 +6,7 @@ import parts.api as api
 import parts.node_helpers as node_helpers
 import SCons.Builder
 import SCons.Scanner.Prog
-import scanners
+import parts.core.scanners as scanners
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
 
@@ -60,8 +60,8 @@ def CMake(env, destdir=None, cmakedir=None, auto_scanner={}, ignore=[], **kw):
             '${define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}${MAKEPATH("$PKG_CONFIG_PATH")} '
             '$CMAKE ${SOURCE.dir.abspath} $_CMAKE_ARGS'
         ],
-        source_scanner=scanners.null_scanner,
-        target_scanner=scanners.depends_sdk_scanner
+        source_scanner=scanners.NullScanner,
+        target_scanner=scanners.DependsSdkScanner
     )
     cmake_build_files = ["CMakeLists.txt"]
     
@@ -82,7 +82,7 @@ def CMake(env, destdir=None, cmakedir=None, auto_scanner={}, ignore=[], **kw):
         [
             "cd ${SOURCE.dir} ; $CMAKE --build . --config Release --target install -- $_CMAKE_MAKE_ARGS"
         ],
-        source_scanner=scanners.null_scanner,
+        source_scanner=scanners.NullScanner,
         target_factory=env.Dir,
         target_scanner=env.ScanDirectory(
             cmake_install_dir,

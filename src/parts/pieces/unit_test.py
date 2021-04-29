@@ -7,6 +7,7 @@ import sys
 import parts.api as api
 import parts.api.output as output
 import parts.common as common
+import parts.core.scanners as scanners
 import parts.core.util as util
 import parts.errors as errors
 import parts.functors as functors
@@ -16,8 +17,8 @@ import parts.parts as parts
 import parts.pattern as pattern
 import parts.pnode as pnode
 import SCons.Script
-from parts.metasection.unittestsection import TestCtx
 from parts.core.states import LoadState
+from parts.metasection.unittestsection import TestCtx
 from parts.requirement import REQ
 from parts.target_type import target_type
 # This is what we want to be setup in parts
@@ -90,9 +91,8 @@ sys.exit(proc.returncode)
 
 
 def unit_test_old(env, target, source, command_args=None, data_src=None, src_dir='.', make_pdb=True,
-              depends=None, builder="Program", builder_kw=None, **kw):
+                  depends=None, builder="Program", builder_kw=None, **kw):
 
-    
     if glb.processing_sections:
         output.error_msg("UnitTest cannot be called with a Section callback function. Please use the new @unit_test section.")
 
@@ -105,51 +105,48 @@ def unit_test_old(env, target, source, command_args=None, data_src=None, src_dir
     part_dir_len = len(part_dir)+1
     scons_dir_node = env.Dir('#').abspath
 
-    # get The part object and get our hidden unit test section for backward compatibly 
+    # get The part object and get our hidden unit test section for backward compatibly
     unit_test_proxy, unit_test_section = glb.engine._part_manager._from_env(env)._cache['unit_test']
     # rebind the section env to the this one. This will "Clone" env
     # and set some state values.
-    unit_test_section._setup_(env,**kw)
+    unit_test_section._setup_(env, **kw)
     # This Clones the env above with the extra stuff set for the group
     env2 = unit_test_section.Env.Clone()
-    unit_test_section._metasection._run_context[target]=(env2, TestCtx())
+    unit_test_section._metasection._run_context[target] = (env2, TestCtx())
     # add it to section in the parts to be found if needed
     # as we know at this point we will have one
     unit_test_section.Part._AddSection(unit_test_section.Name, unit_test_section)
     env2.DependsOn([
         env2.Component(env.PartName(), env.PartVersion(), section='build', requires=REQ.DEFAULT(internal=True))
-        ])
+    ])
 
     @unit_test_proxy.Group(target)
-    def run(env,test):
-        
+    def run(env, test):
+
         # this is to allow some old behavior to work as dependson mapping per environment
-        srcDir=src_dir
-        
+        srcDir = src_dir
+
         if make_pdb:
-            env['PDB'] = env['UNIT_TEST_TARGET_NAME'] + '.pdb'    
+            env['PDB'] = env['UNIT_TEST_TARGET_NAME'] + '.pdb'
 
         # tweak Environment
         env['UNIT_TEST_TARGET'] = target
 
         # setup the variable with paths
-        
+
         def rebind_node(node):
             file_path = node.srcnode().abspath
             if file_path.startswith(part_dir):
                 # this is under the current part directory, just rebind it to a different
                 # variant node.
-                return env.File(file_path[part_dir_len:])            
+                return env.File(file_path[part_dir_len:])
             # this in a different directory. Make an AbsFile node from it
             return env.AbsFileNode(f'#{node.srcnode().ID}')
-                
-
-
 
         src_files = []
         for f in source:
             if isinstance(f, pattern.Pattern):
-                [src_files.append(rebind_node(f)) for n in f.files()]                    
+                [src_files.append(rebind_node(f)) for n in f.files()]
             elif isinstance(f, SCons.Node.FS.Dir):
                 if builder == "Program":
                     output.warning_msgf(
@@ -159,21 +156,20 @@ def unit_test_old(env, target, source, command_args=None, data_src=None, src_dir
                         "Cannot use directory nodes when src_dir is set in unittest().\n Node={0}\n Skipping...", f.ID)
                 else:
                     src_files.append(f)
-            elif isinstance(f, SCons.Node.FS.Entry) or isinstance(f, SCons.Node.FS.File):                
-                if f.has_builder(): 
-                    # this has a builder.. 
+            elif isinstance(f, SCons.Node.FS.Entry) or isinstance(f, SCons.Node.FS.File):
+                if f.has_builder():
+                    # this has a builder..
                     # we don't want to modify this
                     src_files.append(f)
-                elif not src_dir or src_dir == '.': 
-                    # we need to recreate the node for the build variant we are using for the 
+                elif not src_dir or src_dir == '.':
+                    # we need to recreate the node for the build variant we are using for the
                     # unit test, however we need to see if this in under the build section
                     # directory or outside this area via and AbsFile like node call
                     src_files.append(
                         rebind_node(f)
                     )
                 else:
-                    src_files.append(env.AbsFileNode(os.path.join(f.rel_path(src_dir),f.name)))
-                    
+                    src_files.append(env.AbsFileNode(os.path.join(f.rel_path(src_dir), f.name)))
 
             elif util.isString(f):
                 # normalize the path so we get matches on windows and posix based systems
@@ -181,12 +177,11 @@ def unit_test_old(env, target, source, command_args=None, data_src=None, src_dir
                 #fn = make_node(env.subst(f))
                 if not src_dir or src_dir == '.':
                     src_files.append(f)
-                elif not src_dir.startswith(("../",'/','#')):
+                elif not src_dir.startswith(("../", '/', '#')):
                     src_files.append(os.path.join(src_dir, f))
                 else:
                     src_files.append(env.AbsFileNode(os.path.join(src_dir, f)))
-                
-        
+
         tmp_bld = getattr(env, builder)
         if tmp_bld is None:
             api.output.error_msg("Builder {0} is not found".format(builder))
@@ -198,7 +193,7 @@ def unit_test_old(env, target, source, command_args=None, data_src=None, src_dir
         api.output.verbose_msgf(['unit_test'], 'calling with args {}', builder_kw)
         ret = tmp_bld(**builder_kw)
 
-        test.Target = ret 
+        test.Target = ret
         #test.Sources = src_files
         test.CommandArgs = command_args
         test.DataFiles = data_src
@@ -507,7 +502,7 @@ def unit_test_old(env, target, source, command_args=None, data_src=None, src_dir
     sec.LoadState = LoadState.FILE
     sec._map_targets()
     '''
-    #return ret
+    # return ret
 
 
 def run_utest_return_default(code, env=None, stackframe=None):
@@ -532,6 +527,8 @@ api.register.add_builder('__UTEST__', SCons.Script.Builder(
             'UNIT_TEST_ENV'
         ]),
     emitter=unit_test_script_bfe,
+    source_scanner=scanners.NullScanner,
+    target_scanner=scanners.NullScanner
 ))
 
 api.register.add_variable('BUILD_UTEST_CONCEPT', 'utest${ALIAS_SEPARATOR}', 'Defines namespace for building a unit test')
