@@ -1,7 +1,6 @@
-from __future__ import annotations
-from typing import Optional
-import enum
+
 import copy
+import enum
 import hashlib
 import os
 import pprint
@@ -10,8 +9,8 @@ import time
 import traceback
 import types
 from builtins import zip
+from typing import Optional
 
-from parts.core.states import LoadState, FileStyle
 import parts.core.builders as builders
 import parts.core.util as util
 import parts.pnode.part_info as part_info
@@ -19,6 +18,7 @@ import parts.pnode.pnode as pnode
 import parts.pnode.pnode_manager as pnode_manager
 import parts.pnode.section as section
 import SCons.Node
+from parts.core.states import FileStyle, LoadState
 
 # these imports add stuff we will need to export to the parts file.
 #from .. import requirement
@@ -61,7 +61,8 @@ class Part(pnode.PNode):
         # basic attributes
         '__ID',
         '__file',           # the Parts file
-        '__src_path',       # The Source path ( the path of the _file
+        '__part_dir',       # The path of the part file.
+        '__src_dir',        # the path used to find sources from
         '__version',        # the version of this part
         '__name',           # the name of this part (foo.bar.goo)
         '__alias',          # the alias of this part (foo0.bar0.goo0)
@@ -216,8 +217,9 @@ class Part(pnode.PNode):
 
         # the file for this part, if any
         self.__file = str(file)
-        # the src_path we need to make sure SCons as no issues when loading the Part file
-        self.__src_path = None
+        # the part_dir we need to make sure SCons as no issues when loading the Part file
+        self.__part_dir = None
+        self.__src_dir = None
         # this is how we can depend on this object
         self.__platform_match = None
         self.__is_setup = False
@@ -271,15 +273,16 @@ class Part(pnode.PNode):
         return self.__file
 
     @property  # readonly non-mutable
-    def SourcePath(self):
-        """Get the current parent Part source path."""
-        return self.__src_path
+    def SourceDir(self):
+        """
+        Get the directory that is used for refer to the sources refereed to in the Part file.
+        """
+        return self.__src_dir
 
-    @SourcePath.setter
-    def SourcePath(self, path):
-        """Get the current parent Part source path."""
-        self.__env['SRC_DIR'] = self.__env['PART_DIR'] = self.__src_path = path
-        return self.__src_path
+    @property  # readonly non-mutable
+    def PartsDir(self):
+        """Get the current Directory where the part file exits."""
+        return self.__part_dir
 
     @property
     def Version(self) -> version.version:  # mutable
@@ -357,12 +360,12 @@ class Part(pnode.PNode):
             glb.engine._part_manager.add_name_alias(self.__name, self.__alias)
 
     @property  # readonly mutable
-    def Parent(self) -> Optional[part]:
+    def Parent(self) -> Optional['Part']:
         """Get the current parent Part, or None if there is no parent"""
         return self.__parent
 
     @property  # readonly mutable
-    def Root(self) -> Part:
+    def Root(self) -> 'Part':
         """Get the current root Part."""
         return self.__root
 
@@ -600,7 +603,6 @@ class Part(pnode.PNode):
 
     def Section(self, case):
         return self.__sections[case]
-        
 
     @property
     def Sections(self):
@@ -639,7 +641,7 @@ class Part(pnode.PNode):
                 append=self.__append.copy(),
                 **self.__kw.copy()
             )
-        
+
         else:
             self.__env = _env
 
@@ -725,7 +727,7 @@ class Part(pnode.PNode):
         if self.__parent is None:
             dir_tmp = self.__env.Dir('#')
         else:
-            dir_tmp = self.__env.Dir(self.__parent.__src_path)
+            dir_tmp = self.__env.Dir(self.__parent.PartsDir)
 
         # setup scm object. We always have one. null_t is the default
         self.__scm._setup_(self)  # update env with scm level defines
@@ -740,11 +742,23 @@ class Part(pnode.PNode):
             self.__file = dir_tmp.File(self.__env.subst(self.__file))  # the Parts file to read in
 
         # the src_path we need to make sure SCons as no issues when loading the Part file
-        self.__src_path = os.path.split(self.__file.srcnode().abspath)[0]
+        self.__part_dir = self.__file.srcnode().Dir(".")
 
-        # file info
+        # Some location information
+        # the part file as a node
         self.__env['PART_FILE'] = self.__file
-        self.__env['SRC_DIR'] = self.__env['PART_DIR'] = self.__src_path
+        # the directory of the part file
+        self.__env['PART_DIR'] = self.__part_dir
+
+        #print(self.__root.Scm.CheckOutDir.abspath, self.__file.abspath, self.__file.is_under(self.__root.Scm.CheckOutDir), self.__root.Scm.CheckOutDir.is_under(self.__file))
+        if self.__file.is_under(self.__root.Scm.CheckOutDir):
+            self.__src_dir = self.__part_dir
+        else:
+            # this is an extern part file build. In this case the source directory is the checkout directory
+            # this could be changes if we defined some sub_dir to start as the source.. but that opens up other
+            # issues I don't want to deal with.. so keep it simple on our end for the moment
+            self.__src_dir = self.__root.Scm.CheckOutDir
+        self.__env['SRC_DIR'] = self.__src_dir
 
         # add information on how to map this Parts
         # allow us to make a part platform independent in some way
@@ -945,7 +959,8 @@ class Part(pnode.PNode):
             return method
         for name in ('__iter__', '__getitem__', '__getslice__', '__contains__'):
             locals()[name] = def_method(name)
-        del name, def_method
+        del name
+        del def_method
 
     class part_loading_context:
         '''
@@ -1018,11 +1033,11 @@ class Part(pnode.PNode):
                 del self.__file._memo['stat']
             except KeyError:
                 pass
- 
+
             # setup what we want to export to the part file
             # global objects
             export_map = glb.parts_objs
-            
+
             # add the sections
             # we do this when we read as there might have been new sections dynamically added
             sections_proxies = {}
@@ -1032,7 +1047,8 @@ class Part(pnode.PNode):
                 if definition.Name == "build":
                     # pre-create a build/default Section object
                     # needed for backwards compatibility.
-                    self.__sections[definition.Name] = self.__classic_section = glb.pnodes.Create(section.Section, proxy=proxy, pobj=self,)                    
+                    self.__sections[definition.Name] = self.__classic_section = glb.pnodes.Create(
+                        section.Section, proxy=proxy, pobj=self,)
                 if definition.Name == "unit_test":
                     # pre-create a build/default Section object
                     # needed for backwards compatibility.
@@ -1046,7 +1062,7 @@ class Part(pnode.PNode):
             export_map.update(sections_proxies)
             # the default environment
             env = self.__classic_section.Env
-            
+
             # global object that need to be mapped
             for k, v in glb.parts_objs_env.items():
                 export_map[k] = v(env)
@@ -1057,16 +1073,30 @@ class Part(pnode.PNode):
 
             # ####################################
             # this is to setup variant directories
+
+            # this is the primary build directory
             bdir = env.Dir(env.subst('$BUILD_DIR'))
             env['BUILD_DIR_NODE'] = bdir
-            sdir = env.Dir(self.__src_path)
+            # this is the directory that contains the Parts file
+            part_dir = self.__part_dir
+            # this is the directory we are using as the root to reffer to nodes
+            src_dir = self.__src_dir
+
             bk_path = sys.path
-            sys.path = [sdir.abspath] + bk_path
+            sys.path = [src_dir.abspath] + bk_path
             # variant dir for file out of parts tree but under Sconstruct
             env.VariantDir(env.Dir('$OUTOFTREE_BUILD_DIR'), "#", self.__env['duplicate_build'])
             # variant dir for file out of Sconstruct tree but under the root
             # this does not cover windows drives that are different from the current drive c:\
             env.VariantDir(env.Dir('$ROOT_BUILD_DIR'), "/", self.__env['duplicate_build'])
+            if part_dir != src_dir:
+                # source path and parts directory are different
+                # we are out of repo or extern case. For this we need to make a mapping
+                # to allow access to node in the part directory
+                # this should allow the ability to refer to node in "extern" area via saying
+                # $PART_DIR/<some file> and have it build correctly out of source
+                env['PART_DIR'] = env.Dir('$BUILD_DIR/_extern')
+                env.VariantDir(env.Dir('$BUILD_DIR/_extern'), self.__part_dir, self.__env['duplicate_build'])
 
             st = time.time()
             if (glb.engine._build_mode == 'build') or (os.path.exists(self.__file.srcnode().abspath) == True):
@@ -1080,7 +1110,7 @@ class Part(pnode.PNode):
                     errors.ResetPartStackFrameInfo()
                     self.__env.SConscript(
                         self.__file,
-                        src_dir=sdir,
+                        src_dir=src_dir,
                         variant_dir=bdir,
                         duplicate=self.__env['duplicate_build'],
                         exports=export_map
@@ -1117,7 +1147,7 @@ class Part(pnode.PNode):
                 if sec:
                     self.__sections[name] = sec
 
-            # clean up cache key that we don't need anymore                    
+            # clean up cache key that we don't need anymore
             del self.__cache['unit_test']
 
             # we tag the Directory nodes so we can latter sort unknown items faster, by checking the directory ownership
@@ -1126,7 +1156,7 @@ class Part(pnode.PNode):
             # set file as read
             # todo .. need to relook at the need for this!
             self.__classic_section.LoadState = LoadState.FILE
-            
+
             # hack to help with compatibility issues as we fixed up the mapping table.
             if self.__classic_section.Env.get('PART_REVERSE_EXPORTS_LIBS') == True:
                 try:
@@ -1136,47 +1166,6 @@ class Part(pnode.PNode):
 
             sys.path = bk_path
 
-    '''def _map_exports(self):
-        1/0
-        #sections = list(self.__sections.values())+ [self.__classic_section]
-        sections = [self.__classic_section]
-        env = self.__classic_section.Env
-        for section in sections:
-            # print("Section",section.Env,section.Env.get_csig())
-            # get the top level targets as we want to map these to the component by default
-            [section._map_target(t) for t in section.TopLevelTargets()]
-            # Add some default values to the export table
-            section.Exports["EXISTS"] = section.Alias
-            # define the import builder for all items that will be imported
-            import_out = builders.imports.map_imports(env, section)[0]
-            dyn_import_out = builders.dyn_imports.map_dyn_imports(env, section)[0]
-            # map targets with a depends on the imports, so they are mapped
-            # in the environment before the target tries to build
-            # ideally I would like to avoid this, but this allows everything to move forward
-            # improvement that we can make on this are:
-            # 1) have a sec.bottom_level_targets to reduce the set we add to
-            # 2) have a way to force resolution of a node being build/up-to-date given
-            #    There are nodes that are dynamically resolved in the task-master logic
-            for target in section.Targets:
-                # if the target is not the import file and not an
-                # Alias we want to add a depends on the import
-                # file so that all "imported" values get resolved
-                if target != import_out and not util.isAlias(target):
-                    # print("mapping",target,import_out)
-                    section.Env.Depends(target, import_out)
-            # for each section we also want to define a export file
-            # that defines everything we will export from the component
-            # to any component that might depend on it
-
-            # this need to be dependent on the import file
-            export_jsn = env._map_export_(import_out)
-            env._map_dyn_export_(dyn_import_out)
-
-            # define the top level aliases mappings
-            section._map_target(export_jsn)
-            # define node for the packages to bind to if needed
-            env.DynamicPackageNodes(export_jsn)
-    '''
     # sections based API's
     def _has_section_defined(self, name):
         '''
@@ -1385,7 +1374,7 @@ class Part(pnode.PNode):
             tmp['csig'] = self.__file.get_csig()
             tmp['timestamp'] = self.__file.get_timestamp()
         info.File = tmp
-        info.SrcPath = self.__src_path
+        info.SrcPath = self.__part_dir
         # direct sdk file data
         # file={}
         # if self.__sdk_file is None:

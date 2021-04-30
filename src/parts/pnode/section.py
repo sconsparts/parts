@@ -324,22 +324,20 @@ class Section(pnode.PNode):
         oldwd = fs.getcwd()
         buildDir = self.Env.Dir("$BUILD_DIR")
         buildDir._create()
-        srcDir = self.__pobj.SourcePath
+        
         # variant dir for file out of parts tree but under SConstruct
         fs.VariantDir(self.Env.Dir('$OUTOFTREE_BUILD_DIR'), "#", self.Env['duplicate_build'])
         # variant dir for file out of SConstruct tree but under the root
         # this does not cover windows drives that are different from the current drive c:\
         fs.VariantDir(self.Env.Dir('$ROOT_BUILD_DIR'), "/", self.Env['duplicate_build'])
-        fs.VariantDir(buildDir, self.Env.Dir(srcDir), self.Env['duplicate_build'])
+        
         try:
             fs.chdir(buildDir, change_os_dir=True)
         except:
             fs.chdir(buildDir, change_os_dir=False)
         SCons.Script.sconscript_reading += 1
         oldCallStack = SConscript.call_stack
-        #tmp_path = os.getcwd()
-        # os.chdir(self.__pobj.SourcePath)
-        
+                
         # call the meta section processing logic
         try:
             api.output.verbose_msg([f"loading.{self.ID}",'loading'],f"Processing Section: {self.ID}")

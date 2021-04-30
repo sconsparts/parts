@@ -101,7 +101,7 @@ def unit_test_old(env, target, source, command_args=None, data_src=None, src_dir
 
     source = common.make_list(source)
     # this is an absolute path string
-    part_dir = env['PART_DIR']
+    part_dir = env['PART_DIR'].ID
     part_dir_len = len(part_dir)+1
     scons_dir_node = env.Dir('#').abspath
 

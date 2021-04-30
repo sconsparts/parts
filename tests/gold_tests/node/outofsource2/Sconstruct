@@ -1,0 +1,4 @@
+from parts import *
+
+Part("#build/comp1.part",vcs_type=VcsLocal("#comp1"))
+Part("#build/comp2.part",vcs_type=VcsLocal("#comp2"))

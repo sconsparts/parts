@@ -12,9 +12,9 @@
 
 import os
 
+import parts.api as api
 import parts.errors as errors
 import parts.glb as glb
-import parts.api as api
 import SCons.Builder
 # we used lists as a dictionary can't take a tuple as a key
 import SCons.Environment
@@ -70,7 +70,7 @@ def parts_call_(self, env, target=None, source=None, chdir=SCons.Builder._null, 
             # Get information to help store info matches better
             if pobj is not None:
                 name = pobj.Name
-                srcpath = pobj.SourcePath
+                srcpath = pobj.SourceDir
             else:
                 name = None
                 srcpath = None

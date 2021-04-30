@@ -20,6 +20,7 @@ from . import tool
 from . import executor
 from . import buildtask_debugtime
 from . import stubprocess
+from . import sconscript
 from . import script_main_debugtime
 from . import sconf
 from . import subst
