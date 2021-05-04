@@ -115,7 +115,6 @@ def Parts_SConscript(fs, *files, **kw):
                         ldir = fs.Dir(f.dir.get_path(sd))
                     else:
                         ldir = fs.Dir(src_dir)
-                        print(ldir, f.dir)
                         # The original code would test that the src directory is under the the build file directory
                         # need to do more testing here to look at the case of the SCons Repositories feature.
                         # This feature in general is a shared directory with sources in it that SCons will look
