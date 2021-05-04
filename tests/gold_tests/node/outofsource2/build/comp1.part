@@ -1,0 +1,11 @@
+Import('*')
+PartName("comp1")
+
+print(env.subst("${CHECK_OUT_DIR}/src/hello.c"))
+
+ret=env.Program(
+    "hello",
+    env.AbsFileNode("${CHECK_OUT_DIR}/src/hello.c")
+)
+
+env.InstallTarget(ret)

@@ -1,5 +1,4 @@
 tests/gold_tests/_sandbox/
-build/
 parts.egg-info/
 *.dblite
 *.pyc
