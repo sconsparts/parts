@@ -3,7 +3,6 @@ import json
 
 import parts.api as api
 import parts.common as common
-import parts.core.builders as builders
 import parts.glb as glb
 import parts.node_helpers as node_helpers
 import SCons.Script
@@ -41,6 +40,7 @@ def depends_sdkfiles_scanner(node, env, path):
     # (ie writting a Makefile/cmake or autoconf scanner could fix this, but is a very difficult it not near impossible task).
     # Making this less fine grain depends corrects the problem has should have minimal impact on SCons being able to build
     # quickly with -j
+    import parts.core.builders as builders  # needed here because python3.6 has a loading issue
     api.output.verbose_msgf(["sdk-scanner", "scanner", "scanner-called"], "Scanning node {0}", node.ID)
     # get the section
     sec = glb.engine._part_manager._from_env(env).Section(env["PART_SECTION"])
@@ -57,7 +57,6 @@ def depends_sdkfiles_scanner(node, env, path):
         if not node_helpers.has_changed(export_file):
             # Then load jsn file and parse out the SDK items
             with open(export_file.ID) as infile:
-                #str_data = infile.read()
                 data = json.load(infile)
 
             for k, files in data.items():
