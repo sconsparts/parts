@@ -324,4 +324,4 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
 # adding logic to SCons Environment object
 SConsEnvironment.AutoMake = AutoMake
 
-api.register.add_variable('AUTO_MAKE_DESTDIR', '${ABSPATH("destdir")}', 'Defines namespace for building a unit test')
+api.register.add_variable('AUTO_MAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines namespace for building a unit test')

@@ -64,7 +64,7 @@ def CMake(env, destdir=None, cmakedir=None, auto_scanner={}, ignore=[], **kw):
         target_scanner=scanners.DependsSdkScanner
     )
     cmake_build_files = ["CMakeLists.txt"]
-    
+
     # make sure this is a list
     if not isinstance(ignore, list):
         ignore = []
@@ -100,4 +100,4 @@ def CMake(env, destdir=None, cmakedir=None, auto_scanner={}, ignore=[], **kw):
 # adding logic to Scons Environment object
 SConsEnvironment.CMake = CMake
 
-api.register.add_variable('CMAKE_DESTDIR', '${ABSPATH("destdir")}', 'Defines location to install bits from the CMake')
+api.register.add_variable('CMAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines location to install bits from the CMake')
