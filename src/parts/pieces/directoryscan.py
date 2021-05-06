@@ -134,7 +134,7 @@ def _DynamicDirScanner(node, env, path, args):
         overides = env.get("SCANDIR_OVERRIDES", scan_overrides)
 
         for key, value in overides.items():
-            if isinstance(value, dict):
+            if isinstance(value, dict) and key in default_mappings:
                 default_mappings[key].update(value)
             else:
                 default_mappings[key] = value
@@ -188,7 +188,7 @@ def _DynamicDirScanner(node, env, path, args):
 
 
 def ScanDirectory(env, default_dir, defaults=True, callbacks=[], extra_scanner=None, **builders):
-    ''' 
+    '''
     This returns a scanner to the scan a directory. It also calls a builder to a dyn.jsn file
     to help allow control flow of imported variable and depends handling in the taskmaster
     '''
@@ -277,9 +277,9 @@ def ScanDirectory(env, default_dir, defaults=True, callbacks=[], extra_scanner=N
     # that the dyn.scan.{hash}.jsn need to be generated as a source to the dyn.exports.jsn file
     # the scanner will call a builder that will cause this file to be generated.
     # the existence of this file and environment variable allow us to know the exports are not fully known
-    # yet for the section defining this parts. 
+    # yet for the section defining this parts.
     # As note.. The engine will check export_file node for sources to define that we have dynamic exports
-    # I hope this should allow for a generic way for other "dynamic" builders to be defined as all we have to 
+    # I hope this should allow for a generic way for other "dynamic" builders to be defined as all we have to
     # do is add a new node to be built and used as a source to this dyn export file builder.
     export_file = env._map_dyn_export_(state_file_name)
     # this allow us to have a quick way in the mappers that it is safe to cache the resulting subst() call
