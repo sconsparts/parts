@@ -70,7 +70,7 @@ def export_path(env, target_dirs, source_dirs, sobj, prop, use_src=False, create
     return ret
 
 
-_reg = re.compile(r'[\w\-\.]*.so.([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)', re.I)
+_reg = re.compile(r'[\w\-\+\.]*.so.([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)', re.I)
 
 
 def export_file(env, targets, sobj, prop):
