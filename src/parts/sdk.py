@@ -332,6 +332,9 @@ def Sdk(env, source, sub_dir='', add_to_path=True, auto_add_libs=True, use_src_d
             if common.is_category_file(env, 'SDK_LIB_PATTERN', the_file):
                 out += SdkLib(env, [i], sub_dir=sub_dir, auto_add_libs=auto_add_libs,
                               add_to_path=add_to_path, use_src_dir=use_src_dir, create_sdk=create_sdk)
+            elif common.is_category_file(env, 'SDK_INCLUDE_PATTERN', the_file):
+                out += SdkInclude(env, [i], sub_dir=sub_dir, add_to_path=add_to_path, use_src_dir=use_src_dir,
+                                  create_sdk=create_sdk)
             elif common.is_category_file(env, 'SDK_BIN_PATTERN', the_file):
                 out += SdkBin(env, [i], sub_dir=sub_dir, create_sdk=create_sdk)
             else:
@@ -570,6 +573,9 @@ api.register.add_bool_variable('CREATE_SDK', True, 'Controls if the SDK should b
 api.register.add_list_variable(
     'SDK_LIB_PATTERN', ['*.lib', '*.LIB', '*.a', '*.A', '*.so', '*.sl', '*.so.*', '*.sl.*', '*.so-gz', '*.dylib'],
     'filter of file patterns use to match lib type files')
+api.register.add_list_variable(
+    'SDK_INCLUDE_PATTERN', ['*.h', '*.H', '*.hxx', '*.hpp', '*.hh'],
+    'filter of file patterns use to match include type files')
 if 'win32' == glb._host_platform:
     api.register.add_list_variable(
         'SDK_BIN_PATTERN', ['*.dll', '*.DLL', '*.exe', '*.EXE', '*.com', '*.COM', '*.pdb', '*.PDB'],
