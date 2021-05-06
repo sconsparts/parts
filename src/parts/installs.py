@@ -63,6 +63,7 @@ def ProcessInstall(env, target, sources, sub_dir, create_sdk, sdk_dir='', no_pkg
     target = env.subst(target)
     target_lib = env.subst('${INSTALL_LIB}')
     target_include = env.subst('${INSTALL_INCLUDE}')
+    target_source = env.subst('${INSTALL_SOURCE}')
     pkg_config = env.subst('${INSTALL_PKG_CONFIG}')
 
     if sub_dir != '' and sdk_dir != '':
@@ -568,6 +569,13 @@ def InstallData(env, source, sub_dir='', no_pkg=False, create_sdk=True, **kw):
     env.ExportItem('INSTALLDATA', installed_files, create_sdk, True)
     return installed_files
 
+def InstallSource(env, source, sub_dir='', no_pkg=False, create_sdk=True, **kw):
+
+    installed_files = InstallItem(env, '$INSTALL_SOURCE', source,
+                                  sub_dir=sub_dir, sdk_dir='$SDK_SOURCE', no_pkg=no_pkg, create_sdk=create_sdk,
+                                  **get_args('SOURCE', **kw))
+    env.ExportItem('INSTALLSOURCE', installed_files, create_sdk, True)
+    return installed_files
 
 def InstallInclude(env, source, sub_dir='', no_pkg=False, create_sdk=True, **kw):
 
@@ -643,6 +651,7 @@ SConsEnvironment.InstallAPI = InstallAPI
 SConsEnvironment.InstallBin = InstallBin
 SConsEnvironment.InstallConfig = InstallConfig
 SConsEnvironment.InstallData = InstallData
+SConsEnvironment.InstallSource = InstallSource
 SConsEnvironment.InstallDoc = InstallDoc
 SConsEnvironment.InstallHelp = InstallHelp
 SConsEnvironment.InstallInclude = InstallInclude
@@ -701,6 +710,7 @@ else:  # assume posix like layout
     api.register.add_variable('INSTALL_PKG_CONFIG_SUBDIR', '${INSTALL_LIB_SUBDIR}/pkgconfig', '')
 
 # this is not really defined in posix .. but useful
+api.register.add_variable('INSTALL_SOURCE_SUBDIR', 'src', '')
 api.register.add_variable('INSTALL_API_SUBDIR', 'API', '')
 api.register.add_variable('INSTALL_TOOLS_SUBDIR', 'tools', '')
 api.register.add_variable('INSTALL_RESOURCE_SUBDIR', 'resource', '')
@@ -729,6 +739,7 @@ api.register.add_variable('INSTALL_MESSAGE', '${INSTALL_ROOT}/${INSTALL_MESSAGE_
 api.register.add_variable('INSTALL_RESOURCE', '${INSTALL_ROOT}/${INSTALL_RESOURCE_SUBDIR}', '')
 api.register.add_variable('INSTALL_SAMPLE', '${INSTALL_ROOT}/${INSTALL_SAMPLE_SUBDIR}', '')
 api.register.add_variable('INSTALL_DATA', '${INSTALL_ROOT}/${INSTALL_DATA_SUBDIR}', '')
+api.register.add_variable('INSTALL_SOURCE', '${INSTALL_ROOT}/${INSTALL_SOURCE_SUBDIR}', '')
 api.register.add_variable('INSTALL_TOP_LEVEL', '${INSTALL_ROOT}/${INSTALL_TOP_LEVEL_SUBDIR}', '')
 api.register.add_variable('PKG_NO_INSTALL', '${INSTALL_ROOT}/${INSTALL_NO_INSTALL_SUBDIR}', '')
 api.register.add_variable('INSTALL_PYTHON', '${INSTALL_ROOT}/${INSTALL_PYTHON_SUBDIR}', '')

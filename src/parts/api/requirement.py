@@ -38,6 +38,7 @@ DefineRequirementSet('SDKDOC', [requirement_internal('SDKDOC', policy=REQ.Policy
 DefineRequirementSet('SDKHELP', [requirement_internal('SDKHELP', policy=REQ.Policy.ignore, listtype=True, internal=True)])
 DefineRequirementSet('SDKMANPAGE', [requirement_internal('SDKMANPAGE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
 DefineRequirementSet('SDKDATA', [requirement_internal('SDKDATA', policy=REQ.Policy.ignore, listtype=True, internal=True)])
+DefineRequirementSet('SDKSOURCE', [requirement_internal('SDKSOURCE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
 DefineRequirementSet('SDKMESSAGE', [requirement_internal('SDKMESSAGE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
 DefineRequirementSet('SDKRESOURCE', [requirement_internal('SDKRESOURCE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
 DefineRequirementSet('SDKSAMPLE', [requirement_internal('SDKSAMPLE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
@@ -59,6 +60,7 @@ DefineRequirementSet('SDKFILES', [
     'SDKHELP',
     'SDKMANPAGE',
     'SDKDATA',
+    'SDKSOURCE',
     'SDKMESSAGE',
     'SDKRESOURCE',
     'SDKSAMPLE',
@@ -82,6 +84,7 @@ DefineRequirementSet('INSTALLHELP', [requirement_internal('INSTALLHELP', policy=
 DefineRequirementSet('INSTALLMANPAGE', [requirement_internal(
     'INSTALLMANPAGE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
 DefineRequirementSet('INSTALLDATA', [requirement_internal('INSTALLDATA', policy=REQ.Policy.ignore, listtype=True, internal=True)])
+DefineRequirementSet('INSTALLSOURCE', [requirement_internal('INSTALLSOURCE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
 DefineRequirementSet('INSTALLMESSAGE', [requirement_internal(
     'INSTALLMESSAGE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
 DefineRequirementSet('INSTALLRESOURCE', [requirement_internal(
@@ -107,6 +110,7 @@ DefineRequirementSet('INSTALLFILES', [
     'INSTALLHELP',
     'INSTALLMANPAGE',
     'INSTALLDATA',
+    'INSTALLSOURCE',
     'INSTALLMESSAGE',
     'INSTALLRESOURCE',
     'INSTALLSAMPLE',

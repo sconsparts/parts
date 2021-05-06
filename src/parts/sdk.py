@@ -251,6 +251,10 @@ def SdkData(env, source, sub_dir='', create_sdk=True):
     ret = SdkItem(env, '$SDK_DATA', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
+def SdkSource(env, source, sub_dir='', create_sdk=True):
+
+    ret = SdkItem(env, '$SDK_SOURCE', source, sub_dir, '', [], create_sdk=create_sdk)
+    return ret
 
 def SdkMessage(env, source, sub_dir='', create_sdk=True):
 
@@ -539,6 +543,7 @@ else:  # assume posix like layout
     api.register.add_variable('SDK_DATA', '$SDK_ROOT/share', 'Full SDK directory for the generic data concept')
     api.register.add_variable('SDK_MESSAGE', '$SDK_ROOT/share/nls', 'Full SDK directory for the messages (catalogs) concept')
 
+api.register.add_variable('SDK_SOURCE', '$SDK_ROOT/src', 'Full SDK directory for the generic source concept')
 api.register.add_variable('SDK_INCLUDE', '$SDK_INCLUDE_ROOT', 'Full SDK directory for the include or header concept')
 api.register.add_variable('SDK_TOOLS', '$SDK_ROOT/tools', 'Full SDK directory for the tools concept')
 api.register.add_variable('SDK_API', '$SDK_ROOT/API', 'Full SDK directory for the API concept')

@@ -392,6 +392,7 @@ api.register.add_variable('PACKAGE_PKG_CONFIG', '${PACKAGE_ROOT}/$INSTALL_PKG_CO
 api.register.add_variable('PACKAGE_RESOURCE', '${PACKAGE_ROOT}/$INSTALL_RESOURCE_SUBDIR', '')
 api.register.add_variable('PACKAGE_SAMPLE', '${PACKAGE_ROOT}/$INSTALL_SAMPLE_SUBDIR', '')
 api.register.add_variable('PACKAGE_DATA', '${PACKAGE_ROOT}/$INSTALL_DATA_SUBDIR', '')
+api.register.add_variable('PACKAGE_SOURCE', '${PACKAGE_ROOT}/$INSTALL_SOURCE_SUBDIR', '')
 api.register.add_variable('PACKAGE_TOP_LEVEL', '${PACKAGE_ROOT}/', '')
 api.register.add_variable('PACKAGE_PYTHON', '${PACKAGE_ROOT}/$INSTALL_PYTHON_SUBDIR', '')
 api.register.add_variable('PACKAGE_SCRIPT', '${PACKAGE_ROOT}/$INSTALL_SCRIPT_SUBDIR', '')
