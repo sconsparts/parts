@@ -25,18 +25,17 @@ def export_path(env, target_dirs, source_dirs, sobj, prop, use_src=False, create
     # 2) is the build path for the file
     # 3) is the source path of the file
     ret = []
-    try:
-        tmp = sobj.Exports[prop][0]  # we assume that this is only used in cases of list
-    except KeyError:
-        sobj.Exports[prop] = [[]]
-        tmp = sobj.Exports[prop][0]
+
+    # we assume that this is only used in cases of list
+    export_table = sobj.Exports.setdefault(prop,[[]])[0]
     if use_src:  # ie use Raw Source Directories
         for s in source_dirs:
             # setting up the libpaths
             # print s,env.Dir(s).abspath
-            if s not in tmp:
+            if s not in export_table:
                 target_dir = env.Dir(s).srcnode().abspath
-                tmp.append(target_dir)
+                export_table.append(target_dir)
+                api.output.verbose_msg(['export.file','export'], f"Exporting path from {sobj.ID}:\n {prop} = {target_dir}")
             # we want to return the SDK directories
             # when we need to create an SDK.
             if create_sdk == True:
@@ -45,7 +44,7 @@ def export_path(env, target_dirs, source_dirs, sobj, prop, use_src=False, create
                     if util.isString(t):
                         t = env.Dir(t)
                     final_path = t.srcnode()
-                    if final_path not in tmp:
+                    if final_path not in export_table:
                         target_dir = final_path
                         ret.append(target_dir)
     else:
@@ -59,14 +58,17 @@ def export_path(env, target_dirs, source_dirs, sobj, prop, use_src=False, create
 
             if create_sdk == False:
                 # use build directory
-                if build_path not in tmp:
+                if build_path not in export_table:
                     target_dir = build_path
-                    tmp.append(target_dir)
+                    export_table.append(target_dir)
+                    api.output.verbose_msg(['export.path','export'], f"Exporting path from {sobj.ID}:\n {prop} = {target_dir}")
 
-            elif final_path not in tmp:
+            elif final_path not in export_table:
                 target_dir = final_path
-                tmp.append(target_dir)
+                export_table.append(target_dir)
+                api.output.verbose_msg(['export.path','export'], f"Exporting path from {sobj.ID}:\n {prop} = {target_dir}")
                 ret.append(target_dir)
+
     return ret
 
 
@@ -93,6 +95,7 @@ def export_file(env, targets, sobj, prop):
             sobj.Exports[prop][0] += [file]
         except KeyError:
             sobj.Exports[prop] = [[file]]
+        api.output.verbose_msg(['export.path','export'], f"Exporting file from {sobj.ID}:\n {prop} = {file}")
     return ret
 
 

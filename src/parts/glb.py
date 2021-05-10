@@ -18,6 +18,13 @@ parts_objs = {}
 parts_objs_env = {}
 known_concepts:Dict[str,str] = {}
 
+# deal with the change of requirements internal from false to True
+# is REQ.DEFAULT -> was REQ.DEFAULT(internal=False)
+# it is now REQ.DEFAULT(internal=True)
+# this allows the behavior to switch for compatibility
+# this is a ref count impl..
+compat_internal=0
+
 
 # state object of what is being processed.
 #part_being_processed = []

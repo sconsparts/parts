@@ -161,7 +161,7 @@ class parts_addon:
         # default is called again to set one. ( ie the default by Scons is '.' which is everything)
         self.def_env.Default('')
         self.def_env.EnsureSConsVersion(4, 1, 0)
-        
+
         # try to setup all logger
         self._setup_logger()
         # generate help text

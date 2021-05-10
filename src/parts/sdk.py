@@ -136,16 +136,14 @@ def SdkItem(env, target_dir, source, sub_dir='', post_fix='', export_info=[], ad
         # Process the Export of data values
         for _type, _prop in export_info:
             # add missing properties in map
-            # if (_prop in pobj.DefiningSection.Exports) == False:
-            #pobj.DefiningSection.Exports[_prop] = [[]]
             # might add case that allow export of all directories
-            if _type == Xp.EXPORT_TYPES.PATH and add_to_path == True:
+            if _type == Xp.EXPORT_TYPES.PATH and add_to_path:
                 target_paths += Xp.export_path(env, [dest_dir], source_dir, sec, _prop, use_src_dir, create_sdk)
                 # This line is a hack till we can get a BKM out
                 target_paths += Xp.export_path(env, [target_dir], source_dir, sec, _prop, use_src_dir, create_sdk)
-            elif _type == Xp.EXPORT_TYPES.PATH and add_to_path == False:
+            elif _type == Xp.EXPORT_TYPES.PATH and not add_to_path:
                 target_paths += Xp.export_path(env, [target_dir], source_dir, sec, _prop, use_src_dir, create_sdk)
-            elif _type == Xp.EXPORT_TYPES.FILE and auto_add_file == True:
+            elif _type == Xp.EXPORT_TYPES.FILE and auto_add_file:
                 files = Xp.export_file(env, targets, sec, _prop)
             elif _type == Xp.EXPORT_TYPES.PATH_FILE:
                 files = Xp.export_file_path(env, targets, sec, _prop, ((create_sdk == False) or use_src_dir))

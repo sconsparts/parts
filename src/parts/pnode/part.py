@@ -347,9 +347,9 @@ class Part(pnode.PNode):
     def _set_name(self, name, force_parent=None):
         oldname = self.__name
         if force_parent is not None:
-            self.__name = "{0}.{1}".format(force_parent, name)
+            self.__name = f"{force_parent}.{name}"
         elif self.__parent is not None:
-            self.__name = "{0}.{1}".format(self.Parent.Name, name)
+            self.__name = f"{self.Parent.Name}.{name}"
         elif self.__parent is None:
             self.__name = name
         self.__short_name = name
@@ -1063,6 +1063,14 @@ class Part(pnode.PNode):
             # the default environment
             env = self.__classic_section.Env
 
+            # this is compatibility to parts that depend on
+            # passing DependOn requirements with internal=False
+            # this was change in 0.16 to be True by default
+            if env.get("COMPAT_REQ_INTERNAL"):
+                api.output.warning_msg(f"Part {self.Root.Alias} is set to use deprecated default value of internal=False in DependsOn.",show_stack=False,print_once=True)
+                glb.compat_internal+=1
+
+
             # global object that need to be mapped
             for k, v in glb.parts_objs_env.items():
                 export_map[k] = v(env)
@@ -1163,6 +1171,9 @@ class Part(pnode.PNode):
                     self.__classic_section.Exports['LIBS'][0].reverse()
                 except KeyError:
                     pass
+
+            if env.get("COMPAT_REQ_INTERNAL"):
+                glb.compat_internal-=1
 
             sys.path = bk_path
 

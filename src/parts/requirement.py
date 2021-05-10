@@ -3,19 +3,30 @@
 import copy
 import hashlib
 
+from SCons.Debug import logInstanceCreation
 
 import parts.api as api
 import parts.common as common
 import parts.core.util as util
+import parts.glb as glb
 from parts.policy import ReportingPolicy, REQPolicy
-from SCons.Debug import logInstanceCreation
 
 _added_types = {}
 
 
 class requirement:
-
-    def __init__(self, key, internal=False, public=None, policy=None, mapper=None, listtype=None, weight=0, mapto=None, force_internal=False):
+    __slots__=(
+        '_key',
+        '_force_internal',
+        '_internal',
+        '_weight',
+        '_public',
+        '_policy',
+        '_listtype',
+        '_mapper',
+        '_map_to',
+    )
+    def __init__(self, key, internal=None, public=None, policy=None, mapper=None, listtype=None, weight=0, mapto=None, force_internal=False):
         ''' Sets up the requirement object
 
         @param value The value to import
@@ -31,7 +42,11 @@ class requirement:
             logInstanceCreation(self)
         self._key = key
         self._force_internal = force_internal
-        self._internal = internal
+        if internal is not None:
+            self._internal = internal
+        else:
+            self._internal = False if glb.compat_internal else True
+
         self._weight = weight
         if public is None:
             self._public = False
@@ -252,7 +267,7 @@ def DefineRequirementSet(name, lst, policy=ReportingPolicy.ignore, weight=-1000)
                 api.output.policy_msg(_added_types[i][1], 'REQ',
                                       "REQ option {0} is deprecated and will be removed, please remove usage.".format(i))
             except KeyError:
-                api.output.warning_msg(i, "not found when mapping requirments", name)
+                api.output.warning_msg(i, "not found when mapping requirements", name)
     _added_types[name] = (requirement_set(tmplst, weight), policy)
 
 
@@ -277,7 +292,7 @@ class requirement_internal(requirement):
 class metaREQ(type):
 
     def __getattr__(self, name):
-        internal = None
+        internal = False if glb.compat_internal else True
         if name.lower().endswith('_internal'):
             name = name[:-len('_internal')]
             internal = True

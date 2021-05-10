@@ -19,7 +19,7 @@ from SCons.Debug import logInstanceCreation
 from SCons.Script.SConscript import SConsEnvironment
 
 
-def Component(env, name, version_range=None, requires: requirement.REQ = requirement.REQ.DEFAULT, section="build", optional: bool = False) -> dependent_ref.dependent_ref:
+def Component(env, name, version_range=None, requires: requirement.REQ = None, section="build", optional: bool = False) -> dependent_ref.dependent_ref:
 
     # Resolve value in the name string is any
     name = env.subst(name)
@@ -44,6 +44,11 @@ def Component(env, name, version_range=None, requires: requirement.REQ = require
             section=section,
             ID=pobj.ID)
     )
+
+    # compatibility with 0.15.8 and older
+    if not requires:
+        requires = requirement.REQ.DEFAULT
+
     # get any local space that was set
     localspace = pobj.Uses
 
@@ -115,7 +120,7 @@ class ComponentEnv:
             logInstanceCreation(self)
         self.env = env
 
-    def __call__(self, name, version_range=None, requires=requirement.REQ.DEFAULT, section="build", optional: bool = False):
+    def __call__(self, name, version_range=None, requires=None, section="build", optional: bool = False):
         return self.env.Component(name, version_range, requires, section, optional)
 
 
@@ -125,13 +130,13 @@ def depends_on_classic(env, depends: Union[dependent_ref.dependent_ref, List[dep
     This allow for delay processing that is required as at any given time this
     is call we don't really know all the Parts object that could exist. So we leave
     a "calling" card for what we want to find in this place.
-    '''   
+    '''
     errors.SetPartStackFrameInfo()
-    
+
     sobj = glb.engine._part_manager.section_from_env(env)
     if sobj is None:
         return
- 
+
     api.output.verbose_msg('dependson', "Mapping data to {sobj.ID}")
     # depends that get passed on
     if util.isList(depends) == False:
@@ -213,7 +218,7 @@ def depends_on(env, depends: Union[str, Component, Sequence[Union[str , Componen
 
     if glb.processing_sections:
         output.error_msg("DependsOn cannot be called with a Section callback function")
-    # do we have anything? 
+    # do we have anything?
     if not depends:
         return
 
@@ -234,7 +239,7 @@ def depends_on(env, depends: Union[str, Component, Sequence[Union[str , Componen
             depends_list.append(i)
 
     ########################################
-    ## set what we depend on 
+    ## set what we depend on
     # this will be resolved latter when we process the Parts objects
 
     # Get the part object mapped to this environment
@@ -243,7 +248,7 @@ def depends_on(env, depends: Union[str, Component, Sequence[Union[str , Componen
         # should not happen.. need some more testing to make sure we can define a clever case
         # todo make test case for this
         api.output.error_msg("Unexpected! DependsOn called and no defining secion was found! Please report this issue.")
-        
+
 
     # add these depends to the sections dependents
     sobj.Depends = depends_list
@@ -253,7 +258,7 @@ def depends_on(env, depends: Union[str, Component, Sequence[Union[str , Componen
     # as part of the build process. At the moment there are clear cases for this.. but it should not be common
     # unless this DependsOn() and we set a value to say assume that we are using a new format, we have to
     # assume that something might depend on the older logic.
-    
+
     # update this later
     #if sobj.isClassicFormat: # change this function so we can assume it false at some point
     # do classic mapper connections to get data where we needed it
@@ -264,7 +269,7 @@ def resolve_depends(sobj):
     # get depends
     depends = sobj.Depends
 
-    
+
 
 
 

@@ -190,7 +190,7 @@ def _sub_lst(env, obj, thread_id):
                 # should not happen I think .. probally a bug at the moment in the subst engine
                 tmp = [tmp]
             ret.append(tmp)
-    
+
     return ret
 
 
@@ -199,7 +199,7 @@ def sub_lst(env, lst, thread_id, recurse=True):
     Utility function to help with returning list from env.subst() as this function
     doesn't like the returning of lists.
     '''
-    
+
     with env_guard(thread_id):
         spacer = "." * env_guard.depth(thread_id)
         api.output.trace_msg(['sub_lst', 'mapper'], spacer, "sub_lst getting value for", lst)

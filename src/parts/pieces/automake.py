@@ -89,7 +89,6 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
     # generation of some paths
     checkout_path = env.Dir("$CHECK_OUT_DIR")
     prefix_len = len(checkout_path.ID)+1
-    env.SetDefault(AUTOMAKE_BUILD_ARGS=SCons.Util.CLVar(""))
     build_dir = env.Dir("$BUILD_DIR/build")
     rel_src_path = build_dir.rel_path(checkout_path)
 
@@ -128,8 +127,8 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
 
     env["CONFIGURE_ARGS"] = configure_args
 
-    env['_ABSCPPINCFLAGS'] = '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)'
-    env['_ABSLIBDIRFLAGS'] = '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)'
+    #env['_ABSCPPINCFLAGS'] = '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)'
+    #env['_ABSLIBDIRFLAGS'] = '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)'
     if auto_configure_args:
         env["_CONFIGURE_ARGS"] = '--prefix=$CONFIGURE_PREFIX\
             ${define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}${MAKEPATH("$PKG_CONFIG_PATH")}\
@@ -263,8 +262,6 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         target_scanner=scanners.DependsSdkScanner
     )
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$\\$$$$$$$$ORIGIN")}'
-    env.SetDefault(_AUTOMAKE_BUILD_ARGS=SCons.Util.CLVar(
-        'LDFLAGS="$LINKFLAGS $MAKE_LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS" V=1'))
     ret = env.CCommand(
         [
             "$AUTO_MAKE_INSTALL_DESTDIR",
@@ -325,3 +322,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
 SConsEnvironment.AutoMake = AutoMake
 
 api.register.add_variable('AUTO_MAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines namespace for building a unit test')
+api.register.add_variable('_ABSCPPINCFLAGS','$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)','')
+api.register.add_variable('_ABSLIBDIRFLAGS','$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)','')
+api.register.add_variable('_AUTOMAKE_BUILD_ARGS','LDFLAGS="$LINKFLAGS $MAKE_LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS" V=1','')
+api.register.add_list_variable('AUTOMAKE_BUILD_ARGS', SCons.Util.CLVar() ,'')
