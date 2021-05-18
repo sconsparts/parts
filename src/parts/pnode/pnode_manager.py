@@ -293,18 +293,18 @@ class manager:
 
     def KnownSections(self):
         return {pnode for pnode in self.__known_pnodes.values() if util.isSection(pnode)}
-            
+
 
     def TargetToSections(self, target: target_type):
         '''
         Maps a target_type to one or more section objects. Returns None if not mapping was found.
         '''
-
         # make key to get item
         api.output.trace_msg(['target_to_section'], f'Target to resolve {target}')
+
         if target.Alias and not target.isRecursive:
             return [self.__known_pnodes.get(f"{target.Section}::{target.Alias}")]
-        elif target.Alias and not target.isRecursive:
+        elif target.Alias and target.isRecursive:
             filter_key = f"{target.Section}::{target.Alias}"
         else:
             # This is some concept as build:: utest:: these all are mapped to the
@@ -314,6 +314,7 @@ class manager:
         ret= []
         api.output.trace_msg(['target_to_section'], f'Using filter key of: {filter_key}')
         for key, value in self.__known_pnodes.items():
+
             if key.startswith(filter_key):
                 ret.append(value)
         api.output.trace_msgf(['target_to_section'], 'Returning {}',common.DelayVariable(lambda:[i.ID for i in ret]))

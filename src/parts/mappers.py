@@ -435,8 +435,8 @@ class part_id_export_mapper(mapper):
             pobj = match.StoredUniqueMatch
         elif not match.hasUniqueMatch and self.optional:
             api.output.trace_msg(['partexport_mapper', 'mapper'], spacer,
-                                 'Failed to find Part that matches name: {0}'.format(self.part_name))
-            self.name_to_alias_failed(env, match, policy=Policy.REQPolicy.warning)
+                                 f'Failed to find Optional Part that matches name: {self.part_name}')
+            #self.name_to_alias_failed(env, match, policy=Policy.REQPolicy.warning)
             return ''
         else:
             api.output.trace_msg(['partexport_mapper', 'mapper'], spacer,

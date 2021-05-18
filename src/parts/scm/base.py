@@ -220,10 +220,16 @@ class base:
         '''
         Update the with information about the current SCM object
         '''
-        self._env['SCM'] = common.namespace(
-            TYPE='unknown',
-            CHECKOUT_DIR=''
-        )
+        if self.isExtern:
+            self._env['SCM_EXTERN'] = common.namespace(
+                TYPE='unknown',
+                CHECKOUT_DIR=''
+            )
+        else:
+            self._env['SCM'] = common.namespace(
+                TYPE='unknown',
+                CHECKOUT_DIR=''
+            )
 
     def _has_target_match(self, update_option: Union[bool, List[str]]) -> bool:
 

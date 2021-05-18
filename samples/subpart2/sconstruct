@@ -1,4 +1,8 @@
 from parts import *
+# test that the older Depend on Logic work
+# where implicit depends are pass to dependents
+SetOptionDefault('COMPAT_REQ_INTERNAL',True)
+
 Part('proxy','proxy/proxy.parts')
 Part('engine','engine/engine.parts')
 

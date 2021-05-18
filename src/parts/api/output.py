@@ -14,26 +14,30 @@ def error_msg(*lst, **kw):
     glb.engine.HadError = True
     msg = list(map(str, lst))
     msg = kw.get('sep', ' ').join(msg) + kw.get('end', '\n')
-    glb.rpter.part_error(msg, kw.get('stackframe', None), kw.get('show_stack', True), kw.get('exit', True))
+    glb.rpter.part_error(msg, kw.get('stackframe', None), kw.get('show_stack', True),
+                         kw.get('exit', True), kw.get('show_prefix', True))
 
 
 def error_msgf(sfmt, *lst, **kw):
     glb.engine.HadError = True
     msg = sfmt.format(*lst, **kw)
     msg = msg + kw.get('end', '\n')
-    glb.rpter.part_error(msg, kw.get('stackframe', None), kw.get('show_stack', True), kw.get('exit', True))
+    glb.rpter.part_error(msg, kw.get('stackframe', None), kw.get('show_stack', True),
+                         kw.get('exit', True), kw.get('show_prefix', True))
 
 
 def warning_msg(*lst, **kw):
     msg = list(map(str, lst))
     msg = kw.get('sep', ' ').join(msg) + kw.get('end', '\n')
-    glb.rpter.part_warning(msg, kw.get('print_once', False), kw.get('stackframe', None), kw.get('show_stack', True))
+    glb.rpter.part_warning(msg, kw.get('print_once', False), kw.get('stackframe', None),
+                           kw.get('show_stack', True), kw.get('show_prefix', True))
 
 
 def warning_msgf(sfmt, *lst, **kw):
     msg = sfmt.format(*lst, **kw)
     msg = msg + kw.get('end', '\n')
-    glb.rpter.part_warning(msg, kw.get('print_once', False), kw.get('stackframe', None), kw.get('show_stack', True))
+    glb.rpter.part_warning(msg, kw.get('print_once', False), kw.get('stackframe', None),
+                           kw.get('show_stack', True), kw.get('show_prefix', True))
 
 
 def print_msg(*lst, **kw):
@@ -50,7 +54,7 @@ def _verbose_pre(_func, catagory, *lst, **kw):
         try:
             glb.rpter.verbose = SCons.Script.GetOption('verbose')
         except AttributeError:
-            glb.rpter.verbose = []    
+            glb.rpter.verbose = []
     if glb.rpter.verbose is None:
         glb.rpter.verbose = []
     _func(catagory, *lst, **kw)

@@ -272,6 +272,10 @@ class Part(pnode.PNode):
     def File(self):
         return self.__file
 
+    @property  # readonly non-mutable # compat
+    def SourcePath(self):
+        return self.__src_dir
+
     @property  # readonly non-mutable
     def SourceDir(self):
         """
@@ -730,12 +734,14 @@ class Part(pnode.PNode):
             dir_tmp = self.__env.Dir(self.__parent.PartsDir)
 
         # setup scm object. We always have one. null_t is the default
+        if self.__extern_scm:
+            self.__extern_scm._setup_(self)
         self.__scm._setup_(self)  # update env with scm level defines
 
         if self.isRoot and self.ExternScm:
             # set up the extern scm
-            self.__extern_scm._setup_(self)
             self.__file = dir_tmp.File(self.__extern_scm.PartFileName)
+
         elif self.isRoot:
             self.__file = dir_tmp.File(self.__scm.PartFileName)
         else:

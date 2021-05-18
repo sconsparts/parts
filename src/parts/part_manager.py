@@ -53,7 +53,7 @@ class part_manager:
         return self.__loader
 
     def map_targets_sections(self):
-        ''' 
+        '''
         given current target that are provided.. We map this to set of sections that should be processed.
         This can only be called after all the part files have been read in.
         returns a list of sections to process, and a set of targets we could not map
@@ -92,6 +92,7 @@ class part_manager:
                     # This has to be some other scons node thing
                     node_return.append(t)
             if tobj.isAmbiguous:
+                print(f"{tobj.OriginalString} is ambiguous")
                 node_return.append(tobj.OriginalString)
                 continue
                 #api.output.error_msg(f"Target {tobj.OriginalString} does not map to a known Part")
@@ -118,7 +119,7 @@ class part_manager:
                 #api.output.error_msgf('Target: "{0}" if not a name or alias', t)
 
             # process the target set to do the mapping
-            api.output.verbose_msgf(['target_section_mapping'], 'section to map: {0}', [str(i) for i in alias_lst])
+            api.output.verbose_msgf(['target_section_mapping'], 'Section to map: {0}', [str(i) for i in alias_lst])
             # map the alias targets
             for alias in alias_lst:
                 sobjs = glb.pnodes.TargetToSections(alias)
@@ -128,7 +129,7 @@ class part_manager:
                     api.output.warning_msg(f"{alias} did not map to a defined section")
 
         api.output.verbose_msgf(['target_section_mapping'],
-                                'Return: Sections: "{0}"\n Scons node: {1}',
+                                'Return:\n Sections: {0}\n Scons node: {1}',
                                 [i.ID for i in ret_pnodes],
                                 node_return
                                 )
@@ -629,7 +630,7 @@ class part_manager:
         return tmp
 
     def map_scons_target_list(self) -> None:
-        ''' 
+        '''
         Here we try to map the Parts target values to alias nodes SCons can build
         '''
 
@@ -834,7 +835,7 @@ class part_manager:
         # get sections.. order first items are on the bottom
         # top level sections are at the back
         order_sections = pnode.section.toposort(full_section_set)
-        
+
 
         # loop the order sections first to last
         # we load each section. The section itself know how to load itself
@@ -847,11 +848,11 @@ class part_manager:
         for cnt, sobj in enumerate(order_sections):
             # Process each sections
             # Given no new sections are defined this is basically a noop call
-            api.output.console_msg(f"Processing {cnt}/{num_sec} sections {(cnt/num_sec)*100.0:.2f}% Done.")            
+            api.output.console_msg(f"Processing {cnt}/{num_sec} sections {(cnt/num_sec)*100.0:.2f}% Done.")
             st = time.time()
             sobj.ProcessSection()
             api.output.verbose_msg(['loading', 'load_stats'], f"Section {sobj.ID} took {time.time() - st:.04} seconds ")
-            
+
 
         # after the section is processed we map various items
         # map the export data builder/or store data?
@@ -947,9 +948,9 @@ class part_manager:
         # these are the list for item we will update on disk
         # we have a list of item we can do in parallel and item that
         # have to be done serial.
-        p_mirror_list = scm.task_master.task_master()
-        p_list = scm.task_master.task_master()
-        s_list = scm.task_master.task_master()
+        p_mirror_list = scm.task_master.task_master() # items that can be mirrored
+        p_list = scm.task_master.task_master() # items we can do in parallel
+        s_list = scm.task_master.task_master() # items that have to be done serially
 
         # items we are updating on disk require update to the state files
         update_set = set([])
@@ -977,14 +978,15 @@ class part_manager:
             # we do this here to not have to run the tasks if there is
             # nothing to do
             for p in update_set:
-                p.Scm.PostProcess()
+                p.PostProcess()
             datacache.SaveCache(key='scm')
 
     def _get_scm_update_tasks(self, part_set, update_set, p_mirror_list, p_list, s_list):
         '''
         Break up the scm objects to parallel and serial list
         '''
-        self._get_scm_extern_tasks(part_set, p_list, p_mirror_list)
+        # update any extern part cases we need to update
+        self._get_scm_extern_tasks(part_set, p_list, p_mirror_list, update_set)
 
         # this is the set of part we need to check for updating
         for p in part_set:
@@ -998,16 +1000,16 @@ class part_manager:
             if scmobj.NeedsToUpdate():
                 # we check to see if the scm object allow for the
                 # parallel checkout policy.
-                update_set.add(p)
+                update_set.add(scmobj)
                 if scmobj.AllowParallelAction():
                     p_list.append(scmobj)
                 else:
                     s_list.append(scmobj)
             elif not scmobj.CacheFileExists:
                 # update cache file if it does not exist
-                update_set.add(p)
+                update_set.add(scmobj)
 
-    def _get_scm_extern_tasks(self, part_set, scm_objs, mirror_objs):
+    def _get_scm_extern_tasks(self, part_set, scm_objs, mirror_objs, update_set):
         '''
 
         '''
@@ -1023,7 +1025,10 @@ class part_manager:
             scm_obj = pobj.ExternScm
             if path not in known_paths:
                 known_paths.append(known_paths)
-                scm_objs.append(scm_obj)
+                if scm_obj.NeedsToUpdate():
+                    update_set.add(scm_obj)
+                    scm_objs.append(scm_obj)
+
                 if scm_obj.NeedsToUpdateMirror():
                     mirror_objs.append(scm_obj, mirror=True)
 

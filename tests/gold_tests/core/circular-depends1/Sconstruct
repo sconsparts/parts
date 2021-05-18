@@ -1,0 +1,6 @@
+from parts import *
+
+Part("a.part")
+Part("b.part")
+Part("c.part")
+

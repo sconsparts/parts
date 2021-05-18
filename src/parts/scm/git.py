@@ -3,6 +3,7 @@
 import os
 from pathlib import Path
 import re
+import hashlib
 from typing import List, Union, Optional
 
 import parts.api as api
@@ -121,7 +122,7 @@ class git(base):
         if self._server is not None:
             ret = self._server
         elif self.isExtern:
-            ret = self._env['EXTERN_GIT_SERVER']    
+            ret = self._env['EXTERN_GIT_SERVER']
         else:
             ret = self._env['GIT_SERVER']
         if ret.endswith("/"):
@@ -416,15 +417,17 @@ class git(base):
         return False
 
     def do_exist_logic(self) -> Optional['str']:
-        ''' call for testing if the scm think the stuff exists that should be build
-
+        '''
+        call for testing if the scm think the stuff exists that should be build
         returns None if it passes, returns a string to possible print tell why it failed
         '''
         api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Doing existence check")
 
-        if self.PartFileExists and os.path.exists(os.path.join(self.CheckOutDir.abspath, '.git')):
+        if self.isExtern:
             return None
-        api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Existence check failed")
+        elif not self.isExtern and self.PartFileExists and os.path.exists(os.path.join(self.CheckOutDir.abspath, '.git')):
+            return None
+        api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], f" Existence check failed")
         return "{0} needs to be updated on disk" .format(self._pobj.Alias)
 
     def do_check_logic(self) -> Optional['str']:
@@ -445,7 +448,7 @@ class git(base):
         if tmp:
             return tmp
         # get data cache and see if our paths match
-        cache = datacache.GetCache(name=self._env['ALIAS'], key='scm')
+        cache = datacache.GetCache(name=self._cache_filename, key='scm')
 
         if cache:
             api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"], " Cached server:    '{0}'", cache['server'])
@@ -543,7 +546,19 @@ class git(base):
             except KeyError:
                 pass
 
-        self._env['SCM'] = common.namespace(
+        # define a request hash that is used to help with making extern checkout
+        # directories more sharable.
+        md5 = hashlib.md5()
+        md5.update(self.Server.encode())
+        md5.update(self.Repository.encode())
+        if self.__revision:
+            md5.update(self.__revision.encode())
+        else:
+            md5.update(self.__branch.encode())
+        request_hash = md5.hexdigest()
+
+        env_key = 'SCM_EXTERN' if self.isExtern else "SCM"
+        self._env[env_key] = common.namespace(
             TYPE='git',
             CHECKOUT_DIR='$SCM_GIT_DIR',
             SERVER=self.Server,
@@ -556,8 +571,11 @@ class git(base):
             UNTRACKED=common.DelayVariable(lambda: self.get_git_data()['untracked']),
             REVISION=common.DelayVariable(lambda: self.get_git_data()['revision']),
             SHORT_REVISION=common.DelayVariable(lambda: self.get_git_data()['short_revision']),
+            REQUEST_HASH=request_hash,
+            SHORT_REQUEST_HASH=request_hash[:9]
         )
-        self._env['VCS']=self._env['SCM']
+        if not self.isExtern:
+            self._env['VCS']=self._env['SCM']
 
         if self.isExtern:
             if self.Repository is None:
@@ -567,11 +585,11 @@ class git(base):
                     api.host.error_msg(
                         "Repository was not defined! Please define $EXTERN_GIT_REPOSITORY or pass a repository argument value."
                     )
-            self._env['SCM']['EXTERN_NAME'] = "{}-{}-{}".format(
-                self.Server,
-                self.Repository,
-                self.__branch if self.__branch else self.Repository
-                )
+            #self._env[env_key]['EXTERN_NAME'] = "{}-{}-{}".format(
+                #self.Server,
+                #self.Repository,
+                #self.__branch if self.__branch else self.Repository
+                #)
         else:
             if not self.Repository:
                     api.host.error_msg(
@@ -605,6 +623,7 @@ class git(base):
         }
 
         datacache.StoreData(name=self._cache_filename, data=tmp, key='scm')
+
         self._disk_data = None
 
     def is_modified(self):
@@ -618,6 +637,8 @@ class git(base):
 
     @property
     def _cache_filename(self):
+        if self.isExtern:
+            return f"extern{self._env['SCM_EXTERN'].SHORT_REQUEST_HASH}"
         return self._env['ALIAS']
 
 
@@ -634,6 +655,9 @@ class version_from_tag:
         @parm converter - optional function that takes and environment object that will convert the version to a correct value
         '''
         # get tags
+        # we want to version from tag only with the repo used to get the sources
+        # we don't want to do this with extern repos that might contain build files at this time
+        # this might change, given a good usecase.
         try:
             tags = list(self.env["SCM"]["TAGS"])
         except KeyError:
@@ -771,7 +795,7 @@ api.register.add_enum_variable('GIT_PROTOCOL', 'https', '', ['https', 'git'])
 
 # for external part pulls
 
-api.register.add_variable('EXTERN_CHECKOUT_DIR', '$EXTERN_CHECK_OUT_ROOT/${SCM.SERVER}/${SCM.REPOSITORY}', '')
+api.register.add_variable('EXTERN_CHECKOUT_DIR', '$EXTERN_CHECK_OUT_ROOT/${SCM_EXTERN.SERVER}/${SCM_EXTERN.REPOSITORY}/${SCM_EXTERN.SHORT_REQUEST_HASH}', '')
 api.register.add_variable('EXTERN_GIT_SERVER', '', '')
 api.register.add_variable('EXTERN_GIT_REPOSITORY', '', '')
 

@@ -1,24 +1,25 @@
 
 
+import linecache
 import os
 import re
 import sys
 from builtins import map
 
-import parts.api as api
-import parts.common as common
-import parts.console as console
-import parts.core as core
-import parts.errors as errors
-import parts.glb as glb
-import parts.logger as logger
-import parts.policy as Policy
 import SCons.Errors
 import SCons.Script
 # not ideal...
 import SCons.Script.Main
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
+
+import parts.api as api
+import parts.color as color
+import parts.common as common
+import parts.console as console
+import parts.errors as errors
+import parts.glb as glb
+import parts.logger as logger
 
 if 'stacktrace' in (SCons.Script.GetOption('debug') or []):
     class PartRuntimeError(SCons.Errors.StopError):
@@ -177,15 +178,18 @@ class reporter:
     def isSetup(self):
         return self.__is_setup
 
-    def part_warning(self, msg, print_once=False, stackframe=None, show_stack=True):
+    def part_warning(self, msg, print_once=False, stackframe=None, show_stack=True, show_prefix=True):
 
-        s = "Parts: Warning: " + msg
+        if not show_prefix:
+            s = msg
+        else:
+            s = "Parts: Error!: " + msg
         if show_stack:
             if stackframe is not None:
                 filename, lineno, routine, content = stackframe
             else:
                 filename, lineno, routine, content = errors.GetPartStackFrameInfo()
-            s += ' File "%s", line %s, in "%s"\n %s\n' % (filename, lineno, routine, content)
+            s += f' {filename}:{lineno}: in "{routine}"\n{content}\n'
 
         if print_once == True:
             if hash(s) not in self.already_printed:
@@ -195,15 +199,42 @@ class reporter:
         self.console.Warning.write(s)
         self.logger.logwrn(s)
 
-    def part_error(self, msg, stackframe=None, show_stack=True, exit=True):
+    def get_content(self, filename, lineno):
+        content = ''
+        lineno_color = self.console.Verbose.Color
+        arrow_color =  self.console.Color
+        code_color = color.ConsoleColor(color.Gray).ansi_value()
+        error_code_color = self.console.Error.Color
 
-        s = "Parts: Error!: " + msg
+        if lineno > 3:
+            line=linecache.getline(filename, lineno - 3)
+            content += f"   {lineno_color}{lineno - 3}:     {code_color}{line}"
+        if lineno > 2:
+            line=linecache.getline(filename, lineno - 2)
+            content += f"   {lineno_color}{lineno - 2}:     {code_color}{line}"
+        if lineno > 1:
+            line=linecache.getline(filename, lineno - 1)
+            content += f"   {lineno_color}{lineno - 1}:     {code_color}{line}"
+        
+        line=linecache.getline(filename, lineno)
+        content += f"   {lineno_color}{lineno}:{arrow_color}==>  {error_code_color}{line}"
+        line=linecache.getline(filename, lineno + 1)
+        content += f"   {lineno_color}{lineno+1}:     {code_color}{line}"
+        return content
+
+    def part_error(self, msg, stackframe=None, show_stack=True, exit=True, show_prefix=True):
+
+        if not show_prefix:
+            s = msg
+        else:
+            s = "Parts: Error!: " + msg
         if show_stack:
             if stackframe is not None:
                 filename, lineno, routine, content = stackframe
             else:
                 filename, lineno, routine, content = errors.GetPartStackFrameInfo()
-            s += ' File "%s", line %s:, in "%s"\n %s\n' % (filename, lineno, routine, content)
+            content = self.get_content(filename,lineno)
+            s += f' {filename}:{lineno}: in "{routine}"\n{content}\n'
 
         self.console.Error.write(s)
         self.logger.logerr(s)

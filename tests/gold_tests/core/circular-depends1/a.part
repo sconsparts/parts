@@ -1,0 +1,6 @@
+Import('*')
+
+PartVersion('2.0.0')
+PartName('A')
+
+build.DependsOn('B')

@@ -1,3 +1,6 @@
 from parts import *
 SetOptionDefault('LOGGER', 'TEXT_LOGGER')
+# test that the older Depend on Logic work
+# where implicit depends are pass to dependents
+SetOptionDefault('COMPAT_REQ_INTERNAL',True)
 Part('engine','engine/engine.parts')

@@ -63,7 +63,7 @@ class Section(pnode.PNode):
     ]
 
     # define type of slot vars
-    __exports_dynamic_values:bool
+    __exports_dynamic_values: bool
 
     def __init__(self, pobj, proxy):  # , ID=None):
 
@@ -87,7 +87,6 @@ class Section(pnode.PNode):
         else:
             self.__env = self.__pobj.Env.Clone(**kw)
         self.__env['PART_SECTION'] = self.Name
-
 
     @property
     def _metasection(self):
@@ -230,11 +229,15 @@ class Section(pnode.PNode):
                 if dependent.hasMatch and not dependent.hasAmbiguousMatch:
                     tmp.append(dependent.Section)
                 elif dependent.hasAmbiguousMatch:
-                    print("AMBIGUOUS")
                     msg = dependent.AmbiguousMatchStr()
                     api.output.error_msg(f"Mapping dependent for {self.ID}\n {msg}", stackframe=dependent.StackFrame)
+                elif dependent.isOptional:
+                    api.output.warning_msg(
+                        f"Optional dependency {dependent.PartRef.Target} not found for {self.ID}", stackframe=dependent.StackFrame)
                 else:
-                    print("NO MATCH!")
+                    msg = dependent.NoMatchStr()
+                    api.output.error_msg(
+                        f"Dependency {dependent.PartRef.Target} not found for {self.ID}\n {msg}", stackframe=dependent.StackFrame)
 
             self._cache['dependent_sections'] = tmp
         return self._cache['dependent_sections']
@@ -242,7 +245,7 @@ class Section(pnode.PNode):
     def DependsSorted(self):
         '''
         Sorts the depends the best we can to respect user order, but make sure depends ordering of the dependents
-        are enforced to allow toolschains to work correctly. 
+        are enforced to allow toolschains to work correctly.
         Order is node that should be more to the bottom are first
         '''
 
@@ -251,7 +254,7 @@ class Section(pnode.PNode):
         except KeyError:
             # Since we tend to have other information.. we use that to get sorted depends
             full_depends = self.FullDependsSorted
-            depends = self.Depends[:]
+            depends = [depend for depend in self.Depends if depend.hasMatch]
 
             def cmp(x, y):
                 if x in y.Section.FullDependsSorted:
@@ -310,40 +313,39 @@ class Section(pnode.PNode):
                                 sublst[:] = common.extend_unique([], env.Flatten(sublst))
                     api.output.verbose_msg('dependson', "  Exported values", self.Exports[req.key])
 
-
     def ProcessSection(self):
-        
+
         # map the depends
         self.ResolveDepends()
-        
+
         # make sure we have bound the meta section do it can refer to the main sections as needed
         self.__metasection._bind_(self)
-        
+
         # change cwd to the of the part file
         fs = self.Env.fs
         oldwd = fs.getcwd()
         buildDir = self.Env.Dir("$BUILD_DIR")
         buildDir._create()
-        
+
         # variant dir for file out of parts tree but under SConstruct
         fs.VariantDir(self.Env.Dir('$OUTOFTREE_BUILD_DIR'), "#", self.Env['duplicate_build'])
         # variant dir for file out of SConstruct tree but under the root
         # this does not cover windows drives that are different from the current drive c:\
         fs.VariantDir(self.Env.Dir('$ROOT_BUILD_DIR'), "/", self.Env['duplicate_build'])
-        
+
         try:
             fs.chdir(buildDir, change_os_dir=True)
         except:
             fs.chdir(buildDir, change_os_dir=False)
         SCons.Script.sconscript_reading += 1
         oldCallStack = SConscript.call_stack
-                
+
         # call the meta section processing logic
         try:
-            api.output.verbose_msg([f"loading.{self.ID}",'loading'],f"Processing Section: {self.ID}")
+            api.output.verbose_msg([f"loading.{self.ID}", 'loading'], f"Processing Section: {self.ID}")
             self.__metasection.ProcessSection(0)
         finally:
-            api.output.verbose_msg([f"loading.{self.ID}",'loading'],f"Processing Section: {self.ID} Done!")
+            api.output.verbose_msg([f"loading.{self.ID}", 'loading'], f"Processing Section: {self.ID} Done!")
             SCons.Script.sconscript_reading -= 1
             #sys.path = oldSysPath
             fs.chdir(oldwd, change_os_dir=True)
@@ -353,8 +355,8 @@ class Section(pnode.PNode):
         if self._metasection.definition.TargetMappingLogic == GroupLogic.GROUPED:
             # map the items based groups we have defined
             for group in self.Groups:
-                [self._map_target(t,group) for t in self.TopLevelTargets(group=group)]
-            
+                [self._map_target(t, group) for t in self.TopLevelTargets(group=group)]
+
         elif self._metasection.definition.TargetMappingLogic == GroupLogic.TOP:
             # default map all top level items independent of groups
             [self._map_target(t) for t in self.TopLevelTargets()]
@@ -373,7 +375,7 @@ class Section(pnode.PNode):
         if import_out:
             #print(f"{import_out} -> {node_helpers.has_changed(import_out[0])} {dyn_import_out}")
             for target in self.BottomLevelTargets():
-                api.output.verbose_msg([f"loading.{self.ID}","loading"],f"Mapping {target.ID} <- {import_out.name}")
+                api.output.verbose_msg([f"loading.{self.ID}", "loading"], f"Mapping {target.ID} <- {import_out.name}")
                 self.Env.Depends(target, import_out)
 
         # for each section we also want to define a export file
@@ -382,13 +384,12 @@ class Section(pnode.PNode):
 
         # this need to be dependent on the import file
         dyn_exports = []
-        if self.hasDynamicExports:            
+        if self.hasDynamicExports:
             dyn_exports = self.Env._map_dyn_export_(dyn_import_out)
-            api.output.verbose_msg([f"loading.{self.ID}","loading"],f"Mapping {dyn_exports} <- {dyn_import_out}")
+            api.output.verbose_msg([f"loading.{self.ID}", "loading"], f"Mapping {dyn_exports} <- {dyn_import_out}")
 
-        
         export_jsn = self.Env._map_export_(import_out+dyn_exports)
-        api.output.verbose_msg([f"loading.{self.ID}","loading"],f"Mapping {export_jsn} <- {import_out+dyn_exports}")
+        api.output.verbose_msg([f"loading.{self.ID}", "loading"], f"Mapping {export_jsn} <- {import_out+dyn_exports}")
 
         # define the top level aliases mappings
         # self._map_target(export_jsn) # map the export file to the top level alias
@@ -400,7 +401,6 @@ class Section(pnode.PNode):
         # as a reminder the Alias for a node is in the from of <section type>::alias::<part ID>
         # so values as build::alias::foo or unit_test::alias::foo, etc..
         self.Exports["EXISTS"] = self.Alias
-        
 
     @ property
     def AlwaysBuild(self):
@@ -431,7 +431,7 @@ class Section(pnode.PNode):
     @ property
     def FullDependsSorted(self):
         '''
-        Get the sorted tuple of depends. 
+        Get the sorted tuple of depends.
         Bottom depends are first, with top level depends are last
         '''
         try:
@@ -568,7 +568,6 @@ class Section(pnode.PNode):
             self.sort_node_targets()
         return self._cache["phase_group_nodes"]
 
-
     def sort_node_targets(self):
         groups = set()
         phases = set()
@@ -578,34 +577,34 @@ class Section(pnode.PNode):
         for key, targets in self.GroupedTargets.items():
             if key[0]:
                 phases.add(key[0])
-                phase_nodes.setdefault(key[0],set()).update(targets)
+                phase_nodes.setdefault(key[0], set()).update(targets)
             if key[1]:
                 groups.add(key[1])
-                group_nodes.setdefault(key[1],set()).update(targets)
+                group_nodes.setdefault(key[1], set()).update(targets)
             if key[0] and key[1]:
-                phase_group_nodes.setdefault(key,set()).update(targets)
-            
-        self._cache["groups"]=groups
-        self._cache["phases"]=phases
-        self._cache["phase_nodes"]=phase_nodes
-        self._cache["group_nodes"]=group_nodes
-        self._cache["phase_group_nodes"]=phase_group_nodes
+                phase_group_nodes.setdefault(key, set()).update(targets)
 
-    def TopLevelTargets(self, phase:str=None, group:str=None):
+        self._cache["groups"] = groups
+        self._cache["phases"] = phases
+        self._cache["phase_nodes"] = phase_nodes
+        self._cache["group_nodes"] = group_nodes
+        self._cache["phase_group_nodes"] = phase_group_nodes
+
+    def TopLevelTargets(self, phase: str = None, group: str = None):
         '''
         returns the top level targets.. ie the targets that are not children
         of the other targets
         '''
-                
+
         test_targets = set()
 
         if phase and group:
-            test_targets=self.filter_system_nodes(self.TargetsByPhaseGroup[(phase,group)])
+            test_targets = self.filter_system_nodes(self.TargetsByPhaseGroup[(phase, group)])
         elif group:
-            test_targets=self.filter_system_nodes(self.TargetsByGroup[group])
+            test_targets = self.filter_system_nodes(self.TargetsByGroup[group])
         elif phase:
-            test_targets=self.filter_system_nodes(self.TargetsByPhase[phase])
-        else: 
+            test_targets = self.filter_system_nodes(self.TargetsByPhase[phase])
+        else:
             # make copy
             test_targets = self.filter_system_nodes(self.Targets)
         targets = set(test_targets)
@@ -640,7 +639,7 @@ class Section(pnode.PNode):
         ret = []
         test_targets = {node for node in self.filter_system_nodes(self.Targets) if not node.ID.startswith(".parts.cache")}
         targets = set(test_targets)
-        
+
         # stuff we know to skip
         skip_set = set()
         while targets:
@@ -652,15 +651,13 @@ class Section(pnode.PNode):
                     skip_set.add(trg)
                     # we know that trg is to be skipped
                     # continue to next node
-                    #continue
+                    # continue
                 elif test_target.is_child(trg):
                     # trg is under the test_target
                     # test_target cannot be bottom level target
                     skip_set.add(test_target)
-                    # go ahead and remove it if we 
+                    # go ahead and remove it if we
                     targets.discard(test_target)
-
-                
 
         ret = test_targets - skip_set
         api.output.verbose_msgf(
@@ -668,8 +665,7 @@ class Section(pnode.PNode):
             "Mapping nodes to '{}':\n{}", self.ID, common.DelayVariable(lambda: [n.ID for n in ret]))
         return ret
 
-
-    def _map_target(self, node:Union[SCons.Node.Node,Sequence[SCons.Node.Node]], subtarget:Optional[str]=None) -> None:
+    def _map_target(self, node: Union[SCons.Node.Node, Sequence[SCons.Node.Node]], subtarget: Optional[str] = None) -> None:
 
         # if we have a sub-target, we will want to map it to the top-level target
         if subtarget:
@@ -703,12 +699,13 @@ class Section(pnode.PNode):
         # map build::alias::foo.sub1:: -> build::alias::foo::
         if not self.Part.isRoot:  # ie we have a parent
             # build::alias::foo.sub:: -> build::alias::foo::
-            #loop to make sure we map this alias to root alias:
+            # loop to make sure we map this alias to root alias:
             child_alias = a1
             parent_part = self.Part
             while not parent_part.isRoot:
-                parent_part = parent_part.Parent                
-                child_alias = self.__env.Alias(f'{prime_concept}${{ALIAS_SEPARATOR}}${{PART_ALIAS_CONCEPT}}{parent_part.Alias}::', child_alias)
+                parent_part = parent_part.Parent
+                child_alias = self.__env.Alias(
+                    f'{prime_concept}${{ALIAS_SEPARATOR}}${{PART_ALIAS_CONCEPT}}{parent_part.Alias}::', child_alias)
             tca = self.__env.Alias(f"{prime_concept}${{ALIAS_SEPARATOR}}", child_alias)
 
         else:
@@ -970,64 +967,38 @@ class Section(pnode.PNode):
         return info
 
 
-'''
-#######################
-class build_section(section):
-    __slots__ = []
-
-    def __init__(self, pobj=None, ID=None):
-        super(build_section, self).__init__(pobj, ID)
-
-    @staticmethod
-    def _process_arg(pobj=None, **kw):
-        id = kw.get('ID')
-        setup = False
-        if pobj:
-            id = "{1}::{0}".format(pobj.ID, 'build')
-            setup = True
-        elif id is None:
-            raise ValueError("Invalid arguments values when creating section type")
-
-        return id, setup
-
-    @section.Name.getter
-    def Name(self):
-        return "build"
-
-
-class utest_section(section):
-    __slots__ = []
-
-    def __init__(self, pobj=None, ID=None, env=None):
-        super(utest_section, self).__init__(pobj, ID)
-
-    @ staticmethod
-    def _process_arg(pobj=None, **kw):
-        id = kw.get('ID')
-        setup = False
-        if pobj:
-            id = "{1}::{0}".format(pobj.ID, 'utest')
-            setup = True
-        elif id is None:
-            raise ValueError("Invalid arguments values when creating section type")
-
-        return id, setup
-
-    @ section.Name.getter
-    def Name(self):
-        return "utest"
-'''
-
-
-def been_seen(depends, seen):
+def been_seen(depends: List[dependent_ref], seen):
     '''
     Returns True if all items have been seen, or if the depend list is empty
     '''
 
     for item in depends:
-        if item.Section not in seen:
+        if item.hasMatch and item.Section not in seen:
             return False
     return True
+
+
+def dep_resolve(node, seen, stack_info):
+    for depend in node.Depends:
+        depend_sec = depend.Section
+
+        stack_info.append(depend.StackFrame)
+        if depend_sec in seen[1:]:
+            api.output.error_msg(
+                f"Circular dependency found when processing: Part: {seen[0].Part.Name} Section: {seen[0].ID}\n Stack frames:", stackframe=stack_info[0], exit=False)
+            for d, s in zip(seen[1:], stack_info[1:]):
+                api.output.error_msg(f" -> Part: {d.Part.Name} Section: {d.ID}", stackframe=s, exit=False, show_prefix=False)
+            api.output.error_msg(f"Please inspect DependsOn calls in stack and break cycle at correct place.", show_stack=False)
+        seen.append(depend_sec)
+        dep_resolve(depend_sec, seen, stack_info)
+
+
+def CircularDependencyError(data):
+    seen = []
+    for node in data:
+        seen = [node]
+        stack_info = []
+        dep_resolve(node, seen, stack_info)
 
 
 def toposort(data: Set[Section]) -> List[Section]:
@@ -1036,13 +1007,12 @@ def toposort(data: Set[Section]) -> List[Section]:
     starting with least dependent item to most dependent.
     It expects a complete list of sections, nothing should be missing
     """
-    ret = []
+    ret: List[Section] = []
     # Special case empty input.
     if len(data) == 0:
         return ret
 
-    
-    seen: str = set()
+    seen: Set[Section] = set()
 
     while True:
         # Get a set of item that have all dependencies seen and or are empty
@@ -1054,11 +1024,10 @@ def toposort(data: Set[Section]) -> List[Section]:
             break
         ret.extend([o for o in ordered])
         # remove seen sections and store them in data
-        data = [item for item in data if item not in seen]
+        data = {item for item in data if item not in seen}
 
     if len(data) != 0:
-
-        raise CircularDependencyError(data)
+        CircularDependencyError(data)
 
     return ret
 
@@ -1170,12 +1139,12 @@ def map_requirement(env, req, dependref):
                 # remove classically mapped mapper value
                 # it might not be found if the item was mapped in a different environment object
                 # that was cloned by the user. This happens in the classic format case
-            
-                if find_val in env.get(req.key,[]):
+
+                if find_val in env.get(req.key, []):
                     env[req.key].remove(find_val)
-                elif find_val[0] in env.get(req.key,[]):
+                elif find_val[0] in env.get(req.key, []):
                     env[req.key].remove(find_val[0])
-                
+
             api.output.verbose_msg([f"dependson.{req.key}", 'dependson'], "  Global list", req.key, map_val)
             if map_val:
                 env.PrependUnique(
@@ -1191,4 +1160,3 @@ def map_requirement(env, req, dependref):
 
 
 pnode_manager.manager.RegisterNodeType(Section)
-
