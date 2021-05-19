@@ -8,10 +8,17 @@ Welcome to Parts's documentation!
 
 Parts is a build extension to the SCons build system.
 
+.. note::
+
+   This documentation is being re-written form the old word doc.
+   It is current in a work in progress state as it is being updated.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
+   :glob:
+   
+   release_notes/*
 
 
 Indices and tables
