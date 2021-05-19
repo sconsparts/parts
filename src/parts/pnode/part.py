@@ -119,7 +119,6 @@ class Part(pnode.PNode):
         # '__dict__'
     ]
     # constructor
-
     def __init__(self, file=None, mode=[], scm_t=None, default=False,
                  append={}, prepend={}, create_sdk=True, package_group=None, alias=None, name=None,
                  Settings=None, extern=None,
@@ -171,7 +170,7 @@ class Part(pnode.PNode):
         # used primarily for classic formats
         # otherwise the Depends on logic will try to verify these object for possible
         # matches, else error. ie IF the part name matches the rest of it has to
-        # dependons statements with no matching name fall through the "global"
+        # depend ons statements with no matching name fall through the "global"
         # set of Parts to match
         # ideally stored only on root_parts
         if self.__kw.get('parent_part', None) is None:
@@ -189,9 +188,9 @@ class Part(pnode.PNode):
         self.__alias = alias
         self.__short_alias = alias
         # The part name.. parent.name+.+short_name
-        self.__name = name
+        self.__name:Optional[str] = name
         # the short name.. or exact value given to this part as the name
-        self.__short_name = name
+        self.__short_name:Optional[str] = name
         # the parent part object
         # check for kw for parent_part key
         self.__parent = self.__kw.pop('parent_part', None)
@@ -1026,12 +1025,6 @@ class Part(pnode.PNode):
         if self.LoadState == LoadState.FILE:
             print("\033[1;32m %s was already read" % self.__alias)
             return
-        if self.LoadState == LoadState.CACHE and self.__classic_section is None:
-            # print "promotion state from cache to file"
-            try:
-                glb.pnodes.Create(part, **self._cache['init_state'])
-            except Exception:
-                pass
 
         if self.LoadState < LoadState.FILE:
             # sort of ugly.. but SCon was to aggressive here in storing state
@@ -1194,33 +1187,6 @@ class Part(pnode.PNode):
             return name in self.__sections
         return None
 
-    def _has_valid_sections(self):
-        '''
-        This will function will do two things
-        1) reduce the map of sections to only those that have data
-        2) return true or false if any sections are good
-        Error reporting! If we have bad sections we throw an expections
-        '''
-
-        # reduce
-        for name, obj in self.__sections.items():
-            # see if the section was even called
-            if obj.isDefined:
-                # if so is it valid() in that non optional phases
-                # have been called
-                if not obj.isValid:
-                    # We have an error
-                    api.output.error_msg(
-                        "Section %s did not define all required phases!\n Define phases are:%s\n Required Phases are:%s" % [
-                            name,
-                            obj.FoundPhases(),
-                            RequiredPhases()])
-            # else:
-                # we don't have anything in the section as it was not called
-                # in this case remove it
-                #del self.__sections[name]
-        return self.__sections != {}
-
     def _has_section_phase_been_called(self, section, phase):
         '''
         Tells us if this section and phase has been called already
@@ -1242,7 +1208,7 @@ class Part(pnode.PNode):
         It will throw an error if there is no such combination defined
         '''
         try:
-            if self.__cache["%s%scalled" % (section, phase)]:
+            if self.__cache[f"{section}{phase}called"]:
                 return
         except KeyError:
             tmp = self.__env.fs.getcwd()
@@ -1259,7 +1225,7 @@ class Part(pnode.PNode):
                 i(self.__env)
 
             self.__env.fs.chdir(tmp, True)
-            self.__cache["%s%scalled" % (section, phase)] = True
+            self.__cache[f"{section}{phase}called"] = True
 
     def hasFileChanged(self):
         '''

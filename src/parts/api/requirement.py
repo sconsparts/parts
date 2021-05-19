@@ -30,24 +30,24 @@ def Requirement(name):
 
 
 # general SDK
-DefineRequirementSet('SDKINCLUDE', [requirement_internal('SDKINCLUDE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('SDKLIB', [requirement_internal('SDKLIB', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('SDKBIN', [requirement_internal('SDKBIN', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('SDKCONFIG', [requirement_internal('SDKCONFIG', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('SDKDOC', [requirement_internal('SDKDOC', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('SDKHELP', [requirement_internal('SDKHELP', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('SDKMANPAGE', [requirement_internal('SDKMANPAGE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('SDKDATA', [requirement_internal('SDKDATA', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('SDKSOURCE', [requirement_internal('SDKSOURCE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('SDKMESSAGE', [requirement_internal('SDKMESSAGE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('SDKRESOURCE', [requirement_internal('SDKRESOURCE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('SDKSAMPLE', [requirement_internal('SDKSAMPLE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('SDKTOPLEVEL', [requirement_internal('SDKTOPLEVEL', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('SDKPKGNO', [requirement_internal('SDKPKGNO', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('SDKAPI', [requirement_internal('SDKAPI', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('SDKTOOLS', [requirement_internal('SDKTOOLS', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('SDKPYTHON', [requirement_internal('SDKPYTHON', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('SDKSCRIPT', [requirement_internal('SDKSCRIPT', policy=REQ.Policy.ignore, listtype=True, internal=True)])
+DefineRequirementSet('SDKINCLUDE', [requirement_internal('SDKINCLUDE', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('SDKLIB', [requirement_internal('SDKLIB', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('SDKBIN', [requirement_internal('SDKBIN', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('SDKCONFIG', [requirement_internal('SDKCONFIG', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('SDKDOC', [requirement_internal('SDKDOC', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('SDKHELP', [requirement_internal('SDKHELP', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('SDKMANPAGE', [requirement_internal('SDKMANPAGE', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('SDKDATA', [requirement_internal('SDKDATA', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('SDKSOURCE', [requirement_internal('SDKSOURCE', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('SDKMESSAGE', [requirement_internal('SDKMESSAGE', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('SDKRESOURCE', [requirement_internal('SDKRESOURCE', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('SDKSAMPLE', [requirement_internal('SDKSAMPLE', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('SDKTOPLEVEL', [requirement_internal('SDKTOPLEVEL', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('SDKPKGNO', [requirement_internal('SDKPKGNO', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('SDKAPI', [requirement_internal('SDKAPI', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('SDKTOOLS', [requirement_internal('SDKTOOLS', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('SDKPYTHON', [requirement_internal('SDKPYTHON', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('SDKSCRIPT', [requirement_internal('SDKSCRIPT', policy=REQ.Policy.ignore, listtype=True)])
 
 
 DefineRequirementSet('SDKTARGET', ['SDKBIN', 'SDKLIB'], weight=-5000)
@@ -75,16 +75,16 @@ DefineRequirementSet('SDKFILES', [
 # general install
 DefineRequirementSet('INSTALLINCLUDE', [requirement_internal(
     'INSTALLINCLUDE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('INSTALLLIB', [requirement_internal('INSTALLLIB', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('INSTALLBIN', [requirement_internal('INSTALLBIN', policy=REQ.Policy.ignore, listtype=True, internal=True)])
+DefineRequirementSet('INSTALLLIB', [requirement_internal('INSTALLLIB', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('INSTALLBIN', [requirement_internal('INSTALLBIN', policy=REQ.Policy.ignore, listtype=True)])
 DefineRequirementSet('INSTALLCONFIG', [requirement_internal(
     'INSTALLCONFIG', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('INSTALLDOC', [requirement_internal('INSTALLDOC', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('INSTALLHELP', [requirement_internal('INSTALLHELP', policy=REQ.Policy.ignore, listtype=True, internal=True)])
+DefineRequirementSet('INSTALLDOC', [requirement_internal('INSTALLDOC', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('INSTALLHELP', [requirement_internal('INSTALLHELP', policy=REQ.Policy.ignore, listtype=True)])
 DefineRequirementSet('INSTALLMANPAGE', [requirement_internal(
     'INSTALLMANPAGE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('INSTALLDATA', [requirement_internal('INSTALLDATA', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('INSTALLSOURCE', [requirement_internal('INSTALLSOURCE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
+DefineRequirementSet('INSTALLDATA', [requirement_internal('INSTALLDATA', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('INSTALLSOURCE', [requirement_internal('INSTALLSOURCE', policy=REQ.Policy.ignore, listtype=True)])
 DefineRequirementSet('INSTALLMESSAGE', [requirement_internal(
     'INSTALLMESSAGE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
 DefineRequirementSet('INSTALLRESOURCE', [requirement_internal(
@@ -93,8 +93,8 @@ DefineRequirementSet('INSTALLSAMPLE', [requirement_internal(
     'INSTALLSAMPLE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
 DefineRequirementSet('INSTALLTOPLEVEL', [requirement_internal(
     'INSTALLTOPLEVEL', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('INSTALLPKGNO', [requirement_internal('INSTALLPKGNO', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('INSTALLAPI', [requirement_internal('INSTALLAPI', policy=REQ.Policy.ignore, listtype=True, internal=True)])
+DefineRequirementSet('INSTALLPKGNO', [requirement_internal('INSTALLPKGNO', policy=REQ.Policy.ignore, listtype=True)])
+DefineRequirementSet('INSTALLAPI', [requirement_internal('INSTALLAPI', policy=REQ.Policy.ignore, listtype=True)])
 DefineRequirementSet('INSTALLPYTHON', [requirement_internal(
     'INSTALLPYTHON', policy=REQ.Policy.ignore, listtype=True, internal=True)])
 DefineRequirementSet('INSTALLSCRIPT', [requirement_internal(

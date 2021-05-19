@@ -31,7 +31,7 @@ class TestMergeScript(unittest.TestCase):
         osEnvCopy = copy.deepcopy(os.environ)
         for key in newEnv.keys():
             os.environ[key] = newEnv[key]
-        keys = copy.deepcopy(newEnv.keys())
+        keys = list(newEnv.keys())
         keys.append('DUMMY')
         norm_env = normalize_env(self.env['ENV'], keys)
         os.environ = osEnvCopy

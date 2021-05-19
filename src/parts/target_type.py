@@ -44,7 +44,7 @@ def get_concept(tlst):
             show_stack=False
             )
     # case in which this is not a concept, could be a name or alias.. something like foo::
-    elif not is_concepts(tlst[0]) and tlst[0] not in ('name', 'alias') and len(tlst) == 2:
+    elif not is_concepts(tlst[0]) and tlst[0] not in ('name', 'alias') and len(tlst) >= 2:
         return {'_section': 'build', '_recursive': True, '_ambiguous': True}, tlst
 
 
@@ -234,7 +234,7 @@ class target_type:
 
     @Concept.setter
     def Concept(self, value):
-        
+
         if not value:
             try:
                 del self._concept

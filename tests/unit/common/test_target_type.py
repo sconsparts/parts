@@ -695,12 +695,14 @@ class TestParseTarget(unittest.TestCase):
     def test_parse_name4(self):
         '''Testing parsing of utest::name::foo'''
         tmp = target_type._parse_target("utest::name::foo")
-        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test', '_recursive': False, '_name': 'foo', '_properties': {}})
+        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test',
+                         '_recursive': False, '_name': 'foo', '_properties': {}})
 
     def test_parse_name5(self):
         '''Testing parsing of utest::foo'''
         tmp = target_type._parse_target("utest::foo")
-        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test', '_recursive': False, '_name': 'foo', '_properties': {}})
+        self.assertEqual(tmp, {'_concept': 'utest', '_section': 'unit_test',
+                         '_recursive': False, '_name': 'foo', '_properties': {}})
 
     def test_parse_name6(self):
         '''Testing parsing of name::foo'''
@@ -754,7 +756,7 @@ class TestParseTarget(unittest.TestCase):
     def test_parse_name_properties5(self):
         '''Testing parsing of c@k:v@k1:1,2,3,4@k3:hello::'''
         tmp = target_type._parse_target("c@k:v@k1:1,2,3,4@k3:hello::")
-        self.assertEqual(tmp, {'_section': 'build', '_recursive': True, '_name': 'c',
+        self.assertEqual(tmp, {'_section': 'build', '_recursive': True, '_ambiguous': True, '_name': 'c',
                                '_properties': {'k3': 'hello', 'k': 'v', 'k1': ['1', '2', '3', '4']}})
 
     def test_parse_name_properties6(self):
@@ -766,13 +768,13 @@ class TestParseTarget(unittest.TestCase):
     def test_parse_name_properties7(self):
         '''Testing parsing of c@k:v@k1:1,2,3,4@k3:hello::a1,a2,b3::'''
         tmp = target_type._parse_target("c@k:v@k1:1,2,3,4@k3:hello::a1,a2,b3::")
-        self.assertEqual(tmp, {'_section': 'build', '_recursive': True, '_name': 'c', '_groups': [
+        self.assertEqual(tmp, {'_section': 'build', '_recursive': True, '_ambiguous': True, '_name': 'c', '_groups': [
                          'a1', 'a2', 'b3'], '_properties': {'k3': 'hello', 'k': 'v', 'k1': ['1', '2', '3', '4']}})
 
     def test_parse_name_properties8(self):
         '''Testing parsing of c@k:v@k1:1,2,3,4@k3:hello::a1,a2,b3'''
         tmp = target_type._parse_target("c@k:v@k1:1,2,3,4@k3:hello::a1,a2,b3")
-        self.assertEqual(tmp, {'_section': 'build', '_recursive': False, '_name': 'c', '_groups': [
+        self.assertEqual(tmp, {'_section': 'build', '_recursive': False, '_ambiguous': True, '_name': 'c', '_groups': [
                          'a1', 'a2', 'b3'], '_properties': {'k3': 'hello', 'k': 'v', 'k1': ['1', '2', '3', '4']}})
 
     def test_special1(self):

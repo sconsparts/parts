@@ -13,7 +13,7 @@ class TestRequirement(unittest.TestCase):
         tmp = REQ.CPPPATH  # defined "set" value
         for i in tmp:
             self.assertEqual(i.key, 'CPPPATH')
-            self.assertEqual(i.is_internal, False)
+            self.assertEqual(i.is_internal, True)
             self.assertEqual(i.is_public, True)
 
     def test_requirement_creation1(self):
@@ -41,7 +41,7 @@ class TestRequirement(unittest.TestCase):
         tmp = REQ.FOOBAR  # defined value
 
         self.assertEqual(tmp.key, 'FOOBAR')
-        self.assertEqual(tmp.is_internal, False)
+        self.assertEqual(tmp.is_internal, True)
         self.assertEqual(tmp.is_public, False)
 
     def test_requirement_creation3(self):
@@ -69,7 +69,7 @@ class TestRequirement(unittest.TestCase):
         tmp = REQ.FOOBAR(public=True)  # defined value
 
         self.assertEqual(tmp.key, 'FOOBAR')
-        self.assertEqual(tmp.is_internal, False)
+        self.assertEqual(tmp.is_internal, True)
         self.assertEqual(tmp.is_public, True)
 
         tmp = REQ.FOOBAR_internal(public=True)  # defined value
@@ -84,10 +84,10 @@ class TestRequirement(unittest.TestCase):
         self.assertEqual(tmp.is_internal, True)
         self.assertEqual(tmp.is_public, True)
 
-        tmp = REQ.FOOBAR(internal=True, public=True)  # defined value
+        tmp = REQ.FOOBAR(internal=False, public=True)  # defined value
 
         self.assertEqual(tmp.key, 'FOOBAR')
-        self.assertEqual(tmp.is_internal, True)
+        self.assertEqual(tmp.is_internal, False)
         self.assertEqual(tmp.is_public, True)
 
     def test_requirement_opertor(self):
@@ -134,17 +134,17 @@ class TestRequirement(unittest.TestCase):
 
     def test_requirement_value_setting_internal4(self):
         '''Test setting value outside set get value applied correctly internal2'''
-        tmp = REQ.CPPPATH(internal=True) | REQ.DEFAULT
+        tmp = REQ.CPPPATH(internal=False) | REQ.DEFAULT
         for i in tmp:
             if i.key == 'CPPPATH':
-                self.assertEqual(i.is_internal, True)
+                self.assertEqual(i.is_internal, False)
 
     def test_requirement_value_setting_external1(self):
         '''Test setting value outside set get value applied correctly external1'''
         tmp = REQ.DEFAULT_INTERNAL | REQ.CPPPATH
         for i in tmp:
             if i.key == 'CPPPATH':
-                self.assertEqual(i.is_internal, False)
+                self.assertEqual(i.is_internal, True)
             elif i.is_internal_forced:
                 pass # if force internal we want to skip as it maybe true or false
             else:
@@ -155,7 +155,7 @@ class TestRequirement(unittest.TestCase):
         tmp = REQ.CPPPATH | REQ.DEFAULT_INTERNAL
         for i in tmp:
             if i.key == 'CPPPATH':
-                self.assertEqual(i.is_internal, False)
+                self.assertEqual(i.is_internal, True)
             elif i.is_internal_forced:
                 pass # if force internal we want to skip as it maybe true or false
             else:
@@ -163,21 +163,21 @@ class TestRequirement(unittest.TestCase):
 
     def test_requirement_value_setting_external3(self):
         '''Test setting value outside set get value applied correctly external1'''
-        tmp = REQ.DEFAULT(internal=True) | REQ.CPPPATH
+        tmp = REQ.DEFAULT(internal=False) | REQ.CPPPATH(internal=False)
         for i in tmp:
             if i.key == 'CPPPATH':
                 self.assertEqual(i.is_internal, False)
             elif i.is_internal_forced:
                 pass # if force internal we want to skip as it maybe true or false
             else:
-                self.assertEqual(i.is_internal, True)
+                self.assertEqual(i.is_internal, False)
 
     def test_requirement_value_setting_external4(self):
         '''Test setting value outside set get value applied correctly external2'''
         tmp = REQ.CPPPATH | REQ.DEFAULT(internal=True)
         for i in tmp:
             if i.key == 'CPPPATH':
-                self.assertEqual(i.is_internal, False)
+                self.assertEqual(i.is_internal, True)
             elif i.is_internal_forced:
                 pass # if force internal we want to skip as it maybe true or false
             else:

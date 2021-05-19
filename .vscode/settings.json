@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "C:\\Users\\Jason\\.virtualenvs\\parts-master-QNJFhkFy\\Scripts\\python.exe",
+    "python.pythonPath": "C:\\Users\\jkenny\\.virtualenvs\\parts-7HuQy3JO\\Scripts\\python.exe",
     "cSpell.words": [
         "ABSCPPINCFLAGS",
         "ABSRPATHLINK",
@@ -35,6 +35,7 @@
         "pnode",
         "pnodes",
         "pobj",
+        "pobjs",
         "popen",
         "rsig",
         "rsigs",
@@ -43,9 +44,13 @@
         "shellenv",
         "slist",
         "sobj",
+        "sobjs",
         "stmp",
         "tlist",
-        "tmpspace"
+        "tmpspace",
+        "tnode",
+        "tobj",
+        "utest"
     ],
     "python.testing.pytestArgs": [
         "tests/unit"

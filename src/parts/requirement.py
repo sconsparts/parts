@@ -278,6 +278,7 @@ class requirement_internal(requirement):
             self._public = public
         if policy:
             self._policy = policy
+        self._force_internal=True
         return self
 
 # class requirement_set_internal(requirement_set):
@@ -300,8 +301,6 @@ class metaREQ(type):
             if _added_types[name][1] != ReportingPolicy.ignore:
                 api.output.warning_msg("REQ option {0} is deprecated and will be removed, please remove usage.".format(name))
             return copy.deepcopy(_added_types[name][0])(internal=internal)
-        if internal:
-            return requirement_internal(name, True)
         return requirement(name)
 
 
