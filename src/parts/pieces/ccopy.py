@@ -228,7 +228,17 @@ def copytree(src, dst):
                     st = os.stat(target)
                     os.chmod(target, stat.S_IMODE(st[stat.ST_MODE]) | stat.S_IWRITE)
                     os.remove(target)
-                shutil.copy2(src_entry, target)
+                try:
+                    # this might be a symlink, and could fail as what it points to might not exist
+                    shutil.copy2(src_entry, target)
+                except IOError:
+                    # given that it failed we try again to not follow the symlinks
+                    # it still might fail again for a different reason
+                    try:
+                        shutil.copy2(src_entry, target, follow_symlinks=False)
+                    except IOError as e:
+                        api.output.error_msg(f"While copying {src_entry} to {target}:\n {e}",show_stack=False)
+
 
     # all entries are added update stats on the directory
     try:
