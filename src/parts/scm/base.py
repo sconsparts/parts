@@ -326,8 +326,7 @@ class base:
                 ret = self.do_force_logic()
             elif logic_type == 'none':
                 ret = None
-            mod_msg = 'Local modification detected in "{0}".\n Add --update to force update for merge and potential loss of local changes'.format(
-                self.CheckOutDir.abspath)
+            mod_msg = f'Local modification detected in "{self.CheckOutDir.abspath}".\n Add --update to force update for merge and potential loss of local changes'
             if ret:
                 # get policy for how to handle a positive response
                 pol = self._env.GetOption('scm_policy')
@@ -365,15 +364,14 @@ class base:
                         api.output.error_msg(mod_msg, show_stack=False)
                     elif os.path.exists(self.CheckOutDir.abspath):
                         api.output.print_msg(
-                            'No local modification detected in "{0}", updating...'.format(self.CheckOutDir.abspath))
+                            f'No local modification detected in "{self.CheckOutDir.abspath}", updating...')
                 elif pol == 'warning-update':
                     ret_val = True
                     api.output.warning_msg(ret, show_stack=False)
                     if self.is_modified() and not self._env['SCM_IGNORE_MODIFIED']:
                         api.output.error_msg(mod_msg, show_stack=False)
                     elif os.path.exists(self.CheckOutDir.abspath):
-                        api.output.warning_msg('No local modification detected in "{0}", updating...'.format(
-                            self.CheckOutDir.abspath), show_stack=False)
+                        api.output.warning_msg(f'No local modification detected in "{self.CheckOutDir.abspath}", updating...', show_stack=False)
                 elif pol == 'update':
                     ret_val = True
                     api.output.verbose_msg(['scm.update', 'scm'], ret)
@@ -381,7 +379,7 @@ class base:
                         api.output.error_msg(mod_msg, show_stack=False)
                     elif os.path.exists(self.CheckOutDir.abspath):
                         api.output.verbose_msg(
-                            ['scm.update', 'scm'], 'No local modification detected in "{0}", updating...'.format(self.CheckOutDir.abspath))
+                            ['scm.update', 'scm'], f'No local modification detected in "{self.CheckOutDir.abspath}", updating...')
                 else:
                     ret_val = False
             else:
@@ -482,7 +480,7 @@ class base:
         ret = 0
         # does the part file and checkout directory both exists
         # if it does we just need to update the code
-        if self.PartFileExists and self.CheckOutDirExists:
+        if (self.PartFileExists or self.isExtern) and self.CheckOutDirExists:
             try:
                 try:
                     ret = self.Update()

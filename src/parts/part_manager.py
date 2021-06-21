@@ -847,7 +847,7 @@ class part_manager:
             path = pobj.ExternScm._env.subst("${SCM_EXTERN_DIR}")
             scm_obj = pobj.ExternScm
             if path not in known_paths:
-                known_paths.append(known_paths)
+                known_paths.append(path)
                 if scm_obj.NeedsToUpdate():
                     update_set.add(scm_obj)
                     scm_objs.append(scm_obj)

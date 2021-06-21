@@ -96,7 +96,7 @@ class git(base):
         return Path(self._env.subst("$SCM_GIT_CACHE_DIR")) / self.Server / self.Repository
 
     def _branch_changed(self, data):
-        return data['branch'] != "{0}...origin/{0}".format(self.__branch) and self.__branch not in data['tags']
+        return data['branch'] != f"{self.__branch}...origin/{self.__branch}" and self.__branch not in data['tags']
 
     def _on_tag(self, data):
         return self.__branch in data['tags']
@@ -109,9 +109,9 @@ class git(base):
         if not self._full_path:
             protocol = self._protocol if self._protocol else self._env['GIT_PROTOCOL']
             if protocol == "git":
-                self._full_path = "git@{server}:{repo}.git".format(server=self.Server, repo=self.Repository)
+                self._full_path = f"git@{self.Server}:{self.Repository}.git"
             elif protocol == "https":
-                self._full_path = "https://{server}/{repo}.git".format(server=self.Server, repo=self.Repository)
+                self._full_path = f"https://{self.Server}/{self.Repository}.git"
             else:
                 api.output.error_msgf("Unknown git protocol provided. Must be 'https' or 'git'")
         return self._full_path
@@ -136,8 +136,8 @@ class git(base):
         git_out_path = self.MirrorPath
         clone_path = self.FullPath
 
-        strval = '{0} clone --mirror --progress {1} "{2}"'.format(git.gitpath, clone_path, git_out_path)
-        cmd = '"{0}" clone --mirror --progress {1} "{2}"'.format(git.gitpath, clone_path, git_out_path)
+        strval = f'git clone --mirror --progress {clone_path} "{git_out_path}"'
+        cmd = f'"{git.gitpath}" clone --mirror --progress {clone_path} "{git_out_path}"'
         ret = [self._env.Action(cmd, strval)]
 
         return ret
@@ -147,8 +147,8 @@ class git(base):
         Update an exiting mirror
         '''
 
-        strval = 'cd {mirror} && {0} fetch --force'.format(git.gitpath, mirror=self.MirrorPath)
-        cmd = 'cd {mirror} && "{0}" fetch --force'.format(git.gitpath, mirror=self.MirrorPath)
+        strval = f'cd {self.MirrorPath} && git fetch --force'
+        cmd = f'cd {self.MirrorPath} && "{git.gitpath}" fetch --force'
         ret = [self._env.Action(cmd, strval)]
 
         return ret
@@ -164,38 +164,38 @@ class git(base):
         # if the server is different we need to relocate
         update_path = self.FullPath
         use_mirror = self.useCache
-
+        cd_dir = f'cd {out_dir} &&'
         # change repo
         if use_mirror:
-            cmd1 = 'cd {0} && "{1}" remote set-url origin {origin}'.format(out_dir, git.gitpath, origin=self.MirrorPath)
-            strval1 = 'cd {0} && {1} remote set-url origin {origin}'.format(out_dir, 'git', origin=self.MirrorPath)
+            cmd1 = f'{cd_dir} "{git.gitpath}" remote set-url origin {self.MirrorPath}'
+            strval1 = f'{cd_dir} git remote set-url origin {self.MirrorPath}'
             origin_change_action = [
                 self._env.Action(cmd1, strval1)
             ]
             # set actions to push to original repo
             # change repo
-            cmd1 = 'cd {0} && "{1}" remote set-url --push origin {origin}'.format(out_dir, git.gitpath, origin=self.FullPath)
-            strval1 = 'cd {0} && {1} remote set-url --push origin {origin}'.format(out_dir, git.gitpath, origin=self.FullPath)
+            cmd1 = f'{cd_dir} "{git.gitpath}" remote set-url --push origin {self.FullPath}'
+            strval1 = f'{cd_dir} git remote set-url --push origin {self.FullPath}'
             origin_change_action += [
                 self._env.Action(cmd1, strval1)
             ]
         else:
-            cmd1 = 'cd {0} && "{1}" remote set-url origin {origin}'.format(out_dir, git.gitpath, origin=update_path)
-            strval1 = 'cd {0} && {1} remote set-url origin {origin}'.format(out_dir, 'git', origin=update_path)
+            cmd1 = f'{cd_dir} "{git.gitpath}" remote set-url origin {update_path}'
+            strval1 = f'{cd_dir} git remote set-url origin {update_path}'
             origin_change_action = [
                 self._env.Action(cmd1, strval1)
             ]
 
         # clean actions.. use if --scm-clean is set
-        cmd1 = 'cd {0} && "{1}" clean -dfx --force'.format(out_dir, git.gitpath)
-        strval1 = 'cd {0} && {1} clean -dfx --force'.format(out_dir, 'git')
+        cmd1 = f'{cd_dir} "{git.gitpath}" clean -dfx --force'
+        strval1 = f'{cd_dir} git clean -dfx --force'
         clean_action = [
             self._env.Action(cmd1, strval1)
         ]
 
         # Fetch action to update with correct branch/tag
-        cmd1 = 'cd {0} && "{1}" fetch --force --all ${{GIT_FETCH_ARGS}}'.format(out_dir, git.gitpath)
-        strval1 = 'cd {0} && {1} fetch --force --all ${{GIT_FETCH_ARGS}}'.format(out_dir, 'git')
+        cmd1 = f'{cd_dir} "{git.gitpath}" fetch --force --all ${{GIT_FETCH_ARGS}}'
+        strval1 = f'{cd_dir} git fetch --force --all ${{GIT_FETCH_ARGS}}'
         fetch_action = [
             self._env.Action(cmd1, strval1)
         ]
@@ -208,15 +208,15 @@ class git(base):
             branch = self._env["GIT_DEFAULT_BRANCH"]
         else:
             branch = self.__branch
-        cmd1 = 'cd {0} && "{1}" checkout ${{GIT_CHECKOUT_ARGS}} {2}'.format(out_dir, git.gitpath, branch)
-        strval1 = 'cd {0} && {1} checkout ${{GIT_CHECKOUT_ARGS}} {2}'.format(out_dir, 'git', branch)
+        cmd1 = f'{cd_dir} "{git.gitpath}" checkout ${{GIT_CHECKOUT_ARGS}} {branch}'
+        strval1 = f'{cd_dir} git checkout ${{GIT_CHECKOUT_ARGS}} {branch}'
         checkout_action = [
             self._env.Action(cmd1, strval1)
         ]
 
         # we do this with a update request only if we are not on a tag
-        cmd1 = 'cd {0} && "{1}" pull ${{GIT_PULL_ARGS}}'.format(out_dir, git.gitpath)
-        strval1 = 'cd {0} && {1} pull ${{GIT_PULL_ARGS}}'.format(out_dir, 'git')
+        cmd1 = f'{cd_dir} "{git.gitpath}" pull ${{GIT_PULL_ARGS}}'
+        strval1 = f'{cd_dir} git pull ${{GIT_PULL_ARGS}}'
         pull_action = [
             self._env.Action(cmd1, strval1)
         ]
@@ -234,30 +234,29 @@ class git(base):
                 ret = [
                     self._env.Action(
                         lambda target, source, env: removeall(out_dir),
-                        "Cleaning up checkout area for {0}".format(out_dir)
+                        f"Cleaning up checkout area for {out_dir}"
                     )
                 ] + self.CheckOutAction(out_dir)
 
             else:
                 # if it they are not set we want to say something is up.. give me the power to fix it, or do something about it
                 api.output.error_msg(
-                    'Directory "{0}" already exists with no .git directory.\n Manually remove directory or\n'
-                    ' update with -scm-retry or --scm-clean'.format(out_dir),
+                    f'Directory "{out_dir}" already exists with no .git directory.\n Manually remove directory or\n'
+                    ' update with -scm-retry or --scm-clean',
                     show_stack=False)
         else:
-            if data['modified'] and (not self._env['SCM_IGNORE_MODIFIED'] or not do_clean):
+            if data['modified'] and not self._env['SCM_IGNORE_MODIFIED'] and not do_clean:
                 # check that we don't have modification locally. if we do complain to be safe
                 api.output.error_msg(
-                    'Local modification found in "{0}".\n Manually commit and push changes or\n update with --scm-clean'.format(
-                        out_dir),
+                    f'Local modification found in "{out_dir}".\n Manually commit and push changes or\n'
+                    ' update with --scm-clean to update to remove changes',
                     show_stack=False
                 )
-            if data['untracked'] and self._env['GIT_IGNORE_UNTRACKED'] == False and not do_clean:
+            if data['untracked'] and not self._env['GIT_IGNORE_UNTRACKED'] and not do_clean:
                 # check that we don't have untracked files locally. if we do complain to be safe.
                 api.output.error_msg(
-                    'Untracked files found in "{0}".\n Manually commit and push changes\n'
-                    ' or set variable GIT_IGNORE_UNTRACKED to True\n or update with --scm-clean'.format(
-                        out_dir),
+                    f'Untracked files found in "{out_dir}".\n Manually commit and push changes\n'
+                    ' or set variable GIT_IGNORE_UNTRACKED to True\n or update with --scm-clean',
                     show_stack=False,
                     exit=False)
                 return 10  # for needing to clean
@@ -273,10 +272,8 @@ class git(base):
             if self.__revision or on_tag:
                 prefix = ''
             # hard reset_action
-            cmd1 = 'cd {0} && "{1}" reset ${{GIT_RESET_ARGS}} --hard {prefix}{origin}'.format(
-                out_dir, git.gitpath, origin=branch, prefix=prefix)
-            strval1 = 'cd {0} && {1} reset ${{GIT_RESET_ARGS}} --hard {prefix}{origin}'.format(
-                out_dir, 'git', origin=branch, prefix=prefix)
+            cmd1 = f'{cd_dir} "{git.gitpath}" reset ${{GIT_RESET_ARGS}} --hard {prefix}{branch}'
+            strval1 = f'{cd_dir} git reset ${{GIT_RESET_ARGS}} --hard {prefix}{branch}'
             hard_reset_action = [
                 self._env.Action(cmd1, strval1)
             ]
@@ -290,9 +287,8 @@ class git(base):
                 # we cannot change if we are modified and not cleaning
                 if self.is_modified() and not do_clean:
                     api.output.error_msg(
-                        'Cannot change remote origin. Local modification found in "{0}".\n'
-                        ' Manually commit and push changes or\n update with --scm-clean'.format(
-                            out_dir),
+                        f'Cannot change remote origin. Local modification found in "{out_dir}".\n'
+                        ' Manually commit and push changes or\n update with --scm-clean to remove changes',
                         show_stack=False, exit=False)
                     return 10  # for needing to clean
                 # change origin
@@ -319,10 +315,10 @@ class git(base):
                     ret += pull_action
 
             # reapply the patch if any
-            if self._patchfile:
+            if self._patchfile and ret:
                 fullpath = self._env.File(self._patchfile).abspath
-                strval = 'cd {0} && {1} am ${{GIT_AM_ARGS}} "{2}"'.format(out_dir, git.gitpath, fullpath)
-                cmd = 'cd {0} && "{1}" am ${{GIT_AM_ARGS}} "{2}"'.format(out_dir, git.gitpath, fullpath)
+                strval = f'{cd_dir} git am ${{GIT_AM_ARGS}} "{fullpath}"'
+                cmd = f'{cd_dir} {git.gitpath} am ${{GIT_AM_ARGS}} "{fullpath}"'
                 ret += [self._env.Action(cmd, strval)]
 
         return ret
@@ -336,15 +332,6 @@ class git(base):
         Note this is only useful if one sets remote_branches to track
         '''
 
-        # this is a little cheat at the moment. Git seem to handle only
-        # single level directory outputs at the moment. So we create the
-        # directory for Git to be nice. might break the -dryrun logic
-        # but that is already broken in terms of directory creation
-        # at the moment in scons
-        # print os.path.exists(out_dir)
-        # if not os.path.exists(out_dir):
-        # os.makedirs(out_dir)
-
         # the initial clone
         git_out_path = out_dir.replace('\\', '/')
         use_mirror = self.useCache
@@ -354,31 +341,30 @@ class git(base):
             clone_path = self.FullPath
 
         if self.__branch:
-            branch = '-b {}'.format(self.__branch)
+            branch = f'-b {self.__branch}'
         elif self.__revision:
             branch = ''
         else:
             # Default or revision case
             # as only tags and branch can be cloned and checked out in one command
-            branch = '-b {}'.format(self._env["GIT_DEFAULT_BRANCH"])
+            branch = f'-b {self._env["GIT_DEFAULT_BRANCH"]}'
 
-        strval = '{0} clone ${{GIT_CLONE_ARGS}} --progress {branch} {1} "{2}"'.format(
-            git.gitpath, clone_path, git_out_path, branch=branch)
-        cmd = '"{0}" clone ${{GIT_CLONE_ARGS}} --progress {branch} {1} "{2}"'.format(
-            git.gitpath, clone_path, git_out_path, branch=branch)
+        strval = f'git clone ${{GIT_CLONE_ARGS}} --progress {branch} {clone_path} "{git_out_path}"'
+        cmd = f'"{git.gitpath}" clone ${{GIT_CLONE_ARGS}} --progress {branch} {clone_path} "{git_out_path}"'
         ret = [self._env.Action(cmd, strval)]
 
+        cd_dir = f'cd {out_dir} &&'
         # if this is a revision we want to checkout that revision
         if self.__revision:
-            cmd = 'cd {0} && "{1}" checkout ${{GIT_CHECKOUT_ARGS}} {2}'.format(out_dir, git.gitpath, self.__revision)
-            strval = 'cd {0} && {1} checkout ${{GIT_CHECKOUT_ARGS}} {2}'.format(out_dir, git.gitpath, self.__revision)
+            cmd = f'{cd_dir} "{git.gitpath}" checkout ${{GIT_CHECKOUT_ARGS}} {self.__revision}'
+            strval = f'{cd_dir} git checkout ${{GIT_CHECKOUT_ARGS}} {self.__revision}'
             ret += [self._env.Action(cmd, strval)]
 
         if use_mirror:
             # set actions to push to original repo
             # change repo
-            cmd1 = 'cd {0} && "{1}" remote set-url --push origin {origin}'.format(out_dir, git.gitpath, origin=self.FullPath)
-            strval1 = 'cd {0} && {1} remote set-url --push origin {origin}'.format(out_dir, git.gitpath, origin=self.FullPath)
+            cmd1 = f'{cd_dir} "{git.gitpath}" remote set-url --push origin {self.FullPath}'
+            strval1 = f'{cd_dir} git remote set-url --push origin {self.FullPath}'
             ret += [
                 self._env.Action(cmd1, strval1)
             ]
@@ -386,8 +372,8 @@ class git(base):
         # have patch file .. apply it
         if self._patchfile:
             fullpath = self._env.File(self._patchfile).abspath
-            strval = 'cd {0} && {1} am ${{GIT_AM_ARGS}} "{2}"'.format(out_dir, git.gitpath, fullpath)
-            cmd = 'cd {0} && "{1}" am ${{GIT_AM_ARGS}} "{2}"'.format(out_dir, git.gitpath, fullpath)
+            strval = f'{cd_dir} git am ${{GIT_AM_ARGS}} "{fullpath}"'
+            cmd = f'{cd_dir} "{git.gitpath}" am ${{GIT_AM_ARGS}} "{fullpath}"'
             ret += [self._env.Action(cmd, strval)]
 
         return ret
@@ -422,13 +408,13 @@ class git(base):
         returns None if it passes, returns a string to possible print tell why it failed
         '''
         api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Doing existence check")
-
-        if self.isExtern:
+        git_exists =  os.path.exists(os.path.join(self.CheckOutDir.abspath, '.git'))
+        if self.isExtern and git_exists:
             return None
-        elif not self.isExtern and self.PartFileExists and os.path.exists(os.path.join(self.CheckOutDir.abspath, '.git')):
+        elif not self.isExtern and self.PartFileExists and git_exists:
             return None
         api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], f" Existence check failed")
-        return "{0} needs to be updated on disk" .format(self._pobj.Alias)
+        return f"{self._pobj.Alias} needs to be updated on disk"
 
     def do_check_logic(self) -> Optional['str']:
         '''
@@ -526,7 +512,7 @@ class git(base):
             elif not self.__revision:
                 # if branch was not set default branch to be checked
                 branch = self.__branch if self.__branch else self._env["GIT_DEFAULT_BRANCH"]
-                if branch and data['branch'] != "{0}...origin/{0}".format(branch) and branch not in data['tags']:
+                if branch and data['branch'] != f"{branch}...origin/{branch}" and branch not in data['tags']:
                     # check branch or tag
                     api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Disk branch does not match")
                     return 'Branch on disk is different than the one requested for Parts "%s"\n On disk: %s\n requested: %s' % (
@@ -585,11 +571,6 @@ class git(base):
                     api.host.error_msg(
                         "Repository was not defined! Please define $EXTERN_GIT_REPOSITORY or pass a repository argument value."
                     )
-            #self._env[env_key]['EXTERN_NAME'] = "{}-{}-{}".format(
-                #self.Server,
-                #self.Repository,
-                #self.__branch if self.__branch else self.Repository
-                #)
         else:
             if not self.Repository:
                     api.host.error_msg(
@@ -672,7 +653,7 @@ class version_from_tag:
             regex = re.compile(r'\d+\.\d+(?:\.\d+)*')
 
         if not tags:
-            api.output.warning_msg("Git tag not found. Using default value: {}".format(self.env.subst(default)))
+            api.output.warning_msg(f"Git tag not found. Using default value: {self.env.subst(default)}")
             return default
 
         if not converter:
@@ -689,7 +670,7 @@ class version_from_tag:
         try:
             return versions[-1]
         except:
-            api.output.warning_msg("Git tag not found. Using default value: {}".format(default))
+            api.output.warning_msg(f"Git tag not found. Using default value: {default}")
             return default
 
 
@@ -718,7 +699,7 @@ def GetGitData(env, checkoutdir=None, patched=False):
             pass
 
     # get state on current branch on disk and if anything is modified or untracked
-    ret, data = base.command_output('cd {1} && "{0}" status ${{GIT_STATUS_ARGS}} -s -b'.format(git.gitpath, checkoutdir))
+    ret, data = base.command_output(f'cd {checkoutdir} && "{git.gitpath}" status ${{GIT_STATUS_ARGS}} -s -b')
     if not ret:
         data.replace('\r\n', '\n')
         # first line is the ## branch
@@ -742,21 +723,21 @@ def GetGitData(env, checkoutdir=None, patched=False):
 
     # get tags as these might be the "branch" we are on
     if patched:
-        ret, data = base.command_output('cd {1} && "{0}" tag ${{GIT_TAG_ARGS}} --points-at HEAD^'.format(git.gitpath, checkoutdir))
+        ret, data = base.command_output(f'cd {checkoutdir} && "{git.gitpath}" tag ${{GIT_TAG_ARGS}} --points-at HEAD^')
     else:
-        ret, data = base.command_output('cd {1} && "{0}" tag ${{GIT_TAG_ARGS}} --points-at HEAD'.format(git.gitpath, checkoutdir))
+        ret, data = base.command_output(f'cd {checkoutdir} && "{git.gitpath}" tag ${{GIT_TAG_ARGS}} --points-at HEAD')
     if not ret:
         data.replace('\r\n', '\n')
     tags = data.split('\n')[:-1]
 
     # get the revision hash for what is on disk
-    ret, data = base.command_output('cd {1} && "{0}" rev-parse HEAD'.format(git.gitpath, checkoutdir))
+    ret, data = base.command_output(f'cd {checkoutdir} && "{git.gitpath}" rev-parse HEAD')
     if not ret:
         revision = data.strip()
         short_revision = revision[:9]
 
     # get the server we will pull from
-    ret, data = base.command_output('cd {1} && "{0}" remote -v'.format(git.gitpath, checkoutdir))
+    ret, data = base.command_output(f'cd {checkoutdir} && "{git.gitpath}" remote -v')
     if not ret:
         repo_type = '(fetch)'
         # if we are caching the repo.. use the push repo instead
