@@ -1,0 +1,3 @@
+Import('*')
+
+print(f"Value of export_a={export_a}")

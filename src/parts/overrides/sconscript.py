@@ -29,34 +29,36 @@ import time
 import sys
 import os
 
+__name__ = "SCons.Script.SConscript"
 
 # this is a basic copy of the source from SCons.Script.SConscript
-# with one minor change to not care if the "src_dir" is not under the 
+# with one minor change to not care if the "src_dir" is not under the
 # directory of with the script file are loading from.
-# Parts get around the issues that is the core concern in SCons 
-# by defining a Variant directory to deal with this mapping of a 
+# Parts get around the issues that is the core concern in SCons
+# by defining a Variant directory to deal with this mapping of a
 # node that is under the directory with the build file when the
-# the directory with Source and the directory with the build file 
+# the directory with Source and the directory with the build file
 # do not match. With Parts this happens when we make a Part extern
 # in this way we limit the complication that can happen here as these
 # become expected mappings.
 
-# Scons as a Repository feature that might break with this fix. However 
-# Parts does not use this at the moment directory. Some testing needs to 
+# Scons as a Repository feature that might break with this fix. However
+# Parts does not use this at the moment directory. Some testing needs to
 # be done to see what happens here and what general change can happen to make
 # SCon core happier in hope we can remove this overide with a patch to SCons.
 
 # Another change that might happen as well is to address the script file with builders
 # the logic here is backward compatible. However it might be useful to tie in the updated
-# logic for the "extern" feature. This would have code clone for "extern" scm location before 
-# the script file is read. The negative to this is that this would make all cloning of extern 
-# Scm types linear, which would prevent the use of the Parts -scm-j switch to allow for faster 
+# logic for the "extern" feature. This would have code clone for "extern" scm location before
+# the script file is read. The negative to this is that this would make all cloning of extern
+# Scm types linear, which would prevent the use of the Parts -scm-j switch to allow for faster
 # grabbing of sources. However there might still be useful cases for this, example allow a sub-part
 # to do this if it was being build. which would enable as part to pull different source location to build itself.
 # might be an interesting idea to consider later, or might be a waste of time.
 
+
 def Parts_SConscript(fs, *files, **kw):
-    
+
     top = fs.Top
     sd = fs.SConstruct_dir.rdir()
     exports = kw.get('exports', [])
@@ -65,6 +67,7 @@ def Parts_SConscript(fs, *files, **kw):
     results = []
     for fn in files:
         call_stack.append(Frame(fs, exports, fn))
+
         old_sys_path = sys.path
         try:
             SCons.Script.sconscript_reading = SCons.Script.sconscript_reading + 1
@@ -118,7 +121,7 @@ def Parts_SConscript(fs, *files, **kw):
                         # The original code would test that the src directory is under the the build file directory
                         # need to do more testing here to look at the case of the SCons Repositories feature.
                         # This feature in general is a shared directory with sources in it that SCons will look
-                        # in for files. If that is not used it is clear that everything works. Need to test 
+                        # in for files. If that is not used it is clear that everything works. Need to test
                         # and show if we can do this with more than one Repository defined.
                         # we remove for now as it break logic that just works on SCons already.
                     try:
@@ -136,7 +139,7 @@ def Parts_SConscript(fs, *files, **kw):
                     # Append the SConscript directory to the beginning
                     # of sys.path so Python modules in the SConscript
                     # directory can be easily imported.
-                    sys.path = [ f.dir.get_abspath() ] + sys.path
+                    sys.path = [f.dir.get_abspath()] + sys.path
 
                     # This is the magic line that actually reads up
                     # and executes the stuff in the SConscript file.
@@ -145,7 +148,7 @@ def Parts_SConscript(fs, *files, **kw):
                     # exceptions that occur when processing this
                     # SConscript can base the printed frames at this
                     # level and not show SCons internals as well.
-                    call_stack[-1].globals.update({stack_bottom:1})
+                    call_stack[-1].globals.update({stack_bottom: 1})
                     old_file = call_stack[-1].globals.get('__file__')
                     try:
                         del call_stack[-1].globals['__file__']
@@ -167,7 +170,7 @@ def Parts_SConscript(fs, *files, **kw):
                             print('SConscript:%s  took %0.3f ms' % (f.get_abspath(), (time2 - time1) * 1000.0))
 
                         if old_file is not None:
-                            call_stack[-1].globals.update({__file__:old_file})
+                            call_stack[-1].globals.update({__file__: old_file})
                 else:
                     handle_missing_SConscript(f, kw.get('must_exist', None))
 
@@ -207,7 +210,8 @@ def Parts_SConscript(fs, *files, **kw):
     else:
         return tuple(results)
 
+
 scons_SConscript = SCons.Script._SConscript._SConscript
 
-# over write the 
-SCons.Script._SConscript._SConscript=Parts_SConscript
+# over write the
+SCons.Script._SConscript._SConscript = Parts_SConscript

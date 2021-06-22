@@ -1,0 +1,6 @@
+from parts import *
+
+export_a = "value of export A"
+
+SConscript("Sconscript",exports="export_a")
+

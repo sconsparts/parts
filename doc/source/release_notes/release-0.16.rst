@@ -36,7 +36,7 @@ Notes
 =====
 
 The Vcs to SCM change
---------------------
+---------------------
 
 There is a backward compatible change of vcs to scm within Parts API and CLI options. 
 Effort has been made to make sure existing build files using the "vcs" forms will continue to work.
@@ -127,6 +127,7 @@ Given that this can break existing components a COMPAT_REQ_INTERNAL variable can
 This can be define on the CLI or in the SConstruct. It is recommended to apply this to Part that needed it in the Sconstruct.
 
 .. code-block:: python
+
     Part("foo.part",COMPAT_REQ_INTERNAL=True)
 
 code changes to components that want to export dependent value to its dependencies should be done in a fine grain manner.

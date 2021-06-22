@@ -24,7 +24,7 @@ def process_Sdk_Copy(env, target_dir, source, create_sdk=True, do_clean=False):
 
     # make sure inputs are in good format
     target_dir = env.arg2nodes(target_dir)[0]
-    # Some varibles
+    # Some variables
     out = []
     src_dir = []
 
@@ -492,6 +492,7 @@ SConsEnvironment.SdkDoc = SdkDoc
 SConsEnvironment.SdkHelp = SdkHelp
 SConsEnvironment.SdkManPage = SdkManPage
 SConsEnvironment.SdkData = SdkData
+SConsEnvironment.SdkSource = SdkSource
 SConsEnvironment.SdkMessage = SdkMessage
 SConsEnvironment.SdkResource = SdkResource
 SConsEnvironment.SdkItem = SdkItem
@@ -514,7 +515,7 @@ api.register.add_builder('__CreateSDKBuilder__', SCons.Builder.Builder(
     source_scanner=scanners.NullScanner,
 
 ))
-# add configuartion varaible
+# add configuration variable
 api.register.add_variable("DATE_STAMP", datetime.datetime.now().strftime('%Y%m%d%H%M'), '')
 
 api.register.add_variable('SDK_ROOT_DIR', '#_sdk', '')

@@ -183,7 +183,7 @@ class reporter:
         if not show_prefix:
             s = msg
         else:
-            s = "Parts: Error!: " + msg
+            s = "Parts: Warning!: " + msg
         if show_stack:
             if stackframe is not None:
                 filename, lineno, routine, content = stackframe
