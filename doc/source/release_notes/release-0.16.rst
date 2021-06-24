@@ -164,8 +164,11 @@ This is an example of a Part call using extern.
   
     Part(
     "brotli",
-    "#open_source/brotli.part",
-    scm_type=ScmOpenGit(server='github.com', repository="google/brotli", tag="v1.0.9"),
+    "brotli.part",
+    # build files are here
+    extern=ScmGit(server='git.companyserver.com', repository="build/opensource"),
+    # source code is here
+    scm_type=ScmGit(server='github.com', repository="google/brotli", tag="v1.0.9"),
     )
 
 Given the extern git repo existed a part file to define build brotli in this example would look like:
