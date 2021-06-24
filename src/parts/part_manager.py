@@ -92,7 +92,7 @@ class part_manager:
                     # This has to be some other scons node thing
                     node_return.append(t)
             if tobj.isAmbiguous:
-                print(f"{tobj.OriginalString} is ambiguous")
+                #print(f"{tobj.OriginalString} is ambiguous")
                 node_return.append(tobj.OriginalString)
                 continue
                 #api.output.error_msg(f"Target {tobj.OriginalString} does not map to a known Part")
