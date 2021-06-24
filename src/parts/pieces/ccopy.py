@@ -230,14 +230,15 @@ def copytree(src, dst):
                     os.remove(target)
                 try:
                     # this might be a symlink, and could fail as what it points to might not exist
-                    shutil.copy2(src_entry, target)
-                except IOError:
-                    # given that it failed we try again to not follow the symlinks
-                    # it still might fail again for a different reason
-                    try:
-                        shutil.copy2(src_entry, target, follow_symlinks=False)
-                    except IOError as e:
-                        api.output.error_msg(f"While copying {src_entry} to {target}:\n {e}",show_stack=False)
+                    # so we test that it exists.. if it does not it is dead symlink
+                    # we also seem to have to test if the dead symlink might already exist as if it 
+                    # does we get an error that it already exists
+                    exists = os.path.exists(src_entry)
+                    if not exists and os.path.lexists(target):
+                        os.unlink(target)
+                    shutil.copy2(src_entry, target, follow_symlinks=exists)
+                except IOError as e:
+                    api.output.error_msg(f"While copying {src_entry} to {target}:\n {e}",show_stack=False)
 
 
     # all entries are added update stats on the directory
