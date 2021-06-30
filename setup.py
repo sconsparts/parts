@@ -7,6 +7,12 @@ import parts_version
 
 setup(name="scons-parts",
       description="Extension module to SCons build system",
+      long_description='''
+Extension module to SCons build system. Adds a component build model and a number of functional improvements.
+
+Documentation https://sconsparts.bitbucket.io/index.html
+
+      ''',
       author="Jason Kenny",
       author_email="dragon512@live.com",
       url="https://bitbucket.org/sconsparts/parts",

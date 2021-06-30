@@ -111,7 +111,7 @@ def get_csig(env, force=False) -> str:
                 # handler functions returns some string we can add to the hash
                 md5.update(handler(key, value, env).encode())
         except:
-            print("Oh no",len(env.Dictionary()))
+            #print("Oh no",len(env.Dictionary()))
             raise
         csig = md5.hexdigest()
         env._env_csig = csig

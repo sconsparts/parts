@@ -4,13 +4,14 @@ parts.egg-info/
 *.pyc
 .*.swp
 *.pdb
+*.whl
 *.o
 .tox/
 .nox/
 _sandbox/
 doc/source/_build/
 src/scons_parts.egg-info
-
+build/
 .mypy_cache/
 
 
