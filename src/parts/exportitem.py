@@ -35,7 +35,7 @@ def export_path(env, target_dirs, source_dirs, sobj, prop, use_src=False, create
             if s not in export_table:
                 target_dir = env.Dir(s).srcnode().abspath
                 export_table.append(target_dir)
-                api.output.verbose_msg(['export.file','export'], f"Exporting path from {sobj.ID}:\n {prop} = {target_dir}")
+                api.output.verbose_msg(['export.path','export'], f"Exporting path from {sobj.ID}:\n {prop} = {target_dir}")
             # we want to return the SDK directories
             # when we need to create an SDK.
             if create_sdk == True:
@@ -95,7 +95,7 @@ def export_file(env, targets, sobj, prop):
             sobj.Exports[prop][0] += [file]
         except KeyError:
             sobj.Exports[prop] = [[file]]
-        api.output.verbose_msg(['export.path','export'], f"Exporting file from {sobj.ID}:\n {prop} = {file}")
+        api.output.verbose_msg(['export.file','export'], f"Exporting file from {sobj.ID}:\n {prop} = {file}")
     return ret
 
 
@@ -210,8 +210,6 @@ def ExportItem(env, variable, values, create_sdk=True, map_as_dependance=False):
     if env['CREATE_SDK'] == False and create_sdk == True:
         create_sdk = False
 
-    if create_sdk:
-        sobj.Part._create_sdk_data.append(('ExportItem', [variable, values, False, map_as_dependance]))
     errors.ResetPartStackFrameInfo()
 
 

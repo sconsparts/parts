@@ -205,9 +205,9 @@ def make_list(obj: Union[T, Sequence[T]]) -> List[T]:
     The purpose of this function is to make the obj into a list if it is not
     already one. It will flatten as well
     '''
-    if util.isList(obj):
-        return SCons.Util.flatten(obj)
-    return [obj]
+    if not util.isList(obj):
+        obj = [obj]
+    return SCons.Util.flatten(obj)
 
 
 def make_unique(obj):

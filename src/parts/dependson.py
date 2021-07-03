@@ -4,10 +4,8 @@ import parts.api as api
 import parts.api.requirement  # this is need to have some data set at start correctly
 import parts.common as common
 import parts.core.util as util
-import parts.core.builders as builders
 import parts.dependent_ref as dependent_ref
 import parts.errors as errors
-import parts.functors as functors
 import parts.glb as glb
 import parts.part_ref as part_ref
 import parts.target_type as target_type
@@ -173,7 +171,6 @@ def depends_on_classic(env, depends: Union[dependent_ref.dependent_ref, List[dep
                     tmpspace[i] = common.namespace()
                     tmpspace = tmpspace[i]
             map_val = r.value_mapper(comp.PartRef.Target, comp.SectionName, comp.isOptional)
-            # builders.imports.map_imports_depends(env,map_val)
             tmpspace[r.key] = map_val
 
             # if this is a list and is not private we map to global space via an append

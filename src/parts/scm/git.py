@@ -50,7 +50,7 @@ class git(base):
         @param branch The optional branch to use after the clone, or on an update
         @param remote_branches Optional remote branches to add to the clone for tracking
         '''
-        self.__branch = branch
+        self.__branch = branch if branch is not None else ''
         self.__revision = revision
         self._disk_data = None
         self._completed = None
