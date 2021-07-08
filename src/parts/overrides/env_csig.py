@@ -106,7 +106,10 @@ def get_csig(env, force=False) -> str:
         md5 = hashlib.md5()
         try:
             #print(len(env.Dictionary()))
-            for key, value in env.items():
+            tmp_dict = env.Dictionary()
+            if '__builtins__' in tmp_dict:
+                del tmp_dict['__builtins__']
+            for key, value in tmp_dict.items():                
                 handler = key_handler.get(key, default_handler)
                 # handler functions returns some string we can add to the hash
                 md5.update(handler(key, value, env).encode())

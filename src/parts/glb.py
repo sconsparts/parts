@@ -5,7 +5,7 @@ import sys
 
 
 build_context_files = set()
-
+#last_key=None # this is for debugging some hard to deal with errors with env_csig 
 engine = None
 rpter = None
 pnodes = None

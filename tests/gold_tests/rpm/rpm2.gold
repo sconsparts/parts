@@ -1,5 +1,3 @@
 {}
-Parts: Warning: FakeArch is not a known defined TARGET_ARCH
- {}
- out=env.RPMPackage('${NAME}-${VERSION}-${RELEASE}.${TARGET_ARCH}.rpm',source = ['pkg1','pkg_control1'],TARGET_ARCH = 'FakeArch',NAME = 'Software_Intel', VERSION = '1.0', RELEASE = '1', arch_mapper = {})
+Parts: Warning!: FakeArch is not a known defined TARGET_ARCH
 {}

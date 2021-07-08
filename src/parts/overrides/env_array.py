@@ -8,6 +8,7 @@ from SCons.Script.SConscript import SConsEnvironment
 
 
 def Parts__setitem__(self, key, val):
+    #glb.last_key = (key,val)
     if getattr(self, '_log_keys', False):
         if (key in self) == False:
             pobj = glb.engine._part_manager._from_env(self)
