@@ -154,14 +154,17 @@ def rpm_scanner(node, env, path, args=None):
                     filtered = filtered_node
 
             # check to see if this type of file should be have the runpath
-            if pk_type in ("BIN", "LIB", "PRIVATE_BIN"):
+            if pk_type in ("BIN", "LIB", "PRIVATE_BIN", 'SYSTEM_BIN'):
                 # we call build to modify the runpath as needed
                 # depending on what PACKAGE_RUNPATH is set to
                 # may remove , do nothing or change the runpath of a binary
                 # This build should also check if it is a binary and skip
                 # "scripts" or text files that make be installed in these areas
                 filtered = env.SetRPath(
-                    filtered, RPATH_TARGET_PREFIX="$BUILD_DIR/_RPM_RUNPATH_${PART_MINI_SIG}", allow_duplicates=True)
+                    filtered,
+                    RPATH_TARGET_PREFIX="$BUILD_DIR/_RPM_RUNPATH_${PART_MINI_SIG}",
+                    allow_duplicates=True
+                    )
                 filtered_src += filtered
             else:
                 filtered_src.append(filtered)

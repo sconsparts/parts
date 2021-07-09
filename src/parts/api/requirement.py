@@ -30,96 +30,96 @@ def Requirement(name):
 
 
 # general SDK
-DefineRequirementSet('SDKINCLUDE', [requirement_internal('SDKINCLUDE', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('SDKLIB', [requirement_internal('SDKLIB', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('SDKBIN', [requirement_internal('SDKBIN', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('SDKCONFIG', [requirement_internal('SDKCONFIG', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('SDKDOC', [requirement_internal('SDKDOC', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('SDKHELP', [requirement_internal('SDKHELP', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('SDKMANPAGE', [requirement_internal('SDKMANPAGE', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('SDKDATA', [requirement_internal('SDKDATA', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('SDKSOURCE', [requirement_internal('SDKSOURCE', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('SDKMESSAGE', [requirement_internal('SDKMESSAGE', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('SDKRESOURCE', [requirement_internal('SDKRESOURCE', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('SDKSAMPLE', [requirement_internal('SDKSAMPLE', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('SDKTOPLEVEL', [requirement_internal('SDKTOPLEVEL', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('SDKPKGNO', [requirement_internal('SDKPKGNO', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('SDKAPI', [requirement_internal('SDKAPI', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('SDKTOOLS', [requirement_internal('SDKTOOLS', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('SDKPYTHON', [requirement_internal('SDKPYTHON', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('SDKSCRIPT', [requirement_internal('SDKSCRIPT', policy=REQ.Policy.ignore, listtype=True)])
+#DefineRequirementSet('SDKINCLUDE', [requirement_internal('SDKINCLUDE', policy=REQ.Policy.ignore, listtype=True)])
+#DefineRequirementSet('SDKLIB', [requirement_internal('SDKLIB', policy=REQ.Policy.ignore, listtype=True)])
+#DefineRequirementSet('SDKBIN', [requirement_internal('SDKBIN', policy=REQ.Policy.ignore, listtype=True)])
+#DefineRequirementSet('SDKCONFIG', [requirement_internal('SDKCONFIG', policy=REQ.Policy.ignore, listtype=True)])
+#DefineRequirementSet('SDKDOC', [requirement_internal('SDKDOC', policy=REQ.Policy.ignore, listtype=True)])
+#DefineRequirementSet('SDKHELP', [requirement_internal('SDKHELP', policy=REQ.Policy.ignore, listtype=True)])
+#DefineRequirementSet('SDKMANPAGE', [requirement_internal('SDKMANPAGE', policy=REQ.Policy.ignore, listtype=True)])
+#DefineRequirementSet('SDKDATA', [requirement_internal('SDKDATA', policy=REQ.Policy.ignore, listtype=True)])
+#DefineRequirementSet('SDKSOURCE', [requirement_internal('SDKSOURCE', policy=REQ.Policy.ignore, listtype=True)])
+#DefineRequirementSet('SDKMESSAGE', [requirement_internal('SDKMESSAGE', policy=REQ.Policy.ignore, listtype=True)])
+#DefineRequirementSet('SDKRESOURCE', [requirement_internal('SDKRESOURCE', policy=REQ.Policy.ignore, listtype=True)])
+#DefineRequirementSet('SDKSAMPLE', [requirement_internal('SDKSAMPLE', policy=REQ.Policy.ignore, listtype=True)])
+#DefineRequirementSet('SDKTOPLEVEL', [requirement_internal('SDKTOPLEVEL', policy=REQ.Policy.ignore, listtype=True)])
+#DefineRequirementSet('SDKPKGNO', [requirement_internal('SDKPKGNO', policy=REQ.Policy.ignore, listtype=True)])
+#DefineRequirementSet('SDKAPI', [requirement_internal('SDKAPI', policy=REQ.Policy.ignore, listtype=True)])
+#DefineRequirementSet('SDKTOOLS', [requirement_internal('SDKTOOLS', policy=REQ.Policy.ignore, listtype=True)])
+#DefineRequirementSet('SDKPYTHON', [requirement_internal('SDKPYTHON', policy=REQ.Policy.ignore, listtype=True)])
+#DefineRequirementSet('SDKSCRIPT', [requirement_internal('SDKSCRIPT', policy=REQ.Policy.ignore, listtype=True)])
 
 
-DefineRequirementSet('SDKTARGET', ['SDKBIN', 'SDKLIB'], weight=-5000)
-DefineRequirementSet('SDKFILES', [
-    'SDKINCLUDE',
-    'SDKLIB',
-    'SDKBIN',
-    'SDKCONFIG',
-    'SDKDOC',
-    'SDKHELP',
-    'SDKMANPAGE',
-    'SDKDATA',
-    'SDKSOURCE',
-    'SDKMESSAGE',
-    'SDKRESOURCE',
-    'SDKSAMPLE',
-    'SDKTOPLEVEL',
-    'SDKPKGNO',
-    'SDKAPI',
-    'SDKTOOLS',
-    'SDKPYTHON',
-    'SDKSCRIPT'
-], weight=-5000)
+# DefineRequirementSet('SDKTARGET', ['SDKBIN', 'SDKLIB'], weight=-5000)
+# DefineRequirementSet('SDKFILES', [
+#     'SDKINCLUDE',
+#     'SDKLIB',
+#     'SDKBIN',
+#     'SDKCONFIG',
+#     'SDKDOC',
+#     'SDKHELP',
+#     'SDKMANPAGE',
+#     'SDKDATA',
+#     'SDKSOURCE',
+#     'SDKMESSAGE',
+#     'SDKRESOURCE',
+#     'SDKSAMPLE',
+#     'SDKTOPLEVEL',
+#     'SDKPKGNO',
+#     'SDKAPI',
+#     'SDKTOOLS',
+#     'SDKPYTHON',
+#     'SDKSCRIPT'
+# ], weight=-5000)
 
 # general install
-DefineRequirementSet('INSTALLINCLUDE', [requirement_internal(
-    'INSTALLINCLUDE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('INSTALLLIB', [requirement_internal('INSTALLLIB', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('INSTALLBIN', [requirement_internal('INSTALLBIN', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('INSTALLCONFIG', [requirement_internal(
-    'INSTALLCONFIG', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('INSTALLDOC', [requirement_internal('INSTALLDOC', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('INSTALLHELP', [requirement_internal('INSTALLHELP', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('INSTALLMANPAGE', [requirement_internal(
-    'INSTALLMANPAGE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('INSTALLDATA', [requirement_internal('INSTALLDATA', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('INSTALLSOURCE', [requirement_internal('INSTALLSOURCE', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('INSTALLMESSAGE', [requirement_internal(
-    'INSTALLMESSAGE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('INSTALLRESOURCE', [requirement_internal(
-    'INSTALLRESOURCE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('INSTALLSAMPLE', [requirement_internal(
-    'INSTALLSAMPLE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('INSTALLTOPLEVEL', [requirement_internal(
-    'INSTALLTOPLEVEL', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('INSTALLPKGNO', [requirement_internal('INSTALLPKGNO', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('INSTALLAPI', [requirement_internal('INSTALLAPI', policy=REQ.Policy.ignore, listtype=True)])
-DefineRequirementSet('INSTALLPYTHON', [requirement_internal(
-    'INSTALLPYTHON', policy=REQ.Policy.ignore, listtype=True, internal=True)])
-DefineRequirementSet('INSTALLSCRIPT', [requirement_internal(
-    'INSTALLSCRIPT', policy=REQ.Policy.ignore, listtype=True, internal=True)])
+# DefineRequirementSet('INSTALLINCLUDE', [requirement_internal(
+#     'INSTALLINCLUDE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
+# DefineRequirementSet('INSTALLLIB', [requirement_internal('INSTALLLIB', policy=REQ.Policy.ignore, listtype=True)])
+# DefineRequirementSet('INSTALLBIN', [requirement_internal('INSTALLBIN', policy=REQ.Policy.ignore, listtype=True)])
+# DefineRequirementSet('INSTALLCONFIG', [requirement_internal(
+#     'INSTALLCONFIG', policy=REQ.Policy.ignore, listtype=True, internal=True)])
+# DefineRequirementSet('INSTALLDOC', [requirement_internal('INSTALLDOC', policy=REQ.Policy.ignore, listtype=True)])
+# DefineRequirementSet('INSTALLHELP', [requirement_internal('INSTALLHELP', policy=REQ.Policy.ignore, listtype=True)])
+# DefineRequirementSet('INSTALLMANPAGE', [requirement_internal(
+#     'INSTALLMANPAGE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
+# DefineRequirementSet('INSTALLDATA', [requirement_internal('INSTALLDATA', policy=REQ.Policy.ignore, listtype=True)])
+# DefineRequirementSet('INSTALLSOURCE', [requirement_internal('INSTALLSOURCE', policy=REQ.Policy.ignore, listtype=True)])
+# DefineRequirementSet('INSTALLMESSAGE', [requirement_internal(
+#     'INSTALLMESSAGE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
+# DefineRequirementSet('INSTALLRESOURCE', [requirement_internal(
+#     'INSTALLRESOURCE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
+# DefineRequirementSet('INSTALLSAMPLE', [requirement_internal(
+#     'INSTALLSAMPLE', policy=REQ.Policy.ignore, listtype=True, internal=True)])
+# DefineRequirementSet('INSTALLTOPLEVEL', [requirement_internal(
+#     'INSTALLTOPLEVEL', policy=REQ.Policy.ignore, listtype=True, internal=True)])
+# DefineRequirementSet('INSTALLPKGNO', [requirement_internal('INSTALLPKGNO', policy=REQ.Policy.ignore, listtype=True)])
+# DefineRequirementSet('INSTALLAPI', [requirement_internal('INSTALLAPI', policy=REQ.Policy.ignore, listtype=True)])
+# DefineRequirementSet('INSTALLPYTHON', [requirement_internal(
+#     'INSTALLPYTHON', policy=REQ.Policy.ignore, listtype=True, internal=True)])
+# DefineRequirementSet('INSTALLSCRIPT', [requirement_internal(
+#     'INSTALLSCRIPT', policy=REQ.Policy.ignore, listtype=True, internal=True)])
 
-DefineRequirementSet('INSTALLTARGET', ['INSTALLBIN', 'INSTALLLIB'], weight=-5000)
-DefineRequirementSet('INSTALLFILES', [
-    'INSTALLINCLUDE',
-    'INSTALLLIB',
-    'INSTALLBIN',
-    'INSTALLCONFIG',
-    'INSTALLDOC',
-    'INSTALLHELP',
-    'INSTALLMANPAGE',
-    'INSTALLDATA',
-    'INSTALLSOURCE',
-    'INSTALLMESSAGE',
-    'INSTALLRESOURCE',
-    'INSTALLSAMPLE',
-    'INSTALLTOPLEVEL',
-    'INSTALLPKGNO',
-    'INSTALLAPI',
-    'INSTALLPYTHON',
-    'INSTALLSCRIPT'
-], weight=-5000)
+# DefineRequirementSet('INSTALLTARGET', ['INSTALLBIN', 'INSTALLLIB'], weight=-5000)
+# DefineRequirementSet('INSTALLFILES', [
+#     'INSTALLINCLUDE',
+#     'INSTALLLIB',
+#     'INSTALLBIN',
+#     'INSTALLCONFIG',
+#     'INSTALLDOC',
+#     'INSTALLHELP',
+#     'INSTALLMANPAGE',
+#     'INSTALLDATA',
+#     'INSTALLSOURCE',
+#     'INSTALLMESSAGE',
+#     'INSTALLRESOURCE',
+#     'INSTALLSAMPLE',
+#     'INSTALLTOPLEVEL',
+#     'INSTALLPKGNO',
+#     'INSTALLAPI',
+#     'INSTALLPYTHON',
+#     'INSTALLSCRIPT'
+# ], weight=-5000)
 
 DefineRequirementSet(
     'EXISTS', [
@@ -155,12 +155,12 @@ DefineRequirementSet('CCFLAGS', [requirement('CCFLAGS', public=True, policy=REQ.
 DefineRequirementSet('LINKFLAGS', [requirement('LINKFLAGS', public=True, policy=REQ.Policy.ignore)])
 DefineRequirementSet('LIBPATH', [requirement('LIBPATH', public=True, policy=REQ.Policy.ignore)])
 # change this back before release
-#DefineRequirementSet('RPATHLINK', [requirement('RPATHLINK', public=True,
-                                               #policy=REQ.Policy.ignore, listtype=True, internal=False, force_internal=True)])
+# DefineRequirementSet('RPATHLINK', [requirement('RPATHLINK', public=True,
+# policy=REQ.Policy.ignore, listtype=True, internal=False, force_internal=True)])
 DefineRequirementSet('RPATHLINK', [requirement('RPATHLINK', public=True,
                                                policy=REQ.Policy.ignore, listtype=True, internal=False, force_internal=True)])
 
-DefineRequirementSet('HEADERS', ['CPPPATH', 'CPPDEFINES', 'SDKINCLUDE'], weight=-5000)
+DefineRequirementSet('HEADERS', ['CPPPATH', 'CPPDEFINES'], weight=-5000)
 DefineRequirementSet('LIBS', ['LIBPATH', requirement('LIBS', public=True, policy=REQ.Policy.ignore, listtype=True)], weight=-5000)
 
 DefineRequirementSet('CPP_DEFAULTS', ['LIBS', 'HEADERS'], weight=-9000)
@@ -168,9 +168,23 @@ DefineRequirementSet('C_DEFAULTS', ['LIBS', 'HEADERS'], weight=-9000)
 
 
 # defaults
-DefineRequirementSet('DEFAULT', ['CPP_DEFAULTS', 'C_DEFAULTS', 'EXISTS', 'SDKLIB',
-                                 'SDKBIN', 'PKG_CONFIG_PATH', "PKG_DEFAULTS", "DESTDIR_PATH", "RPATHLINK", "RPM_PACKAGE_RUNPATH"], weight=-10000)
+DefineRequirementSet(
+    'DEFAULT',
+    [
+        'CPP_DEFAULTS',
+        'C_DEFAULTS',
+        'EXISTS',
+        #'SDKLIB',
+        #'SDKBIN',
+        'PKG_CONFIG_PATH',
+        "PKG_DEFAULTS",
+        "DESTDIR_PATH",
+        "RPATHLINK",
+        "RPM_PACKAGE_RUNPATH"
+    ],
+    weight=-10000
+)
 
 # stuff to remove don't use this.. really don't use it.
-DefineRequirementSet('ALL_DEFAULT', ['LIBS', 'HEADERS', 'CCFLAGS', 'CFLAGS', 'CXXFLAGS'],
-                     policy.ReportingPolicy.warning, weight=-999999)
+#DefineRequirementSet('ALL_DEFAULT', ['LIBS', 'HEADERS', 'CCFLAGS', 'CFLAGS', 'CXXFLAGS'],
+                     #policy.ReportingPolicy.warning, weight=-999999)

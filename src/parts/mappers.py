@@ -846,6 +846,8 @@ class runpath_mapper(mapper):
 
                     install_path = env.Dir('$INSTALL_BIN')
                     for comp in sec.Depends:
+                        # check that we have this component defined
+                        # it might be optional
                         if not comp.hasUniqueMatch and comp.isOptional:
                             continue
                         libpath = comp.Section.Env.subst("$INSTALL_LIB")

@@ -89,13 +89,6 @@ class Part(pnode.PNode):
         '__sections',  # the section the part contains
         '__classic_section',  # the classic format case
 
-
-        # sdk data
-        '__create_sdk',     # create the SDK
-        '__create_sdk_data',  # This is the data for the SDK file we will want to make
-        '__sdk_files',      # the file that are copied in to the SDK
-        '__sdk_file',       # the name of the SDK file we will make.. if any
-
         # some state stuff
         '__force_load',  # tells us that this Parts should be loaded
         '__format',  # The format of the part file
@@ -135,15 +128,6 @@ class Part(pnode.PNode):
         # version number.. ideally this maps to root version only
         # but in some cases we need it in Parts that are not fully defined yet
         self.__version = version.version(kw.get('version', '0.0.0'))
-        # sdk stuff
-        # do we want to create the sdk or skip it
-        self.__create_sdk = create_sdk
-        # This is the data for the SDK file we will want to make
-        self.__create_sdk_data = []
-        # the file that are copied in to the SDK
-        self.__sdk_files = []
-        # the name of the SDK file we will make.. if any
-        self.__sdk_file = None
 
         self.__env_diff = None
         # packaging stuff
@@ -480,23 +464,6 @@ class Part(pnode.PNode):
             return self.__config_context_files
         else:
             return self.__root._config_context_files
-
-    # sdk stuff (finish SDK stuff)
-    @property
-    def SdkFile(self):
-        return self.__sdk_file
-
-    @property
-    def _sdk_files(self):
-        return self.__sdk_files
-
-    @property
-    def _create_sdk_data(self):
-        return self.__create_sdk_data
-
-    @property
-    def CreateSdk(self):
-        return self.__create_sdk
 
     # State
     @property
@@ -863,41 +830,6 @@ class Part(pnode.PNode):
 
         if "__DEBUG__POBJ__" in self.__env["MODE"]:
             self.__env['POBJ'] = self
-
-    # def __str__(self):
-        #pp = pprint.PrettyPrinter(indent=4)
-        # return pp.pformat(self.__dict__)
-
-    def _setup_sdk(self):
-        '''
-        This function tried setting up the old generate a SDK part logic
-        '''
-        # do nothing at this time....
-        return
-        create_sdk = True
-        if (self.__env['CREATE_SDK'] == False and self.__create_sdk == True):
-            create_sdk = False
-
-        if create_sdk == True:
-            # set up the builder for the SDK file
-            v = self.__env.__CreateSDKBuilder__([], self.__file)
-            self.__sdk_file = v[0]
-            # self.__env.Alias('${PART_SDK_CONCEPT}${PART_ALIAS_CONCEPT}'+self.__alias,v)
-            self.__env.Alias('${PART_BUILD_CONCEPT}${PART_ALIAS_CONCEPT}' + self.__alias, v)
-
-            if self.__parent is not None:
-                sdkname = "%s_%s.sdk.parts" % (self.__name, self.Version)
-                args = {
-                    'alias': self.__short_alias,
-                    'parts_file': sdkname,
-                    'mode': self.__mode,
-                    'scm_type': None,
-                    'default': self.__set_as_default_target,
-                    'append': self.__append,
-                    'prepend': self.__prepend,
-                    'create_sdk': False}
-                self.__parent._create_sdk_data.append(('Part', [common.named_parms(args),
-                                                                common.named_parms(self.__kw)]))
 
     def _map_targets(self):
         '''

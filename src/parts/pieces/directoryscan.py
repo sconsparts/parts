@@ -205,6 +205,11 @@ def ScanDirectory(env, default_dir, defaults=True, callbacks=[], extra_scanner=N
                 env.Pattern(src_dir=node.Dir("bin64"), includes=env["INSTALL_BIN_PATTERN"]),
             ]
         ),
+        InstallSystemBin=dict(
+            source=lambda node, env, default=None: [
+                env.Pattern(src_dir=node.Dir("sbin"), includes=env["INSTALL_BIN_PATTERN"]),
+            ]
+        ),
         InstallLib=dict(
             source=lambda node, env, default=None: [
                 env.Pattern(src_dir=node.Dir("lib"), includes=env["INSTALL_LIB_PATTERN"] + env["INSTALL_API_LIB_PATTERN"]),
