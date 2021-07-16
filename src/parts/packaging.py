@@ -378,6 +378,7 @@ api.register.add_variable('PACKAGE_ROOT', "/", "")
 api.register.add_variable('PACKAGE_LIB', '${PACKAGE_ROOT}/$INSTALL_LIB_SUBDIR', '')
 api.register.add_variable('PACKAGE_BIN', '${PACKAGE_ROOT}/$INSTALL_BIN_SUBDIR', '')
 api.register.add_variable('PACKAGE_PRIVATE_BIN', '${PACKAGE_ROOT}/$INSTALL_PRIVATE_BIN_SUBDIR', '')
+api.register.add_variable('PACKAGE_SYSTEM_BIN', '${PACKAGE_ROOT}/$INSTALL_SYSTEM_BIN_SUBDIR', '')
 
 api.register.add_variable('PACKAGE_TOOLS', '${PACKAGE_ROOT}/$INSTALL_TOOLS_SUBDIR', '')
 api.register.add_variable('PACKAGE_API', '${PACKAGE_ROOT}/$INSTALL_API_SUBDIR', '')
