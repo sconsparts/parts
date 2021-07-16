@@ -155,7 +155,7 @@ def SdkItem(env, target_dir, source, sub_dir='', post_fix='', export_info=[], ad
     tmp = target_dir_name[1:].replace('_', '')
     if create_sdk:
         # maps the data to the export table
-        #env.ExportItem(tmp, targets, create_sdk, True)
+        env.ExportItem(tmp, targets, create_sdk, True)
 
         # in cases of dynamic scanner.. we want to map some targets
         if env.get("_PARTS_DYN"):
