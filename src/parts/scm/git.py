@@ -408,12 +408,22 @@ class git(base):
         returns None if it passes, returns a string to possible print tell why it failed
         '''
         api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], " Doing existence check")
-        git_exists =  os.path.exists(os.path.join(self.CheckOutDir.abspath, '.git'))
+        git_exists = os.path.exists(os.path.join(self.CheckOutDir.abspath, '.git'))
+        has_extern = self._pobj.ExternScm
+
+        # if this is an extern scm.. we don't want to test for existence of part file
         if self.isExtern and git_exists:
             return None
-        elif not self.isExtern and self.PartFileExists and git_exists:
+        elif not has_extern and self.PartFileExists and git_exists:
             return None
-        api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], f" Existence check failed")
+        # if the part has an extern scm.. that defines the part file
+        elif has_extern and git_exists:
+            return None
+        if not git_exists:
+            reason = ".git directory does not exist"
+        else:
+            reason = "Part file not found"
+        api.output.verbose_msg(["scm.update.git", "scm.update", "scm.git", "scm"], f" Existence check failed - {reason}")
         return f"{self._pobj.Alias} needs to be updated on disk"
 
     def do_check_logic(self) -> Optional['str']:
@@ -561,22 +571,21 @@ class git(base):
             SHORT_REQUEST_HASH=request_hash[:9]
         )
         if not self.isExtern:
-            self._env['VCS']=self._env['SCM']
+            self._env['VCS'] = self._env['SCM']
 
         if self.isExtern:
             if self.Repository is None:
                 # it is not set try to get it via env
-                self._repository=self._env.subst("$EXTERN_GIT_REPOSITORY")
+                self._repository = self._env.subst("$EXTERN_GIT_REPOSITORY")
                 if not self.Repository:
                     api.host.error_msg(
                         "Repository was not defined! Please define $EXTERN_GIT_REPOSITORY or pass a repository argument value."
                     )
         else:
             if not self.Repository:
-                    api.host.error_msg(
-                        "Repository was not defined! Please pass a repository argument value."
-                    )
-
+                api.host.error_msg(
+                    "Repository was not defined! Please pass a repository argument value."
+                )
 
     def ProcessResult(self, result):
         ''' Handle GIT logic we want need to handle
@@ -776,7 +785,8 @@ api.register.add_enum_variable('GIT_PROTOCOL', 'https', '', ['https', 'git'])
 
 # for external part pulls
 
-api.register.add_variable('EXTERN_CHECKOUT_DIR', '$EXTERN_CHECK_OUT_ROOT/${SCM_EXTERN.SERVER}/${SCM_EXTERN.REPOSITORY}/${SCM_EXTERN.SHORT_REQUEST_HASH}', '')
+api.register.add_variable(
+    'EXTERN_CHECKOUT_DIR', '$EXTERN_CHECK_OUT_ROOT/${SCM_EXTERN.SERVER}/${SCM_EXTERN.REPOSITORY}/${SCM_EXTERN.SHORT_REQUEST_HASH}', '')
 api.register.add_variable('EXTERN_GIT_SERVER', '', '')
 api.register.add_variable('EXTERN_GIT_REPOSITORY', '', '')
 
