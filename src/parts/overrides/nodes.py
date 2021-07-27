@@ -202,7 +202,7 @@ SCons.Node.Node.is_side_effect = is_side_effect
 
 
 def is_buildable(self):
-    ''' 
+    '''
     return True if the node has a builder or is a SideEffect of a different builder
     If this is a Directory node we want to return False if the builder is the builtin
     default SCons.Node.FS.MkdirBuilder as this case does not store information in the DB
@@ -218,15 +218,24 @@ def get_timestamp_dir(self):
     Get the timestamp of a directory
     At the moment the logic is to test all the children that exist.
     and get the latest timestamp value. This only goes down one level
-    and differs from the system logic is that child directories timestamp 
+    and differs from the system logic is that child directories timestamp
     changes are seen. This might change going forward. However this means
     that the newest node in the subtree should be seen
     """
     stamp = 0
     for child in self.children():
-        ts = child.get_timestamp()
-        if child.exists() and ts > stamp:
-            stamp = child.get_timestamp()
+        if child.exists():
+            # in rare cases this can go off with an Entry object
+            # which cannot get a timestamp(). In this case we
+            # catch the exception and try to disambiguate instead
+            # of trying to do a type check.
+            try:
+                ts = child.get_timestamp()
+            except AttributeError:
+                child.disambiguate()
+                ts = child.get_timestamp()
+            if ts and ts > stamp:
+                stamp = child.get_timestamp()
     if not stamp:
         stamp = self.getmtime()
     return stamp
@@ -236,7 +245,7 @@ SCons.Node.FS.Dir.get_timestamp = get_timestamp_dir
 
 
 def update_binfo_dir(self):
-    ''' 
+    '''
     This is generally only a function needed for Directory nodes
     as only directory nodes can be built and have implicit items added
     after the fact that could cause false rebuilds on the second pass
@@ -382,7 +391,7 @@ SCons.Node.FS.DirNodeInfo = DirNodeInfo
 
 def convert_from_sconsignFbinfo(self, dir, name):
     """
-    Converts the "string" version of the node back into nodes based 
+    Converts the "string" version of the node back into nodes based
     on the type of info we stored in the sigs version
     """
     try:
@@ -445,7 +454,7 @@ class DirBuildInfo(SCons.Node.BuildInfoBase):
 
     def convert_from_sconsign(self, dir, name):
         """
-        Converts the "string" version of the node back into nodes based 
+        Converts the "string" version of the node back into nodes based
         on the type of info we stored in the sigs version
         """
         self.bsources = [sig.node(val) for val, sig in zip(self.bsources, self.bsourcesigs)]
@@ -531,7 +540,7 @@ def is_up_to_date_dir(self):
     """
     If this is the default MkdirBuilder
     it is up-to-date if the children exists
-    else we want to check binfo 
+    else we want to check binfo
     """
     # check that we exist
     if self.builder is not SCons.Node.FS.MkdirBuilder and not self.exists():

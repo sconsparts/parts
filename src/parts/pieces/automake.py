@@ -5,6 +5,7 @@
 from pathlib import Path
 
 import parts.api as api
+import parts.common as common
 import SCons.Builder
 import parts.node_helpers as node_helpers
 from parts.pieces.append_action import AppendFile
@@ -167,13 +168,19 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         # update action for autoreconf
         if autoreconf:
             configure_cmds.append(
-                'cd ${{TARGET.dir}} && {0} {1}'.format(autoreconf, autoreconf_args)
+                f'cd {build_dir.path} && {autoreconf} {autoreconf_args}'
             ),
 
         # Apply the correct copy logic for the source
         if callable(copy_top):
             depends, sources = copy_top(env, build_dir)
         else:
+            # what we normally want to skip
+            exclude_srcs = ["*.ac", "*.am", "*.git/*"]
+            if Path(env.subst("${CHECK_OUT_DIR}/configure.ac")).exists():
+                # because some cases this is checked in and will be replaced with the configure.ac
+                exclude_srcs += ["configure"]
+
             if copy_top:
                 # copy only item at the top level ( great for repos with Tons of nodes)
                 # as this can slow everything down processing (and scanning for) these nodes.
@@ -184,7 +191,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                     source=[top_level_auto_conf_pattern, top_level_auto_make_pattern]
                 )
                 # copy source files ( Pattern does not return Dir node at this time)
-                files = env.Glob("${CHECK_OUT_DIR}/*", exclude=["*.ac", "*.am"])
+                files = env.Glob("${CHECK_OUT_DIR}/*", exclude=exclude_srcs)
                 sources = env.CCopy(
                     source=files,
                     target=build_dir
@@ -196,19 +203,18 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                     target=build_dir
                 )
 
+                # do we need to copy git scm info as well?
                 if copy_scm:
                     git_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", includes=["*.git/*"], excludes=[".git/index"])
                     # need to treat ./git/index differently as it state changes and can cause false rebuilds
                     if git_files.files():
-                        #git_index = env.File("${CHECK_OUT_DIR}/.git/index")
                         scm_sources = env.CCopy(
                             source=git_files,
                             target=build_dir
                         )
-                        #env.AddPostAction(scm_sources[-1], env.Action(SCons.Defaults.Copy("$BUILD_DIR/build/.git/index",git_index.ID)))
 
                 # copy source files
-                files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=["*.ac", "*.am", "*.git/*"])
+                files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=exclude_srcs)
                 sources = env.CCopy(
                     source=files,
                     target=build_dir
@@ -218,6 +224,8 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         # to depend on the sources we copied over.
         env.Requires(auto_conf_buildfile, sources+scm_sources)
     else:
+        # this is the not copying source logic
+
         if autoreconf:
             configure_cmds.append(
                 'cd ${{NORMPATH("$CHECK_OUT_DIR")}} && {0} {1}'.format(autoreconf, autoreconf_args)
@@ -244,15 +252,18 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
             "INSTALL",
             # this should be the default.. but might have negative side effects
             "autom4te.cache/*",
-            "config/*"
+            "config/*",
+            "*/autom4te.cache",
+            "*/config",
         ]+env.get("IGNORE_FILES", [])
         sources = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=ignore_files).files()
 
     configure_cmds.append(
-        'cd ${{TARGET.dir}} && ${{define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}}${{MAKEPATH("$PKG_CONFIG_PATH")}} {path}/{configure} $_CONFIGURE_ARGS $CONFIGURE_ARGS'.format(configure=configure, path=rel_src_path))
+        f'cd {build_dir.path} && ${{define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}}${{MAKEPATH("$PKG_CONFIG_PATH")}} {rel_src_path}/{configure} $_CONFIGURE_ARGS $CONFIGURE_ARGS'
+    )
     if configure_post_actions:
         configure_cmds.append(configure_post_actions)
-
+    jobs=env.GetOption('num_jobs')
     # generate the makefiles
     build_files = env.CCommand(
         auto_conf_buildfile,
@@ -269,9 +280,8 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         build_files+sources,
         # the -rpath-link is to get the correct paths for the binaries to link with the rpath usage of the makefile
         [
-            'cd ${{SOURCE.dir}} ; make $_AUTOMAKE_BUILD_ARGS $AUTOMAKE_BUILD_ARGS {target} \
-            $(-j{jobs}$)'.format(target=targets, jobs=env.GetOption('num_jobs')),
-            'cd ${{SOURCE.dir}} ; make {install} $AUTOMAKE_INSTALL_ARGS'.format(install=install_targets)
+            f'cd {build_dir.path} ; make $_AUTOMAKE_BUILD_ARGS $AUTOMAKE_BUILD_ARGS {targets} $(-j{jobs}$)',
+            f'cd {build_dir.path} ; make {install_targets} $AUTOMAKE_INSTALL_ARGS'
         ],
         source_scanner=scanners.NullScanner,
         target_factory=env.Dir,
@@ -284,7 +294,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
 
     )
 
-    skip_check=True
+    skip_check = True
     if not skip_check:
         api.output.verbose_msg(["automake"], "Generating unit_test for '{name}' with make target {target}".format(
             name=env.PartName(), target=check_targets))
@@ -322,7 +332,9 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
 SConsEnvironment.AutoMake = AutoMake
 
 api.register.add_variable('AUTO_MAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines namespace for building a unit test')
-api.register.add_variable('_ABSCPPINCFLAGS','$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)','')
-api.register.add_variable('_ABSLIBDIRFLAGS','$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)','')
-api.register.add_variable('_AUTOMAKE_BUILD_ARGS','LDFLAGS="$LINKFLAGS $MAKE_LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS" V=1','')
-api.register.add_list_variable('AUTOMAKE_BUILD_ARGS', SCons.Util.CLVar() ,'')
+api.register.add_variable('_ABSCPPINCFLAGS', '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
+api.register.add_variable(
+    '_ABSLIBDIRFLAGS', '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
+api.register.add_variable('_AUTOMAKE_BUILD_ARGS',
+                          'LDFLAGS="$LINKFLAGS $MAKE_LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS" V=1', '')
+api.register.add_list_variable('AUTOMAKE_BUILD_ARGS', SCons.Util.CLVar(), '')

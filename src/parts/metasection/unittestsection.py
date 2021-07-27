@@ -49,7 +49,6 @@ class UnitTest(MetaSection):
         groups = self.PhaseGroups()
 
         for group in groups:
-            print(f"--- Processing Group: {group}")
             # for each group we want a unique environment and test context
             if group not in self._run_context:
                 self._run_context[group] = (self.Env.Clone(), TestCtx())
@@ -115,7 +114,7 @@ class UnitTest(MetaSection):
             elif context.Sources:
                 context.Sources = common.make_list(context.Sources)
                 context.Sources = [src if not isinstance(src, pattern.Pattern) else src.files() for src in context.Sources]
-                
+
                 target = env.Program(f"{env['UNIT_TEST_TARGET_NAME']}", context.Sources)
 
             # copy the target

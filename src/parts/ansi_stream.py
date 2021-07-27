@@ -3,7 +3,7 @@
 import ctypes
 import os
 import sys
-
+import re
 import _thread
 
 import parts.color as color
@@ -11,6 +11,47 @@ from SCons.Debug import logInstanceCreation
 
 win32 = sys.platform == 'win32'
 
+# Control/Color Sequence
+g_ansi_color_seq = re.compile('\001?\033\\[((?:\\d|;)*)([a-zA-Z])\002?')
+# Operating System Command .. should not hit much of these at the moment
+g_ansi_osc = re.compile('\001?\033\\]([^\a]*)(\a)\002?')
+
+def strip_ansi_codes(in_str:str) -> str:
+    '''
+    This function is to remove ansi code from the string to make it
+    easy to print text to console or log files.
+    '''
+
+    out = ''
+    tmp_str = ''
+    state = 0
+    code = 0
+    for s in in_str:
+        if s == '\033':
+            state = 1
+            out+=tmp_str
+            tmp_str = ''
+        elif s == '[' and state == 1:
+            state = 2
+        elif state == 2:
+            if s == ';' or s == 'm':
+                code = 0
+            else:
+                try:
+                    code = code * 10 + int(s)
+                except ValueError:
+
+                    code = 0
+                    state = 0
+            if s == 'm':
+
+                state = 0
+                code = 0
+        else:
+            tmp_str += s
+    if tmp_str != '':
+        out+=tmp_str
+    return out
 
 class ColorTextStream:
     '''Basically is an object that wraps a stream and process color ansi

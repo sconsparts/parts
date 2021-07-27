@@ -3,6 +3,7 @@
 import os
 
 import parts.logger as logger
+import parts.ansi_stream as ansi_stream
 
 
 class text(logger.Logger):
@@ -14,26 +15,32 @@ class text(logger.Logger):
         super().__init__(dir, file)
 
     def logout(self, msg):
+        msg=ansi_stream.strip_ansi_codes(msg)
         with self._lock:
             self.m_file.write(msg)
 
     def logerr(self, msg):
+        msg=ansi_stream.strip_ansi_codes(msg)
         with self._lock:
             self.m_file.write(msg)
 
     def logwrn(self, msg):
+        msg=ansi_stream.strip_ansi_codes(msg)
         with self._lock:
             self.m_file.write(msg)
 
     def logmsg(self, msg):
+        msg=ansi_stream.strip_ansi_codes(msg)
         with self._lock:
             self.m_file.write(msg)
 
     def logtrace(self, msg):
+        msg=ansi_stream.strip_ansi_codes(msg)
         with self._lock:
             self.m_file.write(msg)
 
     def logverbose(self, msg):
+        msg=ansi_stream.strip_ansi_codes(msg)
         with self._lock:
             self.m_file.write(msg)
 
