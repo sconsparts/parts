@@ -11,7 +11,7 @@ env.PartVersion('1.0.0')
 # You will need to use $PDB_EMITTER and $PDB_ACTION environment variables.
 
 source = 'advanced_pdb_action_example'
-if env.has_key('PDB_ACTION') and env.has_key('PDB_EMITTER'):
+if 'PDB_ACTION' in env and 'PDB_EMITTER' in env:
     env.PrintMessage('Prepare to extract PDB from %s' % source)
     builder = Builder(
             action = [Copy('${TARGETS[0]}', '$SOURCE'), '$PDB_ACTION'],

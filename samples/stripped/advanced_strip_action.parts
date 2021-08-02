@@ -10,7 +10,7 @@ env.PartVersion('1.0.0')
 
 source = 'advanced_strip_action_example'
 
-if env.has_key('STRIP_ACTION'):
+if 'STRIP_ACTION' in env:
     env.PrintMessage('Strip action defined. Create stripped copy of "%s" file' % source)
     env.InstallTarget(
         env.Command(

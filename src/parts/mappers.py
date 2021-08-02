@@ -222,7 +222,7 @@ def sub_lst(env, lst, thread_id, recurse=True):
 
 
 
-def _concat(prefix, _list, suffix, env, f=lambda x: x, target=None, source=None):
+def _concat(prefix, _list, suffix, env, f=lambda x: x, target=None, source=None, affect_signature=True):
     # this is generally the same as the SCons version
     # it differs in that we call a different subst list function
     # that will append unqiue items.
@@ -230,7 +230,6 @@ def _concat(prefix, _list, suffix, env, f=lambda x: x, target=None, source=None)
         return _list
     elif util.isString(_list):
         _list = [_list]
-    # fully expand the list
 
     # this does a append_unique of the items, so it should be
     # a unique list with everything in correct order
@@ -242,7 +241,16 @@ def _concat(prefix, _list, suffix, env, f=lambda x: x, target=None, source=None)
     if l is not None:
         _list = l
 
-    return _concat_ixes(prefix, _list, suffix, env)
+    ret = []
+    if not affect_signature:
+        ret = ['$(']
+
+    ret +=  _concat_ixes(prefix, _list, suffix, env)
+
+    if not affect_signature:
+        ret += ["$)"]
+
+    return ret
 
 
 _concat.name = "_concat"

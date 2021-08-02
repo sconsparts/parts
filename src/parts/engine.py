@@ -160,7 +160,7 @@ class parts_addon:
         # turn off all default building of any items without a target, or until
         # default is called again to set one. ( ie the default by Scons is '.' which is everything)
         self.def_env.Default('')
-        self.def_env.EnsureSConsVersion(4, 1, 0)
+        self.def_env.EnsureSConsVersion(4, 2, 0)
 
         # try to setup all logger
         self._setup_logger()
