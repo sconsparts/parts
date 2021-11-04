@@ -2,7 +2,6 @@
 from typing import List
 import copy
 import hashlib
-import os
 import time
 
 from parts.dependent_ref import dependent_ref
@@ -689,7 +688,7 @@ class part_manager:
         # we load each section. The section itself know how to load itself
         # when loading the logic give he whole list of items to load.
         # his allow a section type to do full
-        import pprint
+        
         glb.processing_sections=True
         num_sec=len(order_sections)
         start_total=time.time()

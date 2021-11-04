@@ -93,41 +93,48 @@ def add_files_content(env, file_contents, pkg_files, prefix, idx=-1):
     repstr = env.subst('${RPM_BUILD_ROOT}').lstrip('#')
     for node in pkg_files:
         tmp = node.ID.replace(repstr, '')
+        has_space = True if " " in tmp else False
         if util.isFile(node):
             # this is a file node
             # check if this node should be prefix with a special value
             # if so we need to remove the normal PACKAGE prefix and replace it with the custom prefix
             # imple details... This logic is mapped with the rpm_package code that generates the
             # tar file that is created for the rpm build. It cached the resolved value on the node
-            # we want to make sure the orginial uncached value is what is stored in the spec file
+            # we want to make sure the original uncached value is what is stored in the spec file
             if env.hasMetaTag(node, "RPM_NODE_PREFIX_CACHED"):
                 node_prefix = env.MetaTagValue(node, "RPM_NODE_PREFIX_CACHED")
                 # remove any special value we might have as ${NAME} that might exists
                 rpm_prefix = env.subst(env.MetaTagValue(node, "RPM_NODE_PREFIX"))
                 tmp = tmp.replace(node_prefix, rpm_prefix)
-            dir_tmp = '%dir {0}'.format(os.path.split(tmp)[0])
+            if has_space:
+                dir_tmp = f'%dir "{os.path.split(tmp)[0]}"'
+                tmp = f'"{tmp}"'
+            else:
+                dir_tmp = f'%dir {os.path.split(tmp)[0]}'
             directories.add(dir_tmp)
 
             if env.hasMetaTag(node, 'POSIX_ATTR') or env.hasMetaTag(node, 'POSIX_USER') or env.hasMetaTag(node, 'POSIX_GROUP'):
                 attr = env.MetaTagValue(node, 'POSIX_ATTR', default="-")
                 user = env.MetaTagValue(node, 'POSIX_USER', default="-")
                 group = env.MetaTagValue(node, 'POSIX_GROUP', default="-")
-                tmp = '%attr({attr},{user},{group}) {node}'.format(attr=attr, user=user, group=group, node=tmp)
+                tmp = f'%attr({attr},{user},{group}) {tmp}'
 
             if env.hasMetaTag(node, 'RPM_NODE_DIRECTIVE'):
                 directive = env.MetaTagValue(node, 'RPM_NODE_DIRECTIVE')
-                tmp = '{directive} {node}'.format(directive=directive, node=tmp)
+                tmp = f'{directive} {tmp}'
 
             files.append(tmp)
         else:
             # this is directory node
+            if has_space:
+                tmp = f'"{tmp}"'
             if env.hasMetaTag(node, 'POSIX_ATTR') or env.hasMetaTag(node, 'POSIX_USER') or env.hasMetaTag(node, 'POSIX_GROUP'):
                 attr = env.MetaTagValue(node, 'POSIX_ATTR', default="-")
                 user = env.MetaTagValue(node, 'POSIX_USER', default="-")
                 group = env.MetaTagValue(node, 'POSIX_GROUP', default="-")
-                dir_tmp = '%dir %attr({attr},{user},{group}) {node}'.format(attr=attr, user=user, group=group, node=tmp)
+                dir_tmp = f'%dir %attr({attr},{user},{group}) {tmp}'
             else:
-                dir_tmp = '%dir {0}'.format(tmp)
+                dir_tmp = f'%dir {tmp}'
             directories.add(dir_tmp)
 
     # if files section does not exist
@@ -308,7 +315,7 @@ def process_existing_spec(env, file_contents, rpm_vals):
                     keys,
                     item.get("value_mapper", lambda env, key, value: value),
                     item.get("default", ''),
-                    # has to be False as we are modifing a file
+                    # has to be False as we are modifying a file
                     # and we don't know yet if it exists until
                     # everything is read in
                     False,
