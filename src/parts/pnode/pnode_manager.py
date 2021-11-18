@@ -532,7 +532,7 @@ class manager:
         #        return SCons.Util.MD5filesignature(fname,
         #            chunksize=SCons.Node.FS.File.md5_chunksize*1024)
         #    else:
-        #        return SCons.Util.MD5signature('')
+        #        return SCons.Util.hash_signature('')
         # if this is a Value
         # elif self.GetNodeIDType(nodeid) == type(SCons.Node.Python.Value):
 
@@ -542,7 +542,7 @@ class manager:
         # else everything else is a csig of children values
         # else:
 
-        # return SCons.Util.MD5signature(contents)
+        # return SCons.Util.hash_signature(contents)
 
     def hasNodeRelationChanged(self, snode, ninfo):
 

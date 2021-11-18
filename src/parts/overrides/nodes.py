@@ -131,7 +131,7 @@ def action_changed(self, binfo=None, indent=0):
             binfo = info.binfo
 
         contents = self.get_executor().get_contents()
-        newsig = SCons.Util.MD5signature(contents)
+        newsig = SCons.Util.hash_signature(contents)
         oldsig = binfo.bactsig
         if oldsig != newsig:
             api.output.verbose_msgf(["node-changed"], "{indent}Action changed for {node} changed! oldsig={oldsig} newsig={newsig}",

@@ -101,11 +101,11 @@ class MyDir(SCons.Node.FS.Dir):
     def get_csig(self):
         if t:
             Trace("MyDir.get_csig\n")
-        sigs = [SCons.Util.MD5signature(self.abspath)]
+        sigs = [SCons.Util.hash_signature(self.abspath)]
         for root, dirs, files in os.walk(self.abspath):
             for f in files:
                 with open(os.path.join(root, f), 'r') as f:
-                    sigs.append(SCons.Util.MD5signature(f.read()))
+                    sigs.append(SCons.Util.hash_signature(f.read()))
         csig = SCons.Util.MD5collect(sigs)
         self.get_ninfo().csig = csig
         return csig

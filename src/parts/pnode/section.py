@@ -1067,7 +1067,10 @@ def map_requirement(env, req, dependref):
         tmpspace = common.namespace()
         env["DEPENDS"] = tmpspace
 
-    namespaces = dependref.PartRef.Target.Name.split('.')
+    if dependref.PartRef.Target.Name:
+        namespaces = dependref.PartRef.Target.Name.split('.')
+    else:
+        namespaces = dependref.PartRef.Target.Alias.split('.')
     for subspace in namespaces:
         try:
             tmpspace = tmpspace[subspace]

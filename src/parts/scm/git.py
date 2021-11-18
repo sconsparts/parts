@@ -788,6 +788,7 @@ api.register.add_enum_variable('GIT_PROTOCOL', 'https', '', ['https', 'git'])
 api.register.add_variable(
     'EXTERN_CHECKOUT_DIR', '$EXTERN_CHECK_OUT_ROOT/${SCM_EXTERN.SERVER}/${SCM_EXTERN.REPOSITORY}/${SCM_EXTERN.SHORT_REQUEST_HASH}', '')
 api.register.add_variable('EXTERN_GIT_SERVER', '', '')
+api.register.add_enum_variable('EXTERN_GIT_PROTOCOL', 'https', '', ['https', 'git'])
 api.register.add_variable('EXTERN_GIT_REPOSITORY', '', '')
 
 
