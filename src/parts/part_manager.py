@@ -509,7 +509,7 @@ class part_manager:
 
             new_list.append(_nodestr)
 
-        api.output.verbose_msgf(['loading'], "original BUILD_TARGETS: {0}", SCons.Script.BUILD_TARGETS)
+        api.output.verbose_msgf(['loading','target_mapping'], "original BUILD_TARGETS: {0}", SCons.Script.BUILD_TARGETS)
         for t in SCons.Script.BUILD_TARGETS:
             tobj = target_type(t)
             # first see if this is ambiguous
@@ -563,8 +563,10 @@ class part_manager:
                     pobj_lst = [self.parts[tobj.Alias]]
                 else:
                     pobj_lst = [self._from_alias(i) for i in alias_lst]
+                
                 # filter out any of these that don't match the properties
-                pobj_lst = self.reduce_list_from_target(tobj, set(pobj_lst))
+                if tobj.Properties:
+                    pobj_lst = self.reduce_list_from_target(tobj, set(pobj_lst))
                 if not pobj_lst:
                     api.output.error_msg(f'"{t}" did not map to any defined Parts')
                 for pobj in pobj_lst:
@@ -604,8 +606,8 @@ class part_manager:
                     _add_list(basestr, t, tobj)
         SCons.Script.BUILD_TARGETS = new_list
         if skip_list:
-            api.output.verbose_msgf(['loading'], "Targets we skipped: {0}", skip_list)
-        api.output.verbose_msgf(['loading'], "Updated BUILD_TARGETS: {0}", SCons.Script.BUILD_TARGETS)
+            api.output.verbose_msgf(['loading','target_mapping'], "Targets we skipped: {0}", skip_list)
+        api.output.verbose_msgf(['loading','target_mapping'], "Updated BUILD_TARGETS: {0}", SCons.Script.BUILD_TARGETS)
 
     def ProcessParts(self) -> None:
         '''
