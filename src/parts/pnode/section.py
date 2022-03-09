@@ -401,6 +401,11 @@ class Section(pnode.PNode):
         # as a reminder the Alias for a node is in the from of <section type>::alias::<part ID>
         # so values as build::alias::foo or unit_test::alias::foo, etc..
         self.Exports["EXISTS"] = self.Alias
+        # if this is has code that is dynamic scanning objects
+        # call do an uptodate check to help ensure certains paths for rebuilds are defined
+        # to work around SCons logic for doing up-to-date checks that get cached
+        if "DYN_EXPORT_FILE" in self.Env:
+            x = node_helpers.has_changed(self.Env["DYN_EXPORT_FILE"], skip_implicit=True)
 
     @ property
     def AlwaysBuild(self):
