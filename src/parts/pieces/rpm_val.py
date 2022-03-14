@@ -2,8 +2,6 @@
 
 import itertools
 import os
-import shutil
-import tempfile
 
 import parts.api as api
 import parts.common as common

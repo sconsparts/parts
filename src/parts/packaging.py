@@ -1,5 +1,8 @@
 
 
+from pyclbr import Function
+import threading
+from typing import Dict, Set, Tuple, List, Callable, Union, cast
 import parts.api as api
 import parts.common as common
 import parts.core.util as util
@@ -9,13 +12,21 @@ import parts.settings as settings
 import SCons.Script
 from SCons.Environment import SubstitutionEnvironment as SubstEnv
 from SCons.Script.SConscript import SConsEnvironment
+from SCons.Node import Node
 
 # this is the group to part mapping
-# ie this is the unsorted data
-g_package_groups = {}
+# ie this is the unsorted data of all known values
+# currently the Set[str] is the part Alias/ID
+g_package_groups:Dict[str,Set[str]] = {}
 
 # this is a tuple of no_pkg,pkg dict of {groupName:Node.File}
-_sorted_groups = dict(), dict()
+# this is sorted of g_package_groups
+_sorted_groups: Tuple[Dict[str,Set[Node]],Dict[str,Set[Node]]] = dict(), dict()
+g_resort_package_data: bool = True
+g_known_num_of_install_files = 0
+# this lock allows us to control access
+# as we might be doing a lazy update during the build
+g_sort_data_lock = threading.RLock()
 
 
 def PackageGroupLocal(env, group, state=True):
@@ -27,13 +38,12 @@ def PackageGroupLocal(env, group, state=True):
     env.MetaTag(node, local_group=bool(state), ns='parts')
 
 
-def PackageGroups():
+def PackageGroups() -> List[str]:
     return list(g_package_groups.keys())
 
-
-def PackageGroup(name, parts=None):
+def PackageGroup(name, parts=None) -> Tuple[str, ...]:
     '''
-    Currently is bound to only handling Parts or Componnet objects ( as these
+    Currently is bound to only handling Parts or Component objects ( as these
     allow to refer to a certain Part) The idea of allowing the addition of Files
     or Dir ( and like items) are not being handled at this time as we really
     don't know where we want to put the files in the package.
@@ -41,8 +51,8 @@ def PackageGroup(name, parts=None):
 
     name = SCons.Script.DefaultEnvironment().subst(name)
     if not name:
-        return []
-
+        return tuple()
+    
     try:
         result = g_package_groups[name]
     except KeyError:
@@ -53,13 +63,12 @@ def PackageGroup(name, parts=None):
         for p in parts:
             if util.isString(p):
                 result.add(p)
-                api.output.verbose_msg('packaging', 'Adding to PackageGroup :"{0}" Part: "{1}"'.format(name, p))
+                api.output.verbose_msg('packaging', f'Adding to PackageGroup :"{name}" Part: "{p}"')
             else:
-                raise RuntimeError("%s does not refer to a defined Part" % (p))
+                raise RuntimeError(f"{p} does not refer to a defined Part")
 
-        # cache is out of date..  zap it to force rebuild
-        if name in _sorted_groups[0]:
-            _clear_sorted_group()
+    # We need to clear the sorted data as new items are being added
+    g_resort_package_data = True
 
     return tuple(x for x in result)
 
@@ -73,13 +82,13 @@ def AddPackageNodeFilter(callbacks):
         settings.DefaultSettings().vars['PACKAGE_NODE_FILTER'] = common.make_list(callbacks)
 
 
-def ReplacePackageGroupCriteria(name, func):
+def ReplacePackageGroupCriteria(name, func) -> Tuple[str, ...]:
     name = SCons.Script.DefaultEnvironment().subst(name)
     settings.DefaultSettings().vars['PACKAGE_GROUP_FILTER'].Default[name] = common.make_list(func)
     return PackageGroup(name)
 
 
-def AppendPackageGroupCriteria(name, func):
+def AppendPackageGroupCriteria(name, func) -> Tuple[str, ...]:
     name = SCons.Script.DefaultEnvironment().subst(name)
     try:
         settings.DefaultSettings().vars['PACKAGE_GROUP_FILTER'].Default[name].extend(common.make_list(func))
@@ -88,7 +97,7 @@ def AppendPackageGroupCriteria(name, func):
     return PackageGroup(name)
 
 
-def PrependPackageGroupCriteria(name, func):
+def PrependPackageGroupCriteria(name, func) -> Tuple[str, ...]:
     name = SCons.Script.DefaultEnvironment().subst(name)
     try:
         settings.DefaultSettings().vars['PACKAGE_GROUP_FILTER'].Default[name] = common.make_list(
@@ -99,13 +108,13 @@ def PrependPackageGroupCriteria(name, func):
 
 
 # env form
-def ReplacePackageGroupCriteriaEnv(env, name, func):
+def ReplacePackageGroupCriteriaEnv(env, name, func) -> Tuple[str, ...]:
     name = env.subst(name)
     env['PACKAGE_GROUP_FILTER'][name] = common.make_list(func)
     return PackageGroup(name)
 
 
-def AppendPackageGroupCriteriaEnv(env, name, func):
+def AppendPackageGroupCriteriaEnv(env, name, func) -> Tuple[str, ...]:
     name = env.subst(name)
     try:
         env['PACKAGE_GROUP_FILTER'][name].extend(common.make_list(func))
@@ -114,7 +123,7 @@ def AppendPackageGroupCriteriaEnv(env, name, func):
     return PackageGroup(name)
 
 
-def PrependPackageGroupCriteriaEnv(env, name, func):
+def PrependPackageGroupCriteriaEnv(env, name, func) -> Tuple[str, ...]:
     name = env.subst(name)
     try:
         env['PACKAGE_GROUP_FILTER'][name] = common.make_list(func) + env['PACKAGE_GROUP_FILTER'][name]
@@ -178,6 +187,14 @@ def GetPackageGroupFiles(name, no_pkg=False):
     Get all the file that are installed that are define as part of a group.
     This function will try to cache known result to improve speed.
     '''
+    with g_sort_data_lock:
+        #if g_resort_package_data:
+            #api.output.verbose_msg('packaging', 'Sorting PackageGroup Parts into nodes')
+        SortPackageGroups()
+        # get Cache value
+        groups = _sorted_groups[int(bool(no_pkg))]
+        return list(groups[name])
+
     # get Cache value
     groups = _sorted_groups[int(bool(no_pkg))]
     try:
@@ -193,24 +210,17 @@ def GetPackageGroupFiles(name, no_pkg=False):
 # this get the set of files for a given group
 
 
-def get_group_set(name, no_pkg):
-    group = _sorted_groups[bool(no_pkg)]
-    try:
-        return group[name]
-    except KeyError:
-        # don't have the group
-        # set both no_pkg and pkg cases
-        group[name] = result = set()
-        _sorted_groups[bool(not no_pkg)][name] = set()
-        return result
+def get_group_set(name:str, no_pkg:bool) -> Set[Node]:
+    no_pkg = bool(no_pkg)
+    _sorted_groups[not no_pkg].setdefault(name,set())
+    return _sorted_groups[bool(no_pkg)].setdefault(name,set())
 
-
-def _clear_sorted_group():
+def _clear_sorted_group() -> None:
     _sorted_groups[0].clear()
     _sorted_groups[1].clear()
 
 
-def _filter_by_criteria(node, filters, metainfo):
+def _filter_by_criteria(node:Node, filters, metainfo) -> bool:
     api.output.verbose_msgf(["packaging"], "Filtering node via Group {0}", node.ID)
     no_pkg = metainfo.get('no_package', False)
     for group, tests in filters.items():
@@ -227,7 +237,7 @@ def _filter_by_criteria(node, filters, metainfo):
     return False
 
 
-def _filter_node(node, filters, metainfo):
+def _filter_node(node:Node, filters:List[Callable[[Node],Union[List[str],List[Tuple[str,bool]]]]], metainfo) -> None:
     '''
     call each filter on the node
     the returned value from the filter may be a string or (string,Boolean)
@@ -243,9 +253,9 @@ def _filter_node(node, filters, metainfo):
         if grps:
             for group_info in grps:
                 try:
-                    group, no_pkg = group_info
+                    group, no_pkg = cast(Tuple[str,bool],group_info)
                 except ValueError:
-                    group, no_pkg = group_info, default_no_pkg
+                    group, no_pkg = cast(str,group_info), default_no_pkg
                 api.output.verbose_msgf(["packaging-filter"],
                                         "Node filter mapped {0} to group={1}, no_pkg={2}", node.ID, group, no_pkg)
                 get_group_set(group, no_pkg).add(node)
@@ -270,46 +280,54 @@ def _get_file_entries(node):
 
 
 def SortPackageGroups():
-    # get the set of groups currently defined
-    grps = PackageGroups()
+    # do a quick test to see if we had installed new files since last 
+    # sort. This is avoid resorting unless g_resort_package_data is set
+    global g_resort_package_data
+    global g_known_num_of_install_files
+    current_num = len(SCons.Tool.install._INSTALLED_FILES)
+    if g_known_num_of_install_files == current_num and not g_resort_package_data:
+        return
+    with g_sort_data_lock:
+        g_known_num_of_install_files = current_num
 
-    # reset the cache
-    _clear_sorted_group()
+        # reset the cache
+        _clear_sorted_group()
 
-    group_filters = glb.engine.def_env.get('PACKAGE_GROUP_FILTER', {})
-    node_filters = glb.engine.def_env.get('PACKAGE_NODE_FILTER', [])
+        group_filters = glb.engine.def_env.get('PACKAGE_GROUP_FILTER', {})
+        node_filters = glb.engine.def_env.get('PACKAGE_NODE_FILTER', [])
 
-    # for each node that is "installed"
-    for node in SCons.Tool.install._INSTALLED_FILES:
-        api.output.verbose_msgf(["packaging"], "Mapping node {0}", node.ID)
-        try:
-            # get the package object
-            metainfo = node.attributes.package
-        except AttributeError:
-            # if it does not exist set the value for group and no_pkg default values
-            # we should see this case... but to be safe
-            node.attributes.package = metainfo = common.namespace()
+        # for each node that is "installed"
+        for node in SCons.Tool.install._INSTALLED_FILES:
+            api.output.verbose_msgf(["packaging"], "Mapping node {0}", node.ID)
+            try:
+                # get the package object
+                metainfo = node.attributes.package
+            except AttributeError:
+                # if it does not exist set the value for group and no_pkg default values
+                # we should see this case... but to be safe
+                node.attributes.package = metainfo = common.namespace()
 
-        part_alias = metainfo.part_alias
-        no_pkg = metainfo.get('no_package', False)
-        pobj = glb.engine._part_manager._from_alias(part_alias)
-        # the default group to map this to
-        part_grp = pobj.PackageGroup
+            part_alias = metainfo.part_alias
+            no_pkg = metainfo.get('no_package', False)
+            pobj = glb.engine._part_manager._from_alias(part_alias)
+            # the default group to map this to
+            part_grp = pobj.PackageGroup
 
-        # does it have a Metatag value forcing it to a group(s)?
-        # if so we use this and we don't do a criteria filter
-        if "groups" in metainfo:
-            for group in metainfo.groups:
-                get_group_set(group, no_pkg).add(node)
-        elif "group" in metainfo:
-            get_group_set(metainfo.group, no_pkg).add(node)
-        elif not _filter_by_criteria(node, group_filters, metainfo):
-            get_group_set(part_grp, no_pkg).add(node)
-            metainfo.update(groups=(part_grp,))
-            api.output.verbose_msgf(["packaging-mapping"], "{0} add to group(s)={1}, no_pkg={2}", node.ID, part_grp, no_pkg)
-        # run the node filter on the node to add it to any extra groups
-        _filter_node(node, node_filters, metainfo)
-
+            # does it have a Metatag value forcing it to a group(s)?
+            # if so we use this and we don't do a criteria filter
+            if "groups" in metainfo:
+                for group in metainfo.groups:
+                    get_group_set(group, no_pkg).add(node)
+            elif "group" in metainfo:
+                get_group_set(metainfo.group, no_pkg).add(node)
+            elif not _filter_by_criteria(node, group_filters, metainfo):
+                get_group_set(part_grp, no_pkg).add(node)
+                metainfo.update(groups=(part_grp,))
+                api.output.verbose_msgf(["packaging-mapping"], "{0} add to group(s)={1}, no_pkg={2}", node.ID, part_grp, no_pkg)
+            # run the node filter on the node to add it to any extra groups
+            _filter_node(node, node_filters, metainfo)
+    
+    g_resort_package_data=False
     return
 
 

@@ -36,6 +36,12 @@ def DynamicPackageNodes(_env, source):
     This file defines all the files that will be packageable for any given group
     It is in the depend chain for creating any package that we need to generate
     '''
+    #####
+    # At the moment we map as depends to this file all the export.jsn files
+    # of any build section. This ensure that all known items would be defined
+    # and and node sorting to be done at the correct point
+    #####
+
     # make sure we have a common environment for this multi build
     # is it needs to be defined at a "global" level
     env = glb.engine.def_env
@@ -74,7 +80,6 @@ def target_scanner(node, env, path):
     if not node_helpers.has_children_changed(node):
         api.output.verbose_msg(["dynamicpackage-scanner", "scanner", "scanner-called"], "called {}".format(node.ID))
         packaging.SortPackageGroups()
-        packaging._sorted_groups
     return []
 
 

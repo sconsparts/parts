@@ -149,7 +149,7 @@ def ProcessInstall(env, target, sources, sub_dir, create_sdk, sdk_dir='', no_pkg
                     # we can use the pattern here for the Install call as the files don't exist in the
                     # sdk area during the first run.
                     src_lst.append(pattern.Pattern(src_dir=pdir, includes=inc, recursive=s.recursive))
-                    # take sdk pattrens outputs (targets) as the source and use the same pattern
+                    # take sdk patterns outputs (targets) as the source and use the same pattern
                     # assuming it would copy to the Install area, outputs as the targets
                     installed_files.extend(env.InstallAs(inst, sdkf, tags=tags, **kw))
 

@@ -1,11 +1,9 @@
 
 
 import json
-import operator
 import os
 import platform
 import re
-import shutil
 import subprocess
 from builtins import filter
 
@@ -34,8 +32,8 @@ def rpm_scan_check(node, env):
 
 def rpm_group_values(env, dir, target, source, arg=None):
     '''
-    This functions returns the file that are part
-    of a given package group
+    This functions returns the files that are part
+    of a given package group.
     '''
     api.output.verbose_msgf(["rpm-scanner", "scanner"], "Path finder - Getting source file")
     ret = []
@@ -76,7 +74,7 @@ def rpm_scanner(node, env, path, args=None):
     # this is the package name without the .rpm"
     base_name = node.name[:-4]
 
-    # get the file that are part of the package groups
+    # get the files that are part of the package groups
     [e.disambiguate() for e in path]
 
     if not path:
