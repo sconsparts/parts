@@ -17,11 +17,11 @@ from SCons.Node import Node
 # this is the group to part mapping
 # ie this is the unsorted data of all known values
 # currently the Set[str] is the part Alias/ID
-g_package_groups:Dict[str,Set[str]] = {}
+g_package_groups: Dict[str, Set[str]] = {}
 
 # this is a tuple of no_pkg,pkg dict of {groupName:Node.File}
 # this is sorted of g_package_groups
-_sorted_groups: Tuple[Dict[str,Set[Node]],Dict[str,Set[Node]]] = dict(), dict()
+_sorted_groups: Tuple[Dict[str, Set[Node]], Dict[str, Set[Node]]] = (dict(), dict())
 g_resort_package_data: bool = True
 g_known_num_of_install_files = 0
 # this lock allows us to control access
@@ -41,6 +41,7 @@ def PackageGroupLocal(env, group, state=True):
 def PackageGroups() -> List[str]:
     return list(g_package_groups.keys())
 
+
 def PackageGroup(name, parts=None) -> Tuple[str, ...]:
     '''
     Currently is bound to only handling Parts or Component objects ( as these
@@ -52,7 +53,7 @@ def PackageGroup(name, parts=None) -> Tuple[str, ...]:
     name = SCons.Script.DefaultEnvironment().subst(name)
     if not name:
         return tuple()
-    
+
     try:
         result = g_package_groups[name]
     except KeyError:
@@ -182,45 +183,34 @@ def def_GetFilesFromPackageGroups(klass):
     return klass
 
 
-def GetPackageGroupFiles(name, no_pkg=False):
+def GetPackageGroupFiles(name, no_pkg=False) -> List[Set[Node]]:
     '''
     Get all the file that are installed that are define as part of a group.
     This function will try to cache known result to improve speed.
     '''
     with g_sort_data_lock:
-        #if g_resort_package_data:
-            #api.output.verbose_msg('packaging', 'Sorting PackageGroup Parts into nodes')
         SortPackageGroups()
         # get Cache value
         groups = _sorted_groups[int(bool(no_pkg))]
-        return list(groups[name])
-
-    # get Cache value
-    groups = _sorted_groups[int(bool(no_pkg))]
-    try:
-        return list(groups[name])
-    except KeyError:
-        # no cache value..  re build list
-        api.output.verbose_msg('packaging', 'Sorting PackageGroup Parts into nodes')
-        SortPackageGroups()
-
-    # return what we got, if not in rebuilt list return empty list
-    return list(groups.get(name, set()))
+        if name not in groups:
+            api.output.warning_msg(f'Package group "f{name}" was not defined')
+        return list(groups.get(name,set()))
 
 # this get the set of files for a given group
 
 
-def get_group_set(name:str, no_pkg:bool) -> Set[Node]:
+def get_group_set(name: str, no_pkg: bool) -> Set[Node]:
     no_pkg = bool(no_pkg)
-    _sorted_groups[not no_pkg].setdefault(name,set())
-    return _sorted_groups[bool(no_pkg)].setdefault(name,set())
+    _sorted_groups[not no_pkg].setdefault(name, set())
+    return _sorted_groups[bool(no_pkg)].setdefault(name, set())
+
 
 def _clear_sorted_group() -> None:
     _sorted_groups[0].clear()
     _sorted_groups[1].clear()
 
 
-def _filter_by_criteria(node:Node, filters, metainfo) -> bool:
+def _filter_by_criteria(node: Node, filters, metainfo) -> bool:
     api.output.verbose_msgf(["packaging"], "Filtering node via Group {0}", node.ID)
     no_pkg = metainfo.get('no_package', False)
     for group, tests in filters.items():
@@ -237,7 +227,7 @@ def _filter_by_criteria(node:Node, filters, metainfo) -> bool:
     return False
 
 
-def _filter_node(node:Node, filters:List[Callable[[Node],Union[List[str],List[Tuple[str,bool]]]]], metainfo) -> None:
+def _filter_node(node: Node, filters: List[Callable[[Node], Union[List[str], List[Tuple[str, bool]]]]], metainfo) -> None:
     '''
     call each filter on the node
     the returned value from the filter may be a string or (string,Boolean)
@@ -253,9 +243,9 @@ def _filter_node(node:Node, filters:List[Callable[[Node],Union[List[str],List[Tu
         if grps:
             for group_info in grps:
                 try:
-                    group, no_pkg = cast(Tuple[str,bool],group_info)
+                    group, no_pkg = cast(Tuple[str, bool], group_info)
                 except ValueError:
-                    group, no_pkg = cast(str,group_info), default_no_pkg
+                    group, no_pkg = cast(str, group_info), default_no_pkg
                 api.output.verbose_msgf(["packaging-filter"],
                                         "Node filter mapped {0} to group={1}, no_pkg={2}", node.ID, group, no_pkg)
                 get_group_set(group, no_pkg).add(node)
@@ -280,7 +270,7 @@ def _get_file_entries(node):
 
 
 def SortPackageGroups():
-    # do a quick test to see if we had installed new files since last 
+    # do a quick test to see if we had installed new files since last
     # sort. This is avoid resorting unless g_resort_package_data is set
     global g_resort_package_data
     global g_known_num_of_install_files
@@ -326,8 +316,8 @@ def SortPackageGroups():
                 api.output.verbose_msgf(["packaging-mapping"], "{0} add to group(s)={1}, no_pkg={2}", node.ID, part_grp, no_pkg)
             # run the node filter on the node to add it to any extra groups
             _filter_node(node, node_filters, metainfo)
-    
-    g_resort_package_data=False
+
+    g_resort_package_data = False
     return
 
 
