@@ -1,0 +1,29 @@
+Import('*')
+PartName("part2")
+
+build.DependsOn([
+    Component('part1'),
+    Component('part3')
+])
+
+
+@build
+def source(env):
+    copyed = env.CCopy(
+        source=env.Pattern(recursive=False),
+        target="$BUILD_DIR/build"
+    )
+
+    dir = env.CCommand(
+        "destdir",
+        copyed,
+        [
+            Delete("$TARGET"),
+            'cd ${SOURCE.dir} && scons  install --destdir=${TARGET.abspath} CC=$CC CXX=$CXX LIBPATH="${ABSPATHS(\'$LIBPATH\')}" LIBS="$LIBS" CPPPATH="${ABSPATHS(\'$CPPPATH\')}"'
+        ],
+        source_scanner=NullScanner,
+        target_factory=env.Dir,
+        target_scanner=env.ScanDirectory("destdir",extra_scanner=ProgramScanner),
+    )
+    env.Clean(dir, dir)
+

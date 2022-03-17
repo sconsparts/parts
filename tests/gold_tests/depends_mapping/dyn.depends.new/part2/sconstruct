@@ -1,0 +1,24 @@
+
+AddOption("--destdir",
+          dest='destdir',
+          default='#_install',
+          nargs=1,          
+          help='Where to put stuff')
+
+vars = Variables()
+# allows us to overidr values on command line
+env = Environment(DESTDIR=GetOption("destdir"),variables=vars)
+for k,v in vars.UnknownVariables().items():
+    if k in ("CC", "CXX"):
+        env[k] = '"{}"'.format(v)
+    else:
+        env[k]=v.split(" ")
+        
+
+o=env.Program("hello","hello.c")
+
+Alias("install",[
+    env.Install("$DESTDIR/bin",o),
+    ]
+)
+

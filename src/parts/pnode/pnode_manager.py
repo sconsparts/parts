@@ -322,7 +322,7 @@ class manager:
 
 
     # factory methods
-    @ classmethod
+    @classmethod
     def RegisterNodeType(klass, node_type, create_func=None) -> None:
         '''
         Register a factory class/function to be used to construct a given type of node.

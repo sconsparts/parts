@@ -14,6 +14,7 @@ outdir = env.CCommand(
         Delete("$TARGET"),
         "cd ${SOURCE.dir} && scons -s install --destdir=${TARGET.abspath} CC=$CC CXX=$CXX"
     ],
+    source_scanner=NullScanner,
     target_factory=env.Dir,
     target_scanner=env.ScanDirectory("destdir",)
 )

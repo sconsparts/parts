@@ -1408,7 +1408,7 @@ class part_manager:
     @property
     def RootPartSig(self):
         '''
-        Get a signiture of all root Parts files. This allows us to know if we can dynamically load the
+        Get a signature of all root Parts files. This allows us to know if we can dynamically load the
         dependent Parts in the DependsOn() call or not.
         '''
         md5 = hashlib.md5()

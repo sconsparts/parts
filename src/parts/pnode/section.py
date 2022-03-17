@@ -92,7 +92,7 @@ class Section(pnode.PNode):
     def _metasection(self):
         return self.__metasection
 
-    @ property
+    @property
     def ID(self):
         try:
             return self._ID
@@ -100,7 +100,7 @@ class Section(pnode.PNode):
             self._ID = result = sys.intern("{1}::{0}".format(self.Part.ID, self.Name))
             return result
 
-    @ property
+    @property
     def Name(self):
         '''
         Get the name of the section
@@ -109,7 +109,7 @@ class Section(pnode.PNode):
         #raise NotImplementedError
         return self.__metasection.Name
 
-    @ property
+    @property
     def Exports(self):  # mutable
         '''
         Get currently defined export items from this section
@@ -120,7 +120,7 @@ class Section(pnode.PNode):
             self.__exports = result = dict()
             return result
 
-    @ property
+    @property
     def ExportAsDepends(self):
         try:
             return self.__export_as_depends
@@ -160,7 +160,7 @@ class Section(pnode.PNode):
     def hasDynamicExports(self, value: bool):
         self.__exports_dynamic_values = value
 
-    @ property
+    @property
     def GroupedTargets(self):
         try:
             return self.__group_target_nodes
@@ -168,7 +168,7 @@ class Section(pnode.PNode):
             self.__group_target_nodes = result = {}
             return result
 
-    @ property
+    @property
     def GroupedSources(self):
         try:
             return self.__group_source_nodes
@@ -176,7 +176,7 @@ class Section(pnode.PNode):
             self.__group_source_nodes = result = {}
             return result
 
-    @ property
+    @property
     def Targets(self):
         '''
         All known targets for this section
@@ -187,7 +187,7 @@ class Section(pnode.PNode):
             self.__target_nodes = result = set()
             return result
 
-    @ property
+    @property
     def Sources(self):
         try:
             return self.__source_nodes
@@ -195,7 +195,7 @@ class Section(pnode.PNode):
             self.__source_nodes = result = set()
             return result
 
-    @ property
+    @property
     def InstalledFiles(self):
         try:
             return self.__installed_files
@@ -203,14 +203,14 @@ class Section(pnode.PNode):
             self.__installed_files = result = set()
             return result
 
-    @ property
+    @property
     def Depends(self) -> List[dependent_ref]:
         '''
         This delagates to ??? to handle hold the depends list
         '''
         return self.__metasection.Depends
 
-    @ Depends.setter
+    @Depends.setter
     def Depends(self, val: dependent_ref) -> None:
         '''
         This delagates to ??? to handle hold the depends list
@@ -402,20 +402,20 @@ class Section(pnode.PNode):
         # so values as build::alias::foo or unit_test::alias::foo, etc..
         self.Exports["EXISTS"] = self.Alias
         # if this is has code that is dynamic scanning objects
-        # call do an uptodate check to help ensure certains paths for rebuilds are defined
+        # call do an up-to-date check to help ensure certain paths for rebuilds are defined
         # to work around SCons logic for doing up-to-date checks that get cached
         if "DYN_EXPORT_FILE" in self.Env:
-            x = node_helpers.has_changed(self.Env["DYN_EXPORT_FILE"], skip_implicit=True)
+           x = node_helpers.has_changed(self.Env["DYN_EXPORT_FILE"], skip_implicit=True)
 
-    @ property
+    @property
     def AlwaysBuild(self):
         return self._cache.get("always_build", False)
 
-    @ AlwaysBuild.setter
+    @AlwaysBuild.setter
     def AlwaysBuild(self, val):
         self._cache["always_build"] = val
 
-    @ property
+    @property
     def FullDepends(self) -> Set[dependent_ref]:
         '''
         Resolved the full depends of the section, ie explicit and implicit
@@ -433,7 +433,7 @@ class Section(pnode.PNode):
                 self._cache["full_depends_set"] = []
             return self._cache["full_depends_set"]
 
-    @ property
+    @property
     def FullDependsSorted(self):
         '''
         Get the sorted tuple of depends.
@@ -457,14 +457,14 @@ class Section(pnode.PNode):
         else:
             self._cache["defining_section"] = val
 
-    @ property
+    @property
     def Part(self):
         try:
             return self.__pobj
         except AttributeError:
             return None
 
-    @ property
+    @property
     def Env(self):
         try:
             return self.__env
@@ -472,7 +472,7 @@ class Section(pnode.PNode):
             self.__env = result = self.Part.Env.Clone()
             return result
 
-    @ property
+    @property
     def UserEnvDiff(self):
         '''
         Items that we set withing the section
@@ -519,7 +519,7 @@ class Section(pnode.PNode):
 
         return [n for n in nodes if not is_system(n)]
 
-    @ property
+    @property
     def Alias(self):
         try:
             self._cache["alias"]
@@ -806,7 +806,7 @@ class Section(pnode.PNode):
     ##################################################
     # cache based APIs
 
-    @ property
+    @property
     def _cache(self):
         try:
             return self.__cache
@@ -836,13 +836,13 @@ class Section(pnode.PNode):
             except AttributeError:
                 pass
 
-    @ property
+    @property
     def ReadState(self):
         if not self.Part:
             return glb.pnodes.GetPNode(self.Stored.PartID).ReadState
         return self.Part.ReadState
 
-    @ ReadState.setter
+    @ReadState.setter
     def ReadState(self, state):
         if not self.Part:
             glb.pnodes.GetPNode(self.Stored.PartID).UpdateReadState(state)

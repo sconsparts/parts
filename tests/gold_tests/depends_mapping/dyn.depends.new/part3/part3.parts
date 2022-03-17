@@ -1,0 +1,22 @@
+Import('*')
+PartName("part3")
+
+@build
+def source(env):
+    copyed = env.CCopy(
+        source=env.Pattern(recursive=False),
+        target="$BUILD_DIR/build"
+    )
+
+    outdir = env.CCommand(
+        "destdir",
+        copyed,
+        [
+            Delete("$TARGET"), # this clean the install directory so we get a clean scan
+            "cd ${SOURCE.dir} && scons install --destdir=${TARGET.abspath} CC=$CC CXX=$CXX"
+        ],
+        source_scanner=NullScanner,
+        target_factory=env.Dir,
+        target_scanner=env.ScanDirectory("destdir",)
+    )
+    env.Clean(outdir,outdir)

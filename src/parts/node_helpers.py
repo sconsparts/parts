@@ -218,7 +218,7 @@ def node_cached_explicit_change(self, binfo=None, indent=0):
     diff = len(cached_children) - len(cached_sigs)
     if diff:
         api.output.verbose_msgf(
-            ["node-changed"], "{indent}Expict sources changed for {node} changed!", node=self.ID, indent=" "*indent)
+            ["node-changed"], "{indent}Explicit sources changed for {node} changed!", node=self.ID, indent=" "*indent)
         return True
 
     # this has to be depth first to ensure that dynamic cases are touched correctly

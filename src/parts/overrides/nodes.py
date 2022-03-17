@@ -167,6 +167,9 @@ def wrap_visited(klass):
     def set_visited(self, *lst, **kw):
         # call scons function
         ret = _visited(self, *lst, **kw)
+        # side effects are not "visited" for some reason
+        for side_effect in self.side_effects:
+            side_effect.visited()
         self.attributes._isVisited = True
         return ret
     klass.visited = set_visited
@@ -298,7 +301,7 @@ def visited_dir(self):
     else:
         # there is a bug in SCons at the moment in which a target scanner would not have
         # executed yet for this node ( or not applied as expected). This would cause the
-        # implicited depends to be missing causing a false rebuild on the next pass.
+        # implicated depends to be missing causing a false rebuild on the next pass.
         # this forces everything to be clean up before we try to store the binfo
         self.implicit = []
         self.implicit_set = set([])
@@ -413,7 +416,7 @@ class DirBuildInfo(SCons.Node.BuildInfoBase):
 
         # If any attributes are changed in FileBuildInfo, we need to
         # invalidate the cached map of file name to content signature
-        # heald in dependency_map. Currently only used with
+        # held in dependency_map. Currently only used with
         # MD5-timestamp decider
         if key != 'dependency_map' and hasattr(self, 'dependency_map'):
             del self.dependency_map
@@ -555,7 +558,7 @@ def is_up_to_date_dir(self):
         result = node_helpers.has_changed(self)
 
         # if the result at this point is still not changed
-        # check action signiture
+        # check action signature
         if not result:
             result = action_changed(self)
         return not result
@@ -657,7 +660,7 @@ def has_stored_info_fs(self):
 SCons.Node.FS.Base.has_stored_info = has_stored_info_fs
 
 # add a isBuilt property as read only.
-# will be set via an overide to the built() function (ie set after SCons defalut logic is called)
+# will be set via an overide to the built() function (ie set after SCons default logic is called)
 
 
 def _get_isBuilt(self):
@@ -675,6 +678,9 @@ def wrap_built(klass):
         # built does not return anything at the moment
         # we do this to be safe in case it changed
         ret = _built(self, *lst, **kw)
+        # side effects are not "built" for some reason
+        for side_effect in self.side_effects:
+            side_effect.built()
         self.attributes._isBuilt = True
         return ret
     klass.built = set_built
@@ -711,14 +717,14 @@ SCons.Node.Python.Value.ID = property(_get_ValueID)
 SCons.Node.Alias.Alias.ID = property(_get_AliasID)
 
 
-def _my_init(self, name, directory, fs):
+def _my_init_base(self, name, directory, fs):
     self.orig_init(name, directory, fs)
     # may not be the best way.. but works for the moment
     glb.pnodes.AddNodeToKnown(self)
 
 
 SCons.Node.FS.Base.orig_init = SCons.Node.FS.Base.__init__
-SCons.Node.FS.Base.__init__ = _my_init
+SCons.Node.FS.Base.__init__ = _my_init_base
 
 
 def def_FS_Dir___init__(klass):
@@ -733,14 +739,14 @@ def def_FS_Dir___init__(klass):
 def_FS_Dir___init__(SCons.Node.FS.Dir)
 
 
-def _my_init(self, *lst, **kw):
+def _my_init_value(self, *lst, **kw):
     self.orig_init(*lst, **kw)
     # may not be the best way.. but works for the moment
     glb.pnodes.AddNodeToKnown(self)
 
 
 SCons.Node.Python.Value.orig_init = SCons.Node.Python.Value.__init__
-SCons.Node.Python.Value.__init__ = _my_init
+SCons.Node.Python.Value.__init__ = _my_init_value
 
 # to allow directories to work correctly as build target to a builder
 
