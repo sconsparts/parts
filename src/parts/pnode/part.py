@@ -390,7 +390,7 @@ class Part(pnode.PNode):
             try:
                 return self.__cache['uses']
             except KeyError:
-                tmp = []
+                tmp = [self]
                 for p in self.__uses:
                     if util.isString(p):
                         # assume this is an Alias
