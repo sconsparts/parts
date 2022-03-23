@@ -657,7 +657,7 @@ class part_manager:
         num_parts = len(self.parts)
         tt = time.time() - t1
         if num_parts:
-            api.output.verbose_msgf(['loading', 'load_stats'],
+            api.output.verbose_msgf(['loading.stats', 'loading', 'load_stats'],
                                     "Loaded {0} Parts\n Total time:{1} sec\n Average Time per part:{2}", num_parts, tt, tt / num_parts)
         api.output.print_msg("Loaded {0} Parts".format(num_parts,))
 
