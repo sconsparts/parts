@@ -93,6 +93,9 @@ def parts_call_(self, env, target=None, source=None, chdir=SCons.Builder._null, 
             if not target:
                 key = (srcpath, s, self.get_name(env), name)
             else:
+                # we need to subst any strings to avoid cases of strings that look the same
+                # but would be different after being resolved.
+                target = [env.subst(n) if SCons.Util.is_String(n) else n for n in target]
                 if self.multi and False:
                     key = (target, self.get_name(env), name)
                 else:
