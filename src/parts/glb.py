@@ -18,6 +18,8 @@ parts_objs = {}
 parts_objs_env = {}
 known_concepts:Dict[str,str] = {}
 
+known_dups = {}
+
 # deal with the change of requirements internal from false to True
 # is REQ.DEFAULT -> was REQ.DEFAULT(internal=False)
 # it is now REQ.DEFAULT(internal=True)

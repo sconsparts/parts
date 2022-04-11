@@ -8,7 +8,8 @@ import parts.glb as glb
 
 
 class AllowedDuplication(Exception):
-    pass
+    def __init__(self,targets):
+        self.targets = targets
 
 
 class LoadStoredError(Exception):

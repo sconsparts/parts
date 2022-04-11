@@ -22,7 +22,7 @@ def parts_node_errors(builder, env, tlist, slist):
     #print("source:", [str(i) for i in slist])
     #print("target:", [str(i) for i in tlist])
     section = glb.engine._part_manager.section_from_env(env)
-    
+
     if section:
         tag_part_info(tlist + slist, section.Part)
         # add the node to known targets or sources or the given section
@@ -32,14 +32,23 @@ def parts_node_errors(builder, env, tlist, slist):
 
         if def_phase:
             # store the item with the phase only
-            section.GroupedTargets.setdefault(def_phase,set()).update(tlist)
-            section.GroupedSources.setdefault(def_phase,set()).update(slist)
+            section.GroupedTargets.setdefault(def_phase, set()).update(tlist)
+            section.GroupedSources.setdefault(def_phase, set()).update(slist)
 
-
-    # make sure we can record that nodes before we stop SCons registering the values here
-    # we throw an exception to allow Parts to handle the allow_duplicate feature for all builders
-    if env.get('_found_duplication'):
-        raise errors.AllowedDuplication()
+    # check to see if we have allow duplicates defined
+    # if so we need to see if we have a duplicate defined as known
+    if env.get('allow_duplicates'):
+        if section is not None:
+            pname = section.Part.Name
+        else:
+            pname = None
+        key = f"{[n.ID for n in tlist]} {builder.get_name(env)} {pname} {[n.ID for n in slist]}"
+        # make sure we can record that nodes before we stop SCons registering the values here
+        # we throw an exception to allow Parts to handle the allow_duplicate feature for all builders
+        if key in glb.known_dups:
+            raise errors.AllowedDuplication(tlist)
+        else:
+            glb.known_dups[key]=tlist
 
     error = False
     warn = False
@@ -48,7 +57,12 @@ def parts_node_errors(builder, env, tlist, slist):
         if t.side_effect:
             error = True
         if t.has_explicit_builder():
-            if not t.env is None and not t.env is env:
+            if (t.env is not None and t.env is not env and
+                    # Check OverrideEnvironment case - no error if wrapped Environments
+                    # are the same instance, and overrides lists match
+                    not (getattr(t.env, '__subject', 0) is getattr(env, '__subject', 1) and
+                         getattr(t.env, 'overrides', 0) == getattr(env, 'overrides', 1) and
+                         not builder.multi)):
                 action = t.builder.action
                 t_contents = action.get_contents(tlist, slist, t.env)
                 contents = action.get_contents(tlist, slist, env)
@@ -59,7 +73,11 @@ def parts_node_errors(builder, env, tlist, slist):
             if builder.multi:
                 if t.get_executor() is None:
                     api.output.warning_msg(
-                        "Executor is None for node '{}'.\n This is a sign that there is a order dependency that is incorrect in the mutli builder used to generate this target".format(t.ID), show_stack=False)
+                        f"Executor is None for node '{t.ID}'.\n"
+                        " This is a sign that there is a order dependency that is incorrect in the mutli builder"
+                        " used to generate this target", 
+                        show_stack=False
+                    )
                     del t.executor
                 if t.get_executor() and (t.builder != builder or t.get_executor().get_all_targets() != tlist):
                     error = True
@@ -69,16 +87,19 @@ def parts_node_errors(builder, env, tlist, slist):
         if error:
             tenv = {} if t.env is None else t.env
             api.output.error_msg(
-                '{0} is ambiguous because it is defined with two different Environments\n One environment was defined in Part "{1}"\n The other was defined in Part "{2}"'.format(
-                    t, tenv.get(
-                        'PART_ALIAS', "<unknown>"), env.get(
-                        'PART_ALIAS', "<unknown>")), show_stack=False, exit=False)
+                f'{t} is ambiguous because it is defined with two different Environments\n One environment was defined in Part "'
+                f'{tenv.get("PART_ALIAS", "<unknown>")}"\n'
+                f'The other was defined in Part "{env.get("PART_ALIAS", "<unknown>")}"',
+                show_stack=False,
+                exit=False
+            )
         elif warn:
             api.output.warning_msg(
-                'Build issue found with two different Environments\n One environment was defined in Part "%s"\n The other was defined in Part "%s"' %
-                (t.env.get(
-                    'PART_ALIAS', "<unknown>"), env.get(
-                    'PART_ALIAS', "<unknown>")), show_stack=False)
+                'Build issue found with two different Environments\n'
+                f' One environment was defined in Part "{t.env.get("PART_ALIAS", "<unknown>")}"\n'
+                f' The other was defined in Part "{env.get("PART_ALIAS", "<unknown>")}"',
+                show_stack=False
+            )
 
     # call the SCons code
     scons_node_errors(builder, env, tlist, slist)
@@ -102,7 +123,7 @@ def tag_part_info(node_list, pobj):
         # tag the node with sections that it is a part of.
         alias = pobj.Alias
         section = pobj.DefiningSection
-        
+
         # get meta node info
         data = metatag.MetaTagValue(node, 'components', ns='partinfo', default={})
         # Tag this node with information about the Parts and Section that would care about it
@@ -120,14 +141,14 @@ def tag_part_info(node_list, pobj):
                 dnode = node.Dir('.')
 
             # go up the directory chain and set values
-            # This allows for directory node targets to know what set of sections/parts have to be 
+            # This allows for directory node targets to know what set of sections/parts have to be
             # loaded
             while True:
-                data = metatag.MetaTagValue(dnode, 'components', ns='partinfo', default={})                
+                data = metatag.MetaTagValue(dnode, 'components', ns='partinfo', default={})
                 sections = data.setdefault(alias, set())
                 # we do this check as the directory chain may be long and there is a high
                 # chance that this information is already set on the directory node.
-                # if that is the case, all the parents have been set as well. so we we can 
+                # if that is the case, all the parents have been set as well. so we we can
                 # just break out of the loop
                 if section in sections:
                     break
