@@ -1,24 +1,23 @@
 
-
 import json
-import platform
 import subprocess
 import sys
 import threading
 import time
 import traceback
 
+import SCons.Script
+from SCons.Debug import logInstanceCreation
+from SCons.Environment import SubstitutionEnvironment as SConsEnvironment
+from SCons.Errors import UserError
+
+import parts.ansi_stream as ansi_stream
 import parts.api as api
 import parts.common as common
 import parts.console as console
 import parts.core.util as util
 import parts.glb as glb
-import parts.version as version
-import SCons.Script
 from parts.process_tools import killProcessTree, waitForProcess
-from SCons.Debug import logInstanceCreation
-from SCons.Environment import SubstitutionEnvironment as SConsEnvironment
-from SCons.Errors import UserError
 
 # We need to close file descriptors on POSIX systems which have fork() mechanism right after
 # the fork, otherwise all descriptors get inherited, and some files are being open much longer
@@ -356,6 +355,7 @@ class parts_text_logger:
         s += "Output end   ----------------------------------------------------------------\n"
         s += "return code = " + str(exit_code) + "\n"
         s += "Elapsed time {0:.6f} seconds\n".format(time_func() - self.times.pop(id))
+        s = ansi_stream.strip_ansi_codes(s)
         with self.writer as output:
             output.write(s)
 
@@ -379,6 +379,7 @@ class parts_text_logger:
             s += "Build interupted] (return code = 1)\n"
             s += "Elapsed time {0:.6f} seconds\n".format(time_func() - times.pop(id))
         if s:
+            s = ansi_stream.strip_ansi_codes(s)
             with writer as output:
                 output.write(s)
 
