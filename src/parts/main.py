@@ -31,13 +31,12 @@ import parts.scm as scm
 import parts.version as version
 import parts.version_info as version_info
 
-# import the pieces
-# this has to be delayed 
-import parts.pieces as pieces # isort:skip
-
 # create the engine
 glb.engine = engine.parts_addon()
 
+# import the pieces
+# this has to be delayed 
+import parts.pieces as pieces # isort:skip
 
 # start up logic ... runs during import of the code
 glb.engine.Start()  # sets up everything
