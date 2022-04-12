@@ -5,7 +5,7 @@ import SCons.Scanner
 from SCons.Script.SConscript import SConsEnvironment
 
 
-def Meson(env,destdir=None,auto_scanner={},**kw):
+def Meson(env,auto_scanner={},**kw):
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$$$$$$$ORIGIN")}'    
 
     out_config = env.CCommand(
