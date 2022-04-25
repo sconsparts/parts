@@ -180,19 +180,21 @@ def get_content(obj):
     return ret.encode()
 
 
-def matches(value, includes, excludes=None):
+def matches(value, includes, excludes=None) -> bool:
     '''Function help with tell if a value (as a string) matched on of the include
     patterns and doesn't match on of the exclude patterns.
     '''
-    match = 0
+    match = False
+    if not includes:
+        includes = ["*"]
     for pattern in includes:
         if fnmatch.fnmatchcase(value, pattern):
-            match = 1
+            match = True
             break
-    if match == 1:
+    if match:
         for pattern in excludes:
             if fnmatch.fnmatchcase(value, pattern):
-                match = 0
+                match = False
                 break
     return match
 

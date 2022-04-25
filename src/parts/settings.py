@@ -684,13 +684,7 @@ class Settings:
             env['ENV']['HOME'] = os.environ['HOME']
             env['ENV']['LANG'] = os.environ.get("LANG", "en_US.UTF-8")
             env['ENV']['USER'] = env['PART_USER']
-
-        # seem to only work on non win32 at the moment
-        # this is a test at the moment.. need to add switch to control value
-        # and if it is used
-        if env['HOST_PLATFORM']['OS'] != 'win32':
-            env['ENV']['SOURCE_DATE_EPOCH'] = '1609459200'
-
+        
         # add path to current Python being used, so we use this instead of some other version
         # this allow Command that run python to work as expected
         env.PrependENVPath('PATH', os.path.split(sys.executable)[0], delete_existing=True)
