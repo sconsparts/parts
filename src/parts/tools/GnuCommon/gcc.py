@@ -13,8 +13,8 @@ from .common import GnuInfo, gcc
 gcc.Register(
     # we assume that the system has the correct libraies installed to do a cross build
     # or that the user add the extra check for the stuff the need
-    hosts=[SystemPlatform('posix', 'x86'), SystemPlatform('posix', 'x86_64'), SystemPlatform('freebsd', 'x86_64')],
-    targets=[SystemPlatform('posix', 'x86'), SystemPlatform('posix', 'x86_64'), SystemPlatform('freebsd', 'x86_64')],
+    hosts=[SystemPlatform('posix', 'x86'), SystemPlatform('posix', 'x86_64'), SystemPlatform('freebsd', 'x86_64'), SystemPlatform('posix', 'arm64')],
+    targets=[SystemPlatform('posix', 'x86'), SystemPlatform('posix', 'x86_64'), SystemPlatform('freebsd', 'x86_64'), SystemPlatform('posix', 'arm64')],
     info=[
         GnuInfo(
             # standard location, however there might be
