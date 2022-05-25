@@ -8,5 +8,6 @@ from . import vc12
 from . import vc14
 from . import vc15
 from . import vc2019
+from . import vc2022
 from . import vc_old
 from .common import *

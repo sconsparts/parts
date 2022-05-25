@@ -12,22 +12,22 @@ from .common import framework_root, framework_root64, get_current_sdk, msvc
 
 # Need to verify the paths, but this seems to work well enough.
 
-# version 16 .. 2019
+# version 19 .. 2022
 # 32-bit
 msvc.Register(
     hosts=[SystemPlatform('win32', 'any')],
     targets=[SystemPlatform('win32', 'x86')],
     info=[
         ToolInfo(
-            version='16.0',
+            version='19.0',
             install_scanner=[
                 PathFinder([
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Enterprise\VC',
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Professional\VC',
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Community\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Professional\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Professional\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Community\VC',
                 ])
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'x86 -vcvars_ver=14'),
@@ -48,15 +48,15 @@ msvc.Register(
     targets=[SystemPlatform('win32', 'arm')],
     info=[
         ToolInfo(
-            version='16.0',
+            version='19.0',
             install_scanner=[
                 PathFinder([
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Enterprise\VC',
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Professional\VC',
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Community\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Professional\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Professional\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Community\VC',
                 ])
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'amd64_arm'),
@@ -77,15 +77,15 @@ msvc.Register(
     targets=[SystemPlatform('win32', 'arm')],
     info=[
         ToolInfo(
-            version='16.0',
+            version='19.0',
             install_scanner=[
                 PathFinder([
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Enterprise\VC',
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Professional\VC',
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Community\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Professional\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Professional\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Community\VC',
                 ])
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'x86_arm'),
@@ -106,15 +106,15 @@ msvc.Register(
     targets=[SystemPlatform('win32', 'arm64')],
     info=[
         ToolInfo(
-            version='16.0',
+            version='19.0',
             install_scanner=[
                 PathFinder([
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Enterprise\VC',
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Professional\VC',
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Community\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Professional\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Professional\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Community\VC',
                 ])
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'amd64_arm64'),
@@ -135,15 +135,15 @@ msvc.Register(
     targets=[SystemPlatform('win32', 'arm64')],
     info=[
         ToolInfo(
-            version='16.0',
+            version='19.0',
             install_scanner=[
                 PathFinder([
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Enterprise\VC',
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Professional\VC',
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Community\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Professional\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Professional\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Community\VC',
                 ])
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'x86_arm64'),
@@ -165,15 +165,15 @@ msvc.Register(
     targets=[SystemPlatform('win32', 'x86_64')],
     info=[
         ToolInfo(
-            version='16.0',
+            version='19.0',
             install_scanner=[
                 PathFinder([
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Enterprise\VC',
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Professional\VC',
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Community\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Professional\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Professional\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Community\VC',
                 ])
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'amd64'),
@@ -195,15 +195,15 @@ msvc.Register(
     targets=[SystemPlatform('win32', 'x86_64')],
     info=[
         ToolInfo(
-            version='16.0',
+            version='19.0',
             install_scanner=[
                 PathFinder([
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Enterprise\VC',
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Professional\VC',
-                    r'C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC',
-                    r'C:\Program Files\Microsoft Visual Studio\2019\Community\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Professional\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Professional\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\Community\VC',
                 ])
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'x86_amd64'),
