@@ -100,7 +100,7 @@ class manager:
         regenerated.
         '''
         for node in self.__known_nodes.values():
-            node.clear_memoized_values()
+            node._children_reset()
 
     def isKnownNode(self, ID: str) -> bool:
         '''

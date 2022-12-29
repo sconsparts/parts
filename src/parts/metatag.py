@@ -56,10 +56,10 @@ def Tag_wrapper(env, nodes, ns='meta', **metakv):
 
 
 # adding logic to Scons Environment object
-SConsEnvironment.MetaTag = MetaTag_method
-SConsEnvironment.Tag = Tag_wrapper  # to work around existing tag usage
-SConsEnvironment.MetaTagValue = MetaTagValue_method
-SConsEnvironment.hasMetaTag = hasMetaTag_method
+api.register.add_method(MetaTag_method, 'MetaTag')
+api.register.add_method(Tag_wrapper, 'Tag')  # to work around existing tag usage
+api.register.add_method(MetaTagValue_method, 'MetaTagValue')
+api.register.add_method(hasMetaTag_method, 'hasMetaTag')
 
 api.register.add_global_parts_object('MetaTag', MetaTag)
 api.register.add_global_parts_object('MetaTagValue', MetaTagValue)

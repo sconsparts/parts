@@ -18,6 +18,7 @@ import parts.node_helpers as node_helpers
 import SCons.Node
 import SCons.Util
 import SCons.SConsign
+from parts.core.states import ChangeCheck
 from parts.core import util
 from parts.pnode import pnode_manager, scons_node_info
 from SCons.Debug import logInstanceCreation
@@ -47,9 +48,12 @@ for k, func in _decider_map.items():
         # we cannot do this a better way in SCons yet.. this allows us to make sure the statefile
         # are built when ever a timestamp change happens. This check has to be a target file in the
         # .part.cache ( which makes it a state file of some type)
-        if target.ID.startswith(".parts.cache"):
+        #print("2323", target.ID, dependency.ID)
+        if dependency.ID.startswith(".parts.cache"):
             return _changed_timestamp_match(dependency, target, prev_ni, repo_node)
         # else call default logic whatever that may be
+        
+
         return func(dependency, target, prev_ni, repo_node)
     _decider_map[k] = override_decider
 
@@ -118,7 +122,6 @@ def action_changed(self, binfo=None, indent=0):
     '''
     # if the node is build or visited it cannot be viewed as changed anymore
     if self.isBuilt or self.isVisited:
-
         return False
 
     if self.has_builder():  # check to be safe that this has a builder
@@ -126,6 +129,9 @@ def action_changed(self, binfo=None, indent=0):
 
         if not binfo:
             if not self.has_stored_info():
+                api.output.verbose_msg(
+                    ["node.change.true", "node.change"],
+                    f'{" "*indent}Action changed! {self.ID} has no stored binfo.')
                 return True
             info = self.get_stored_info()
             binfo = info.binfo
@@ -134,8 +140,12 @@ def action_changed(self, binfo=None, indent=0):
         newsig = SCons.Util.hash_signature(contents)
         oldsig = binfo.bactsig
         if oldsig != newsig:
-            api.output.verbose_msgf(["node-changed"], "{indent}Action changed for {node} changed! oldsig={oldsig} newsig={newsig}",
-                                    node=self.ID, oldsig=oldsig, newsig=newsig, indent=" "*indent)
+            #print(1,binfo.bact)
+            #print(2, self.get_binfo().bact)
+            #print(3, self.get_binfo().bactsig , oldsig, self.get_binfo().bactsig == oldsig)
+            api.output.verbose_msg(
+                ["node.change.true", "node.change"], 
+                f'{" "*indent}Action changed! Action csig for {self.ID} is different: oldsig={oldsig} newsig={newsig}')
             return True
 
     return False
@@ -188,7 +198,7 @@ def is_child(self, node):
         (self.depends if self.depends else []) + \
         (self.implicit if self.implicit else [])
 
-    return True if node in children else False
+    return node in children
 
 
 SCons.Node.Node.is_child = is_child
@@ -283,12 +293,10 @@ SCons.Node.FS.Dir.builder_set = builder_set
 def visited_dir(self):
     if self.exists() and self.executor is not None:
         self.get_build_env().get_CacheDir().push_if_forced(self)
-
     ninfo = self.get_ninfo()
 
     ninfo.timestamp = self.get_timestamp()
     ninfo.csig = self.get_csig()
-    # print(self.ID,"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
     self.isVisited = True
     # for a directory it always has a builder
     # what we care about is if the builder if the default
@@ -313,6 +321,14 @@ def visited_dir(self):
         scanner = self.get_target_scanner()
         if scanner:
             executor.scan_targets(scanner)
+        
+        for parent in self.waiting_parents:
+            parent.implicit = None
+            try:
+                for peer in parent.target_peers:
+                    peer.implicit = None
+            except AttributeError:
+                pass
 
     # this does the store of information in the DB file
     # the store logic is to get the stored info
@@ -322,6 +338,38 @@ def visited_dir(self):
 
 
 SCons.Node.FS.Dir.visited = visited_dir
+
+def release_target_info_dir(self):
+
+    if (hasattr(self, 'released_target_info') and self.released_target_info) or SCons.Node.interactive:
+        return
+
+    if not hasattr(self.attributes, 'keep_targetinfo'):
+        # Cache some required values, before releasing
+        # stuff like env, executor and builder...
+        self.changed(allowcache=True)
+        #self.get_contents_sig()
+        self.get_build_env()
+        # Now purge unneeded stuff to free memory...
+        self.executor = None
+        self._memo.pop('rfile', None)
+        self.prerequisites = None
+        # Cleanup lists, but only if they're empty
+        if not len(self.ignore_set):
+            self.ignore_set = None
+        if not len(self.implicit_set):
+            self.implicit_set = None
+        if not len(self.depends_set):
+            self.depends_set = None
+        if not len(self.ignore):
+            self.ignore = None
+        if not len(self.depends):
+            self.depends = None
+        # Mark this node as done, we only have to release
+        # the memory once...
+        self.released_target_info = True
+
+#SCons.Node.FS.Dir.release_target_info=release_target_info_dir
 
 
 def node_file(self, nodestr):
@@ -555,7 +603,19 @@ def is_up_to_date_dir(self):
             if kid.get_state() > up_to_date:
                 return False
     else:
-        result = node_helpers.has_changed(self)
+        # clear cached items...
+        # we tend to have an issue with implict ordering
+        # so easiest thing is to whack the state and rebuild
+        # the cached values
+        try:
+            del self.attributes._binfo_changed
+        except AttributeError:
+            pass
+        try:
+            del self.attributes._has_changed
+        except AttributeError:
+            pass
+        result = node_helpers.has_changed(self) & ChangeCheck.DIFF
 
         # if the result at this point is still not changed
         # check action signature
@@ -565,8 +625,36 @@ def is_up_to_date_dir(self):
     return True
 
 
-# do the overide
+# do the override
 SCons.Node.FS.Dir.is_up_to_date = is_up_to_date_dir
+
+def make_ready_wrapper(self):
+    '''
+    reset the node as we make it ready, to make sure the update checks are correct.
+    There are cases in which the current Scons taskmaster will not scan the node correctly
+    and use bad "cached" data in _memo
+    '''
+
+    
+    #self.implicit = None
+    #self.scan()
+    return self.orig_make_ready()
+
+#SCons.Node.FS.File.orig_make_ready =  SCons.Node.FS.File.make_ready
+#SCons.Node.FS.File.make_ready = make_ready_wrapper
+
+def is_up_to_date_file(self):
+    '''
+    for some odd reason the update function can get called after the node is built (ie it is up-to-date)
+    Scons has some logic in which this can return None, which will cause a scan function to not be correctly 
+    called, which will result in implict depends not being found that should have been found
+    '''
+    if self.isVisited:
+        return True
+    return self.orig_is_up_to_date()
+
+#SCons.Node.FS.File.orig_is_up_to_date =  SCons.Node.FS.File.is_up_to_date
+#SCons.Node.FS.File.is_up_to_date = is_up_to_date_file
 
 ###############################################
 # Allow directory nodes to work in a builder
@@ -623,7 +711,9 @@ SCons.Node.FS.Dir.get_target_scanner = get_target_scanner
 
 
 def get_stored_info_dir(self):
+    #print("234 Get stored info dir",self)
     try:
+        #print(235.0,self._memo['get_stored_info'])
         return self._memo['get_stored_info']
     except KeyError:
         pass
@@ -631,11 +721,15 @@ def get_stored_info_dir(self):
     try:
         # try to get stored data
         sconsign_entry = self.dir.sconsign().get_entry(self.name)
+        #print(235.4,sconsign_entry)
+        #print(sconsign_entry.ninfo, sconsign_entry.ninfo.__getstate__())
     except (KeyError, EnvironmentError):
         # it failed so create default
+        #print(235.5,"empty info")
         sconsign_entry = SCons.SConsign.SConsignEntry()
         sconsign_entry.binfo = self.new_binfo()
         sconsign_entry.ninfo = self.new_ninfo()
+        
 
     self._memo['get_stored_info'] = sconsign_entry
 
@@ -693,19 +787,21 @@ SCons.Node.Node.isBuilt = property(_get_isBuilt)
 
 
 def _get_FSID(self):
-    try:
-        return self.attributes.__FSID
-    except AttributeError:
+    # cached turned off as for some reason there is a bad value being copied
+    # in certain cases with srcnode()
+    #try:
+    #   return self.attributes.__FSID
+    #except AttributeError:
         result = SCons.Node.FS.get_default_fs().Dir('#').rel_path(self)
         if os.path.isabs(result) or result.startswith('..'):
             result = self.abspath
         result = result.replace('\\', '/')
-        self.attributes.__FSID = result
+        #self.attributes.__FSID = result
         return result
 
 
 def _get_ValueID(self):
-    return "{0}".format(self.value)
+    return f"{self.value}"
 
 
 def _get_AliasID(self):
@@ -784,7 +880,7 @@ def _my_init(self, name):
 SCons.Node.Alias.Alias.orig_init = SCons.Node.Alias.Alias.__init__
 SCons.Node.Alias.Alias.__init__ = _my_init
 
-# overide allows us to set Decider on a node without having to pass in a function
+# override allows us to set Decider on a node without having to pass in a function
 
 
 def _changed_content(dependency, target, prev_ni, repo_node=None):
@@ -989,7 +1085,7 @@ SCons.Node.Node.StoreStoredInfo = StoreStoredInfo
 
 
 def GenerateStoredInfo(self):
-
+    print(123,"Generating stored info for",self)
     info = scons_node_info.scons_node_info()
     info.Type = self.__class__
     info.Components = metatag.MetaTagValue(self, 'components', ns='partinfo', default={}).copy()

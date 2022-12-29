@@ -193,7 +193,7 @@ def GetPackageGroupFiles(name, no_pkg=False) -> List[Set[Node]]:
         # get Cache value
         groups = _sorted_groups[int(bool(no_pkg))]
         if name not in groups:
-            api.output.warning_msg(f'Package group "f{name}" was not defined')
+            api.output.warning_msg(f'Package group "{name}" was not defined')
         return list(groups.get(name,set()))
 
 # this get the set of files for a given group
@@ -363,19 +363,19 @@ def PrependPackageGroupCriteriaEnv_old(env, name, func):
     return env.PrependPackageGroupCriteria(name, func)
 
 
-SConsEnvironment.GetPackageGroupFiles = GetPackageGroupFiles_env
+api.register.add_method(GetPackageGroupFiles_env,'GetPackageGroupFiles')
 
 def_GetFilesFromPackageGroups(SubstEnv)
 
-SConsEnvironment.PackageGroupLocal = PackageGroupLocal
+api.register.add_method(PackageGroupLocal)
 
-SConsEnvironment.ReplacePackageGroupCritera = ReplacePackageGroupCriteriaEnv_old
-SConsEnvironment.AppendPackageGroupCritera = AppendPackageGroupCriteriaEnv_old
-SConsEnvironment.PrependPackageGroupCritera = PrependPackageGroupCriteriaEnv_old
+api.register.add_method(ReplacePackageGroupCriteriaEnv_old, 'ReplacePackageGroupCritera')
+api.register.add_method(AppendPackageGroupCriteriaEnv_old, 'AppendPackageGroupCritera')
+api.register.add_method(PrependPackageGroupCriteriaEnv_old, 'PrependPackageGroupCritera')
 
-SConsEnvironment.ReplacePackageGroupCriteria = ReplacePackageGroupCriteriaEnv
-SConsEnvironment.AppendPackageGroupCriteria = AppendPackageGroupCriteriaEnv
-SConsEnvironment.PrependPackageGroupCriteria = PrependPackageGroupCriteriaEnv
+api.register.add_method(ReplacePackageGroupCriteriaEnv,'ReplacePackageGroupCriteria')
+api.register.add_method(AppendPackageGroupCriteriaEnv,'AppendPackageGroupCriteria')
+api.register.add_method(PrependPackageGroupCriteriaEnv,'PrependPackageGroupCriteria')
 
 
 # these tell the packaging system locations to use on the user to map install location for a real install on that system

@@ -41,7 +41,7 @@ def SetOptionDefault(key, value):
                 mod = load_module.load_module(
                     load_module.get_site_directories('loggers'),
                     'text',
-                    'logger')
+                    'loggers')
                 log_obj = mod.__dict__.get(value, logger.nil_logger)
             elif tmp in opt_false_values:
                 log_obj = logger.nil_logger
@@ -49,7 +49,7 @@ def SetOptionDefault(key, value):
                 mod = load_module.load_module(
                     load_module.get_site_directories('loggers'),
                     tmp,
-                    'logger')
+                    'loggers')
                 log_obj = mod.__dict__.get(tmp, logger.nil_logger)
             #####
             log_obj = log_obj(directory.abspath, env['LOG_FILE_NAME'])
@@ -247,7 +247,7 @@ def opt_logging(option, opt, value, parser):
             mod = load_module.load_module(
                 load_module.get_site_directories('loggers'),
                 def_logger,
-                'logger')
+                'loggers')
             parser.values.logger = mod.__dict__.get(def_logger, logger.nil_logger)
         elif tmp in opt_false_values:
             parser.values.logger = logger.nil_logger
@@ -255,7 +255,7 @@ def opt_logging(option, opt, value, parser):
             mod = load_module.load_module(
                 load_module.get_site_directories('loggers'),
                 value,
-                'logger')
+                'loggers')
             parser.values.logger = mod.__dict__.get(value, logger.nil_logger)
     except ImportError:
         raise OptionValueError('No logger called "%s" was found' % value)
@@ -388,7 +388,12 @@ SCons.Script.AddOption("--ccopy", '--ccopy-logic', '--copy-logic',
                        nargs=1,
                        # callback=opt_ccopy,
                        type='choice',
-                       choices=['hard-soft-copy', 'soft-hard-copy', 'soft-copy', 'hard-copy', 'copy'],
+                       choices=[
+                        #'hard-soft-copy', 
+                        #'soft-hard-copy', 
+                        #'soft-copy', 
+                        'hard-copy', 
+                        'copy'],
                        action='store',
                        help='Control how Parts copy logic will work must be hard-soft-copy,soft-hard-copy, soft-copy, hard-copy, copy')
 

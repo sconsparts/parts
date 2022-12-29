@@ -8,7 +8,9 @@ import parts.core.scanners as scanners
 import parts.core.util as util
 import parts.glb as glb
 import parts.node_helpers as node_helpers
+from parts.core.states import ChangeCheck
 import parts.packaging as packaging
+from parts.core.states import ChangeCheck
 import SCons.Script
 from SCons.Script.SConscript import SConsEnvironment
 
@@ -77,8 +79,8 @@ def target_scanner(node, env, path):
     # clear any cached data as regen file list
     # should only need to be called here as after this target is called we should have
     # called all "installXXX" functions that would define a node to install
-    if not node_helpers.has_children_changed(node):
-        api.output.verbose_msg(["dynamicpackage-scanner", "scanner", "scanner-called"], "called {}".format(node.ID))
+    if node_helpers.has_children_changed(node) & ChangeCheck.SAME:
+        api.output.verbose_msg(["dynamicpackage-scanner", "scanner", "scanner.called"], "called {}".format(node.ID))
         packaging.SortPackageGroups()
     return []
 
@@ -150,7 +152,7 @@ def emit(target, source, env):
 
 def GroupNodesScanner(node, env, path):
 
-    api.output.verbose_msg(["groupbuilder.scanner", "scanner", "scanner-called"], "called {}".format(node.ID))
+    api.output.verbose_msg(["groupbuilder.scanner", "scanner", "scanner.called"], "called {}".format(node.ID))
 
     # This is the default group we depend on unless the node has a meta value saying that this
     # can be defined on the export.jsn file of this part instead. This can prevent the building of all
@@ -167,7 +169,7 @@ def GroupNodesScanner(node, env, path):
     # make sure the groups are sorted
     # We want to check the export file added above for changes
     # to decide if we will add the sources at this point in time
-    if not node_helpers.has_changed(ret[0]):
+    if node_helpers.has_changed(ret[0]) & ChangeCheck.SAME:
         node = ".".join(node.name.split(".")[2:-1])
         new_sources, _ = env.GetFilesFromPackageGroups("", [node])
         ret += new_sources
@@ -186,5 +188,5 @@ api.register.add_builder('_GroupBuilder', SCons.Builder.Builder(
     source_scanner=scanners.NullScanner,
 ))
 
-SConsEnvironment.GroupBuilder = GroupBuilder
-SConsEnvironment.DynamicPackageNodes = DynamicPackageNodes
+api.register.add_method(GroupBuilder)
+api.register.add_method(DynamicPackageNodes)

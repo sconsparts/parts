@@ -294,8 +294,7 @@ class parts_addon:
                 raise
         finally:
             memory_stats.append('after Parts processed')
-
-    ##
+            api.output.console_msg("\r")  # clears the console value for cleaner printing
 
     def parts_process_queue(self):
 
@@ -321,8 +320,6 @@ class parts_addon:
                 api.output.print_msg("Processing post logic queue finished!")
         finally:
             memory_stats.append('After post logic queue processed')
-        # for p in self.__part_manager.parts.values():
-            # p.Env.subst(p.Env['ENV']['INCLUDE'])
 
     def store_db_data(self, goodexit, build_mode):
 
@@ -412,7 +409,7 @@ class parts_addon:
                 mod = load_module.load_module(
                     load_module.get_site_directories('loggers'),
                     tmp,
-                    'logger')
+                    'loggers')
                 log_obj = mod.__dict__.get(tmp, logger.QueueLogger)
         # just in case of some not running in a normal build run
         if not log_obj:
@@ -466,6 +463,8 @@ class parts_addon:
             class ProgressCounter:
                 def __init__(self):
                     self._time = 0
+                    self._st = time.time()
+                    self.cnt = 0
                     self._node = None
 
                 def __call__(self, node, *args, **kw):
@@ -473,12 +472,17 @@ class parts_addon:
                         tt = time.time() - self._time
                         if time.time() - self._time > 10:
 
-                            glb.rpter.console.Warning.write(" ****** {0} is took {1} sec to process\n".format(self._node.ID, tt))
+                            glb.rpter.stdwrn(" ****** {0} is took {1} sec to process\n".format(self._node.ID, tt))
 
-                    #glb.rpter.console.Trace.write("Processing {0}\r".format(node.ID))
+                    # glb.rpter.console.Trace.write("Processing {0}\r".format(node.ID))
                     self._time = time.time()
                     self._node = node
-            SCons.Script.Progress(ProgressCounter(), 1)
+                    self.cnt += 1
+                    print(f"processed: {node.ID}")
+                    glb.rpter.stdconsole(
+                        f"processed: {self.cnt} Known:{glb.pnodes.TotalNodes} Percent {(self.cnt/glb.pnodes.TotalNodes)*100.0:.2f}% {self.cnt/(self._time - self._st):.2f}            \r")
+
+            # SCons.Script.Progress(ProgressCounter(), 1)
             SCons.Script.Progress(self.def_env['PROGRESS_STR'], 1, file=glb.rpter.console, overwrite=True)
 
     def add_preprocess_logic_queue(self, funcobj):
@@ -664,12 +668,12 @@ api.register.add_bool_variable(
 api.register.add_bool_variable('duplicate_build', False, 'Controls if the src files are copied to the build area for building')
 api.register.add_list_variable('mode', [], 'Values used to control different build mode for a given part')
 
-api.register.add_variable('ALIAS_SEPARATOR', '::', 'seperator used to separate namespace concepts from general alias value')
+api.register.add_variable('ALIAS_SEPARATOR', '::', 'separator used to separate namespace concepts from general alias value')
 
-api.register.add_variable('PROGRESS_STR', ['scons: Evaluating |\r',
-                                           'scons: Evaluating /\r',
-                                           'scons: Evaluating -\r',
-                                           'scons: Evaluating \\\r'],
+api.register.add_variable('PROGRESS_STR', ['scons: Evaluating | \r',
+                                           'scons: Evaluating / \r',
+                                           'scons: Evaluating - \r',
+                                           'scons: Evaluating \\ \r'],
                           'What is used to show progress state')
 
 # vim: set et ts=4 sw=4 ai ft=python :

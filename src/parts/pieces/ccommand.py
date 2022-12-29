@@ -50,4 +50,4 @@ api.register.add_global_parts_object('ProgramScanner', SCons.Scanner.Prog.Progra
 api.register.add_global_object('ProgramScanner', SCons.Scanner.Prog.ProgramScanner())
 
 # adding logic to Scons Environment object
-SConsEnvironment.CCommand = CCommand
+api.register.add_method(CCommand)

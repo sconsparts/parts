@@ -64,5 +64,5 @@ def AddXmlHeaderAs(env, target, source, **kw):
 
 
 # adding logic to Scons Environment object
-SConsEnvironment.AddXmlHeader = AddXmlHeader
-SConsEnvironment.AddXmlHeaderAs = AddXmlHeaderAs
+api.register.add_method(AddXmlHeader)
+api.register.add_method(AddXmlHeaderAs)

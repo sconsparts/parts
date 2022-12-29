@@ -5,8 +5,6 @@ import os
 
 import SCons.Script
 import SCons.Tool.install
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 import parts.api as api
 import parts.common as common
@@ -16,7 +14,7 @@ import parts.errors as errors
 import parts.exportitem as exportitem
 import parts.glb as glb
 import parts.pattern as pattern
-import parts.platform_info as platform_info
+#import parts.platform_info as platform_info
 import parts.sdk as sdk
 
 # need better configuration control
@@ -126,18 +124,15 @@ def ProcessInstall(env, target, sources, sub_dir, create_sdk, sdk_dir='', no_pkg
                 sdk_files = s.target_source(pattern_dest_sdk)[0]
                 # do we even have something in the pattern?
                 if sdk_files:
-                    missingsdk = False if sdk.g_sdked_files else True
+                    
                     ret = None
                     # if so see if we need to SDK it
-                    for sdkfile in s.target_source(pattern_dest_sdk)[0]:
-                        if sdkfile not in sdk.g_sdked_files:
-                            missingsdk = True
-                            break
-                    # did we find something to SDK?
-                    if missingsdk:
-                        ret = do_sdk(s)
-
                     sdkf, sr = s.target_source(pattern_dest_sdk)
+                    for sdkfile in sdkf:
+                        if (sdkfile,sub_dir) not in sdk.g_sdked_files:
+                            do_sdk(s)
+                            break
+                    
                     inst, sr = s.target_source(dest_dir)
                     # translate the pattern to the install form correctly
                     inc = []
@@ -152,30 +147,23 @@ def ProcessInstall(env, target, sources, sub_dir, create_sdk, sdk_dir='', no_pkg
                     # take sdk patterns outputs (targets) as the source and use the same pattern
                     # assuming it would copy to the Install area, outputs as the targets
                     installed_files.extend(env.InstallAs(inst, sdkf, tags=tags, **kw))
-
-            elif isinstance(s, SCons.Node.FS.Dir):
-                if s not in sdk.g_sdked_files:
-                    ret = do_sdk(s)
-                else:
-                    ret = [s]
-                out = env.Install(dest_dir, ret, tags=tags, **kw)
-                installed_files.extend(out)
-                src_lst.append(env.Dir(ret[0]))
-            elif isinstance(s, SCons.Node.FS.File):
-                if s not in sdk.g_sdked_files:
-                    ret = do_sdk(s)
-                else:
-                    ret = [s]
-
+            elif isinstance(s, SCons.Node.Node):
+                if (s,sub_dir) not in sdk.g_sdked_files:
+                    tmp=do_sdk(s)
+                    #print(f"1 SDK {s} {tmp}")
+                #else:
+                    #print(f"skipped SDK {s}")
+                ret = [s]
                 installed_files.extend(env.Install(dest_dir, ret, tags=tags, **kw))
-                if util.isString(ret[0]):
-                    ret[0] = env.File(ret[0])
                 src_lst.append(ret[0])
-            elif isinstance(s, SCons.Node.Node) or util.isString(s):
-                if s not in sdk.g_sdked_files:
-                    ret = do_sdk(s)
-                else:
-                    ret = [s]
+            elif util.isString(s):
+                s=env.Entry(s)
+                if (s,sub_dir) not in sdk.g_sdked_files:
+                    do_sdk(s)
+                    #print(f"SDK {s}")
+                #else:
+                    #print(f"skipped SDK {s}")
+                ret = [s]
 
                 installed_files.extend(env.Install(dest_dir, ret, tags=tags, **kw))
                 src_lst.append(env.Entry(ret[0]))
@@ -183,7 +171,8 @@ def ProcessInstall(env, target, sources, sub_dir, create_sdk, sdk_dir='', no_pkg
                 api.output.warning_msg("Unknown type {} in ProcessInstall() in installs.py".format(type(s)))
 
     else:
-
+        #print(f"here, {sources}")
+        
         for s in sources:
             if isinstance(s, pattern.Pattern):
                 t, sr = s.target_source(dest_dir)
@@ -236,18 +225,17 @@ def InstallItem(env, target, source, sub_dir="", sdk_dir='', no_pkg=False, creat
     pobj = glb.engine._part_manager._from_env(env)
     # this is for classic formats and compatible behavior with 0.9
     pobj._sdk_or_installed_called = True
-
     installed_files, src_files = ProcessInstall(env, target, source, sub_dir, create_sdk, sdk_dir, no_pkg, **kw)
     file_values = [env.Value("Value:{}".format(i.ID)) for i in installed_files if i not in pobj.DefiningSection.InstalledFiles]
     if file_values:
         is_part_dyn = env.get("_PARTS_DYN", kw.get("_PARTS_DYN"))
         # this defines some state file with what will be generated. These files only contain state, not direct file
         # node relationships ( this is why they are Value nodes )
-        install_state_name = "${{PARTS_SYS_DIR}}/${{PART_ALIAS}}.${{PART_SECTION}}.install.{type}.{cat}.jsn".format(
-            cat=target[1:], type="dyn" if is_part_dyn else "emit")
-        manifest = env._InstallManifest(install_state_name, file_values)
+        #install_state_name = "${{PARTS_SYS_DIR}}/${{PART_ALIAS}}.${{PART_SECTION}}.install.{type}.{cat}.jsn".format(
+        #    cat=target[1:], type="dyn" if is_part_dyn else "emit")
+        #manifest = env._InstallManifest(install_state_name, file_values)
 
-        env._map_dyn_export_(manifest) if is_part_dyn else env._map_export_(manifest)
+        #env._map_dyn_export_(manifest) if is_part_dyn else env._map_export_(manifest)
 
         if is_part_dyn:
             # This maps the data to the section of this part.
@@ -292,10 +280,15 @@ def InstallTarget(env, source, sub_dir='', no_pkg=False, create_sdk=True, **kw):
         # We have an individual item
         if isinstance(i, SCons.Node.FS.File) or isinstance(
                 i, SCons.Node.FS.Dir) or isinstance(i, SCons.Node.Node) or util.isString(i):
+            
+            if util.isString(i):
+                i = env.Entry(i)
 
-            if i not in sdk.g_sdked_files:
+            if (i,sub_dir) not in sdk.g_sdked_files:
                 ret = env.SdkTarget([i], sub_dir)
+                #print(f"SDK {i}")
             else:
+                #print(f"no SDK {i}")
                 ret = [i]
 
             if common.is_category_file(env, 'INSTALL_LIB_PATTERN', i):
@@ -324,7 +317,7 @@ def InstallTarget(env, source, sub_dir='', no_pkg=False, create_sdk=True, **kw):
                     new_sub_dir = sub_dir
 
                 for d in i.files(td):
-                    if d not in sdk.g_sdked_files:
+                    if (d,sub_dir) not in sdk.g_sdked_files:
                         ret = env.SdkTarget([d], sub_dir)
                     else:
                         ret = [d]
@@ -410,7 +403,6 @@ def InstallPrivateBin(env, source, sub_dir='', no_pkg=False, create_sdk=True, **
 
 
 def InstallConfig(env, source, sub_dir='', no_pkg=False, create_sdk=True, **kw):
-
     installed_files = InstallItem(env, '$INSTALL_CONFIG', source,
                                   sub_dir=sub_dir, sdk_dir='$SDK_CONFIG', no_pkg=no_pkg, create_sdk=create_sdk,
                                   **get_args('CONFIG', **kw))
@@ -569,34 +561,35 @@ def InstallPkgData(env, source, sub_dir='', no_pkg=False, create_sdk=True, packa
 
 
 # adding logic to Scons Environment object
-SConsEnvironment.InstallAPI = InstallAPI
-SConsEnvironment.InstallBin = InstallBin
-SConsEnvironment.InstallConfig = InstallConfig
-SConsEnvironment.InstallData = InstallData
-SConsEnvironment.InstallSource = InstallSource
-SConsEnvironment.InstallDoc = InstallDoc
-SConsEnvironment.InstallHelp = InstallHelp
-SConsEnvironment.InstallInclude = InstallInclude
-SConsEnvironment.InstallLib = InstallLib
-SConsEnvironment.InstallManPage = InstallManPage
-SConsEnvironment.InstallMessage = InstallMessage
-SConsEnvironment.InstallPkgConfig = InstallPkgConfig
-SConsEnvironment.InstallPkgData = InstallPkgData
-SConsEnvironment.InstallPrivateBin = InstallPrivateBin
-SConsEnvironment.InstallSystemBin = InstallSystemBin
-SConsEnvironment.InstallLibExec = InstallPrivateBin
-SConsEnvironment.InstallPython = InstallPython
-SConsEnvironment.InstallResource = InstallResource
-SConsEnvironment.InstallSample = InstallSample
-SConsEnvironment.InstallScript = InstallScript
-SConsEnvironment.InstallTarget = InstallTarget
-SConsEnvironment.InstallTools = InstallTools
-SConsEnvironment.InstallTopLevel = InstallTopLevel
+api.register.add_method(InstallAPI)
+api.register.add_method(InstallBin)
+api.register.add_method(InstallConfig)
 
-SConsEnvironment.PkgNoInstall = PkgNoInstall
-SConsEnvironment.InstallNoPkg = PkgNoInstall
+api.register.add_method(InstallData)
+api.register.add_method(InstallSource)
+api.register.add_method(InstallDoc)
+api.register.add_method(InstallHelp)
+api.register.add_method(InstallInclude)
+api.register.add_method(InstallLib)
+api.register.add_method(InstallManPage)
+api.register.add_method(InstallMessage)
+api.register.add_method(InstallPkgConfig)
+api.register.add_method(InstallPkgData)
+api.register.add_method(InstallPrivateBin)
+api.register.add_method(InstallSystemBin)
+api.register.add_method(InstallPrivateBin,"InstallLibExec")
+api.register.add_method(InstallPython)
+api.register.add_method(InstallResource)
+api.register.add_method(InstallSample)
+api.register.add_method(InstallScript)
+api.register.add_method(InstallTarget)
+api.register.add_method(InstallTools)
+api.register.add_method(InstallTopLevel)
 
-SConsEnvironment.InstallItem = InstallItem
+api.register.add_method(PkgNoInstall)
+api.register.add_method(PkgNoInstall,"InstallNoPkg")
+
+api.register.add_method(InstallItem)
 
 # add configuartion variable
 

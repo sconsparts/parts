@@ -48,10 +48,12 @@ class UnitTest(MetaSection):
         # Get all the groups defined
         groups = self.PhaseGroups()
 
-        for group in groups:
+        for group in groups:           
+
             # for each group we want a unique environment and test context
             if group not in self._run_context:
                 self._run_context[group] = (self.Env.Clone(), TestCtx())
+
             env, context = self._run_context[group]
             srcDir = env.AbsDir('.')
             build_dir_leaf = group
@@ -71,10 +73,12 @@ class UnitTest(MetaSection):
                 env.fs.chdir(build_dir, change_os_dir=False)
             context._lock()
 
+            ##############################################
             # process build phase
             if self.isPhasedGroupDefined("build", group):
                 self.ProcessPhase("build", group)
-
+            
+            #####################################
             # process run phase
             self.ProcessPhase("run", group)
             # validate the context for the group
@@ -87,6 +91,9 @@ class UnitTest(MetaSection):
             # tweak Environment
             env['UNIT_TEST_TARGET'] = group
 
+            # make a batch_key for the CCopy() call to help with overall speed
+            batch_key_base = hash(self.name), hash(self.Part.Alias), hash(group)
+            
             # if not context.Command:
             # need to get a stack to point to the parts file for this....
             #api.output.error_msg("test.Command was not defined for the run phase. Don't know what to run for the test!")
@@ -106,11 +113,11 @@ class UnitTest(MetaSection):
                 elif util.isValue(context.Target) or util.isValue(context.Target[0]):
                     api.output.error_msg("test.Target must be a file base node, not a value node")
                 elif util.isList(context.Target):
-                    target = env.CCopyAs(f"_target_rename_/${{UNIT_TEST_TARGET_NAME}}{context.Target[0].suffix}", context.Target[0])
+                    target = env.CCopyAs(f"_target_rename_/${{UNIT_TEST_TARGET_NAME}}{context.Target[0].suffix}", context.Target[0], CCOPY_BATCH_KEY=batch_key_base)
                     target += target[1:]
                 elif util.isEntry(context.Target):
                     target = context.Target
-                    target = env.CCopyAs("_target_rename_/$UNIT_TEST_TARGET_NAME", target)
+                    target = env.CCopyAs("_target_rename_/$UNIT_TEST_TARGET_NAME", target, CCOPY_BATCH_KEY=batch_key_base)
             elif context.Sources:
                 context.Sources = common.make_list(context.Sources)
                 context.Sources = [src if not isinstance(src, pattern.Pattern) else src.files() for src in context.Sources]
@@ -123,9 +130,9 @@ class UnitTest(MetaSection):
             for i in target:
                 # if util.isFile(i) or isNode(i) or util.isString(i):
                 if common.is_category_file(env, 'INSTALL_LIB_PATTERN', i):
-                    ret += env.CCopy(target='$INSTALL_LIB', source=i)
+                    ret += env.CCopy(target='$INSTALL_LIB', source=i, CCOPY_BATCH_KEY=(*batch_key_base, hash("install")))
                 else:
-                    ret += env.CCopy(target='$INSTALL_BIN', source=i)
+                    ret += env.CCopy(target='$INSTALL_BIN', source=i, CCOPY_BATCH_KEY=(*batch_key_base, hash("install")))
 
             #####################################################
             # copy any datafile to the testing sandbox
@@ -137,24 +144,24 @@ class UnitTest(MetaSection):
             for s in data_src:
                 if isinstance(s, pattern.Pattern):
                     t, sr = s.target_source(dest_dir)
-                    out += env.CCopyAs(target=t, source=sr)
+                    out += env.CCopyAs(target=t, source=sr, CCOPY_BATCH_KEY=(*batch_key_base, hash("data")))
                     # print "Pattern type"
                 elif isinstance(s, SCons.Node.FS.Dir):
                     # get all file in the directory
                     # ... add code...
-                    out += env.CCopy(target=dest_dir, source=s)
+                    out += env.CCopy(target=dest_dir, source=s, CCOPY_BATCH_KEY=(*batch_key_base, hash("data")))
                 elif isinstance(s, SCons.Node.FS.File) or isinstance(s, SCons.Node.Node):
                     if s.srcnode().has_builder:
                         # this node is built.. use the srcnode to deal with out
                         # node that are from a different section
-                        out += env.CCopy(target=dest_dir, source=s.srcnode())
+                        out += env.CCopy(target=dest_dir, source=s.srcnode(), CCOPY_BATCH_KEY=(*batch_key_base, hash("data")))
                     else:
-                        out += env.CCopy(target=dest_dir, source=s)
+                        out += env.CCopy(target=dest_dir, source=s, CCOPY_BATCH_KEY=(*batch_key_base, hash("data")))
                 elif util.isString(s):
                     f = env.subst(s)
                     if f.startswith(("../")):
                         f = env.AbsFileNode(f)
-                    out += env.CCopy(target=dest_dir, source=f)
+                    out += env.CCopy(target=dest_dir, source=f, CCOPY_BATCH_KEY=(*batch_key_base, hash("data")))
                 else:
                     api.output.warning_msg("Unknown type in unit_test section in Part", env.subst('$PART_NAME'))
 
@@ -184,7 +191,8 @@ class UnitTest(MetaSection):
 
             )
             # copy the script to the testing area to run later
-            scripts_out = env.CCopy("$UNIT_TEST_DIR", scripts_out)
+            # group this with the data files.. should be safe
+            scripts_out = env.CCopy("$UNIT_TEST_DIR", scripts_out, CCOPY_BATCH_KEY=(*batch_key_base, hash("data")))
 
             ##########################################
             # run command

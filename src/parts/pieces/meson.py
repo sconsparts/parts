@@ -72,7 +72,7 @@ def Meson(env,auto_scanner={},**kw):
 
 
 # adding logic to SCons Environment object
-SConsEnvironment.Meson = Meson
+api.register.add_method(Meson)
 
 api.register.add_variable('MESON_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', '')
 

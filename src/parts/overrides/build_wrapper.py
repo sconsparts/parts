@@ -10,11 +10,7 @@
 # deal with that latter
 
 
-import os
-
-import parts.api as api
 import parts.errors as errors
-import parts.glb as glb
 import SCons.Builder
 # we used lists as a dictionary can't take a tuple as a key
 import SCons.Environment
@@ -24,19 +20,24 @@ value_list = []
 
 Orig_call = SCons.Builder.BuilderBase.__call__
 
-# utils func
-def make_str(n):
-    try:
-        return n.ID
-    except:
-        return n
-
 def parts_call_(self, env, target=None, source=None, chdir=SCons.Builder._null, **kw):
     try:
-        targets = self.Orig_call(env, target, source, chdir=chdir, **kw)        
+        #print(7776,target)
+        targets = self.Orig_call(env, target, source, chdir=chdir, **kw)   
+        # this was just a simple way to do this in a generic way
+        # If we have DYN_SCANNER define in the env.. we want to add the node referenced
+        #      
     except errors.AllowedDuplication as e:
         # this happens when we have match on the duplication key
+        # the exeception has the targets to return
+        #print(f"7777 DUPLICATE {e.targets}")
         targets = e.targets
+    node = env.get('_DYNSCANNER_NODE')
+    if node:
+        for tg in targets:
+            if not tg.isVisited:
+                env.Depends(tg,node)
+
     return targets
 
 

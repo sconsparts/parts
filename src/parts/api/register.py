@@ -1,7 +1,9 @@
 
 
 import parts.glb as glb
-import SCons.Script
+from SCons.Script.SConscript import SConsEnvironment
+from SCons.Environment import OverrideEnvironment 
+
 from parts.core.states import GroupLogic
 
 from . import output
@@ -118,3 +120,15 @@ def add_list_variable(key, default, help, names=[], map={}):
     '''Generic variable addition'''
     from .. import settings
     settings.DefaultSettings().ListVariable(key, help=help, default=default, names=names, map=map, value=None, help_group=None)
+
+def add_method(func,name:str=None):
+    '''
+    Add a method to the Environment(s) classes
+    '''
+
+    if not name:
+        name = func.__name__
+
+    setattr(SConsEnvironment, name, func)
+    setattr(OverrideEnvironment, name, func)
+    

@@ -116,10 +116,16 @@ def get_csig(env, force=False) -> str:
         except:
             #print("Oh no",len(env.Dictionary()))
             raise
-        csig = md5.hexdigest()
+        csig = md5.hexdigest()        
         env._env_csig = csig
 
     return csig
 
+def get_csig_hash(self) -> int:
+    '''
+    the python hash value of the csig string
+    '''
+    return hash(self.get_csig())
 
 SConsEnvironment.get_csig = get_csig
+SConsEnvironment.get_csig_hash = get_csig_hash

@@ -108,6 +108,9 @@ class reporter:
         sys.stdout = streamer(self.stdout)
         sys.stderr = streamer(self.stderr)
 
+        # this it to help with cleaner console updated
+        self._last_console_message:str=""
+
         # setup the rest of the stuff
         self.logger = logger.QueueLogger()
         self.already_printed = set()
@@ -338,6 +341,8 @@ class reporter:
         else:
             self.console.write(msg)
             self.logger.logout(msg)
+        if msg.endswith("\n"):
+            self.console.write(self._last_console_message)
         return len(msg)
 
     def stderr(self, msg, remap=True):
@@ -350,6 +355,8 @@ class reporter:
         else:
             self.console.Error.write(msg)
             self.logger.logerr(msg)
+        if msg.endswith("\n"):
+            self.console.write(self._last_console_message)
         return len(msg)
 
     def stdwrn(self, msg, remap=True):
@@ -374,6 +381,8 @@ class reporter:
         else:
             self.console.Message.write(msg)
             self.logger.logmsg(msg)
+        if msg.endswith("\n"):
+            self.console.write(self._last_console_message)
         return len(msg)
 
     def stdtrace(self, msg, remap=True):
@@ -391,6 +400,7 @@ class reporter:
     def stdconsole(self, msg, remap=True):
         '''writes to the Console directly... nice for progress effects'''
         self.console.write(msg)
+        self._last_console_message = msg.split("\n")[-1]
         return len(msg)
 
 
@@ -473,7 +483,7 @@ api.register.add_global_parts_object('PrintMessage', user_print_msg)
 api.register.add_global_parts_object('VerboseMessage', user_verbose)
 
 # adding logic to Scons Environment object
-SConsEnvironment.PrintError = user_report_error_env
-SConsEnvironment.PrintWarning = user_report_warning_env
-SConsEnvironment.PrintMessage = user_print_msg_env
-SConsEnvironment.VerboseMessage = user_verbose_env
+api.register.add_method(user_report_error_env, 'PrintError')
+api.register.add_method(user_report_warning_env, 'PrintWarning')
+api.register.add_method(user_print_msg_env, 'PrintMessage')
+api.register.add_method(user_verbose_env, 'VerboseMessage')

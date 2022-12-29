@@ -5,6 +5,7 @@ import os
 import sys
 
 import parts.glb as glb
+import parts.api as api
 
 
 class AllowedDuplication(Exception):
@@ -19,6 +20,7 @@ class LoadStoredError(Exception):
 # stuff to help with reporting debug info
 def ResetPartStackFrameInfo():
     if len(glb.part_frame) > 0:
+        api.output.trace_msg(["errors.stack","errors"], "Removing frame from stack")
         glb.part_frame.pop(0)
 
 
@@ -49,6 +51,7 @@ def SetPartStackFrameInfo(use_existing=False):
     try:
         checked = False
         while part_frame:
+            api.output.trace_msg(["errors.stack","errors"], f"Top of stack is: {part_frame.f_code.co_filename}:{part_frame.f_lineno}")
             if not checked:
                 # determining best parts source to return
                 if not part_frame.f_code.co_filename.endswith('parts' + os.sep + 'errors.py') and\
@@ -65,6 +68,7 @@ def SetPartStackFrameInfo(use_existing=False):
         assert(not part_frame is None)
         lineno = part_frame.f_lineno
         line = linecache.getline(part_frame.f_code.co_filename, lineno)
+        api.output.trace_msg(["errors.stack","errors"], f"Add frame to Stack: {part_frame.f_code.co_filename}:{part_frame.f_lineno}")
         glb.part_frame.insert(0, (part_frame.f_code.co_filename, lineno, part_frame.f_code.co_name, line))
 
     finally:

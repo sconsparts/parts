@@ -1,0 +1,9 @@
+from parts import *
+
+# Note this test would fail if the different part files are in the same directory
+# the Glob called the the Pattern() will leak nodes from one part to the other
+# I think this is a bug in SCons.. easy work around is to put components in different directories
+
+Part("A/part1.part")
+Part("B/part2.part")
+Part("C/part3.part")

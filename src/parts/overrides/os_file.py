@@ -230,53 +230,53 @@ if sys.platform == 'win32':
     # the File or Dir nodes to do all file operation in SCon someday
     # this will then change to allow help in that migration
 
-    def win32_rm(path):
-        if len(path) >= 200 and not path.startswith("\\\\?\\"):
-            path = str("\\\\?\\" + os.path.abspath(path))
-        else:
-            path = str(path)
-        if not DeleteFileW(path):
-            raise WindowsError(ctypes.GetLastError(), ctypes.FormatError(ctypes.GetLastError()),
-                               path)
+    #def win32_rm(path):
+        #if len(path) >= 200 and not path.startswith("\\\\?\\"):
+            #path = str("\\\\?\\" + os.path.abspath(path))
+        #else:
+            #path = str(path)
+        #if not DeleteFileW(path):
+            #raise WindowsError(ctypes.GetLastError(), ctypes.FormatError(ctypes.GetLastError()),
+                               #path)
 
-    os.remove = win32_rm
-    os.unlink = win32_rm
+    #os.remove = win32_rm
+    #os.unlink = win32_rm
 
-    _original_listdir = os.listdir
+    #_original_listdir = os.listdir
 
-    def listdir(dir):
-        if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
-            dir = str("\\\\?\\" + os.path.abspath(dir))
-        return _original_listdir(dir)
-    os.listdir = listdir
+    #def listdir(dir):
+        #if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
+            #dir = str("\\\\?\\" + os.path.abspath(dir))
+        #return _original_listdir(dir)
+    #os.listdir = listdir
 
-    _original_stat = os.stat
+    #_original_stat = os.stat
 
-    def stat(dir):
-        if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
-            dir = str("\\\\?\\" + os.path.abspath(dir))
-        return _original_stat(dir)
-    os.stat = stat
+    #def stat(dir,):
+        #if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
+            #dir = str("\\\\?\\" + os.path.abspath(dir))
+        #return _original_stat(dir)
+#    os.stat = stat
 
-    _original_mkdir = os.mkdir
+    #_original_mkdir = os.mkdir
 
-    def mkdir(dir, mode=0o777):
-        if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
-            dir = str("\\\\?\\" + os.path.abspath(dir))
-        return _original_mkdir(dir, mode)
-    os.mkdir = mkdir
+    #def mkdir(dir, mode=0o777):
+        #if len(dir) >= 200 and not dir.startswith("\\\\?\\"):
+            #dir = str("\\\\?\\" + os.path.abspath(dir))
+        #return _original_mkdir(dir, mode)
+    #os.mkdir = mkdir
 
-    def abspath(dir):
-        buf = ctypes.create_unicode_buffer(1024)
-        ret = GetFullPathNameW(dir, 1024, buf, 0)
-        if ret > 1024:
-            buf = ctypes.create_unicode_buffer(ret)
-            ret = GetFullPathNameW(dir, 1024, buf, 0)
-        if ret == 0:
+    #def abspath(dir):
+        #buf = ctypes.create_unicode_buffer(1024)
+        #ret = GetFullPathNameW(dir, 1024, buf, 0)
+        #if ret > 1024:
+            #buf = ctypes.create_unicode_buffer(ret)
+            #ret = GetFullPathNameW(dir, 1024, buf, 0)
+        #if ret == 0:
             # we have an error
-            raise WindowsError(ctypes.GetLastError(), ctypes.FormatError(ctypes.GetLastError()), dir)
-        return buf.value
-    os.path.abspath = abspath
+            #raise WindowsError(ctypes.GetLastError(), ctypes.FormatError(ctypes.GetLastError()), dir)
+        #return buf.value
+    #os.path.abspath = abspath
 
 
 # vim: set et ts=4 sw=4 ai :

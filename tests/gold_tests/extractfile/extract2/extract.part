@@ -1,0 +1,19 @@
+Import("*")
+
+PartName("extract")
+PartVersion("1.0.0")
+
+
+@build
+def source(env):
+
+    if "gz" in env['MODE']:
+        testfile = "testdata.tar.gz"
+    elif "bz2" in env['MODE']:
+        testfile = "testdata.tar.bz2"
+    elif "zip" in env['MODE']:
+        testfile = "testdata.zip"
+    else:
+        PrintError("Test needs to pass mode= value to select what to type of file to extract")
+
+    out = env.ExtractFiles("extracted", testfile, includes=["*.cpp"])

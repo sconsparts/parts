@@ -282,8 +282,8 @@ class dependsOnEnv:
 
 
 # adding logic to Scons Environment object
-SConsEnvironment.DependsOn = depends_on
-SConsEnvironment.Component = Component
+api.register.add_method(depends_on,'DependsOn')
+api.register.add_method(Component)
 # allow us to add component to parts as a global objects
 api.register.add_global_parts_object('DependsOn', dependsOnEnv, True)
 api.register.add_global_parts_object('Component', ComponentEnv, True)

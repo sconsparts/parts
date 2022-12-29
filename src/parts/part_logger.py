@@ -395,7 +395,7 @@ def _get_part_log_mapper(env):
     return result
 
 
-SConsEnvironment._get_part_log_mapper = _get_part_log_mapper
+api.register.add_method(_get_part_log_mapper)
 
 api.register.add_variable('_part_logger', part_logger, '')
 api.register.add_variable('PART_LOG_MAPPER', '${_part_logger(__env__)}', '')

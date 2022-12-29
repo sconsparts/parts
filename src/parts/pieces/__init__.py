@@ -3,6 +3,7 @@
 
 import glob
 import os.path
+import parts.glb as glb
 
 
 def loadAllPieces():
@@ -19,4 +20,7 @@ def loadAllPieces():
                     load_module.load_module([directory], name, 'pieces')
 
 
-loadAllPieces()
+if not glb.pieces_loaded:
+    #print("loading pieces")
+    loadAllPieces()
+    glb.pieces_loaded = True

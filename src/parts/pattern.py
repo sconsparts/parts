@@ -16,6 +16,7 @@ from SCons.Script.SConscript import SConsEnvironment
 import parts.api as api
 import parts.common as common
 import parts.core.util as util
+import parts.errors as errors
 # patterns
 import parts.glb as glb
 
@@ -55,10 +56,12 @@ class Pattern:
 
         self.recursive = recursive
         self.map = None
+        self._stackframe = errors.GetPartStackFrameInfo()
 
     def files(self, directory=None):
         '''
         return the files found by the pattern
+        @param directory Returns nodes to the directory provided
         '''
 
         if self.map is None:
@@ -88,8 +91,17 @@ class Pattern:
         root_target = self._env.arg2nodes(root_target, self._env.fs.Dir)[0]
         if self.map is None:
             self.generate()
-        for dnode, slist in list(self.map.items()):
+        for dnode, slist in list(self.map.items()):            
             for node in slist:
+                src_dir = node.Dir('.')
+                if src_dir.is_under(root_target):
+                    api.output.error_msg(f"Source node '{node}' is under the target root directory '{root_target}'.\
+                        \n This is a sign of a bad Pattern() call that is finding items in a VariantDir() that are target outputs from the Builder call that had been created from a previous build run.\n The Builder:",
+                        stackframe=errors.GetPartStackFrameInfo(),
+                        exit=False
+                        )
+                    api.output.error_msg(f"Pattern used for this error:",stackframe=self._stackframe)
+
                 if util.isSymLink(node):
                     target_node = root_target.FileSymbolicLink(self.src_dir.rel_path(node))
                 else:
@@ -109,10 +121,10 @@ class Pattern:
         # there is a quirk in which Glob() does some odd behavior when we scan a variant directory
         # This is to protect us from recursing down the variant directory more than once
         guard_path = f"{self.src_dir.ID}/{self._env.Dir('$BUILD_DIR_ROOT').name}"
-
+        api.output.verbose_msgf(["pattern.generate.add", "pattern.generate", "pattern"], "Starting scan of {}", self.src_dir)
         for path in paths:
-            objs = path.glob(".*")
-            objs += path.glob("*")
+            objs = path.glob(".*",ondisk=True, source=True, strings=False, exclude=None)
+            objs += path.glob("*",ondisk=True, source=True, strings=False, exclude=None)
             for entity in objs:
                 is_dir = util.isDir(entity)
                 # __rt and __oot are funny files that are out of tree
@@ -126,13 +138,13 @@ class Pattern:
 
                 matches = common.matches(self.src_dir.rel_path(entity), self.includes, self.excludes)
                 if matches:
-                    api.output.verbose_msgf(["pattern.add", "pattern"], "Adding {0} {1}", path, entity.ID)
+                    api.output.verbose_msgf(["pattern.generate.add", "pattern.generate", "pattern"], "Adding {0} {1}", path, entity.ID)
                     try:
                         m[path].append(entity)
                     except KeyError:
                         m[path] = [entity]
                 else:
-                    api.output.verbose_msgf(["pattern.skip", "pattern"], "Skipped {0}", entity.ID)
+                    api.output.verbose_msgf(["pattern.generate.skip", "pattern.generate", "pattern"], "Skipped {0}", entity.ID)
         self.map = m
 
 
@@ -148,7 +160,7 @@ class _Pattern:
 
 
 # adding logic to Scons Environment object
-SConsEnvironment.Pattern = Pattern_func
+api.register.add_method(Pattern_func, 'Pattern')
 
 api.register.add_global_object('Pattern', _Pattern)
 api.register.add_global_parts_object('Pattern', _Pattern, True)

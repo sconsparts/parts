@@ -181,6 +181,8 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                 # because some cases this is checked in and will be replaced with the configure.ac
                 exclude_srcs += ["configure"]
 
+            batch_key = hash("automake"), checkout_path
+
             if copy_top:
                 # copy only item at the top level ( great for repos with Tons of nodes)
                 # as this can slow everything down processing (and scanning for) these nodes.
@@ -194,13 +196,15 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                 files = env.Glob("${CHECK_OUT_DIR}/*", exclude=exclude_srcs)
                 sources = env.CCopy(
                     source=files,
-                    target=build_dir
+                    target=build_dir,
+                    CCOPY_BATCH_KEY=batch_key
                 )
             else:
                 # copy the build files
                 depends = env.CCopy(
                     source=[auto_conf_pattern, auto_make_pattern],
-                    target=build_dir
+                    target=build_dir,
+                    CCOPY_BATCH_KEY=batch_key
                 )
 
                 # do we need to copy git scm info as well?
@@ -210,14 +214,16 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                     if git_files.files():
                         scm_sources = env.CCopy(
                             source=git_files,
-                            target=build_dir
+                            target=build_dir,
+                            CCOPY_BATCH_KEY=batch_key
                         )
 
                 # copy source files
                 files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=exclude_srcs)
                 sources = env.CCopy(
                     source=files,
-                    target=build_dir
+                    target=build_dir,
+                    CCOPY_BATCH_KEY=batch_key
                 )
 
         # make the expected build file outputs (ie the MakeFiles, Configure, not the .am or .ac files)
@@ -263,14 +269,17 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
     )
     if configure_post_actions:
         configure_cmds.append(configure_post_actions)
-    jobs=env.GetOption('num_jobs')
+    jobs = env.GetOption('num_jobs')
     # generate the makefiles
     build_files = env.CCommand(
         auto_conf_buildfile,
         depends,
         configure_cmds,
-        source_scanner=scanners.NullScanner,
-        target_scanner=scanners.DependsSdkScanner
+        #source_scanner=scanners.NullScanner,
+        target_scanner=scanners.NullScanner,
+        source_scanner=scanners.DependsSdkScanner,
+        # to help with debugging
+        name="AutoMakeConfigure",
     )
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$\\$$$$$$$$ORIGIN")}'
     ret = env.CCommand(
@@ -288,10 +297,11 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         target_scanner=env.ScanDirectory(
             "$AUTO_MAKE_INSTALL_DESTDIR",
             # Program scanner for getting libs
-            extra_scanner=SCons.Scanner.Prog.ProgramScanner(),
+            #extra_scanner=SCons.Scanner.Prog.ProgramScanner(),
             **auto_scanner
         ),
-
+        # to help with debugging
+        name="AutoMakeDestDir",
     )
 
     skip_check = True
@@ -329,7 +339,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
 
 
 # adding logic to SCons Environment object
-SConsEnvironment.AutoMake = AutoMake
+api.register.add_method(AutoMake)
 
 api.register.add_variable('AUTO_MAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines namespace for building a unit test')
 api.register.add_variable('_ABSCPPINCFLAGS', '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')

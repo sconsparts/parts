@@ -48,7 +48,7 @@ def _EncodeFile(env, target, source, target_encoding, source_encoding='utf-8'):
 
 
 # adding logic to Scons Environment object
-SConsEnvironment.EncodeFile = _EncodeFile
+api.register.add_method(_EncodeFile, 'EncodeFile')
 
 
 encodeAction = SCons.Action.Action(_encode_bd, _encode_sf,

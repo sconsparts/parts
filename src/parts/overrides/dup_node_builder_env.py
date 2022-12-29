@@ -10,6 +10,7 @@ import parts.errors as errors
 import parts.glb as glb
 import parts.metatag as metatag
 import SCons.Builder
+import time
 
 scons_node_errors = SCons.Builder._node_errors
 
@@ -37,6 +38,7 @@ def parts_node_errors(builder, env, tlist, slist):
 
     # check to see if we have allow duplicates defined
     # if so we need to see if we have a duplicate defined as known
+    
     if env.get('allow_duplicates'):
         if section is not None:
             pname = section.Part.Name
@@ -118,6 +120,8 @@ def tag_part_info(node_list, pobj):
 
     NOte this is not used at the moment as I have to reimple the stored cache info    
     '''
+    api.output.verbose_msg(["partinfo"],f"Tagging {node_list} nodes with info of part defining them")
+    st=time.time()
     for node in node_list:
 
         # tag the node with sections that it is a part of.
@@ -158,3 +162,4 @@ def tag_part_info(node_list, pobj):
                 if dnode == dnode.Dir('..'):
                     break
                 dnode = dnode.Dir('..')
+    api.output.verbose_msg(['partinfo'],f"Tag time: {time.time()-st}")

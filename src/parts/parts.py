@@ -99,7 +99,7 @@ class subpart_wrapper:
 
 
 # adding logic to Scons Environment object
-SConsEnvironment.Part = SubPart_factory
+api.register.add_method(SubPart_factory,'Part')
 
 # add configuration variable needed for part
 api.register.add_variable('PART_BUILD_CONCEPT', 'build${ALIAS_SEPARATOR}', 'Namespace used to just build a given target')

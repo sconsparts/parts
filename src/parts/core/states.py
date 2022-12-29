@@ -2,6 +2,15 @@
 from enum import IntFlag, IntEnum
 
 
+class ChangeCheck(IntFlag):
+    UNKNOWN = 0
+    EXPLICIT_SAME = 1 # same but the scanner did not run
+    IMPLICIT_SAME = 2 # same and the scanner did run or this is built/visited
+    SAME = 3
+
+    EXPLICIT_DIFF = 4 # different but the scanner did not run
+    IMPLICIT_DIFF = 8 # different and the scanner did run
+    DIFF = 12
 
 class GroupLogic(IntEnum):
     NONE = 0

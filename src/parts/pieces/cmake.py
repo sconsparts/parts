@@ -60,8 +60,11 @@ def CMake(env, destdir=None, cmakedir=None, auto_scanner={}, ignore=[], **kw):
             '${define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}${MAKEPATH("$PKG_CONFIG_PATH")} '
             '$CMAKE ${SOURCE.dir.abspath} $_CMAKE_ARGS'
         ],
-        source_scanner=scanners.NullScanner,
-        target_scanner=scanners.DependsSdkScanner
+        #source_scanner=scanners.NullScanner,
+        target_scanner=scanners.NullScanner,
+        source_scanner=scanners.DependsSdkScanner,
+        # to help with debugging
+        name="CMakeGenerate",
     )
     cmake_build_files = ["CMakeLists.txt"]
 
@@ -87,9 +90,11 @@ def CMake(env, destdir=None, cmakedir=None, auto_scanner={}, ignore=[], **kw):
         target_scanner=env.ScanDirectory(
             cmake_install_dir,
             # Program scanner for getting libs
-            extra_scanner=SCons.Scanner.Prog.ProgramScanner(),
+            #extra_scanner=SCons.Scanner.Prog.ProgramScanner(),
             **auto_scanner
         ),
+        # to help with debugging
+        name="CMakeDestDir",
     )
 
     # export the install location
@@ -98,6 +103,6 @@ def CMake(env, destdir=None, cmakedir=None, auto_scanner={}, ignore=[], **kw):
 
 
 # adding logic to Scons Environment object
-SConsEnvironment.CMake = CMake
+api.register.add_method(CMake)
 
 api.register.add_variable('CMAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines location to install bits from the CMake')

@@ -1,1 +1,1 @@
-Trace: [logger_option] logger = <class '<logger>text.text'>
+Trace: [logger_option] logger = <class 'parts.loggers.text.text'>

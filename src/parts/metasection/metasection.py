@@ -126,7 +126,7 @@ class MetaSection:
 
     def PhaseCallbackSetupFunction(self, name: str):
         '''
-        get overide if provided, test that if this is a unbound meathod of this 
+        get override if provided, test that if this is a unbound method of this 
         class, if so make it bound, else return unbound function to be called.
         '''
         override = self.definition.PhaseInfo(name).SetupFunc

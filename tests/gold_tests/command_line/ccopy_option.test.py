@@ -28,20 +28,20 @@ t.ReturnCode = 0
 t.Streams.Debug = 'gold/ccopy_good1.gold'
 
 # test differ cases of 'hard-soft-copy','soft-hard-copy','soft-copy','hard-copy','copy'
-t = Test.AddTestRun("good")
-t.Command = "scons all --ccopy=hard-soft-copy --trace=ccopy_logic_option --tc=null --console-stream=none"
-t.ReturnCode = 0
-t.Streams.Debug = 'gold/ccopy_good2.gold'
+#t = Test.AddTestRun("good")
+#t.Command = "scons all --ccopy=hard-soft-copy --trace=ccopy_logic_option --tc=null --console-stream=none"
+#t.ReturnCode = 0
+#t.Streams.Debug = 'gold/ccopy_good2.gold'
 
-t = Test.AddTestRun("good")
-t.Command = "scons all --ccopy=soft-hard-copy --trace=ccopy_logic_option --tc=null --console-stream=none"
-t.ReturnCode = 0
-t.Streams.Debug = 'gold/ccopy_good3.gold'
+#t = Test.AddTestRun("good")
+#t.Command = "scons all --ccopy=soft-hard-copy --trace=ccopy_logic_option --tc=null --console-stream=none"
+#t.ReturnCode = 0
+#t.Streams.Debug = 'gold/ccopy_good3.gold'
 
-t = Test.AddTestRun("good")
-t.Command = "scons all --ccopy=soft-copy --trace=ccopy_logic_option --tc=null --console-stream=none"
-t.ReturnCode = 0
-t.Streams.Debug = 'gold/ccopy_good4.gold'
+#t = Test.AddTestRun("good")
+#t.Command = "scons all --ccopy=soft-copy --trace=ccopy_logic_option --tc=null --console-stream=none"
+#t.ReturnCode = 0
+#t.Streams.Debug = 'gold/ccopy_good4.gold'
 
 t = Test.AddTestRun("good")
 t.Command = "scons all --ccopy=hard-copy --trace=ccopy_logic_option --tc=null --console-stream=none"

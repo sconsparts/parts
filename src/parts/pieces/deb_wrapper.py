@@ -95,7 +95,7 @@ api.register.add_builder(
         action=SCons.Action.Action([
             SCons.Action.Action(dep_create_install_file),
             'cd ${TARGET.attributes.pack_dir}; debuild -us -uc -d -b; cd -',
-            SCons.Defaults. Copy('$TARGET', '${TARGET.attributes.pack_dir}/../${TARGET.name}')
+            SCons.Defaults.Copy('$TARGET', '${TARGET.attributes.pack_dir}/../${TARGET.name}')
         ], cmdstr='Packing into ${TARGET}'),
         emitter=dep_emitter,
         suffix='.deb',

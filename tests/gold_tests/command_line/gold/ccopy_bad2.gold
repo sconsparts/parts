@@ -1,3 +1,3 @@
-usage: scons [OPTION] [TARGET] ...
+usage: scons [OPTIONS] {} [TARGETS]
 
-SCons {}rror: option --ccopy-logic: invalid choice: 'copy,foo' (choose from 'hard-soft-copy', 'soft-hard-copy', 'soft-copy', 'hard-copy', 'copy')
+SCons {}rror: option --ccopy-logic: invalid choice: 'copy,foo' (choose from 'hard-copy', 'copy')

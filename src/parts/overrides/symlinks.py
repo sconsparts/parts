@@ -10,6 +10,8 @@ There is also env.SymLink builder is introduced here
 import ctypes
 import os
 import subprocess
+from pathlib import Path
+from typing import Optional, Dict
 
 import parts.api as api
 import parts.common as common
@@ -278,7 +280,7 @@ class FileSymbolicLink(SCons.Node.FS.File):
     """
     slots to be compatible with scons newer than 2.3.0
     """
-    __linktos__ = {}
+    __linktos__: Dict[str, str] = {}
     """
     This global dictionary will hold _linkto values for each FileSymbolicLink instance:
     __linktos__[node.abspath] = _linkto. See the linkto property getter for reference
@@ -290,7 +292,7 @@ class FileSymbolicLink(SCons.Node.FS.File):
         SCons.Node.FS.File.__init__(self, name, directory, fs)
 
     @property
-    def linkto(self):
+    def linkto(self) -> Optional[str]:
         """
         C{FileSymbolicLink.linkto} property getter function.
         """
@@ -304,7 +306,7 @@ class FileSymbolicLink(SCons.Node.FS.File):
                 return None
 
     @linkto.setter
-    def linkto(self, value):
+    def linkto(self, value: Optional[str]):
         """
         C{FileSymbolicLink.linkto} property setter function.
         """
@@ -344,7 +346,7 @@ class FileSymbolicLink(SCons.Node.FS.File):
         srcdir_list = self.dir.srcdir_list()
         if srcdir_list:
             srcnode = srcdir_list[0].Entry(self.name)
-            ensure_node_is_symlink(srcnode, self)
+            ensure_node_is_symlink(srcnode, self.linkto)
             return srcnode
         return self
 
@@ -399,7 +401,7 @@ def _def_SConsEnvironment_FileSymbolicLink(klass):
 _def_SConsEnvironment_FileSymbolicLink(SConsEnvironment)
 
 
-def ensure_node_is_symlink(node, template=None):
+def ensure_node_is_symlink(node, linkto=None):
     """
     Checks if the node is a symlink, converts it to a symlink based on the template.
     """
@@ -407,9 +409,10 @@ def ensure_node_is_symlink(node, template=None):
         if not isinstance(node, SCons.Node.FS.FileSymbolicLink):
             node.__class__ = SCons.Node.FS.FileSymbolicLink
             node._morph()
+        # make sure linkto is set correctly
+        if linkto:
+            node.linkto = linkto
 
-            if template is not None:
-                node.linkto = template.linkto
     return node
 
 
@@ -425,18 +428,17 @@ def _wrap_MetaTag(MetaTag):
             If so convert the child too.
             """
             for node in common.make_list(nodes):
-                ensure_node_is_symlink(node)
+                ensure_node_is_symlink(node, linkto)
 
                 api.output.verbose_msg('symlinks',
                                        "Updating SymLink node {node} pointing to {linkto} to point to {linktonew}".format(
                                            node=node, linkto=node.linkto, linktonew=linkto))
-                node.linkto = linkto
 
                 # This node can be copied only as a FileSymbolicLink.
                 # Ensure all its CCopy targets are symlinks too.
                 try:
                     for target in node.attributes.copiedas:
-                        ensure_node_is_symlink(target)
+                        ensure_node_is_symlink(target, linkto)
                 except AttributeError:
                     pass
 
@@ -509,66 +511,119 @@ def _source_scanner():
         But don't be confused. We create the tuple using C{path_function} and in our case it either is empty or
         contains one FileSymbolicLink node - the target.
         '''
+        api.output.verbose_msgf(["scanner.symlink", "scanner.called", "scanner"], "Scanning node {0}", node.ID)
+        # api.output.verbose_msgf(["scanner.symlink", "scanner"], "path is {}", path)
 
-        if len(path) != 1:
-            return []
-
-        source = path[0]
+        source = None
+        if len(path) > 1:
+            # try to find the node that is probally a match for this
+            path = [p for p in path if os.path.split(p.ID)[-1] == os.path.split(node.ID)[-1]]
+            if path:
+                source = path[0]
+        elif path:
+            source = path[0]
         target = node
 
-        if not isinstance(source, FileSymbolicLink):
-            # This source is not a symlink. So nothing needs to be done
+        # ###########################################
+        # check that this is a symlink
+
+        # if the target is not clearly a symlink at this point and the source is None
+        # we have to return.
+        api.output.verbose_msgf(["scanner.symlink", "scanner"], "node is of type {}", type(target))
+        if not util.isSymLink(target) and not source:
+            api.output.verbose_msgf(["scanner.symlink", "scanner"], "return []", target, source)
             return []
-        elif not isinstance(target, FileSymbolicLink):
+        # the source is a symlink, so this should be one as well. Make it so!
+        elif not util.isSymLink(target) and util.isSymLink(source):
+            api.output.verbose_msgf(["scanner.symlink", "scanner"], "Turning target in to symlink node type")
             # if the source is a symlink and the target is a file
             # the target really is a symlink to the "source". Elavate the target
-            ensure_node_is_symlink(target)
+            ensure_node_is_symlink(target, source.linkto)
 
-        linkto = source.linkto
-        if linkto:
-            ret = []
-            tchildren = target.children(scan=0)
+        ret = []
+        # get the known children ( not scanned as we are scanning now)
+        # we need to this not make sure we don't add a node twice
+        tchildren = target.children(scan=0)
+
+        ##########################################
+        # This logic is explictly about dealing with libtool versioning
+        # we have to make sure the linkto and possible soname node are both
+        # defined. These might be the same value, they might not be as well.
+        # defining these allow SCons to make sure we have items copied that
+        # we need to point to for a given link to work for dependancies.
+
+        # Given this should only exist for cases of .so and .sl. Try to reduce
+        # process calls unless we know we might needed to..
+        if source and any(x in source.ID for x in ('.so', '.sl')):
             try:
-                out = subprocess.run("objdump -p {} | grep SONAME".format(source), shell=True,
+                out = subprocess.run(f"objdump -p {source} | grep SONAME", shell=True,
                                      check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE).stdout.decode().split()[-1]
                 # given a soname and that it is not this node
                 if out and not target.name.endswith(out):
                     result = target.Entry(out)
+                    api.output.verbose_msgf(["scanner.symlink", "scanner"], "objdump:{}", result)
                     ret = [result] if not result in tchildren else []
 
             except subprocess.CalledProcessError:
                 # something went wrong.. just ignore it and assume that this is not a soname file
                 pass
 
-            # if the target has a linkto property sets use it.
-            result = target.Entry(linkto)
+        if source:
+            if source.linkto:
+                linkto = source.linkto
+            else:
+                # if we did not have the linkto value it is in the src node
+                linkto = source.srcnode().linkto
+                source.linkto = linkto
+            if linkto and linkto.startswith(("/", '\\', "./", ".\\", "..")):
+                # if we did not have the linkto value it is in the src node
+                source_path = source.ID  # if os.path.exits() else
+
+                api.output.verbose_msgf(["scanner.symlink", "scanner"], "source.linkto:{}", linkto)
+
+                # we want to get the real path to the link item because SCons will get upset if a
+                # Path item in a node is a symlink. it will cause an issue with the Node being a symlink
+                # but being looked up as a Dir node.
+                # test_realpath = os.path.realpath(os.path.join(os.path.dirname(source_path), linkto))
+                realpath = os.path.realpath(os.path.join(os.path.dirname(source_path), linkto))
+                if not os.path.exists(realpath):
+                    api.output.error_msg(
+                        "symlink realpath does not exist, but it should.\n"
+                        f" target  = {target} linkto = {target.linkto}\n"
+                        f" source  = {target} source = {source.linkto}\n"
+                        f" realpath= {realpath}\n"
+                        " Please report this issue with a reproducer"
+                    )
+                rel_path = os.path.relpath(realpath, os.path.dirname(source_path))
+                result = target.Entry(rel_path)
+            elif linkto:
+                rel_path = linkto
+                result = target.Entry(rel_path)
+            else:
+                result = None
+        elif target.linkto:
+            linkto = target.linkto
+            result = target.Entry(target.linkto)
+        else:
+            api.output.error_msg(
+                "Source and target has no linkto value.\n This should never happen.\n Please report this issue with a reproducer"
+            )
+
+        # need to check that the result is not a parent of the target as SCons will get upset
+        if result and not target.is_under(result):
             ret += [result] if not result in tchildren and result not in ret else []
 
-            return ret
-        '''
-        #double check this case...
-        if isinstance(node, FileSymbolicLink) and node.linkto:
-            try:
-                # A node pointed by source node's linkto may be copied into several
-                # locations. Use find_closest_linkto function to find a node which is
-                # the closest one to 'target'. The best match would be a file located
-                # in the same dir as the FileSymbolicLink to be created.
-                result = find_closest_linkto(target,
-                                             node.Entry(node.linkto).attributes.copiedas)
-                target.linkto = target.rel_path(result)
-                return [result] if not result in target.children(scan=0) else []
-            except (AttributeError, IndexError):
-                pass
-        '''
-        return []
+        api.output.verbose_msgf(["scanner.symlink",], "return {}", ret)
+        return ret
 
     def path_function(env, scons_dir, target, source, arg=None):
         '''
         Scanner path_function. We don't make a real path_function here we use
-        it as the way to pass target into Scanner function.
+        it as the way to pass Source into Scanner function.
         '''
-        return tuple(node for node in source if isinstance(node.disambiguate(), FileSymbolicLink))
+        return tuple(node for node in source if util.isSymLink(node.disambiguate()))
 
+    # todo scan_check on this might make sence.. ie check this is symlink or source is symlimk
     return Scanner(function, path_function=path_function, name="symlink-scanner")
 
 

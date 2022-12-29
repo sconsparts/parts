@@ -265,7 +265,7 @@ class base:
         # the ability for the mirror cache to be used
 
         if self.canMirror and self.useCache:
-            update: Union[bool, List[str]] = self._env.GetOption('update_mirror')
+            update: Union[bool, List[str]] = self._env.GetOption('update_mirror')            
             # src_update = self._env.GetOption('update')
             # check that we have a cache directory
             if not self.hasMirror:

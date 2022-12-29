@@ -551,8 +551,8 @@ class version_range:
         return str(self.range)
 
 
-SConsEnvironment.Version = version
-SConsEnvironment.VersionRange = version_range
+api.register.add_method(version, 'Version')
+api.register.add_method(version_range, 'VersionRange')
 
 api.register.add_global_parts_object('Version', version)
 api.register.add_global_parts_object('VersionRange', version_range)

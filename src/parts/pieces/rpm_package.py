@@ -14,18 +14,21 @@ import parts.core.util as util
 import parts.errors as errors
 import parts.glb as glb
 import parts.node_helpers as node_helpers
+from parts.core.states import ChangeCheck
 import parts.platform_info as platform_info
 import SCons.Script
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
+
 
 rpm_reg = r"([\w_.-]+)-([\w.]+)-([\w_.]+)[.](\w+)\.rpm"
 
 
 def rpm_scan_check(node, env):
+    '''
+    return True to do scan, False will skip
+    '''
     api.output.verbose_msg(["rpm-scanner", "scanner"], f"Scanner Check {node.ID} - started")
     # we can scan given the children all all built or up to date
-    ret = not node_helpers.has_children_changed(node)
+    ret = node_helpers.has_children_changed(node) & ChangeCheck.SAME
     api.output.verbose_msg(["rpm-scanner", "scanner"], f"Scanner Check {node.ID}: {ret}")
     return ret
 
@@ -46,7 +49,7 @@ def rpm_group_values(env, dir, target, source, arg=None):
         # to the group file are defined. Since a rebuilt child may not cause
         # this file to rebuild ( same md5), so we check the children instead.
 
-        if not node_helpers.has_children_changed(node) and os.path.exists(node.ID):
+        if (node_helpers.has_children_changed(node) & ChangeCheck.SAME) and os.path.exists(node.ID):
             with open(node.ID, "r") as infile:
                 data = json.load(infile)
                 for json_node in data:
@@ -69,10 +72,13 @@ def rpm_scanner(node, env, path, args=None):
     the .spec file and the .tar.gz file that we need generate
     from the sources that are mapped to a given group
     '''
-    api.output.verbose_msgf(["rpm-scanner", "scanner", "scanner-called"], "Rpm Scanning {}", node.ID)
+    api.output.verbose_msgf(["rpm-scanner", "scanner", "scanner.called"], "Rpm Scanning {}", node.ID)
 
     # this is the package name without the .rpm"
     base_name = node.name[:-4]
+
+    # this is a batch key for all the copies that we need to do
+    batch_key = "rpm", hash(base_name)
 
     # get the files that are part of the package groups
     [e.disambiguate() for e in path]
@@ -88,6 +94,10 @@ def rpm_scanner(node, env, path, args=None):
         #############################################
         # Sort files in to source group and to control group
         spec_in = []
+        v1 = env.get('allow_duplicates')
+        v2 = env.get('_PARTS_DYN')
+        env['allow_duplicates'] = True
+        env['_PARTS_DYN'] = True
 
         def spec(node):
             if env.MetaTagValue(node, 'category', 'package') == 'PKGDATA':
@@ -95,7 +105,7 @@ def rpm_scanner(node, env, path, args=None):
                     if node.ID.endswith(".spec"):
                         spec_in.append(node)
                     else:
-                        env.CCopy('${{BUILD_DIR}}/SPECS/{0}'.format(base_name), node)
+                        env.CCopy('${{BUILD_DIR}}/SPECS/{0}'.format(base_name), node, CCOPY_BATCH_KEY=batch_key)
                 return False
             return True
 
@@ -126,11 +136,6 @@ def rpm_scanner(node, env, path, args=None):
         env['RPM_BUILD_ROOT'] = "${{BUILD_DIR}}/{0}".format(filename)
         filtered_src = []
 
-        v1 = env.get('allow_duplicates')
-        v2 = env.get('_PARTS_DYN')
-        env['allow_duplicates'] = True
-        env['_PARTS_DYN'] = True
-
         for n in src:
 
             # get category of this node
@@ -152,19 +157,22 @@ def rpm_scanner(node, env, path, args=None):
                     filtered = filtered_node
 
             # check to see if this type of file should be have the runpath
-            if pk_type in ("BIN", "LIB", "PRIVATE_BIN", 'SYSTEM_BIN'):
+            if pk_type in ("BIN", "LIB", "PRIVATE_BIN", 'SYSTEM_BIN') and not util.is_a.isSymLink(filtered):
                 # we call build to modify the runpath as needed
                 # depending on what PACKAGE_RUNPATH is set to
                 # may remove , do nothing or change the runpath of a binary
                 # This build should also check if it is a binary and skip
                 # "scripts" or text files that make be installed in these areas
+
                 filtered = env.SetRPath(
                     filtered,
-                    RPATH_TARGET_PREFIX="$BUILD_DIR/_RPM_RUNPATH_${PART_MINI_SIG}",
+                    RPATH_TARGET_PREFIX=f"$BUILD_DIR/_RPM_RUNPATH_${{PART_MINI_SIG}}/{pk_type}",
                     allow_duplicates=True
-                    )
+                )
+
                 filtered_src += filtered
             else:
+
                 filtered_src.append(filtered)
 
             # check if this node has special prefix value we want to
@@ -194,6 +202,7 @@ def rpm_scanner(node, env, path, args=None):
                     n.env.Dir(n.env['INSTALL_{0}'.format(pk_type)]).rel_path(n)
                 )
             )
+            tmp_node.disambiguate()
             # check that a node is not defined more than one ( could , but should not happen with overlapping package groups)
             if tmp_node in pkg_nodes:
                 api.output.error_msg("Node: {0} was defined twice for package {1}".format(n, node.name), show_stack=False)
@@ -201,11 +210,12 @@ def rpm_scanner(node, env, path, args=None):
             pkg_nodes.append(tmp_node)
 
         env['allow_duplicates'] = v1
-        env['_PARTS_DYN'] = v2
 
         # copy nodes to location for creating the tar.gz file in the structure of the finial install
-        ret = env.CCopyAs(pkg_nodes, filtered_src, CCOPY_LOGIC='hard-copy', allow_duplicates=True)
-
+        tar_copy_ret = env.CCopyAs(
+            pkg_nodes, filtered_src, CCOPY_LOGIC='hard-copy',
+            allow_duplicates=True, CCOPY_BATCH_KEY=batch_key
+        )
         # create the tar.gz file
         # archive the source file to be added to RPM needs to be in form of <target_name>-<target_version>.tar.gz
         overrides = env.overrides.copy()
@@ -219,11 +229,11 @@ def rpm_scanner(node, env, path, args=None):
         api.output.verbose_msgf(["rpm-scanner", "scanner"], "Calling RPM Tar file generator")
         tar_file = env.TarGzFile(
             tar_file,
-            ret,
+            tar_copy_ret,
             **overrides
         )
         # else:
-        #api.output.verbose_msgf(["rpm-scanner", "scanner"], "RPM Tar file generator BUILT",tar_file.ID)
+        # api.output.verbose_msgf(["rpm-scanner", "scanner"], "RPM Tar file generator BUILT",tar_file.ID)
 
         # define the spec file
         overrides = env.overrides.copy()
@@ -258,6 +268,7 @@ def rpm_scanner(node, env, path, args=None):
 
         ret = tar_file + spec_file
         g_cache[node.ID] = ret
+        env['_PARTS_DYN'] = v2
 
     return ret
 
@@ -420,14 +431,14 @@ def RpmPackage_wrapper(env, target, source=None, **kw):
         env["DIST"] = dist
     # map arch to value the RPM will want to use
     # if not platform_info.ValidatePlatform(env['TARGET_ARCH']):
-        #api.output.warning_msgf("{} is not a known defined TARGET_ARCH", env['TARGET_ARCH'])
+        # api.output.warning_msgf("{} is not a known defined TARGET_ARCH", env['TARGET_ARCH'])
     env['TARGET_ARCH'] = rpmarch(env, env['TARGET_ARCH'])
     api.output.verbose_msgf(['rpm'], "mapping architecture to rpm value of: {0}", env['TARGET_ARCH'])
 
     return env._RPMPackage(target, source, **kw)
 
 
-SConsEnvironment.RPMPackage = RpmPackage_wrapper
+api.register.add_method(RpmPackage_wrapper, 'RPMPackage')
 
 api.register.add_variable(
     "_RPM_SELF_ORIGIN_RUNPATH",

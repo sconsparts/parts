@@ -60,5 +60,5 @@ class _PartVersion:
 api.register.add_global_parts_object('PartVersion', _PartVersion, True)
 
 # adding logic to Scons Environment object
-SConsEnvironment.PartVersion = part_version
-SConsEnvironment.PartShortVersion = get_part_short_version
+api.register.add_method(part_version, 'PartVersion')
+api.register.add_method(get_part_short_version, 'PartShortVersion')

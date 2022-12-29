@@ -46,7 +46,7 @@ def PartImportsAction(target, source, env):
 def depend_scanner(node, env, path):
     # depends scanner will resolve the depends of the part
     # and map a then map the export.jsn file for the part
-    api.output.verbose_msgf(["import-scanner", "scanner", "scanner-called"], "Scanning node {0}", node.ID)
+    api.output.verbose_msgf(["scanner.import.static", "scanner.import", "scanner", "scanner.called"], "Scanning node {0}", node.ID)
     # get the section
     sec = glb.engine._part_manager.section_from_env(env)
     ret = []
@@ -57,7 +57,7 @@ def depend_scanner(node, env, path):
             continue
         # add the expected depend on the export file
         export_file = comp.Section.Env.File(exports.file_name)
-        api.output.verbose_msg(["import-scanner", "scanner"], f"  mapping {export_file.ID}")
+        api.output.verbose_msg(["scanner.import.static", "scanner.import", "scanner"], f"  mapping {export_file.ID}")
         ret.append(comp.Section.Env.File(export_file))
         # map the higher level aliases
         for requirement in comp.Requires:

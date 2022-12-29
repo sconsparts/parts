@@ -20,7 +20,7 @@ scons_file = tr.Disk.File("part3/sconstruct")
 # we start is good enough for test
 scons_file.WriteAppendOn(
     '''
-    # some text was added
+    # some text was added 1
     '''
 )
 
@@ -37,7 +37,7 @@ scons_file = tr.Disk.File("part3/sconstruct")
 # we start is good enough for test
 scons_file.WriteAppendOn(
     '''
-    # some text was added
+    # some text was added 2
     '''
 )
 Test.AddBuildRun('all', '--use-env')
@@ -54,7 +54,7 @@ scons_file = tr.Disk.File("part3/print_msg1.h")
 # we start is good enough for test
 scons_file.WriteAppendOn(
     '''
-    /* some text was added */
+    /* some text was added 1 */
     '''
 )
 Test.AddBuildRun('all', '--use-env')
@@ -82,7 +82,7 @@ scons_file = tr.Disk.File("part3/sconstruct")
 # we start is good enough for test
 scons_file.WriteAppendOn(
     '''
-    # some text was added
+    # some text was added 3
     '''
 )
 
@@ -99,7 +99,7 @@ scons_file = tr.Disk.File("part3/sconstruct")
 # we start is good enough for test
 scons_file.WriteAppendOn(
     '''
-    # some text was added
+    # some text was added 4
     '''
 )
 Test.AddBuildRun('all', '--use-env -j4')
@@ -116,7 +116,7 @@ scons_file = tr.Disk.File("part3/print_msg1.h")
 # we start is good enough for test
 scons_file.WriteAppendOn(
     '''
-    /* some text was added */
+    /* some text was added 2 */
     '''
 )
 Test.AddBuildRun('all', '--use-env -j4')

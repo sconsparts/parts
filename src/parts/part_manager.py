@@ -704,7 +704,7 @@ class part_manager:
             sobj.ProcessSection()
             api.output.verbose_msg(['loading', 'load_stats'], f"Section {sobj.ID} took {time.time() - st:.04} seconds Total known nodes: {total_nodes} New nodes:{glb.pnodes.TotalNodes-total_nodes}")
             total_nodes = glb.pnodes.TotalNodes
-
+        api.output.console_msg(f"Processing {num_sec}/{num_sec} sections 100% Done.")
 
         # after the section is processed we map various items
         # map the export data builder/or store data?
@@ -725,6 +725,7 @@ class part_manager:
         # at this point everything is defined
         # clear node states ??  still needed?
         glb.pnodes.ClearNodeStates()
+        
 
 
     def ProcessSection(self, sec_type, target):

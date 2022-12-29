@@ -93,7 +93,7 @@ class git(base):
 
     @property
     def MirrorPath(self) -> Path:
-        return Path(self._env.subst("$SCM_GIT_CACHE_DIR")) / self.Server / self.Repository
+        return Path(self._env.subst("$SCM_GIT_CACHE_DIR")) / self.Server / f"{self.Repository}.git"
 
     def _branch_changed(self, data):
         return data['branch'] != f"{self.__branch}...origin/{self.__branch}" and self.__branch not in data['tags']
@@ -796,5 +796,5 @@ api.register.add_global_object('VcsGit', git)
 api.register.add_global_object('ScmGit', git)
 api.register.add_global_parts_object("GitVersionFromTag", version_from_tag, True)
 
-SConsEnvironment.GitInfo = GetGitData
-SConsEnvironment.GitVersionFromTag = version_from_tag
+api.register.add_method(GetGitData, 'GitInfo')
+api.register.add_method(version_from_tag, 'GitVersionFromTag')

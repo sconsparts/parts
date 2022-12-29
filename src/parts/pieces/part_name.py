@@ -51,5 +51,5 @@ class _PartName:
 api.register.add_global_parts_object('PartName', _PartName, True)
 
 # adding logic to Scons Environment object
-SConsEnvironment.PartName = part_name
-SConsEnvironment.PartShortName = get_part_short_name
+api.register.add_method(part_name, 'PartName')
+api.register.add_method(get_part_short_name, 'PartShortName')

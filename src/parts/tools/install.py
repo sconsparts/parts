@@ -9,7 +9,9 @@ import fnmatch
 import os
 from builtins import map, zip
 
+import parts.core.scanners as scanners
 import parts.core.util as util
+import parts.core.builders.ccopy as ccopy
 import parts.overrides.symlinks as symlinks
 import SCons.Action
 import SCons.Errors
@@ -19,20 +21,7 @@ from parts.common import make_list
 from SCons.Debug import logInstanceCreation
 from SCons.Util import make_path_relative
 
-
-def copyFunction(target, source, env):
-    # We cannot use symlinks in this copyFunction because some installer-generating programs
-    # have issues with symlinks - they pack them wrong.
-    # Re-use env.CCopyFuncWrapper() function defined in pieces.ccopy to do the actual
-    # copying stuff; note that without per-file copy function it will default to simple copying.
-    env.CCopyFuncWrapper(target, source)
-
-#
-# Functions doing the actual work of the Install Builder.
-#
-
-
-def installFunc(target, source, env):
+'''def installFunc(target, source, env):
     """
     Install a source file into a target using the function specified
     as the INSTALL construction variable.
@@ -74,6 +63,7 @@ def installFunc(target, source, env):
     # tell logger the task has end correctly.
     output.TaskEnd(taskId, 0)
     return 0
+'''
 
 
 def stringFunc(target, source, env):
@@ -147,8 +137,20 @@ class DESTDIR_factory:
 #
 # The Builder Definition
 #
-install_action = SCons.Action.Action(installFunc, stringFunc)
-installas_action = SCons.Action.Action(installFunc, stringFunc)
+
+install_action = SCons.Action.Action(
+    '${TEMPFILE("parts-smart-cp --sources $($CHANGED_SOURCES $) --targets $($CHANGED_TARGETS $) --copy-only=$_COPY_ONLY_ --verbose=$($_CCOPY_VERBOSE_ $)")}',
+    stringFunc,  
+    batch_key=ccopy.batch_key
+)
+installas_action = SCons.Action.Action(
+    '${TEMPFILE("parts-smart-cp --sources $($CHANGED_SOURCES $) --targets $($CHANGED_TARGETS $) --copy-only=$_COPY_ONLY_ --verbose=$($_CCOPY_VERBOSE_ $)")}',
+    stringFunc,
+    batch_key=ccopy.batch_key
+)
+
+#install_action = SCons.Action.Action(installFunc, stringFunc)
+#installas_action = SCons.Action.Action(installFunc, stringFunc)
 
 BaseInstallBuilder = None
 
@@ -157,6 +159,8 @@ def InstallBuilderWrapper(env, target=None, source=None, targetDir=None, **kw):
     if target and targetDir:
         raise SCons.Errors.UserError("Both target and dir defined for Install(), "
                                      "only one may be defined.")
+    if "CCOPY_BATCH_KEY" not in kw:
+        kw['CCOPY_BATCH_KEY'] = ccopy.make_batch_value(env.get_csig_hash())
     if not targetDir:
         targetDir = target
 
@@ -180,21 +184,43 @@ def InstallBuilderWrapper(env, target=None, source=None, targetDir=None, **kw):
                 target = env.fs.Dir(os.sep.join(['.', src.name]), dnode)
             else:
                 target = env.fs.Entry(os.sep.join(['.', src.name]), dnode)
-            if isinstance(src, symlinks.FileSymbolicLink):
-                symlinks.ensure_node_is_symlink(target)
+            if util.isSymLink(src):
+                symlinks.ensure_node_is_symlink(target, src.linkto)
             # call emiter
             nenv = env.Override(kw)
             t, s = add_targets_to_INSTALLED_FILES([target], [src], nenv)
-            tgt.extend(env.CCopyAs(t, s, CCOPY_LOGIC='copy'))
-            #tgt.extend(BaseInstallBuilder(env, target, src, **kw))
+            tgt.extend(
+                BaseInstallBuilder(
+                    env,
+                    target,
+                    src,
+                    _COPY_ONLY_="True",
+                    _CCOPY_VERBOSE_="True",
+                    TEMPFILEPREFIX='-@',
+                    **kw
+                )
+            )
 
     return tgt
 
 
 def InstallAsBuilderWrapper(env, target=None, source=None, **kw):
     result = []
+    if "CCOPY_BATCH_KEY" not in kw:
+        kw['CCOPY_BATCH_KEY'] = ccopy.make_batch_value(env.get_csig_hash())
     for sourceEntry, targetEntry in zip(source, target):
-        result.extend(BaseInstallBuilder(env, targetEntry, sourceEntry, **kw))
+        result.extend(
+            BaseInstallBuilder(
+                env,
+                targetEntry,
+                sourceEntry,
+                _COPY_ONLY_="True",
+                _CCOPY_VERBOSE_="True",
+                TEMPFILEPREFIX='-@',
+                **kw
+            )
+        )
+
     return result
 
 
@@ -208,19 +234,22 @@ def generate(env):
             target_factory=target_factory.Entry,
             source_factory=env.fs.Entry,
             # don't want the install tool to calling global scanners
-            source_scanner=env.Scanner(lambda node, env, path: []),
+            target_scanner=symlinks.symlink_scanner,
+            source_scanner=scanners.NullScanner,
             multi=1,
             emitter=[add_targets_to_INSTALLED_FILES, ],
             name='InstallBuilder'
         )
 
+    #BaseInstallBuilder = lambda target, source, env, **kw: env.CCopyAs(target,source,**kw)
+
     env['BUILDERS']['_InternalInstall'] = InstallBuilderWrapper
     env['BUILDERS']['_InternalInstallAs'] = InstallAsBuilderWrapper
 
-    try:
-        env['INSTALL']
-    except KeyError:
-        env['INSTALL'] = copyFunction
+    # try:
+    #    env['INSTALL']
+    # except KeyError:
+    #    env['INSTALL'] = copyFunction
 
 
 def exists(env):

@@ -1,0 +1,24 @@
+import sys
+Import('*')
+
+PartName("part3")
+
+#build.DependsOn([
+    #Component("A")
+    #])
+
+@build
+def source(env):
+
+    outdir = env.CCommand(
+        "destdir",
+        "#mkdir.py",
+        [
+            Delete("$TARGET"),
+            sys.executable+" ${SOURCE} --outdir=${TARGET} --name=${PART_NAME}"
+        ],
+        source_scanner=NullScanner,
+        target_factory=env.Dir,
+        target_scanner=env.ScanDirectory("destdir",)
+    )
+    env.Clean(outdir,outdir)

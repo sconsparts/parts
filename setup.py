@@ -21,7 +21,10 @@ Documentation https://sconsparts.bitbucket.io/index.html
       package_dir={'': 'src'},
       packages=find_packages('src'),
       entry_points={
-          'console_scripts': ['parts=parts.version_info:parts_version_text'],
+          'console_scripts': [
+            'parts=parts.version_info:parts_version_text',
+            'parts-smart-cp=parts.scripts.smart_cp:main'
+            ],
       },
 
       install_requires=[

@@ -93,8 +93,8 @@ def InstallOpt(env, src_files, sub_dir='', no_pkg=False, create_sdk=True, **kw):
 
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment
-SConsEnvironment.SdkOpt = SdkOpt
-SConsEnvironment.InstallOpt = InstallOpt
+api.register.add_method(SdkOpt)
+api.register.add_method(InstallOpt)
 
 # setup some requirements
 # note !! Code to is not implemented yet to allow the user to add a item to the "Default" set yet.

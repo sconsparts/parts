@@ -135,7 +135,7 @@ def tool_converter(str_val, raw_val):
 
 
 # adding logic to Scons Environment object
-SConsEnvironment.ToolChain = _ToolChain
+api.register.add_method(_ToolChain,'ToolChain')
 
 
 api.register.add_variable('toolchain', ['default'], 'The tool chain to use by default', converter=tool_converter)

@@ -516,7 +516,7 @@ def run_utest_return_default(code, env=None, stackframe=None):
 
 
 # adding logic to Scons Environment object
-SConsEnvironment.UnitTest = unit_test_old
+api.register.add_method(unit_test_old, 'UnitTest')
 
 api.register.add_builder('__UTEST__', SCons.Script.Builder(
     action=SCons.Script.Action(

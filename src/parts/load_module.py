@@ -85,7 +85,8 @@ def load_module(pathlst, name, type):
     made more generic so Parts can reuse the logic
     instead of using the C&P anti-patttern.
     """
-    modname = '<{type}>{name}'.format(type=type, name=name)
+    #modname = '<{type}>{name}'.format(type=type, name=name)
+    modname = f'parts.{type}.{name}'    
     try:
         return sys.modules[modname]
     except KeyError:

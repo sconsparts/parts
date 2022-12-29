@@ -6,6 +6,7 @@ import parts.common as common
 import parts.glb as glb
 import parts.node_helpers as node_helpers
 import SCons.Script
+from parts.core.states import ChangeCheck
 
 # this is a general scanner for files on disk.
 # useful for dealing with Commands that might or might not trigger
@@ -25,7 +26,7 @@ def SourceScanner(patterns):
     return SCons.Script.Scanner(scanner_func)
 
 
-NullScanner = SCons.Script.Scanner(function=lambda *lst, **kw: [], name="NullScanner")
+NullScanner = SCons.Script.Scanner(function=lambda *lst, **kw: [], name="NullScanner", scan_check=lambda *lst, **kw: False)
 
 #####
 
@@ -41,34 +42,41 @@ def depends_sdkfiles_scanner(node, env, path):
     # Making this less fine grain depends corrects the problem has should have minimal impact on SCons being able to build
     # quickly with -j
     import parts.core.builders as builders  # needed here because python3.6 has a loading issue
-    api.output.verbose_msgf(["sdk-scanner", "scanner", "scanner-called"], "Scanning node {0}", node.ID)
+    api.output.verbose_msgf(["scanner.sdk", "scanner", "scanner.called"], "Scanning node {0}", node.ID)
     # get the section
     sec = glb.engine._part_manager._from_env(env).Section(env["PART_SECTION"])
     ret = []
     file_list = []
+    # for each component 
     for comp in sec.Depends:
+        # do we have a match? Might be optional so we don't care
         if not comp.hasUniqueMatch and comp.isOptional:
             continue
-        # get the export.jsn file
+        # get the export.jsn finle
         lenv = comp.Section.Env
         export_file = lenv.File(builders.exports.file_name)
 
-        # file is not changed
-        if not node_helpers.has_changed(export_file):
-            # Then load jsn file and parse out the SDK items
-            with open(export_file.ID) as infile:
-                data = json.load(infile)
+        if hasattr(export_file.attributes,"_is_dyn_generated"):
+            api.output.verbose_msgf(["scanner.sdk", "scanner",], f"{node.ID} needs to be dynamically scanned")
+            node.scan()
 
-            for k, files in data.items():
-                if k.startswith("SDK") and k != "SDK":
-                    for f in files:
-                        ret.append(lenv.File(f))
-        else:
-            api.output.verbose_msgf(["sdk-scanner", "scanner"], "Skipping {} because it is out of date", comp.Section.ID)
+        # is the export file up-to-date?
+        # if node_helpers.has_changed(export_file, skip_implicit=False) & ChangeCheck.SAME:
+        #     # Then load jsn file and parse out the SDK items (This should be faster than trying to do a "glob/Pattern" of the files in the directories")
+        #     api.output.verbose_msgf(["scanner.sdk", "scanner"], "Loading {}", export_file)
+        #     with open(export_file.ID) as infile:
+        #         data = json.load(infile)
+
+        #     for k, files in data.items():
+        #         if k.startswith("SDK") and k != "SDK":
+        #             for f in files:
+        #                 ret.append(lenv.File(f))
+        # else:
+        #     api.output.verbose_msgf(["scanner.sdk", "scanner"], "Skipping {} because it is out of date", comp.Section.ID)
 
         file_list.append(export_file)
-    finial_ret = file_list+ret
-    api.output.verbose_msgf(["sdk-scanner", "scanner"], "returning {}", common.DelayVariable(lambda: [e.ID for e in finial_ret]))
+    finial_ret = file_list#+ret
+    api.output.verbose_msgf(["scanner.sdk", "scanner"], "returning {}", common.DelayVariable(lambda: [e.ID for e in finial_ret]))
     return finial_ret
 
 

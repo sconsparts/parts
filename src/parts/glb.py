@@ -1,8 +1,7 @@
 
-from typing import Optional,Dict
+from typing import Optional, Dict
 import os
 import sys
-
 
 build_context_files = set()
 #last_key=None # this is for debugging some hard to deal with errors with env_csig 
@@ -19,7 +18,7 @@ parts_objs_env = {}
 known_concepts:Dict[str,str] = {}
 
 known_dups = {}
-
+pieces_loaded:bool = False
 # deal with the change of requirements internal from false to True
 # is REQ.DEFAULT -> was REQ.DEFAULT(internal=False)
 # it is now REQ.DEFAULT(internal=True)
@@ -121,3 +120,6 @@ os_map = {
 valid_arch = None
 valid_os = None
 valid_platform_re = None
+
+
+

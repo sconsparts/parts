@@ -371,4 +371,4 @@ api.register.add_variable('VCS_SVN_DIR', '${CHECK_OUT_ROOT}/${PART_ALIAS}', 'Ful
 api.register.add_global_object('VcsSvn', svn)
 api.register.add_global_object('ScmSvn', svn)
 
-SConsEnvironment.SvnInfo = GetSvnData
+api.register.add_method(GetSvnData, 'SvnInfo')

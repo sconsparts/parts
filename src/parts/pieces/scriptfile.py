@@ -2,8 +2,7 @@
 import SCons.Defaults
 
 # This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
-
+import parts.api as api
 
 def script_file(env, target, source, mode=0o755, **kw):
     '''
@@ -19,4 +18,4 @@ def script_file(env, target, source, mode=0o755, **kw):
     return out
 
 
-SConsEnvironment.Scriptfile = script_file
+api.register.add_method(script_file, 'Scriptfile')

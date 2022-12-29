@@ -1,0 +1,5 @@
+from parts import *
+
+Part('root', 'root.parts')
+# vim: set et ts=4 sw=4 ai ft=python :
+

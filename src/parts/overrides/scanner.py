@@ -11,12 +11,13 @@ processing later on the same environment for the same variable.
 '''
 
 
-import _thread
+#import _thread
 
-import parts.glb as glb
-import parts.mappers as mappers
-import parts.node_helpers as node_helpers
-import parts.core.builders as builders
+#import parts.glb as glb
+#import parts.mappers as mappers
+#import parts.node_helpers as node_helpers
+#import parts.core.builders as builders
+import parts.common as common
 import SCons.Scanner
 
 
@@ -37,6 +38,16 @@ def wrap_Prog_scan(func):
 
 wrap_Prog_scan(SCons.Scanner.Prog.scan)
 
+def path_reduce(self, env, dir=None, target=None, source=None):
+    '''
+    because of quirks the paths in certain cases can get huge with common values
+    This reduce the value to just needed paths
+    This is mostly for the "old" logic as we cannot reduce as we might like to
+    '''
+    return tuple(common.make_unique(self.orig_path(env, dir, target, source)))
+
+SCons.Scanner.ScannerBase.orig_path=SCons.Scanner.ScannerBase.path
+SCons.Scanner.ScannerBase.path = path_reduce
 
 # def wrap_FindPathDirs(klass):
 #     def _call(self, env, dir, target=None, source=None, argument=None):

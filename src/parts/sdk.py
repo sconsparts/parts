@@ -4,8 +4,6 @@ import datetime
 import os
 
 import SCons.Script
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 import parts.api as api
 import parts.common as common
@@ -20,7 +18,7 @@ import parts.pattern as pattern
 g_sdked_files = set([])
 
 
-def process_Sdk_Copy(env, target_dir, source, create_sdk=True, do_clean=False):
+def process_Sdk_Copy(env, batch_key, target_dir, source, create_sdk: bool = True, do_clean: bool = False, sub_dir: str = ''):
 
     # make sure inputs are in good format
     target_dir = env.arg2nodes(target_dir)[0]
@@ -30,35 +28,36 @@ def process_Sdk_Copy(env, target_dir, source, create_sdk=True, do_clean=False):
 
     # go through sources to get the source items correctly processed
     for s in source:
-
         if isinstance(s, pattern.Pattern):
             # print s.sub_dirs()
-            t = s.src_dir.srcnode().abspath
+            t = s.src_dir.abspath
             if t not in src_dir:
                 src_dir.append(t)
             t, sr = s.target_source(target_dir)
-
+            [g_sdked_files.add((node, sub_dir)) for node in t+sr]
             if create_sdk == False:
                 out += sr  # s.files(t)
             else:
-                out += env.CCopyAs(target=t, source=sr)
+                out += env.CCopyAs(target=t, source=sr, CCOPY_BATCH_KEY=batch_key)
 
             # print "Pattern type"
         elif util.isDir(s):
             # get all file in the directory
             # ... add code...
-            t = s.srcnode().abspath
+            t = s.abspath
             if t not in src_dir:
                 src_dir.append(t)
                 # print t
             if create_sdk == False:
                 out.append(s)
             else:
-                out.extend(env.CCopy(target=target_dir, source=s))
+                out.extend(env.CCopy(target=target_dir, source=s, CCOPY_BATCH_KEY=batch_key))
+                g_sdked_files.add((out[-1], sub_dir))
+            g_sdked_files.add((s, sub_dir))
             # print "Dir type"
         elif util.isFile(s) or isinstance(s, SCons.Node.Node):
             # print s.abspath
-            t = s.srcnode().dir.abspath
+            t = s.dir.abspath
             if t not in src_dir:
                 src_dir.append(t)
                 # print t
@@ -67,7 +66,9 @@ def process_Sdk_Copy(env, target_dir, source, create_sdk=True, do_clean=False):
                 # print s
             else:
                 # print target_dir, s
-                out.extend(env.CCopy(target=target_dir, source=s))
+                out.extend(env.CCopy(target=target_dir, source=s, CCOPY_BATCH_KEY=batch_key))
+                g_sdked_files.add((out[-1], sub_dir))
+            g_sdked_files.add((s, sub_dir))
             # src.append(s)
             # print "File type"
         # need to clean up this case
@@ -78,14 +79,16 @@ def process_Sdk_Copy(env, target_dir, source, create_sdk=True, do_clean=False):
             if create_sdk == False:
                 out.append(s)
             else:
-                out.extend(env.CCopy(target=target_dir, source=s))
+                out.extend(env.CCopy(target=target_dir, source=s, CCOPY_BATCH_KEY=batch_key))
+                g_sdked_files.add((out[-1], sub_dir))
+            g_sdked_files.add((env.Entry(s), sub_dir))
             # src.append(s)
         else:
             api.output.warning_msg('Unknown type "{0}" in process_Sdk_Copy() in sdk.py'.format(type(s)))
 
     # define Alias if we have a part being defined
-    if create_sdk == True:
-        g_sdked_files.update(out)
+    # if create_sdk == True:
+        # g_sdked_files.update([(out.ID,sub_dir)])
 
     # return a tuple of output files and the Src_dir list
     # might change this later to a list of the Source file instead
@@ -123,9 +126,10 @@ def SdkItem(env, target_dir, source, sub_dir='', post_fix='', export_info=[], ad
     if env['CREATE_SDK'] == False and create_sdk == True:
         create_sdk = False
 
+    batch_key = hash(pobj.Alias), hash(target_dir_name)
     # Process the SDK COPY part of the SDK Item
-    targets, source_dir = process_Sdk_Copy(env, dest_dir, source, create_sdk, do_clean)
-
+    targets, source_dir = process_Sdk_Copy(env, batch_key, dest_dir, source, create_sdk, do_clean, sub_dir)
+    # print("sdk",targets,source_dir)
     if create_sdk == False and use_build_dir == True:
         target_dir = env.Dir('$BUILD_DIR')
     elif create_sdk == False and use_build_dir == False:
@@ -149,8 +153,8 @@ def SdkItem(env, target_dir, source, sub_dir='', post_fix='', export_info=[], ad
                 files = Xp.export_file_path(env, targets, sec, _prop, ((create_sdk == False) or use_src_dir))
             else:
                 pass
-        #if create_sdk == True:
-             #pobj._sdk_files.extend(targets)
+        # if create_sdk == True:
+             # pobj._sdk_files.extend(targets)
 
     tmp = target_dir_name[1:].replace('_', '')
     if create_sdk:
@@ -203,6 +207,7 @@ def SdkPrivateBin(env, source, sub_dir='', create_sdk=True):
     ret = SdkItem(env, '$SDK_PRIVATE_BIN', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
+
 def SdkSystemBin(env, source, sub_dir='', create_sdk=True):
 
     ret = SdkItem(env, '$SDK_SYSTEM_BIN', source, sub_dir, '', [], create_sdk=create_sdk)
@@ -245,10 +250,12 @@ def SdkData(env, source, sub_dir='', create_sdk=True):
     ret = SdkItem(env, '$SDK_DATA', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
 
+
 def SdkSource(env, source, sub_dir='', create_sdk=True):
 
     ret = SdkItem(env, '$SDK_SOURCE', source, sub_dir, '', [], create_sdk=create_sdk)
     return ret
+
 
 def SdkMessage(env, source, sub_dir='', create_sdk=True):
 
@@ -348,7 +355,7 @@ def Sdk(env, source, sub_dir='', add_to_path=True, auto_add_libs=True, use_src_d
                                           [(Xp.EXPORT_TYPES.FILE, 'LIBS'), (Xp.EXPORT_TYPES.PATH, 'LIBPATH')],
                                           add_to_path=add_to_path, auto_add_file=auto_add_libs, use_src_dir=use_src_dir,
                                           use_build_dir=True, create_sdk=create_sdk)
-                        #if env['CREATE_SDK'] == True and create_sdk:
+                        # if env['CREATE_SDK'] == True and create_sdk:
                             #env.ExportItem('SDKLIB', tmp, create_sdk, True)
                         out += tmp
 
@@ -359,7 +366,7 @@ def Sdk(env, source, sub_dir='', add_to_path=True, auto_add_libs=True, use_src_d
                                           create_sdk=create_sdk)
                         else:
                             tmp = SdkItem(env, '$SDK_BIN', [d], sub_dir, '', [], create_sdk=create_sdk)
-                        #if env['CREATE_SDK'] == True and create_sdk:
+                        # if env['CREATE_SDK'] == True and create_sdk:
                             #env.ExportItem('SDKBIN', tmp, create_sdk, True)
                         out += tmp
                     else:
@@ -369,32 +376,32 @@ def Sdk(env, source, sub_dir='', add_to_path=True, auto_add_libs=True, use_src_d
 
 
 # adding logic to Scons Environment object
-SConsEnvironment.SdkInclude = SdkInclude
-SConsEnvironment.SdkLib = SdkLib
-SConsEnvironment.SdkBin = SdkBin
-SConsEnvironment.SdkPrivateBin = SdkPrivateBin
-SConsEnvironment.SdkSystemBin = SdkSystemBin
-SConsEnvironment.Sdk = Sdk
-SConsEnvironment.SdkTarget = Sdk
-SConsEnvironment.SdkPkgConfig = SdkPkgConfig
-SConsEnvironment.SdkConfig = SdkConfig
-SConsEnvironment.SdkDoc = SdkDoc
-SConsEnvironment.SdkHelp = SdkHelp
-SConsEnvironment.SdkManPage = SdkManPage
-SConsEnvironment.SdkData = SdkData
-SConsEnvironment.SdkSource = SdkSource
-SConsEnvironment.SdkMessage = SdkMessage
-SConsEnvironment.SdkResource = SdkResource
-SConsEnvironment.SdkItem = SdkItem
-SConsEnvironment.SdkSample = SdkSample
-SConsEnvironment.SdkTopLevel = SdkTopLevel
-SConsEnvironment.SdkNoPkg = SdkNoPkg
-SConsEnvironment.SdkPkgNo = SdkNoPkg
-SConsEnvironment.SdkTools = SdkTools
-SConsEnvironment.SdkAPI = SdkAPI
-SConsEnvironment.SdkPython = SdkPython
-SConsEnvironment.SdkScript = SdkScript
-SConsEnvironment.SdkPkgData = SdkPkgData
+api.register.add_method(SdkInclude)
+api.register.add_method(SdkLib)
+api.register.add_method(SdkBin)
+api.register.add_method(SdkPrivateBin)
+api.register.add_method(SdkSystemBin)
+api.register.add_method(Sdk)
+api.register.add_method(Sdk, 'SdkTarget')
+api.register.add_method(SdkPkgConfig)
+api.register.add_method(SdkConfig)
+api.register.add_method(SdkDoc)
+api.register.add_method(SdkHelp)
+api.register.add_method(SdkManPage)
+api.register.add_method(SdkData)
+api.register.add_method(SdkSource)
+api.register.add_method(SdkMessage)
+api.register.add_method(SdkResource)
+api.register.add_method(SdkItem)
+api.register.add_method(SdkSample)
+api.register.add_method(SdkTopLevel)
+api.register.add_method(SdkNoPkg)
+api.register.add_method(SdkNoPkg, 'SdkPkgNo')
+api.register.add_method(SdkTools)
+api.register.add_method(SdkAPI)
+api.register.add_method(SdkPython)
+api.register.add_method(SdkScript)
+api.register.add_method(SdkPkgData)
 
 
 # add configuration variable

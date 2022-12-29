@@ -737,8 +737,8 @@ def isConfigBasedOn(env, name):
 
 
 # adding logic to Scons Environment object
-SConsEnvironment.isConfigBasedOn = isConfigBasedOn
-SConsEnvironment.Configuration = apply_config
+api.register.add_method(isConfigBasedOn)
+api.register.add_method(apply_config,'Configuration')
 
 api.register.add_variable(['CONFIG', 'config'], '${default_config}', 'The configuration to use')
 api.register.add_variable('default_config', 'debug', 'The configuration to use by default')

@@ -7,7 +7,7 @@ import parts.errors
 import parts.glb as glb
 from SCons.Debug import logInstanceCreation
 # This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
+import parts.api as api
 
 
 def map_msi_builder(env, target, sources, stackframe, **kw):
@@ -78,4 +78,4 @@ def MsiPackage_wrapper(_env, target, sources, **kw):
     return target
 
 
-SConsEnvironment.MSIPackage = MsiPackage_wrapper
+api.register.add_method(MsiPackage_wrapper, 'MSIPackage')

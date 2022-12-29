@@ -3,6 +3,8 @@
 import os
 import subprocess
 
+#import parts.glb as glb
+import parts.core.builders.ccopy as ccopy
 import parts.api as api
 import parts.common as common
 import parts.core.scanners as scanners
@@ -12,9 +14,11 @@ import SCons.Defaults
 import SCons.Script
 
 
+
 def rpath_emit(target, source, env):
     new_target = []
     prefixdir = env.Dir(env.get("RPATH_TARGET_PREFIX", "_set_RPATH_"))
+    env['CCOPY_BATCH_KEY'] = (hash("SetRpath"), hash(env.subst("$PART_ALIAS")))
     for t in source:
         if util.isSymLink(t):
             new_target.append(prefixdir.FileSymbolicLink(t.name))
@@ -23,8 +27,17 @@ def rpath_emit(target, source, env):
     return (new_target, source)
 
 
+ccopy_action = SCons.Action.Action(  # [
+    # meta_copy,
+    '${TEMPFILE("parts-smart-cp --sources $($CHANGED_SOURCES $) --targets $($CHANGED_TARGETS $) --copy-only=True --verbose=True")}',
+    # ],
+    #cmdstr=f"parts-smart-cp --sources $CHANGED_SOURCES --targets $CHANGED_TARGETS --copy-only=$_COPY_ONLY_ --verbose=$_CCOPY_VERBOSE_",
+    batch_key=ccopy.batch_key
+)
 # basically for system that don't have rpath logic.. just copy to avoid breaking stuff
-copy_rpath_action = SCons.Defaults.Copy('$TARGET', '$SOURCE')
+#copy_rpath_action = SCons.Defaults.Copy('$TARGET', '$SOURCE')
+copy_rpath_action = ccopy_action
+
 
 set_rpath_action = SCons.Action.Action([copy_rpath_action, 'patchelf --set-rpath $RUNPATH_STR $TARGET'])
 remove_rpath_action = SCons.Action.Action([copy_rpath_action, 'patchelf --remove-rpath $TARGET'])
@@ -33,7 +46,9 @@ remove_rpath_action = SCons.Action.Action([copy_rpath_action, 'patchelf --remove
 def _is_elf(node):
     try:
         text = subprocess.check_output(['file', node.abspath]).decode()
-        if " ELF " in text:
+        # hardcoding in object files to not be viewed as true
+        # need to do something better for these cases later.
+        if " ELF " in text and not node.ID.endswith((".o",".obj")):
             return True
     except Exception:
         pass

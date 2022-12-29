@@ -145,5 +145,5 @@ def merge_script_vars(env, script, args=None, vars=None, remove=None):
 
 
 # adding logic to Scons Environment object
-SConsEnvironment.MergeScriptVariables = merge_script_vars
-SConsEnvironment.GetScriptVariables = get_script_env
+api.register.add_method(merge_script_vars,'MergeScriptVariables')
+api.register.add_method(get_script_env, 'GetScriptVariables')

@@ -46,7 +46,7 @@ def PythonScript(env, file, emit_func='emit', build_func='build', func_args={}, 
 
 
 # adding logic to Scons Environment object
-SConsEnvironment.PythonScript = PythonScript
+api.register.add_method(PythonScript)
 
 api.register.add_builder('_PyScriptBuilder_', SCons.Script.Builder(
     action=SCons.Script.Action(py_bld, py_bld_str, varlist=['__PYTHONSCRIPT_FUNC_', '__PYTHONSCRIPT_ARGS_']),

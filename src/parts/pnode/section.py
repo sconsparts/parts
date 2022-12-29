@@ -19,6 +19,7 @@ import parts.datacache as datacache
 import parts.functors as functors
 import parts.glb as glb
 import parts.mappers as mappers
+from parts.core.states import ChangeCheck
 import parts.pnode.dependent_info as dependent_info
 import parts.pnode.pnode as pnode
 import parts.pnode.pnode_manager as pnode_manager
@@ -339,13 +340,13 @@ class Section(pnode.PNode):
             fs.chdir(buildDir, change_os_dir=False)
         SCons.Script.sconscript_reading += 1
         oldCallStack = SConscript.call_stack
-
+        print(f"Processing Section: {self.ID} **********************")
         # call the meta section processing logic
         try:
-            api.output.verbose_msg([f"loading.{self.ID}", 'loading'], f"Processing Section: {self.ID}")
+            api.output.verbose_msg([f"loading.section.{self.ID}", "loading.section", 'loading'], f"Processing Section: {self.ID}")
             self.__metasection.ProcessSection(0)
         finally:
-            api.output.verbose_msg([f"loading.{self.ID}", 'loading'], f"Processing Section: {self.ID} Done!")
+            api.output.verbose_msg([f"loading.section.{self.ID}", "loading.section", 'loading'], f"Processing Section: {self.ID} Done!")
             SCons.Script.sconscript_reading -= 1
             #sys.path = oldSysPath
             fs.chdir(oldwd, change_os_dir=True)
@@ -355,14 +356,38 @@ class Section(pnode.PNode):
         if self._metasection.definition.TargetMappingLogic == GroupLogic.GROUPED:
             # map the items based groups we have defined
             for group in self.Groups:
-                [self._map_target(t, group) for t in self.TopLevelTargets(group=group)]
+                self._map_target(self.TopLevelTargets(group=group), group)
 
         elif self._metasection.definition.TargetMappingLogic == GroupLogic.TOP:
             # default map all top level items independent of groups
-            [self._map_target(t) for t in self.TopLevelTargets()]
+            self._map_target(self.TopLevelTargets())
         # define the import builder for all items that will be imported
-        import_out = builders.imports.map_imports(self.Env, self)
-        dyn_import_out = builders.dyn_imports.map_dyn_imports(self.Env, self)
+        #import_out = builders.imports.map_imports(self.Env, self)
+        #dyn_import_out = builders.dyn_imports.map_dyn_imports(self.Env, self)
+        
+        # process the depends logic. Older version did via a scanner, which has risks
+        # now that we can make sure that all sections are mapped after the depends are processed
+        # we can make sure we know all the depends, and statically map the import.jsn to the needed 
+        # dependent export.jsn
+        depends_dyn_exports = []
+        for comp in self.Depends: 
+            # if the depend is not matching and it is optional we can skip
+            if not comp.hasUniqueMatch and comp.isOptional:                
+                continue
+            # does this depends has dynamic exports.. if so we need to do a mapping
+            elif comp.Section.hasDynamicExports:
+                # get the name of the export file we care about
+                export_file = comp.Section.Env.File(builders.exports.file_name)
+                # add the expected depend on the export file
+                depends_dyn_exports.append(export_file)
+            # map the higher level aliases
+            for requirement in comp.Requires:
+                value = comp.Section.Exports.get(requirement.key)
+                if value and requirement.mapto:
+                    targets = requirement.mapto(self)
+                    for t in targets:
+                        self._map_target(value, t)
+            
         # map targets with a depends on the imports, so they are mapped
         # in the environment before the target tries to build
         # ideally I would like to avoid this, but this allows everything to move forward
@@ -372,40 +397,52 @@ class Section(pnode.PNode):
         #    There are nodes that are dynamically resolved in the task-master logic
         # Ideally this is only needed because dynamic builders add unknowns
         # that are not seen by normal scanners
-        if import_out:
-            #print(f"{import_out} -> {node_helpers.has_changed(import_out[0])} {dyn_import_out}")
+        if depends_dyn_exports:
             for target in self.BottomLevelTargets():
-                api.output.verbose_msg([f"loading.{self.ID}", "loading"], f"Mapping {target.ID} <- {import_out.name}")
-                self.Env.Depends(target, import_out)
+                api.output.verbose_msg(
+                    [f"loading.section.{self.ID}", "loading.section", "loading", f"mapping.section.{self.ID}", "mapping.section", "mapping"], 
+                    f"Mapping {target.ID} -> {depends_dyn_exports}"
+                    )                
+                self.Env.Depends(target, depends_dyn_exports)
 
         # for each section we also want to define a export file
         # that defines everything we will export from the component
         # to any component that might depend on it
+        # this makes sure with code below that the REQ.EXISTS mapping data is handled at the very least
+        export_jsn = self.Env._map_export_(depends_dyn_exports) # this is an empty list.. that is fine.
+        api.output.verbose_msg(
+            [f"loading.section.{self.ID}", "loading.section", "loading",f"mapping.section.{self.ID}", "mapping.section", "mapping"], 
+            f"Mapping {export_jsn[0]} -> {depends_dyn_exports}"
+        )
 
-        # this need to be dependent on the import file
-        dyn_exports = []
-        if self.hasDynamicExports:
-            dyn_exports = self.Env._map_dyn_export_(dyn_import_out)
-            api.output.verbose_msg([f"loading.{self.ID}", "loading"], f"Mapping {dyn_exports} <- {dyn_import_out}")
-
-        export_jsn = self.Env._map_export_(import_out+dyn_exports)
-        api.output.verbose_msg([f"loading.{self.ID}", "loading"], f"Mapping {export_jsn} <- {import_out+dyn_exports}")
-
+        
         # define the top level aliases mappings
-        # self._map_target(export_jsn) # map the export file to the top level alias
+        self._map_target(export_jsn) # map the export file to the top level alias
+        
         # define node for the packages to bind to if needed
-        self.Env.DynamicPackageNodes(export_jsn)
+        dnode = self.Env.DynamicPackageNodes(export_jsn)
+        api.output.verbose_msg(
+            [f"loading.section.{self.ID}", "loading.section", "loading",f"mapping.section.{self.ID}", "mapping.section", "mapping"], 
+            f"Mapping dynamic packaging state file {dnode} -> {export_jsn}")
+        
         self._map_targets()
         # because we exist. The REQ.EXISTS maps this value to any dependent Sections
         # because if this we need a node. We use the Alias node for the section.
         # as a reminder the Alias for a node is in the from of <section type>::alias::<part ID>
         # so values as build::alias::foo or unit_test::alias::foo, etc..
         self.Exports["EXISTS"] = self.Alias
+
         # if this is has code that is dynamic scanning objects
         # call do an up-to-date check to help ensure certain paths for rebuilds are defined
         # to work around SCons logic for doing up-to-date checks that get cached
+        # must import is that will define certain env variables that would be mapped by
+        # the mappers, such as SDK_INCLUDE and SDK_LIB values
         if "DYN_EXPORT_FILE" in self.Env:
-           x = node_helpers.has_changed(self.Env["DYN_EXPORT_FILE"], skip_implicit=True)
+            self.Env["DYN_EXPORT_FILE"].scan()
+            #ret = node_helpers.has_changed(self.Env["DYN_EXPORT_FILE"], skip_implicit=False)
+            #print(f"return = {ret & ChangeCheck.DIFF}")
+            # reset the "cached" info in the code
+            
 
     @property
     def AlwaysBuild(self):
@@ -600,7 +637,8 @@ class Section(pnode.PNode):
         returns the top level targets.. ie the targets that are not children
         of the other targets
         '''
-
+        api.output.verbose_msg(['top-level-mapping'],"Generating top level target nodes")
+        st = time.time()
         test_targets = set()
 
         if phase and group:
@@ -617,68 +655,104 @@ class Section(pnode.PNode):
         # filter some special targets
         alias_str = '{0}::alias::{1}'.format(self.Name, self.__pobj.Alias)
         rm_targets = set(self.__env.Alias(alias_str))
-
-        # for each target
+        
         for trg in targets:
-            for test_target in test_targets:
-                # test to see if this target is known to not be a top level
-                if test_target in rm_targets:
-                    # if so continue
-                    continue
-                if trg.is_child(test_target):
-                    rm_targets.add(test_target)
-                if test_target.is_child(trg):
-                    # trg is under the test trg
-                    # add to remove set
-                    rm_targets.add(trg)
+            tmp = (trg.sources if trg.sources else []) + \
+                (trg.depends if trg.depends else []) + \
+                (trg.implicit if trg.implicit else [])
+            rm_targets.update(tmp)
 
-        # filter all nodes that are not in rm set
-        ret = [t for t in test_targets if t not in rm_targets]
+        ret = list(targets - rm_targets)
+        
+        api.output.verbose_msgf(
+            ['top-level-mapping'],
+            f"Time to generate top level nodes {time.time()-st} sec"
+            )
         api.output.verbose_msgf(
             ['top-level-mapping'],
             "Mapping nodes to '{}':\n{}", self.ID, common.DelayVariable(lambda: [n.ID for n in ret]))
         return ret
 
     def BottomLevelTargets(self):
+        
+        api.output.verbose_msg(['bottom-level-mapping'],"Generating bottom level target nodes")
+        st=time.time()
         # for each target
         ret = []
-        test_targets = {node for node in self.filter_system_nodes(self.Targets) if not node.ID.startswith(".parts.cache")}
-        targets = set(test_targets)
+        
+        #test_targets = set()
+        #children = {}
+        for node in self.filter_system_nodes(self.Targets):
+            if not node.ID.startswith(".parts.cache"):
+                #test_target.add(node)
+                children = (node.sources if node.sources else []) + (node.depends if node.depends else [])
+                for child in children:
+                    # is this a target of this section
+                    if child in self.Targets:
+                        # this cannot be a botton level target node as it has a child
+                        # node being built in this section
+                        break
+                else:
+                    # this is bottom level
+                    ret.append(node)
 
-        # stuff we know to skip
-        skip_set = set()
-        while targets:
-            trg = targets.pop()
-            for test_target in test_targets:
-                if trg.is_child(test_target):
-                    # test_target is under the trg
-                    # trg cannot be bottom level target
-                    skip_set.add(trg)
-                    # we know that trg is to be skipped
-                    # continue to next node
-                    # continue
-                elif test_target.is_child(trg):
-                    # trg is under the test_target
-                    # test_target cannot be bottom level target
-                    skip_set.add(test_target)
-                    # go ahead and remove it if we
-                    targets.discard(test_target)
 
-        ret = test_targets - skip_set
+        #         children.add()
+        # targets = set(test_targets)
+
+        # for child in children:
+
+
+
+        # for trg in test_target:
+        #     if trg not in children:
+
+        # # stuff we know to skip
+        # skip_set = set()
+        # while targets:
+        #     trg = targets.pop()
+        #     for test_target in test_targets:
+        #         if trg.is_child(test_target):
+        #             # test_target is under the trg
+        #             # trg cannot be bottom level target
+        #             skip_set.add(trg)
+        #             # we know that trg is to be skipped
+        #             # continue to next node
+        #             # continue
+        #         elif test_target.is_child(trg):
+        #             # trg is under the test_target
+        #             # test_target cannot be bottom level target
+        #             skip_set.add(test_target)
+        #             # go ahead and remove it if we
+        #             targets.discard(test_target)
+
+        # ret = test_targets - skip_set
         api.output.verbose_msgf(
             ['bottom-level-mapping'],
-            "Mapping nodes to '{}':\n{}", self.ID, common.DelayVariable(lambda: [n.ID for n in ret]))
+            f"Time to generate bottom level nodes {time.time()-st} sec, size: {len(ret)}"
+            )
+        #api.output.verbose_msgf(
+            #['bottom-level-mapping'],
+            #"Mapping nodes to '{}':\n{}", self.ID, common.DelayVariable(lambda: [n.ID for n in ret]))
         return ret
 
     def _map_target(self, node: Union[SCons.Node.Node, Sequence[SCons.Node.Node]], subtarget: Optional[str] = None) -> None:
-
+        
         # if we have a sub-target, we will want to map it to the top-level target
         if subtarget:
             alias_str = f'{self._metasection.concepts[0]}::alias::{self.__pobj.Alias}::{subtarget}'
+            api.output.verbose_msgf(
+                [f"mapping.section.{self.ID}", "mapping.section", "mapping"],
+                'Mapping {0} -> {1}',alias_str,node
+                )
             node = self.__env.Alias(alias_str, node)
 
         alias_str = f'{self._metasection.concepts[0]}::alias::{self.__pobj.Alias}'
-        self.__env.Alias(alias_str, node)
+        api.output.verbose_msgf(
+                [f"mapping.section.{self.ID}", "mapping.section", "mapping"],
+                'Mapping {0} -> {1}',alias_str,node
+                )
+        self.__env.Alias(alias_str, node)        
 
     def _map_targets(self):
         '''
@@ -700,6 +774,11 @@ class Section(pnode.PNode):
         # ideall we could map this after the part load with the top level target mapping
         a = self.__env.Alias(alias_str)
         # build::alias::foo -> build::alias::foo::
+        api.output.verbose_msg(
+            [f"mapping.section.{self.ID}", "mapping.section", "mapping"],
+            f'Mapping recursive {alias_str_r} -> {a[0].ID}'
+            )
+        
         a1 = self.__env.Alias(alias_str_r, a)
         # map build::alias::foo.sub1:: -> build::alias::foo::
         if not self.Part.isRoot:  # ie we have a parent
@@ -709,23 +788,44 @@ class Section(pnode.PNode):
             parent_part = self.Part
             while not parent_part.isRoot:
                 parent_part = parent_part.Parent
+                api.output.verbose_msg(
+                    [f"mapping.section.{self.ID}", "mapping.section", "mapping"],
+                    f"Mapping parent to child {prime_concept}::alias::{parent_part.Alias}:: -> {child_alias[0].ID}"
+                    )
                 child_alias = self.__env.Alias(
                     f'{prime_concept}${{ALIAS_SEPARATOR}}${{PART_ALIAS_CONCEPT}}{parent_part.Alias}::', child_alias)
+            api.output.verbose_msg(
+                [f"mapping.section.{self.ID}", "mapping.section", "mapping"],
+                f'Mapping concept {prime_concept}:: -> {child_alias[0].ID}'
+                )
             tca = self.__env.Alias(f"{prime_concept}${{ALIAS_SEPARATOR}}", child_alias)
 
         else:
             # build::alias::foo -> build::alias::foo:: -> build::
+            api.output.verbose_msg(
+                [f"mapping.section.{self.ID}", "mapping.section", "mapping"],
+                f'Mapping concept {prime_concept}:: -> {a1[0].ID}'
+                )
             tca = self.__env.Alias(f"{prime_concept}${{ALIAS_SEPARATOR}}", a1)
 
         # map all the other concepts
         for concept in self._metasection.concepts[1:]:
             ca = self.__env.Alias(f'{concept}::alias::{alias}', a)
+            api.output.verbose_msg(
+                [f"mapping.section.{self.ID}", "mapping.section", "mapping"],
+                f'Mapping concept {concept}::alias::{alias}:: -> {ca[0].ID}'
+                )
             self.__env.Alias(f'{concept}::alias::{alias}::', ca)
             if self.Part.isRoot:
+                api.output.verbose_msg(
+                    [f"mapping.section.{self.ID}", "mapping.section", "mapping"],
+                    f'Mapping concept {concept}:: -> {tca[0].ID}'
+                    )
                 self.__env.Alias(f"{concept}${{ALIAS_SEPARATOR}}", tca)
 
-        # might not be needed anymore...
-        # add call back for latter full mapping of build context
+        # todo might not be needed anymore...
+        # add call back for latter full mapping of build and config context
+        # we had used this for better testing.. need to look at it again as logic is changing
         functors.map_build_context(self.Part)()
 
     def ESigs(self):

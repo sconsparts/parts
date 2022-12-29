@@ -113,7 +113,7 @@ def StripXMLCommentsAs(env, target, source, **kw):
 
 
 # adding logic to Scons Environment object
-SConsEnvironment.StripXMLComments = StripXMLComments
-SConsEnvironment.StripXMLCommentsAs = StripXMLCommentsAs
+api.register.add_method(StripXMLComments)
+api.register.add_method(StripXMLCommentsAs)
 
 # vim: set et ts=4 sw=4 ai :

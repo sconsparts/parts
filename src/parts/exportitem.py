@@ -214,12 +214,12 @@ def ExportItem(env, variable, values, create_sdk=True, map_as_dependance=False):
 
 
 # adding logic to Scons Environment object
-SConsEnvironment.ExportCPPPATH = ExportCPPPATH
-SConsEnvironment.ExportLIBPATH = ExportLIBPATH
-SConsEnvironment.ExportCPPDEFINES = ExportCPPDEFINES
-SConsEnvironment.ExportCFLAGS = ExportCFLAGS
-SConsEnvironment.ExportCCFLAGS = ExportCCFLAGS
-SConsEnvironment.ExportCXXFLAGS = ExportCXXFLAGS
-SConsEnvironment.ExportLINKFLAGS = ExportLINKFLAGS
-SConsEnvironment.ExportLIBS = ExportLIBS
-SConsEnvironment.ExportItem = ExportItem
+api.register.add_method(ExportCPPPATH)
+api.register.add_method(ExportLIBPATH)
+api.register.add_method(ExportCPPDEFINES)
+api.register.add_method(ExportCFLAGS)
+api.register.add_method(ExportCCFLAGS)
+api.register.add_method(ExportCXXFLAGS)
+api.register.add_method(ExportLINKFLAGS)
+api.register.add_method(ExportLIBS)
+api.register.add_method(ExportItem)

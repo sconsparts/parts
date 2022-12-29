@@ -45,7 +45,7 @@ def depend_dyn_scanner(node, env, path):
     from . import dyn_exports
     # depends scanner will resolve the depends of the part
     # and map a then map the export.jsn file for the part
-    api.output.verbose_msgf(["import-dyn-scanner", "scanner", "scanner-called"], "Scanning node {0}", node.ID)
+    api.output.verbose_msgf(["scanner.import.dyn", "scanner.import", "scanner.called", "scanner"], "Scanning node {0}", node.ID)
     # get the part object
     pobj = glb.engine._part_manager._from_env(env)
     # get the section
@@ -56,7 +56,7 @@ def depend_dyn_scanner(node, env, path):
             continue
         if comp.Section.hasDynamicExports:
             tmp = comp.Section.Env.File(dyn_exports.file_name)
-            api.output.verbose_msgf(["import-dyn-scanner", "scanner"], " Adding node {0}", tmp.ID)
+            api.output.verbose_msgf(["scanner.import.dyn", "scanner.import", "scanner"], " Adding node {0}", tmp.ID)
             ret.append(tmp)
 
     return ret
@@ -91,4 +91,4 @@ api.register.add_builder('_part_dyn_imports_', SCons.Builder.Builder(
     target_scanner=SCons.Script.Scanner(depend_dyn_scanner, name="dyn-import-scan"),
 ))
 
-SConsEnvironment._map_dyn_imports_ = map_dyn_imports
+api.register.add_method(map_dyn_imports, '_map_dyn_imports_')

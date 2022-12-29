@@ -10,7 +10,7 @@ import SCons.Script
 from SCons.Script.SConscript import SConsEnvironment
 
 from .. import util
-from . import dyn_imports
+#from . import dyn_imports
 
 file_name = "${PARTS_SYS_DIR}/${PART_ALIAS}.${PART_SECTION}.dyn.exports.jsn"
 
@@ -38,7 +38,8 @@ def PartDynExportsAction(target, source, env):
 def map_dyn_export(env, source):
 
     section = glb.engine._part_manager._from_env(env).Section(env["PART_SECTION"])
-
+    
+    
     ret = section.Env._part_dyn_exports_(
         # the output should be resolve based on the environment of the section
         section.Env.File(file_name),
@@ -50,14 +51,18 @@ def map_dyn_export(env, source):
         # don't get mapped to this jsn based tate files.
         source,
     )
+    
+    api.output.verbose_msg(["builder.export.dyn", "builder.export", "builder"], f"Added source {source} to target {ret[0]}")
     # dyn.export.jsn files are a source to making export.jsn
-    env._map_export_(ret)
+    env._map_export_(ret)    
     return ret
 
 
 def source_scanner(node, env, path):
     # this just prevents SCons from calling default scanner on node such as directories
-    api.output.verbose_msgf(["export-dyn-scanner", "scanner", "scanner-called"], "Scanning node {0}", node.ID)
+    api.output.verbose_msgf(["scanner.export.dyn", "scanner.export", "scanner", "scanner.called"], "Scanning node {0}", node.ID)
+    for n in node.sources:
+        n.scan()
     return []
 
 
@@ -68,7 +73,7 @@ api.register.add_builder('_part_dyn_exports_', SCons.Builder.Builder(
     source_factory=SCons.Node.FS.Entry,
     #source_scanner=SCons.Script.Scanner(source_scanner, name="dyn-export-scan"),
     source_scanner=scanners.NullScanner,
-    target_scanner=scanners.NullScanner,
+    target_scanner=scanners.SCons.Script.Scanner(source_scanner, name="dyn-export-scan"),
     multi=1
 ))
 
