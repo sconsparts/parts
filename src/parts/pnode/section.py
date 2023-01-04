@@ -340,7 +340,7 @@ class Section(pnode.PNode):
             fs.chdir(buildDir, change_os_dir=False)
         SCons.Script.sconscript_reading += 1
         oldCallStack = SConscript.call_stack
-        print(f"Processing Section: {self.ID} **********************")
+        #print(f"Processing Section: {self.ID} **********************")
         # call the meta section processing logic
         try:
             api.output.verbose_msg([f"loading.section.{self.ID}", "loading.section", 'loading'], f"Processing Section: {self.ID}")

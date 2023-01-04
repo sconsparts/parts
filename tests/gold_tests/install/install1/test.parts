@@ -5,6 +5,12 @@ nodes=[
     env.File("foo.exe")
     ]
 
+env.InstallInclude([
+    Pattern(src_dir="include", includes=['*']),
+    "include/sub1/dup.h"
+])
+
+
 env.InstallTarget(
 	nodes+["lib1.so","foo1.exe"]
 )

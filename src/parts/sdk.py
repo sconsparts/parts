@@ -7,12 +7,10 @@ import SCons.Script
 
 import parts.api as api
 import parts.common as common
-import parts.core.scanners as scanners
 import parts.core.util as util
 import parts.errors as errors
 import parts.exportitem as Xp
 import parts.glb as glb
-import parts.node_helpers as node_helpers
 import parts.pattern as pattern
 
 g_sdked_files = set([])
@@ -34,7 +32,14 @@ def process_Sdk_Copy(env, batch_key, target_dir, source, create_sdk: bool = True
             if t not in src_dir:
                 src_dir.append(t)
             t, sr = s.target_source(target_dir)
-            [g_sdked_files.add((node, sub_dir)) for node in t+sr]
+            for tn, sn in zip(t,sr):
+            
+                subdir = common.relpath(os.path.dirname(tn.ID),target_dir.ID)
+                if subdir == ".":
+                    subdir = ""
+                g_sdked_files.add((tn, subdir))
+                g_sdked_files.add((sn, subdir))
+            
             if create_sdk == False:
                 out += sr  # s.files(t)
             else:
