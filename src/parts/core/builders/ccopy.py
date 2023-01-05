@@ -217,8 +217,6 @@ def batch_key(action, env, target, source):
 
     try:
         target[0].attributes._copy_batch_key
-        print(f"1**** batch key exists!!! {target[0]}, {target[0].attributes._copy_batch_key} known={target[0] in _known_nodes}")
-        1/0
         return target[0].attributes._copy_batch_key
     except AttributeError:
         pass
