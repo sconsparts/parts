@@ -687,7 +687,11 @@ class Settings:
         
         # add path to current Python being used, so we use this instead of some other version
         # this allow Command that run python to work as expected
-        env.PrependENVPath('PATH', os.path.split(sys.executable)[0], delete_existing=True)
+        python_path = os.path.split(sys.executable)[0]
+        entry_python_path = os.path.split(sys.argv[0])[0]
+        
+        env.PrependENVPath('PATH', python_path, delete_existing=True)
+        env.PrependENVPath('PATH', entry_python_path, delete_existing=True)
 
         # return the cached env
         return env

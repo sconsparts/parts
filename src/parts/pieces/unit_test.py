@@ -101,7 +101,7 @@ def unit_test_old(env, target, source, command_args=None, data_src=None, src_dir
 
     source = common.make_list(source)
     # this is an absolute path string
-    part_dir = env['PART_DIR'].ID
+    part_dir = env['PART_DIR']
     part_dir_len = len(part_dir)+1
     scons_dir_node = env.Dir('#').abspath
 
@@ -124,8 +124,6 @@ def unit_test_old(env, target, source, command_args=None, data_src=None, src_dir
     def run(env, test):
 
         # this is to allow some old behavior to work as dependson mapping per environment
-        srcDir = src_dir
-
         if make_pdb:
             env['PDB'] = env['UNIT_TEST_TARGET_NAME'] + '.pdb'
 
@@ -178,6 +176,7 @@ def unit_test_old(env, target, source, command_args=None, data_src=None, src_dir
                 if not src_dir or src_dir == '.':
                     src_files.append(f)
                 elif not src_dir.startswith(("../", '/', '#')):
+                    
                     src_files.append(os.path.join(src_dir, f))
                 else:
                     src_files.append(env.AbsFileNode(os.path.join(src_dir, f)))

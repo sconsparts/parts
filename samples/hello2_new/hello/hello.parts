@@ -12,4 +12,3 @@ def source(env):
     print("hell02")
     ret=env.Program("hello","hello.c")
     env.InstallTarget(ret)
-print(13,source)

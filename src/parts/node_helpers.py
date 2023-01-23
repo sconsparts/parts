@@ -755,8 +755,12 @@ def abs_path(env, path, create_node):
 def abs_path_node(env, path, create_node):
     path = env.subst(path)
     scons_dir = env.Dir('#')
-    directory = env.Dir('$SRC_DIR')
+    if "SRC_DIR" in env:
+        directory = env.Dir(env["SRC_DIR"])
+    else:
+        directory = env.Dir("$SRC_DIR")
     result = create_node(path, directory)
+    
     if result.is_under(directory):
         # this is under the current parts
         return create_node(directory.rel_path(result))

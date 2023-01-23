@@ -10,7 +10,7 @@ Parts is a build extension to the SCons build system.
 
 .. note::
 
-   This documentation is being re-written form the old word doc.
+   This documentation is being re-written from the old word doc.
    It is current in a work in progress state as it is being updated.
 
 .. toctree::

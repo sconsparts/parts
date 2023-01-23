@@ -721,7 +721,6 @@ class Part(pnode.PNode):
         self.__env['PART_FILE'] = self.__file
         # the directory of the part file
         self.__env['PART_DIR'] = self.__part_dir
-
         #print(self.__root.Scm.CheckOutDir.abspath, self.__file.abspath, self.__file.is_under(self.__root.Scm.CheckOutDir), self.__root.Scm.CheckOutDir.is_under(self.__file))
         if self.__file.is_under(self.__root.Scm.CheckOutDir):
             self.__src_dir = self.__part_dir
@@ -1020,6 +1019,9 @@ class Part(pnode.PNode):
             part_dir = self.__part_dir
             # this is the directory we are using as the root to reffer to nodes
             src_dir = self.__src_dir
+            
+            extern_dir = env.Dir("$SCM_EXTERN_DIR")
+            sconstruct_root = env.Dir("#")
 
             bk_path = sys.path
             sys.path = [src_dir.abspath] + bk_path
@@ -1028,14 +1030,23 @@ class Part(pnode.PNode):
             # variant dir for file out of Sconstruct tree but under the root
             # this does not cover windows drives that are different from the current drive c:\
             env.VariantDir(env.Dir('$ROOT_BUILD_DIR'), "/", self.__env['duplicate_build'])
-            if part_dir != src_dir:
+            
+            if part_dir != src_dir and part_dir == extern_dir:
                 # source path and parts directory are different
                 # we are out of repo or extern case. For this we need to make a mapping
                 # to allow access to node in the part directory
                 # this should allow the ability to refer to node in "extern" area via saying
-                # $PART_DIR/<some file> and have it build correctly out of source
+                # $PART_DIR/<some file> and have it build correctly out of source                
                 env['PART_DIR'] = env.Dir('$BUILD_DIR/_extern')
-                env.VariantDir(env.Dir('$BUILD_DIR/_extern'), self.__part_dir, self.__env['duplicate_build'])
+                env.VariantDir(env.Dir('$BUILD_DIR/_extern'), part_dir, self.__env['duplicate_build'])
+            elif part_dir != src_dir and sconstruct_root == part_dir:
+                env['PART_DIR'] = env.Dir('#').abspath
+            elif part_dir == src_dir: # need more tests for this case.. 
+                pass
+                #env['PART_DIR'] = env.Dir(f"#{part_dir}").abspath
+            else:
+                env['PART_DIR'] = extern_dir
+                env.VariantDir(env.Dir('$BUILD_DIR/_extern'), part_dir, self.__env['duplicate_build'])
 
             st = time.time()
             if (glb.engine._build_mode == 'build') or (os.path.exists(self.__file.srcnode().abspath) == True):

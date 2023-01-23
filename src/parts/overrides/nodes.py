@@ -140,9 +140,6 @@ def action_changed(self, binfo=None, indent=0):
         newsig = SCons.Util.hash_signature(contents)
         oldsig = binfo.bactsig
         if oldsig != newsig:
-            #print(1,binfo.bact)
-            #print(2, self.get_binfo().bact)
-            #print(3, self.get_binfo().bactsig , oldsig, self.get_binfo().bactsig == oldsig)
             api.output.verbose_msg(
                 ["node.change.true", "node.change"], 
                 f'{" "*indent}Action changed! Action csig for {self.ID} is different: oldsig={oldsig} newsig={newsig}')

@@ -93,10 +93,10 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
     build_dir = env.Dir("$BUILD_DIR/build")
     rel_src_path = build_dir.rel_path(checkout_path)
 
-    auto_conf_pattern = env.Pattern(src_dir="${CHECK_OUT_DIR}", includes=["*.ac"])
+    auto_conf_pattern = env.Pattern(src_dir="${CHECK_OUT_DIR}", includes=["*.ac", "configure.in"])
     auto_make_pattern = env.Pattern(src_dir="${CHECK_OUT_DIR}", includes=["*.am"])
 
-    top_level_auto_conf_pattern = env.Pattern(src_dir="${CHECK_OUT_DIR}", includes=["*.ac"], recursive=False)
+    top_level_auto_conf_pattern = env.Pattern(src_dir="${CHECK_OUT_DIR}", includes=["*.ac", "configure.in"], recursive=False)
     top_level_auto_make_pattern = env.Pattern(src_dir="${CHECK_OUT_DIR}", includes=["*.am"], recursive=False)
 
     # This generates all the expected build files (*am -> Makefile, *.ac -> configure) that should generate
@@ -176,7 +176,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
             depends, sources = copy_top(env, build_dir)
         else:
             # what we normally want to skip
-            exclude_srcs = ["*.ac", "*.am", "*.git/*"]
+            exclude_srcs = ["*.ac", "*.am", "*.git/*", "configure.in"]
             if Path(env.subst("${CHECK_OUT_DIR}/configure.ac")).exists():
                 # because some cases this is checked in and will be replaced with the configure.ac
                 exclude_srcs += ["configure"]

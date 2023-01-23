@@ -22,7 +22,8 @@ def WriteScanResultState(target, source, env):
     md5 = hashlib.md5()
     md5.update(target[0].ID.encode())
     name_hash = md5.hexdigest()
-    state_file = env.File("${{PARTS_SYS_DIR}}/${{PART_ALIAS}}.${{PART_SECTION}}.dyn.scan.{}.jsn".format(name_hash))
+    state_file = env.File(
+        "${{PARTS_SYS_DIR}}/${{PART_ALIAS}}.${{PART_SECTION}}.dyn.scan.{}.jsn".format(name_hash))
     # scan the directory for files. These are all outputs of building the directory
     snode = env.Pattern(src_dir=target[0]).files()
     # write out these file to disk, so we can use it later as state
@@ -62,14 +63,17 @@ cache = {}
 
 
 def _DynamicDirScanner(node, env, path, args):
-    api.output.verbose_msgf(["scanner.scandirectory", "scanner", "scanner.scandirectory.called", "scanner.called"], "Scanning node {0}", node.ID)
+    api.output.verbose_msgf(["scanner.scandirectory", "scanner",
+                            "scanner.scandirectory.called", "scanner.called"], "Scanning node {0}", node.ID)
     ##################################################################
     # get data on what we might need to process
-    
-    use_scan_defaults = args.get("use_scan_defaults", env.get("use_scan_defaults", True))
+
+    use_scan_defaults = args.get(
+        "use_scan_defaults", env.get("use_scan_defaults", True))
     scan_callbacks = args.get("scan_callbacks", env.get("scan_callbacks", []))
     scan_overrides = args.get("scan_overrides", env.get("scan_overrides", {}))
-    default_mappings_dict = args.get("default_mappings_dict", env.get("default_mappings_dict", {}))
+    default_mappings_dict = args.get(
+        "default_mappings_dict", env.get("default_mappings_dict", {}))
     extra_scanner = args.get("extra_scanner")
     results = []
     env['_DYNSCANNER_NODE'] = node
@@ -77,12 +81,14 @@ def _DynamicDirScanner(node, env, path, args):
     # set post action
     # have to do it in scanner since the generation of the scanner does
     # not have the correct builder defined when we generate the scanner.
-    api.output.verbose_msgf(["scanner.scandirectory", "scanner"], "Checking post action")
+    api.output.verbose_msgf(
+        ["scanner.scandirectory", "scanner"], "Checking post action")
     executor = node.get_executor()
     # check that this action is not defined already in the post actions, else add it
     # this is needed because adding it twice will cause false rebuilds that we want to avoid
     if WriteScanResultStateAction not in executor.post_actions:
-        api.output.verbose_msgf(["scanner.scandirectory", "scanner"], "Adding post action")
+        api.output.verbose_msgf(
+            ["scanner.scandirectory", "scanner"], "Adding post action")
         env.AddPostAction(
             node,
             WriteScanResultStateAction
@@ -91,12 +97,13 @@ def _DynamicDirScanner(node, env, path, args):
     # did the node have explicit changes
     #changed = node_helpers.has_changed(node, skip_implicit=False) & ChangeCheck.DIFF
     if node.ID in cache:
-        api.output.verbose_msgf(["scanner.scandirectory", "scanner", "scanner.scandirectory.cached"], "Returning cache {0}", node.ID)
+        api.output.verbose_msgf(["scanner.scandirectory", "scanner",
+                                "scanner.scandirectory.cached"], "Returning cache {0}", node.ID)
         # if we are up-to-date or are built and we are in the cache
         # return this to save time and avoid duplicates
         return cache[node.ID]
     else:
-        
+
         # call the extra scanner if needed
         # common case might be calling a ProgScan for building third party build system
         # so we can make sure libs it would need are ready to go
@@ -112,19 +119,23 @@ def _DynamicDirScanner(node, env, path, args):
                     executor.get_all_sources()
                 )
             )
-            api.output.verbose_msgf(["scanner.scandirectory", "scanner"], f"Calling extra scanner {node.ID}: results: {scan_results}")
+            api.output.verbose_msgf(["scanner.scandirectory", "scanner"],
+                                    f"Calling extra scanner {node.ID}: results: {scan_results}")
     # did the node have explicit changes
     # we cannot include implict changes yet as this scanner would be returning these values
     # for this node, so binfo checks would see a difference of missing nodes.
     #print(f"calling 3 {node}")
-    changed = node_helpers.has_changed(node, skip_implicit=True) & ChangeCheck.DIFF
+    changed = node_helpers.has_changed(
+        node, skip_implicit=True) & ChangeCheck.DIFF
     if changed:
         # if we are not up to date and we are not built
         # stop main directory scan as it will may be incorrect
-        api.output.verbose_msgf(["scanner.scandirectory", "scanner", "scanner.scandirectory.skip"], "Change detected, skipping scan")
+        api.output.verbose_msgf(["scanner.scandirectory", "scanner",
+                                "scanner.scandirectory.skip"], "Change detected, skipping scan")
         return scan_results
     else:
-        api.output.verbose_msgf(["scanner.scandirectory", "scanner"], "Full scan {0}", node.ID)
+        api.output.verbose_msgf(
+            ["scanner.scandirectory", "scanner"], "Full scan {0}", node.ID)
         # do the full directory scans as the directory is now built
         # We can "trust" the state on disk should be good at this point
         node = env.arg2nodes(node, env.fs.Dir)[0]
@@ -135,23 +146,24 @@ def _DynamicDirScanner(node, env, path, args):
             snode = env.Pattern(src_dir=node).files()
             env.SideEffect(snode, node)
 
+        # merging in custom logic
+        overides = env.get("SCANDIR_OVERRIDES", scan_overrides)
+
         # default logic we want to look for
-        # we either have a special user based mapping Via the SCANDIR_DEFAULTS value or we 
+        # we either have a special user based mapping Via the SCANDIR_DEFAULTS value or we
         # use the default_mapping that was passed in via default_mappings_dict.
         # the value of use_scan_defaults will control if we use the defined defaults or user based ones
         if use_scan_defaults:
             default_mappings = default_mappings_dict
         else:
-            default_mappings = env.get("SCANDIR_DEFAULTS")
-            if not default_mappings:
-                api.output.warning_msg("SCANDIR_DEFAULTS is an empty dictionary.")
+            default_mappings = env.get("SCANDIR_DEFAULTS", {})
+            if not default_mappings and not overides and not scan_callbacks:
+                api.output.warning_msg(
+                    "SCANDIR_DEFAULTS is an empty dictionary.")
 
-        # merging in custom logic
-        overides = env.get("SCANDIR_OVERRIDES", scan_overrides)
-        
         for key, value in overides.items():
-            # make copy of item to override        
-            default_mappings[key] = default_mappings[key].copy()
+            # make copy of item to override
+            default_mappings[key] = default_mappings.get(key, {}).copy()
             # do the override
             if isinstance(value, dict) and key in default_mappings:
                 default_mappings[key].update(value)
@@ -163,15 +175,17 @@ def _DynamicDirScanner(node, env, path, args):
         env['allow_duplicates'] = True
         env['_PARTS_DYN'] = True
         for builder, inputs in default_mappings.items():
-            
+
             # test that we have the builder/function
             if not hasattr(env, builder):
-                api.output.error_msg("Environment does not have member '{}'".format(builder))
+                api.output.error_msg(
+                    "Environment does not have member '{}'".format(builder))
             func = getattr(env, builder)
             # process the arguments
             # is this a function? call it
             if not inputs:
-                api.output.verbose_msg(["scanner.scandirectory", "scanner"], "{} is none, skipping!".format(builder))
+                api.output.verbose_msg(
+                    ["scanner.scandirectory", "scanner"], "{} is none, skipping!".format(builder))
                 continue
             elif callable(inputs):
                 args = inputs(node, env)
@@ -194,9 +208,9 @@ def _DynamicDirScanner(node, env, path, args):
                                    "scanner"], f"Builder {builder} added {out} nodes")
             #api.output.verbose_msg(["scanner.scandirectory", "scanner"], "Adding nodes {0}".format([str(o) for o in out]))
             results += out
-        
+
         callbacks = env.get("SCANDIR_CALLBACKS", scan_callbacks)
-       
+
         for callback in callbacks:
             callback(node, env)
         env['allow_duplicates'] = v1
@@ -205,9 +219,8 @@ def _DynamicDirScanner(node, env, path, args):
         api.output.verbose_msgf(["scanner.scandirectory", "scanner", "scanner-results"],
                                 "Scanning results {0}", [str(r) for r in results])
 
-        if scan_results: # have to have some data, else this is probally bad
+        if scan_results:  # have to have some data, else this is probally bad
             cache[node.ID] = scan_results
-        
 
     return scan_results
 
@@ -219,25 +232,32 @@ def _DynamicDirScanner(node, env, path, args):
 bin_scan = dict(
     InstallBin=dict(
         source=lambda node, env, default=None: [
-            env.Pattern(src_dir=node.Dir("bin"), includes=env["INSTALL_BIN_PATTERN"]),
-            env.Pattern(src_dir=node.Dir("bin32"), includes=env["INSTALL_BIN_PATTERN"]),
-            env.Pattern(src_dir=node.Dir("bin64"), includes=env["INSTALL_BIN_PATTERN"]),
+            env.Pattern(src_dir=node.Dir("bin"),
+                        includes=env["INSTALL_BIN_PATTERN"]),
+            env.Pattern(src_dir=node.Dir("bin32"),
+                        includes=env["INSTALL_BIN_PATTERN"]),
+            env.Pattern(src_dir=node.Dir("bin64"),
+                        includes=env["INSTALL_BIN_PATTERN"]),
         ]
     )
 )
 sbin_scan = dict(
     InstallSystemBin=dict(
         source=lambda node, env, default=None: [
-            env.Pattern(src_dir=node.Dir("sbin"), includes=env["INSTALL_BIN_PATTERN"]),
+            env.Pattern(src_dir=node.Dir("sbin"),
+                        includes=env["INSTALL_BIN_PATTERN"]),
         ]
     )
 )
 lib_scan = dict(
     InstallLib=dict(
         source=lambda node, env, default=None: [
-            env.Pattern(src_dir=node.Dir("lib"), includes=env["INSTALL_LIB_PATTERN"] + env["INSTALL_API_LIB_PATTERN"]),
-            env.Pattern(src_dir=node.Dir("lib32"), includes=env["INSTALL_LIB_PATTERN"] + env["INSTALL_API_LIB_PATTERN"]),
-            env.Pattern(src_dir=node.Dir("lib64"), includes=env["INSTALL_LIB_PATTERN"] + env["INSTALL_API_LIB_PATTERN"]),
+            env.Pattern(src_dir=node.Dir(
+                "lib"), includes=env["INSTALL_LIB_PATTERN"] + env["INSTALL_API_LIB_PATTERN"]),
+            env.Pattern(src_dir=node.Dir(
+                "lib32"), includes=env["INSTALL_LIB_PATTERN"] + env["INSTALL_API_LIB_PATTERN"]),
+            env.Pattern(src_dir=node.Dir(
+                "lib64"), includes=env["INSTALL_LIB_PATTERN"] + env["INSTALL_API_LIB_PATTERN"]),
         ],
     )
 )
@@ -245,17 +265,22 @@ pkgconfig_scan = dict(
     InstallPkgConfig=dict(
         source=lambda node, env, default=None: [
             env.Pattern(src_dir=node.Dir("lib/pkgconfig"), includes=["*.pc"]),
-            env.Pattern(src_dir=node.Dir("lib32/pkgconfig"), includes=["*.pc"]),
-            env.Pattern(src_dir=node.Dir("lib64/pkgconfig"), includes=["*.pc"]),
+            env.Pattern(src_dir=node.Dir(
+                "lib32/pkgconfig"), includes=["*.pc"]),
+            env.Pattern(src_dir=node.Dir(
+                "lib64/pkgconfig"), includes=["*.pc"]),
         ],
     )
 )
 include_scan = dict(
     InstallInclude=dict(
         source=lambda node, env, default=None: [
-            env.Pattern(src_dir=node.Dir("include"), includes=["*.h", "*.H", "*.hxx", "*.hpp", "*.hh"]),
-            env.Pattern(src_dir=node.Dir("include32"), includes=["*.h", "*.H", "*.hxx", "*.hpp", "*.hh"]),
-            env.Pattern(src_dir=node.Dir("include64"), includes=["*.h", "*.H", "*.hxx", "*.hpp", "*.hh"]),
+            env.Pattern(src_dir=node.Dir("include"), includes=[
+                        "*.h", "*.H", "*.hxx", "*.hpp", "*.hh"]),
+            env.Pattern(src_dir=node.Dir("include32"), includes=[
+                        "*.h", "*.H", "*.hxx", "*.hpp", "*.hh"]),
+            env.Pattern(src_dir=node.Dir("include64"), includes=[
+                        "*.h", "*.H", "*.hxx", "*.hpp", "*.hh"]),
         ],
     )
 )
@@ -299,7 +324,8 @@ message_scan = dict(
 data_scan = dict(
     InstallData=dict(
         source=lambda node, env, default=None: [
-            env.Pattern(src_dir=node.Dir("share/"), includes=["*"], excludes=['nls/*', 'man/*', 'doc/*']),
+            env.Pattern(src_dir=node.Dir("share/"),
+                        includes=["*"], excludes=['nls/*', 'man/*', 'doc/*']),
         ],
     ),
 )
@@ -321,17 +347,28 @@ def ScanDirectory(env, default_dir, defaults=True, callbacks=[], extra_scanner=N
     # some control to not scan for stuff that might take time and user might not care about
 
     default_mappings_dict = {}
-    default_mappings_dict.update(bin_scan if not env.get("DIRECTORYSCAN_NO_BIN", False) else {})
-    default_mappings_dict.update(sbin_scan if not env.get("DIRECTORYSCAN_NO_SBIN", False) else {})
-    default_mappings_dict.update(lib_scan if not env.get("DIRECTORYSCAN_NO_LIB", False) else {})
-    default_mappings_dict.update(pkgconfig_scan if not env.get("DIRECTORYSCAN_NO_PKGCONFIG", False) else {})
-    default_mappings_dict.update(include_scan if not env.get("DIRECTORYSCAN_NO_INCLUDE", False) else {})
-    default_mappings_dict.update(etc_scan if not env.get("DIRECTORYSCAN_NO_CONFIG", env.get("DIRECTORYSCAN_NO_ETC", False)) else {})
-    default_mappings_dict.update(libexec_scan if not env.get("DIRECTORYSCAN_NO_LIBEXEC", False) else {})
-    default_mappings_dict.update(manpage_scan if not env.get("DIRECTORYSCAN_NO_MANPAGE", False) else {})
-    default_mappings_dict.update(doc_scan if not env.get("DIRECTORYSCAN_NO_DOC", False) else {})
-    default_mappings_dict.update(message_scan if not env.get("DIRECTORYSCAN_NO_MESSAGE", False) else {})
-    default_mappings_dict.update(data_scan if not env.get("DIRECTORYSCAN_NO_DATA", False) else {})
+    default_mappings_dict.update(bin_scan if not env.get(
+        "DIRECTORYSCAN_NO_BIN", False) else {})
+    default_mappings_dict.update(sbin_scan if not env.get(
+        "DIRECTORYSCAN_NO_SBIN", False) else {})
+    default_mappings_dict.update(lib_scan if not env.get(
+        "DIRECTORYSCAN_NO_LIB", False) else {})
+    default_mappings_dict.update(pkgconfig_scan if not env.get(
+        "DIRECTORYSCAN_NO_PKGCONFIG", False) else {})
+    default_mappings_dict.update(include_scan if not env.get(
+        "DIRECTORYSCAN_NO_INCLUDE", False) else {})
+    default_mappings_dict.update(etc_scan if not env.get(
+        "DIRECTORYSCAN_NO_CONFIG", env.get("DIRECTORYSCAN_NO_ETC", False)) else {})
+    default_mappings_dict.update(libexec_scan if not env.get(
+        "DIRECTORYSCAN_NO_LIBEXEC", False) else {})
+    default_mappings_dict.update(manpage_scan if not env.get(
+        "DIRECTORYSCAN_NO_MANPAGE", False) else {})
+    default_mappings_dict.update(doc_scan if not env.get(
+        "DIRECTORYSCAN_NO_DOC", False) else {})
+    default_mappings_dict.update(message_scan if not env.get(
+        "DIRECTORYSCAN_NO_MESSAGE", False) else {})
+    default_mappings_dict.update(data_scan if not env.get(
+        "DIRECTORYSCAN_NO_DATA", False) else {})
 
     # this generates the name of the side effect jsn file that stores state about what this scanned
     # having this data may not prove useful beyond debugging. however the file defines a known
@@ -342,7 +379,8 @@ def ScanDirectory(env, default_dir, defaults=True, callbacks=[], extra_scanner=N
     md5 = hashlib.md5()
     md5.update(default_dir[0].ID.encode())
     name_hash = md5.hexdigest()
-    state_file_name = env.File("${{PARTS_SYS_DIR}}/${{PART_ALIAS}}.${{PART_SECTION}}.dyn.scan.{}.jsn".format(name_hash))
+    state_file_name = env.File(
+        "${{PARTS_SYS_DIR}}/${{PART_ALIAS}}.${{PART_SECTION}}.dyn.scan.{}.jsn".format(name_hash))
     default_dir[0].attributes._is_dyn_generated = True
     env.SideEffect(state_file_name, default_dir)
     env.Clean(default_dir, default_dir)
@@ -361,10 +399,11 @@ def ScanDirectory(env, default_dir, defaults=True, callbacks=[], extra_scanner=N
             state_file_name
         ]
     )
-    
+
     # this allow us to have a quick way in the mappers that it is safe to cache the resulting subst() call
     # by checking that this file node is built
-    glb.engine._part_manager.section_from_env(env).Env["DYN_EXPORT_FILE"] = env["DYN_EXPORT_FILE"] = export_file[0]
+    glb.engine._part_manager.section_from_env(
+        env).Env["DYN_EXPORT_FILE"] = env["DYN_EXPORT_FILE"] = export_file[0]
     glb.engine._part_manager.section_from_env(env).hasDynamicExports = True
     #
     extras = dict(
