@@ -1,6 +1,6 @@
 [project]
 
-name = "sconsparts"  # Required
+name = "scons-parts"  # Required
 dynamic = ["version"]
 description = "Extension module to SCons build system"  # Optional
 requires-python = ">=3.6"
