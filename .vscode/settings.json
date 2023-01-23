@@ -58,5 +58,6 @@
     "python.testing.unittestEnabled": false,
     "python.testing.nosetestsEnabled": false,
     "python.testing.pytestEnabled": true,
-    "restructuredtext.confPath": "${workspaceFolder}\\doc\\source"
+    "restructuredtext.confPath": "${workspaceFolder}\\doc\\source",
+    "esbonio.sphinx.confDir": "${workspaceFolder}\\doc\\source"
 }
