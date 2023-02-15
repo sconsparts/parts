@@ -3,11 +3,8 @@
 import _thread
 import functools
 import hashlib
-import os
-import pprint
 import sys
 import time
-from builtins import filter
 from typing import (Callable, Dict, List, Optional, Sequence, Set, Tuple,
                     Union, cast)
 
@@ -146,12 +143,16 @@ class Section(pnode.PNode):
             # effect our export table
             self.__exports_dynamic_values = False
             for depend in self.Depends:
-                if depend.Section.hasDynamicExports and not self.__exports_dynamic_values:
+                if depend.isOptional and not depend.hasMatch:
+                    # this depends is optional and does not exist
+                    # so we just skip it
+                    pass
+                elif depend.Section.hasDynamicExports and not self.__exports_dynamic_values:
                     for req in depend.Requires:
                         # check the dependent requirements are not internal
                         # and we are not forcing the internal value to the default
                         # we make sure items that are not internal and forced
-                        # don't map with "dynamic" value generatation
+                        # don't map with "dynamic" value generation
                         if not req.is_internal and not req.is_internal_forced:
                             self.__exports_dynamic_values = True
                             break
@@ -1202,6 +1203,7 @@ def map_requirement(env, req, dependref):
         if req.key in ("CPPDEFINES"):
             # this is special cases in SCons
             find_val = (find_val,)
+    
     if dependref.Section.hasDynamicExports:
         # need to map in the classic mapper way as we just don't know
         map_val = req.value_mapper(dependref.PartRef.Target, dependref.SectionName, dependref.isOptional)

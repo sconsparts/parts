@@ -10,6 +10,9 @@ class NilSection:
     def __init__(self):
         pass
 
+    def __bool__(self):
+        return False
+
     @property
     def Env(self):
         return SCons.Executor.get_NullEnvironment()
