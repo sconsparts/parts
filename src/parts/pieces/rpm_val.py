@@ -192,25 +192,34 @@ def rpm_spec(env, target, source):
 
 
 def add_if(env, tmpl, keylst, value_mapper, default, required, lookup):
-    key = keylst[0]
-    if lookup:
+    key = keylst[0]    
+    if lookup:        
         for i in keylst:
             if i.startswith("%"):
                 i = i[1:]
             if i.lower() in env and not callable(env[i.lower()]) and env[i.lower()]:
                 value = value_mapper(env, key, env[i.lower()])
-                value = env.subst(value)
-                return tmpl.format(
-                    key=key,
-                    value=value,
-                )
+                value:str = env.subst(value)
+                # hack to some edge cases with extra `,` may not always cause issues but cleans up output
+                if ",," in value:
+                    while ",," in value:
+                        value=value.replace(",,",",")
+                if value == ',':
+                    value = ''
+                
+                if value:
+                    return tmpl.format(
+                        key=key,
+                        value=value,
+                    )
             elif i.upper() in env and not callable(env[i.upper()]) and env[i.upper()]:
                 value = value_mapper(env, key, env[i.upper()])
                 value = env.subst(value)
-                return tmpl.format(
-                    key=key,
-                    value=value,
-                )
+                if value:
+                    return tmpl.format(
+                        key=key,
+                        value=value,
+                    )
 
     # the value was not defined in the environment
     # do we have a default value to put in
@@ -275,7 +284,7 @@ def process_existing_spec(env, file_contents, rpm_vals):
     work correctly. We want to in general do not touch or change anything.
 
     Known issue would be not handling sections well... ideally we want to move away from this
-    The best way to handle this case is to not overide sections in the spec file when calling
+    The best way to handle this case is to not override sections in the spec file when calling
     RpmPackage and let this code add only required stuff or missing items
     '''
     headers_not_found = headers[:]

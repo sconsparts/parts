@@ -1,0 +1,6 @@
+from parts import *
+
+SetOptionDefault('BUILD_DIR', '$BUILD_DIR_ROOT/$ALIAS')
+
+Part("a","a.part",package_group="a")
+Part("rpm","a.rpm.part")

@@ -1,0 +1,14 @@
+
+Import("*")
+
+build.DependsOn([
+    Component("optional",optional=True),
+    Component("optional2",optional=True)
+])
+
+@build
+def source(env):
+    env.InstallBin(
+        env.Program("hello1.cpp")
+    )
+

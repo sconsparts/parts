@@ -1,0 +1,46 @@
+
+Import('*')
+
+PartName("a_rpm")
+PartVersion("1.2.3")
+
+
+build.DependsOn([
+    Component("optional_rpm",optional=True),
+    Component("optional2_rpm",optional=True),
+    Component("optional3_rpm",optional=True)
+])
+
+@build
+def source(env):
+
+    rpm_vars = [
+        "%define debug_package %{nil}",
+        # prevent stripping
+        "%define __strip /bin/true",
+        "%define short_version {0}".format(env.subst("$PART_SHORT_VERSION")),
+    ]
+
+    out=env.RPMPackage(
+        '${NAME}-${VERSION}-${RELEASE}${DIST}.${TARGET_ARCH}.rpm',
+        source=["a"],
+        TARGET_ARCH='x86_64',
+        NAME='a',
+        VERSION='${PART_VERSION}',
+        RELEASE="1",
+        DIST="parts",
+        summary="We are testing stuff",
+        description="this is a test and only a test",
+        #url="some url",
+        autoreq="no",
+        license='mit',
+        group="Development/Tools",
+        requires=[
+            '${define_if("$DEPENDS.optional_rpm.PKG_RPM", "$DEPENDS.optional_rpm.PKG_RPM >= $DEPENDS.optional_rpm.PKG_RPM_VERSION" )}',
+            '${define_if("$DEPENDS.optional2_rpm.PKG_RPM", "$DEPENDS.optional2_rpm.PKG_RPM >= $DEPENDS.optional2_rpm.PKG_RPM_VERSION" )}',
+            '${define_if("$DEPENDS.optional3_rpm.PKG_RPM", "$DEPENDS.optional3_rpm.PKG_RPM >= $DEPENDS.optional3_rpm.PKG_RPM_VERSION" )}',
+        ],
+        RPM_VARS=rpm_vars,
+    )
+
+
