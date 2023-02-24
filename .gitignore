@@ -18,3 +18,4 @@ build/
 src/scons_parts.egg-info/
 
 Pipfile.lock
+src/sconsparts.egg-info/

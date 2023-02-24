@@ -1,6 +1,7 @@
 
 
 import os
+import pprint
 import re
 import subprocess
 
@@ -219,7 +220,9 @@ class GnuInfo(ToolInfo):
                 self.found = ret
 
         if self.found == {}:
+            api.output.verbose_msgf(['gnu_info', "tool_info"], "Nothing was found!")
             return None
+        api.output.verbose_msgf(['gnu_info', "tool_info"], f"Found:{pprint.pformat(ret)}")
         return self.found
 
 
