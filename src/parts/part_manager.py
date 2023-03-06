@@ -22,7 +22,11 @@ import parts.pnode as pnode
 import parts.scm as scm
 import parts.version as version
 import parts.reporter
-import SCons.Taskmaster.Job as Job
+try:
+    import SCons.Taskmaster.Job as Job # for 4.5.0 or newer
+except ImportError:
+    import SCons.Job as Job # older
+
 import SCons.Script
 from parts.target_type import target_type
 from SCons.Debug import logInstanceCreation
