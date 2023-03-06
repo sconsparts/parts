@@ -22,7 +22,7 @@ import parts.pnode as pnode
 import parts.scm as scm
 import parts.version as version
 import parts.reporter
-import SCons.Job
+import SCons.Taskmaster.Job as Job
 import SCons.Script
 from parts.target_type import target_type
 from SCons.Debug import logInstanceCreation
@@ -872,7 +872,7 @@ class part_manager:
 
         try:
             # create jobs objects
-            jobs = SCons.Job.Jobs(count, scm_objs)
+            jobs = Job.Jobs(count, scm_objs)
             # run the jobs
             jobs.run(postfunc=lambda: post_scm_func(jobs, scm_objs))
         except (parts.reporter.PartRuntimeError,) as e:
