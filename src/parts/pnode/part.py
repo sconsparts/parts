@@ -1031,13 +1031,13 @@ class Part(pnode.PNode):
             # variant dir for file out of Sconstruct tree but under the root
             # this does not cover windows drives that are different from the current drive c:\
             env.VariantDir(env.Dir('$ROOT_BUILD_DIR'), "/", self.__env['duplicate_build'])
-            if part_dir != src_dir and (part_dir == extern_dir or not self.__extern_scm):
+            if part_dir != src_dir and sconstruct_root != part_dir and (part_dir == extern_dir or not self.__extern_scm):
                 # source path and parts directory are different
                 # we are out of repo or extern case. For this we need to make a mapping
                 # to allow access to node in the part directory
                 # this should allow the ability to refer to node in "extern" area via saying
                 # $PART_DIR/<some file> and have it build correctly out of source                
-                #print(1)
+                #print(1,extern_dir)
                 env['PART_DIR'] = env.Dir('$BUILD_DIR/_extern')
                 env.VariantDir(env.Dir('$BUILD_DIR/_extern'), part_dir, self.__env['duplicate_build'])
             elif part_dir != src_dir and sconstruct_root == part_dir:

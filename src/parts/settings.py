@@ -446,11 +446,11 @@ class Settings:
         # todo.. the logic for clearing the default environment has not been done yet
 
         key = "DefaultEnvironment"
-        try:
-            env = self.__env_cache[key]
-        except KeyError:
+        if key in self.__env_cache:
+            return self.__env_cache[key]
+        else:
             env = self._env_const_ref().Clone()
-            self.__env_cache[key] = env
+            self.__env_cache[key] = env        
         return env
 
     def Environment(self, **kw):
@@ -487,9 +487,9 @@ class Settings:
                                      normalize_map(append),
                                      normalize_map(kw))  # ,
         # normalize_map(glb.defaultoverides))
-        try:
+        if cache_key in self.__env_cache:
             env = self.__env_cache[cache_key]
-        except KeyError:
+        else:
             # check to see if the user set their own tools up in the old way
             user_tools = kw.get('tools')
             if user_tools is None:

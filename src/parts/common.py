@@ -71,8 +71,11 @@ class dformat(DelayVariable):
     def __init__(self, sfmt, *lst, **kw):
         if __debug__:
             logInstanceCreation(self)
+        
+        def tmp(): 
+            return sfmt.format(*lst, **kw) if kw else sfmt
+            
 
-        def tmp(): return sfmt.format(*lst, **kw)
         super().__init__(tmp)
 
 

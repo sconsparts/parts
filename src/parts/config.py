@@ -562,7 +562,7 @@ def load_tool_config(env, name, tool, host, target):
 
     if found:
         # merge setting
-        api.output.verbose_msg(['configuration-setup', 'configuration'], "Merging configurtation settings")
+        api.output.verbose_msg(['configuration-setup', 'configuration'], "Merging configuration settings")
         settings, ver_rng = mod.config.merge(ver, base_settings)
         api.output.verbose_msgf(['configuration-setup', 'configuration'],
                                 "{tool} - storing settings:{settings}", tool=tool, settings=settings)
@@ -607,7 +607,7 @@ def get_config(env, name, tool, host, target):
 def get_defining_config_files(name, tool, host, target):
     '''
     This function just gets the file defining a configuration
-    Which is needed for testing purposes configuratition context.
+    Which is needed for testing purposes configuration context.
     '''
     # is "meta" config loaded
     if (name in g_configuration) == False:
@@ -679,7 +679,7 @@ def apply_config(env, name=None):
         except KeyError:
             env['_CONFIG_CONTEXT'] = {}
             env['_CONFIG_CONTEXT'][t] = files
-
+        
         for flag, items in settings.items():
             # check that we have the value ( may not exist)
             not_found = flag not in env
