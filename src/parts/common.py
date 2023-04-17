@@ -73,14 +73,14 @@ class dformat(DelayVariable):
             logInstanceCreation(self)
         
         def tmp(): 
-            return sfmt.format(*lst, **kw) if kw else sfmt
+            return sfmt.format(*lst, **kw) if kw or lst else sfmt
             
 
         super().__init__(tmp)
 
 
 class namespace(dict, bindable):
-    ''' helper class to allow making subst varaible in SCons to allow a clean
+    ''' helper class to allow making subst variable in SCons to allow a clean
     form of $a.b
     '''
 

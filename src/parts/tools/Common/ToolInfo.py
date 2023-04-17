@@ -145,7 +145,7 @@ class ToolInfo:
 
             else:  # script is False
                 # subst data
-                api.output.verbose_msg("toolinfo", "Getting environment via variable substution")
+                api.output.verbose_msg("toolinfo", "Getting environment via variable substitution")
                 for k, v in self.shell_vars.items():
                     ret[k] = os.path.normpath(env.subst(v))
 
@@ -184,15 +184,16 @@ class ToolInfo:
         shell_env = self.get_shell_env(env, namespace, version, root_path, use_script, tool)
         try:
             tpath = shell_env['PATH']
-            # print "tpath=",tpath
-            # print env.subst("${"+namespace+".TOOL}")
-            tmp = SCons.Util.WhereIs(env.subst("${" + namespace + ".TOOL}"), path=tpath)
-            # print tmp
+            sub_val = env.subst(f"${{{namespace}.TOOL}}")
+            api.output.verbose_msg(["toolinfo"],f"testing existence {sub_val}, with path={tpath}")
+            tmp = SCons.Util.WhereIs(sub_val, path=tpath)
         except KeyError:
-            # this is probally wrong test to have happen
+            # this is probably wrong test to have happen
+            api.output.verbose_msg(["toolinfo"],f"testing existence {self.test_file}")
             tmp = SCons.Util.WhereIs(self.test_file)
+            
         if tmp is not None:
-            # print "FOUND"
+            api.output.verbose_msg(["toolinfo"],f"Found!")
             return shell_env
-        # print "NOT FOUND"
+        api.output.verbose_msg(["toolinfo"],f"Not Found!")
         return None

@@ -106,18 +106,21 @@ class UnitTest(MetaSection):
             # elif util.isList(context.Target) and len(context.Target) > 1:
             #    api.output.error_msg("test.Target must be a single node")
             elif context.Target:
-                if util.isDir(context.Target) or util.isDir(context.Target[0]):
+                if util.isDir(context.Target) or (util.isList(context.Target) and util.isDir(context.Target[0])):
                     api.output.error_msg("test.Target must be a file base node, not a directory node")
-                elif util.isAlias(context.Target) or util.isAlias(context.Target[0]):
+                elif util.isAlias(context.Target) or (util.isList(context.Target) and util.isAlias(context.Target[0])):
                     api.output.error_msg("test.Target must be a file base node, not a alias node")
-                elif util.isValue(context.Target) or util.isValue(context.Target[0]):
+                elif util.isValue(context.Target) or (util.isList(context.Target) and util.isValue(context.Target[0])):
                     api.output.error_msg("test.Target must be a file base node, not a value node")
                 elif util.isList(context.Target):
                     target = env.CCopyAs(f"_target_rename_/${{UNIT_TEST_TARGET_NAME}}{context.Target[0].suffix}", context.Target[0], CCOPY_BATCH_KEY=batch_key_base)
-                    target += target[1:]
-                elif util.isEntry(context.Target):
-                    target = context.Target
-                    target = env.CCopyAs("_target_rename_/$UNIT_TEST_TARGET_NAME", target, CCOPY_BATCH_KEY=batch_key_base)
+                    target += target[1:]                
+                else:
+                    target = env.File(context.Target)
+                    target = env.CCopyAs(f"_target_rename_/${{UNIT_TEST_TARGET_NAME}}{target.suffix}", target, CCOPY_BATCH_KEY=batch_key_base)
+                # add the suffix it we have one             
+                env['UNIT_TEST_TARGET_NAME']+=target[0].suffix
+                
             elif context.Sources:
                 context.Sources = common.make_list(context.Sources)
                 context.Sources = [src if not isinstance(src, pattern.Pattern) else src.files() for src in context.Sources]
@@ -183,7 +186,7 @@ class UnitTest(MetaSection):
 
             scripts_out = env.__UTEST__(
                 f"_scripts_/{env['UNIT_TEST_SCRIPT_NAME']}",
-                [],  # no sources minus the "actions sig"
+                [target],  # no sources minus the "actions sig"
                 # Need to convert UNIT_TEST_ENV dictionary into a list
                 # of (key, value) pairs to make SCons correctly track changes
                 # in its contents.

@@ -93,7 +93,11 @@ class Pattern:
             self.generate()
         for dnode, slist in list(self.map.items()):            
             for node in slist:
-                src_dir = node.Dir('.')
+                try:
+                    src_dir = node.Dir('.')
+                except AttributeError:
+                    #src_dir = self._env.Dir(os.path.dirname(node.ID))
+                    continue
                 if src_dir.is_under(root_target):
                     api.output.error_msg(f"Source node '{node}' is under the target root directory '{root_target}'.\
                         \n This is a sign of a bad Pattern() call that is finding items in a VariantDir() that are target outputs from the Builder call that had been created from a previous build run.\n The Builder:",
@@ -106,6 +110,9 @@ class Pattern:
                     target_node = root_target.FileSymbolicLink(self.src_dir.rel_path(node))
                 else:
                     target_node = root_target.File(self.src_dir.rel_path(node))
+                # Clean this up later is needed.. at the moment .git files seems to be special
+                if ".git" in target_node.ID:
+                    self._env.Ignore(target_node,node)
                 trg_list.append(target_node)
                 src_list.append(node)
 
@@ -135,7 +142,6 @@ class Pattern:
                         continue
                     else:
                         continue
-
                 matches = common.matches(self.src_dir.rel_path(entity), self.includes, self.excludes)
                 if matches:
                     api.output.verbose_msgf(["pattern.generate.add", "pattern.generate", "pattern"], "Adding {0} {1}", path, entity.ID)

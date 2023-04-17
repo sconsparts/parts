@@ -130,6 +130,7 @@ class ToolSetting:
             return None
         k = self.found.get(key, [])
         k.sort(reverse=True)
+        
         for i in k:
             if MatchVersionNumbers(version, i):
                 return i
@@ -310,12 +311,18 @@ class ToolSetting:
                                 vl.remove(v)
                                 vl.insert(0, v)
                             # store that it is found.. store exact version found
+                            # it is possible that we did not have the query done correctly yet
+                            if not v.resolve_version(version):
+                                v.query(env, self.name, root_path, use_script)
+                            if not v.resolve_version(version):
+                                # if this is still None.. return False
+                                return False
                             common.append_unique(self.found[key], v.resolve_version(version))
                             # get cache key
                             # cache_key2=version+self.get_cache_key(env)
                             # store shell env vals
                             # self.shell_cache[cache_key2]=self.shell_cache[cache_key]=(tmp,env[self.name]._rebind(None,None))
-                            # make sure it is sorted corrcetly
+                            # make sure it is sorted correctly
                             self.found[key].sort(reverse=True)
                             return True
                     swap = True
@@ -425,17 +432,17 @@ class ToolSetting:
             items = self.tools[target]
         except KeyError:
             # not defined so we just add the set and return
-            api.output.verbose_msgf(
-                "toolsettings", "For tool: '{0}' host: '{3}' adding info for target:{1} verions:{2}", self.name, target, [
-                    str(i) for i in list(
-                        tools.keys())], host)
+            api.output.verbose_msg(
+                "toolsettings", 
+                f"For tool: '{self.name}' host: '{host}' adding info for target:{target} verions:{[str(i) for i in list(tools.keys())]}"
+                )
             self.tools[target] = tools
             return
 
-        api.output.verbose_msgf(
-            "toolsettings", "For tool: '{0}' host: '{3}' adding info for target:{1} verions:{2}", self.name, target, [
-                str(i) for i in list(
-                    tools.keys())], host)
+        api.output.verbose_msg(
+            "toolsettings", 
+            f"For tool: '{self.name}' host: '{host}' adding info for target:{target} verions:{[str(i) for i in list(tools.keys())]}"
+        )
         for key, val in tools.items():
             # if we have this version already
             if key in items:

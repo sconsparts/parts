@@ -11,7 +11,7 @@ import parts.core.scanners as scanners
 from SCons.Script.SConscript import SConsEnvironment
 
 
-def CMake(env, destdir=None, cmakedir=None, auto_scanner={}, ignore=[], **kw):
+def CMake(env, destdir=None, cmakedir=None, auto_scanner={}, ignore=[], top_level=True, hide_c_flags=False, **kw):
     '''
         cmakedir - directory containing cmakelis.txt in parent repo
     '''
@@ -25,17 +25,23 @@ def CMake(env, destdir=None, cmakedir=None, auto_scanner={}, ignore=[], **kw):
     env.SetDefault(CMAKE='cmake')
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$$$$$$$ORIGIN")}'
 
+    
+    cflags = '-DCMAKE_C_FLAGS="$CCFLAGS" -DCMAKE_CXX_FLAGS="$CCFLAGS" '
+    if hide_c_flags:
+        cflags=''
+
     env.SetDefault(_CMAKE_ARGS='\
-        -DCMAKE_INSTALL_PREFIX=$CMAKE_DESTDIR\
-        ${define_if("$DESTDIR_PATH","-DCMAKE_PREFIX_PATH=\\"")}${MAKEPATH("$DESTDIR_PATH",";")}${define_if("$DESTDIR_PATH","\\"")}\
-        -DCMAKE_INSTALL_LIBDIR=lib\
-        -DCMAKE_INSTALL_BINDIR=bin\
-        -DCMAKE_BUILD_TYPE=Release\
-        -DCMAKE_SHARED_LINKER_FLAGS="$LINKFLAGS $_RUNPATH $_ABSRPATHLINK"\
-        -DCMAKE_EXE_LINKER_FLAGS="$LINKFLAGS $_RUNPATH $_ABSRPATHLINK"\
-        -DCMAKE_CXX_COMPILER=$CXX\
-        -DCMAKE_C_COMPILER=$CC\
-        $CMAKE_ARGS'
+        -DCMAKE_INSTALL_PREFIX=$CMAKE_DESTDIR '
+        '${define_if("$DESTDIR_PATH","-DCMAKE_PREFIX_PATH=\\"")}${MAKEPATH("$DESTDIR_PATH",";")}${define_if("$DESTDIR_PATH","\\"")} '
+        '-DCMAKE_INSTALL_LIBDIR=lib '
+        '-DCMAKE_INSTALL_BINDIR=bin '
+        '-DCMAKE_BUILD_TYPE=Release '
+        +cflags+
+        '-DCMAKE_SHARED_LINKER_FLAGS="$LINKFLAGS $_RUNPATH $_ABSRPATHLINK" '
+        '-DCMAKE_EXE_LINKER_FLAGS="$LINKFLAGS $_RUNPATH $_ABSRPATHLINK" '
+        '-DCMAKE_CXX_COMPILER=$CXX '
+        '-DCMAKE_C_COMPILER=$CC '
+        '$CMAKE_ARGS'
                    )
 
     if cmakedir:
@@ -72,7 +78,13 @@ def CMake(env, destdir=None, cmakedir=None, auto_scanner={}, ignore=[], **kw):
     if not isinstance(ignore, list):
         ignore = []
 
-    src_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=cmake_build_files+[".git/*"]+ignore).files()
+    if top_level:
+        # track a lesser set.. which is probally ok as if CMake is being called this is probally
+        #  only needed for support 
+        src_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=cmake_build_files+[".git/*"]+ignore, recursive=False).files()
+    else:
+        # track a lot of files
+        src_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=cmake_build_files+[".git/*"]+ignore).files()
     env.SetDefault(_CMAKE_MAKE_ARGS='VERBOSE=1\
         $(-j{jobs}$)'.format(jobs=env.GetOption('num_jobs'))
                    )
@@ -81,7 +93,7 @@ def CMake(env, destdir=None, cmakedir=None, auto_scanner={}, ignore=[], **kw):
         [
             cmake_install_dir,
         ],
-        out+src_files,
+        out + src_files,
         [
             "cd ${SOURCE.dir} ; $CMAKE --build . --config Release --target install -- $_CMAKE_MAKE_ARGS"
         ],
