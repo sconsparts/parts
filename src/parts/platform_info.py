@@ -174,11 +174,6 @@ def ChipArchitecture():
             return MapArchitecture('i386')
         else:
             return MapArchitecture('x86_64')
-    elif sys.platform.startswith("darwin"):
-        # more reliable way to get interpreter bitness on OS with universl
-        # binaries
-        is_64bits = sys.maxsize > 2 ** 32
-        return MapArchitecture('x86_64' if is_64bits else 'i386')
     # else we just assume the python code will work at this time
     else:
         return MapArchitecture(platform.machine())
