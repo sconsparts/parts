@@ -85,8 +85,8 @@ arch_map = {
     'ia64': 'ia64',
     'k1om': 'k1om',
     'arm': 'arm',
-    'arm64': 'arm64',
-    'aarch64': 'arm64',
+    'arm64': 'aarch64',
+    'aarch64': 'aarch64',
     'any': 'any',
     'noarch': 'noarch',
     'NOARCH': 'NOARCH'

@@ -90,7 +90,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
     # generation of some paths
     checkout_path = env.Dir("$CHECK_OUT_DIR")
     prefix_len = len(checkout_path.ID)+1
-    build_dir = env.Dir("$BUILD_DIR/build")
+    build_dir = env.Dir("$AUTO_MAKE_BUILDDIR")
     rel_src_path = build_dir.rel_path(checkout_path)
 
     auto_conf_pattern = env.Pattern(src_dir="${CHECK_OUT_DIR}", includes=["*.ac", "configure.in"])
@@ -271,9 +271,15 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         configure_cmds.append(configure_post_actions)
     jobs = env.GetOption('num_jobs')
     # generate the makefiles
+    api.output.trace_msgf(
+        ['automake.makefile.depends','automake.makefile','automake'],
+        "target={target} source={source}",
+        target=auto_conf_buildfile,
+        source = depends+sources,
+        )
     build_files = env.CCommand(
         auto_conf_buildfile,
-        depends,
+        depends+sources,
         configure_cmds,
         #source_scanner=scanners.NullScanner,
         target_scanner=scanners.NullScanner,
@@ -282,6 +288,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         name="AutoMakeConfigure",
     )
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$\\$$$$$$$$ORIGIN")}'
+
     ret = env.CCommand(
         [
             "$AUTO_MAKE_INSTALL_DESTDIR",
@@ -340,8 +347,8 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
 
 # adding logic to SCons Environment object
 api.register.add_method(AutoMake)
-
-api.register.add_variable('AUTO_MAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines namespace for building a unit test')
+api.register.add_variable('AUTO_MAKE_BUILDDIR', "$BUILD_DIR/build", 'Defines build directory for automake build')
+api.register.add_variable('AUTO_MAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines install directory for automake build')
 api.register.add_variable('_ABSCPPINCFLAGS', '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
 api.register.add_variable(
     '_ABSLIBDIRFLAGS', '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
