@@ -5,15 +5,11 @@
 from pathlib import Path
 
 import parts.api as api
-import parts.common as common
 import SCons.Builder
-import parts.node_helpers as node_helpers
 from parts.pieces.append_action import AppendFile
 import SCons.Scanner.Prog
 import SCons.Defaults
 import parts.core.scanners as scanners
-# This is what we want to be setup in parts
-from SCons.Script.SConscript import SConsEnvironment
 
 
 def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="configure", prefix=None, configure_args=[],
