@@ -3,16 +3,13 @@ Import('*')
 PartName("hello")
 PartVersion("1.0.0")
 
-DependsOn([])
+build.DependsOn([])
 
-#@build2.emit() # this should error out
-
-
-@build.configure
-def foo(conf):
+@build
+def config(env):
     print("Called Config")
 
-@build.source
+@build
 def build(env):
     print("Called build-source")
     ret=env.Program("hello","hello.c")
