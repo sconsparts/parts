@@ -26,19 +26,19 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                 work.
     autoreconf_args-Default arguments to use for autoreconf. Some autoconf like project might have
                     special arguments to pass, or don't want any arguments passed.
-    configure - The deafult configure program to call. Some configure like projects (-openssl-)
+    configure - The default configure program to call. Some configure like projects (-openssl-)
                 have a slightly different script (Configure) that should called instead
     prefix    - If defined will use custom prefix and add DESTDIR to the make install
     configure_args - are extra args we need to pass to correctly configure the build
     auto_configure_args - extra value to set various flags with what Parts is using. Certain automake like
                 projects don't allow setting flags at the configure level. Defaults to True.
     configure_post_actions - In cases of configure like systems it often needed to add special
-                actions to make sure everthing work after the configure logic before the make command is called
+                actions to make sure everything work after the configure logic before the make command is called
     target    - the target to use with the main make command. Defaults to 'all'
-    top_level - We can rebuild build the configure and makefiles based on
+    top_level - We can rebuild build the configure and makefile based on
                 the *.am file defined. However various build may not generate
                 all the Makefile. This causes false rebuilds, which we want to avoid.
-                Top_level is true as it will ignore all the makefiles there are subdirectories
+                Top_level is true as it will ignore all the makefile there are subdirectories
                 that we should be able to most ignore. Given we don't know about them SCons
                 will not correctly rebuild them if they are manual deleted. This forces
                 the user to do a change that would rebuild the top level makefile.
@@ -56,7 +56,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                 and returns a tuple of (build_files, source_files) Where
                 build_files are the files we need as sources to make the finial makefile
                 source_file any sources that are copied to the build_dir and would cause the make command to re-run
-                the builder will make source files an explicit prerequisite for the finial expected generate buildfile
+                the builder will make source files an explicit prerequisite for the finial expected generate build file
                 to build correct
     copy_scm - Copy the scm directory (currently this mean only .git) when coping the source over when copy_src is True.
                 This takes extra time and space but may be needed if the automake tool query git for information which
@@ -144,20 +144,20 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
 
     configure_cmds = [
         # delete the make install area if we are rebuilding the
-        # the makefiles to avoid old files being added to the
+        # the makefile to avoid old files being added to the
         # scan.
         SCons.Defaults.Delete(build_dir),
         # remake the directory as SCons thought it did this already
         SCons.Defaults.Mkdir(build_dir),
         # delete the directory we plan to install stuff into ..
-        # as this is probally out of date ( contains bad files to scan)
+        # as this is probably out of date ( contains bad files to scan)
         SCons.Defaults.Delete("$AUTO_MAKE_DESTDIR"),
     ]
     scm_sources = []
     if copy_src:
         # need to this on how we can deal with the copy and remove the copied files
         # or do we just deal with possible bugs in some 3rd party builds???
-        # worried that if we are coping it is probally messed up enough to be an issue here
+        # worried that if we are coping it is probably messed up enough to be an issue here
         configure_cmds = [
             # delete the directory we plan to install stuff into ..
             # as this is probally out of date ( contains bad files to scan)
@@ -270,7 +270,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
     if configure_post_actions:
         configure_cmds.append(configure_post_actions)
     jobs = env.GetOption('num_jobs')
-    # generate the makefiles
+    # generate the makefile
     api.output.trace_msgf(
         ['automake.makefile.depends','automake.makefile','automake'],
         "target={target} source={source}",
