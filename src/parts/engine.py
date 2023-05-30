@@ -178,6 +178,13 @@ class parts_addon:
         api.output.verbose_msg("init", "Registering exit handler")
         atexit.register(self.ShutDown)
 
+        # this is work around to SCons loading the python executable as a node
+        # and seeing it as a File Node when in cases it might be a Symbolic link
+        # there is this case in which SCons will store this as the incorrect type.
+        node = self.def_env.File(sys.executable)
+        node.disambiguate()
+        
+
         # this is a hack to get around an issue with stuff like the extract builder that would create
         # a a.sconsign.dblite file in the wrong directory as a side effect of the variant direct change of
         # the CWD bug in SCons
