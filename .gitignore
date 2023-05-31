@@ -1,5 +1,3 @@
-tests/gold_tests/_sandbox/
-parts.egg-info/
 *.dblite
 *.pyc
 .*.swp
@@ -8,14 +6,16 @@ parts.egg-info/
 *.o
 .tox/
 .nox/
-_sandbox/
-doc/source/_build/
-src/scons_parts.egg-info
 build/
 .mypy_cache/
 
-
-src/scons_parts.egg-info/
-
 Pipfile.lock
-src/sconsparts.egg-info/
+
+**/.parts.cache/
+**/_build/
+**/_install/
+**/_sandbox/
+**/_sdk/
+**/scons_parts.egg-info
+**/sconsparts.egg-info
+**/parts.egg-info/
