@@ -1,0 +1,8 @@
+Parts: Error!: VersionLogic.StrictVerify was set, but there was no version value defined to verify with
+ {}a.part:6: in "<module>"
+   3:     PartName("a")
+   4:     
+   5:     if 'TEST_DEFAULT' not in env['MODE']:
+   6:==>      PartVersion("1.2.3")
+   7:     
+scons: *** Unrecoverable Error!

@@ -19,6 +19,8 @@ import parts.pnode.pnode_manager as pnode_manager
 import parts.pnode.section as section
 import SCons.Node
 from parts.core.states import FileStyle, LoadState
+from parts.core.policy import ReportingPolicy
+from parts.core.logic import VersionLogic
 
 # these imports add stuff we will need to export to the parts file.
 #from .. import requirement
@@ -115,6 +117,7 @@ class Part(pnode.PNode):
     def __init__(self, file=None, mode=[], scm_t=None, default=False,
                  append={}, prepend={}, create_sdk=True, package_group=None, alias=None, name=None,
                  Settings=None, extern=None,
+                 _version=None, version_logic:VersionLogic=None, version_policy:ReportingPolicy=None, # stored in cache
                  **kw):
 
         self.__ID = kw.pop('ID', None)
@@ -162,6 +165,11 @@ class Part(pnode.PNode):
 
         # data we will cache later
         self.__cache = {}
+        # version info if provided
+        if _version or version_logic or version_policy:
+            self.__cache['version'] = _version
+            self.__cache['version_logic'] = version_logic
+            self.__cache['version_policy'] = version_policy
         # the sections that are defined in a Part
         self.__sections = {}
         # the environment object for the Part
@@ -275,6 +283,17 @@ class Part(pnode.PNode):
     def Version(self) -> version.version:  # mutable
         """Get the current version."""
         if self.isRoot:
+            tmp=self.__cache.get('version', None)
+            if self.__version == "0" and tmp and self.__cache.get('version', VersionLogic.Default) != VersionLogic.Verify:
+                policy = self.__cache.get('version_policy',self.Env.get('VERSION_POLICY'))
+                api.output.policy_msg(
+                    policy if policy else ReportingPolicy.warning,
+                    ['version'],
+                    f"Setting version to default value of '{tmp}'"
+                    )
+                self.__version = tmp
+                
+        if self.isRoot:
             return self.__version
         return self.__root.Version
 
@@ -316,6 +335,7 @@ class Part(pnode.PNode):
     def Name(self) -> str:  # read only non-mutable as it based on short name and parent
         """Get the current parent Part name."""
         if self.__name is None:
+            # todo! add switch to make strict this as None
             self.ShortName = self.__short_alias
         return self.__name
 
@@ -331,7 +351,7 @@ class Part(pnode.PNode):
         self._set_name(val)
 
     # For backward compatibility
-    def _set_name(self, name, force_parent=None):
+    def _set_name(self, name:str, force_parent:str=None):
         oldname = self.__name
         if force_parent is not None:
             self.__name = f"{force_parent}.{name}"
@@ -340,8 +360,10 @@ class Part(pnode.PNode):
         elif self.__parent is None:
             self.__name = name
         self.__short_name = name
-        if oldname != self.__name and oldname:
-            api.output.warning_msg("Name changed: {0} to {1}".format(oldname, self.__name))
+        if oldname and oldname != self.__name:
+            if oldname != self.Alias:
+                # only warn is this is not an Alias fallback update
+                api.output.warning_msg("Name changed: {0} to {1}".format(oldname, self.__name))
             glb.engine._part_manager.add_name_alias(self.__name, self.__alias, oldname)
         else:
             glb.engine._part_manager.add_name_alias(self.__name, self.__alias)
@@ -1079,6 +1101,22 @@ class Part(pnode.PNode):
             api.output.verbose_msg(['part_read'], 'Parts file {0} read time: {1}'.format(
                 self.__file.srcnode().abspath, time.time() - st))
 
+            # there should be some states at this point that are fell defined
+            # this includes a PartName() call.
+            # We want to warn is this has not been called.
+            # todo! add strict test to not allow non-auto generated Alias() to skip the warning
+            if not self.__cache.get('name_called') and not self.Alias.endswith(self.__env_mini_diff_sig):
+                api.output.warning_msg(
+                    f"PartName() was not called!\n  Please define PartName(<value>) at beginning of the file '{self.File}'\n"
+                    "  Example:\n"
+                    "    Import('*')\n"
+                    "    PartName('<name value>')\n",
+                    show_stack=False,
+                    print_once=True
+                    )
+            if 'name_called' in self.__cache:
+                del self.__cache['name_called']
+
             # check the sections to see if we have valid sections and if so they get added to the __section variable
             for name, proxysec in sections_proxies.items():
                 # get the definition
@@ -1102,7 +1140,10 @@ class Part(pnode.PNode):
                     self.__sections[name] = sec
 
             # clean up cache key that we don't need anymore
-            del self.__cache['unit_test']
+            if 'unit_test' in self.__cache:
+                del self.__cache['unit_test']
+            if 'name_must_be_set' in self.__cache:
+                del self._cache['name_must_be_set']
 
             # we tag the Directory nodes so we can latter sort unknown items faster, by checking the directory ownership
             env._log_keys = False

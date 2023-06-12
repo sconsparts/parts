@@ -9,7 +9,7 @@ import parts.api as api
 import parts.common as common
 import parts.core.util as util
 import parts.glb as glb
-from parts.policy import ReportingPolicy, REQPolicy
+from parts.core.policy import ReportingPolicy, REQPolicy
 
 _added_types = {}
 

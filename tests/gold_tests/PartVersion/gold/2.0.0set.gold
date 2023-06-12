@@ -1,0 +1,6 @@
+scons: Reading SConscript files ...
+scons: done reading SConscript files.
+``
+Message from Part "a": Version: 2.0.0
+``
+scons: done building targets.

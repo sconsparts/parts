@@ -1,0 +1,26 @@
+from parts import *
+
+env = DefaultEnvironment()
+
+ver = None
+logic = None
+policy = None
+
+if 'TEST_DEFAULT' in env['mode'] or 'TEST_SETVERSION' in env['mode']:
+    ver = "2.0.0"
+elif 'TEST_MATCH' in env['mode']:
+    ver = "1.2.3"
+
+if 'TEST_FORCE' in env['mode']:
+    logic = VersionLogic.Force
+elif 'TEST_VERIFY' in env['mode']:
+    logic = VersionLogic.Verify
+elif 'TEST_STRICTVERIFY' in env['mode']:
+    logic = VersionLogic.StrictVerify
+
+Part(
+    'a.part',
+    version=ver,
+    version_logic=logic,
+    version_policy=policy,
+    )

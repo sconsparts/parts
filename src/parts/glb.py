@@ -1,11 +1,12 @@
 
-from typing import Optional, Dict
+from typing import Optional, Dict, TYPE_CHECKING
 import os
-import sys
+if TYPE_CHECKING:
+    import parts.engine
 
 build_context_files = set()
 #last_key=None # this is for debugging some hard to deal with errors with env_csig 
-engine = None
+engine:"parts.engine.parts_addon" = None
 rpter = None
 pnodes = None
 part_frame = []

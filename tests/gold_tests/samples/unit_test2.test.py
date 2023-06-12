@@ -5,11 +5,11 @@ import sys
 
 Setup.Copy.FromSample('unit_test2')
 
-Test.AddBuildRun()
+Test.AddBuildRun(allow_warnings=True)
 Test.AddUpdateCheck()
 Test.AddOutOfDateCheck('utest::')
 Test.AddCleanRun()
-t = Test.AddBuildRun("utest::")
+t = Test.AddBuildRun("utest::",allow_warnings=True)
 if sys.platform == 'win32':
     t.Disk.File("install/bin/engine.unit_tests-test_2.0.33.exe", exists=False)
     t.Disk.File("install/bin/engine.unit_tests-test2_2.0.33.exe", exists=False)

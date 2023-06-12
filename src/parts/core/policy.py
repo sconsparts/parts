@@ -28,6 +28,9 @@ class SCMPolicy(Policy):
     update = 3
 
 
+api.register.add_global_parts_object("ReportingPolicy", ReportingPolicy)
+api.register.add_global_object("ReportingPolicy", ReportingPolicy)
+
 api.register.add_global_parts_object("REQPolicy", REQPolicy)
 api.register.add_global_object("REQPolicy", REQPolicy)
 

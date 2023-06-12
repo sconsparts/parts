@@ -1,0 +1,5 @@
+scons: Reading SConscript files ...
+``
+Parts: Verified PartVersion() value of 1.2.3
+Message from Part "a": Version: 1.2.3
+``

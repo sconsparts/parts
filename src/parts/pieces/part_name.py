@@ -8,7 +8,7 @@ from SCons.Debug import logInstanceCreation
 from SCons.Script.SConscript import SConsEnvironment
 
 
-def part_name(env, name=None, parent_name=None):
+def part_name(env, name:str=None, parent_name:str=None):
     '''Defines the ID or name the developer uses to name this "part".
     Many different versions of a given part can be defined during a build.
     This allow the developer to ID what this component is and a way to later
@@ -16,10 +16,16 @@ def part_name(env, name=None, parent_name=None):
     '''
     if name is None:
         return get_part_name(env)
-
+    
     pobj = glb.engine._part_manager._from_env(env)
     if pobj._cache.get('name_must_be_set') == True:
+        # is just a test to make sure that parent part does not change the name
+        # after a sub Part() call happens.
         api.output.error_msg("The Part name has to be set before any calls to Part()")
+    
+    # to help with reporting better defined build files
+    # we set that this is has been called
+    pobj._cache['name_called'] = True
 
     if parent_name is not None:
         pobj._set_name(name, parent_name)

@@ -100,7 +100,7 @@ class parts_addon:
             logInstanceCreation(self)
 
         # some known data items
-        self.__part_manager = None
+        self.__part_manager:part_manager.part_manager = None
         self.__def_env = None
         self.__post_process_queue = []
         self.__cache_key = None
@@ -627,7 +627,7 @@ Use -H or --help-options for a list of scons options
         return self.__build_mode
 
     @property
-    def _part_manager(self,):
+    def _part_manager(self,) -> part_manager.part_manager:
         return self.__part_manager
 
     @property

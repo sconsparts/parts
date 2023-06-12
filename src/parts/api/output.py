@@ -3,7 +3,6 @@
 from builtins import map
 
 import parts.common as common
-import parts.core.util as util
 import parts.glb as glb
 import SCons.Script
 
@@ -99,7 +98,7 @@ trace_msg = lambda catagory, *lst, **kw: _trace_pre(_trace_msg, catagory, *lst, 
 
 
 def policy_msg(policy, catagory, *lst, **kw):
-    from .. import policy as Policy
+    from ..core import policy as Policy
     if policy == Policy.ReportingPolicy.ignore:
         return
     elif policy == Policy.ReportingPolicy.message:

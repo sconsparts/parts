@@ -11,8 +11,8 @@
             "program": "${workspaceFolder}/debug.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-            "cwd": "${workspaceFolder}/samples/hello2"
-            
+            "cwd": "${workspaceFolder}/tests/gold_tests/PartVersion/base_test1",
+            "args": ["all", "--mode=TEST_SETVERSION,TEST_VERIFY", "--verbose=version"]
         }
     ]
 }

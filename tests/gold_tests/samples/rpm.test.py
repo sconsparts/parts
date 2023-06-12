@@ -1,5 +1,3 @@
-import sys
-
 Test.Summary == '''
 This test checks that the RPM builder adds files to RPM package from SConstruct.
 '''
@@ -13,4 +11,4 @@ Test.SkipUnless(
 
 Setup.Copy.FromSample('rpm')
 
-Test.AddBuildRun('.')
+Test.AddBuildRun('.', allow_warnings=True)

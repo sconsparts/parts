@@ -13,7 +13,7 @@ import parts.core.util as util
 import parts.errors as errors
 import parts.glb as glb
 import parts.part_ref as part_ref
-import parts.policy as Policy
+import parts.core.policy as Policy
 import parts.target_type as target_type
 import parts.version as version
 import SCons.Script

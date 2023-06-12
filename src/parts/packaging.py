@@ -7,7 +7,7 @@ import parts.api as api
 import parts.common as common
 import parts.core.util as util
 import parts.glb as glb
-import parts.policy as policy
+import parts.core.policy as policy
 import parts.settings as settings
 import SCons.Script
 from SCons.Environment import SubstitutionEnvironment as SubstEnv
@@ -193,7 +193,7 @@ def GetPackageGroupFiles(name, no_pkg=False) -> List[Set[Node]]:
         # get Cache value
         groups = _sorted_groups[int(bool(no_pkg))]
         if name not in groups:
-            api.output.warning_msg(f'Package group "{name}" was not defined')
+            api.output.warning_msg(f'Package group "{name}" was not defined', show_stack=False)
         return list(groups.get(name,set()))
 
 # this get the set of files for a given group

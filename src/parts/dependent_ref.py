@@ -4,7 +4,7 @@ import hashlib
 import parts.api as api
 import parts.errors as errors
 import parts.glb as glb
-import parts.policy as policies
+import parts.core.policy as policies
 import parts.part_ref as part_ref
 import parts.requirement as requirement
 from parts.pnode.nilpart import NilPart

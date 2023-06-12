@@ -12,12 +12,12 @@ from SCons.Script.SConscript import SConsEnvironment
 
 def Part_factory(arg1=None, parts_file=None, mode=[], scm_type=None, default=False,
                  append={}, prepend={}, create_sdk=True, package_group=None,
-                 alias=None, name=None, extern: Optional[scm.base.base] = None, *lst, **kw):
+                 alias=None, name=None, version=None, extern: Optional[scm.base.base] = None, *lst, **kw):
     ''' This  function acts a factory to help with Part creation.
     This way control over making a new Part or getting the existing Part
     can be better controlled
     '''
-
+    
     # handle common case:part(alias,file)
     if arg1 and parts_file is None:
         parts_file = arg1
@@ -38,7 +38,7 @@ def Part_factory(arg1=None, parts_file=None, mode=[], scm_type=None, default=Fal
     tmp = glb.pnodes.Create(pnode.part.Part, file=parts_file, mode=mode, scm_t=scm_type,
                             default=default, append=append, prepend=prepend,
                             create_sdk=create_sdk, package_group=package_group,
-                            name=name, alias=alias, extern=extern, **kw)
+                            name=name, _version=version, alias=alias, extern=extern, **kw)
 
     if tmp.isSetup:
         glb.engine._part_manager._add_part(tmp)

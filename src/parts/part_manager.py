@@ -1,5 +1,5 @@
 
-from typing import List
+from typing import List, Dict, Union, Optional, Tuple, Any
 import copy
 import hashlib
 import time
@@ -37,8 +37,8 @@ class part_manager:
     def __init__(self):
 
         self.__defined_sections = set()  # type IDs of all section type in the run that have been defined by some Part.
-        self.parts = {}  # a dictionary of all parts objects by there alias value
-        self.__name_to_alias = {}  # a dictionary of a known Parts name and possible alias that match
+        self.parts:Dict[str,pnode.part.Part] = {}  # a dictionary of all parts objects by there alias value
+        self.__name_to_alias:Dict[str:str] = {}  # a dictionary of a known Parts name and possible alias that match
         self.__alt_names = {}  # This is a name mapping. Allows for mapping a part name as something different
         self.__to_map_parts = []  # stuff that needs to be mapped, else it is wasted space
         # used to help prevent wasting time on cases of incomplete cache data
@@ -921,13 +921,13 @@ class part_manager:
                 self.__to_map_parts.remove(i)
                 break'''
 
-    def _from_alias(self, alias):
+    def _from_alias(self, alias) -> pnode.part.Part:
         '''
         given an alias get the defined part with this alias
         '''
         return self.parts.get(alias, None)
 
-    def _from_env(self, env):
+    def _from_env(self, env) -> pnode.part.Part:
         '''
         given an env get the defined part with this alias
         '''

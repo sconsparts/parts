@@ -1,0 +1,11 @@
+Import("*")
+
+PartName("a")
+
+if 'TEST_DEFAULT' not in env['MODE']:
+    PartVersion("1.2.3")
+
+env.PrintMessage(f"Version: {PartVersion()}")
+
+
+

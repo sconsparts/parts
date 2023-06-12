@@ -1,0 +1,5 @@
+``
+Parts: Overriding the version with the value of 2.0.0
+Message from Part "a": Version: 2.0.0
+``
+scons: done building targets.

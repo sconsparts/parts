@@ -265,7 +265,7 @@ class version:
     def compare(self, rhs, comp):
         '''
         Central compare function that compares the internal parts arrays.  The
-        comp function is used to compare the first differnce in the two lists
+        comp function is used to compare the first difference in the two lists
         unless there was a match.
         '''
         if not isinstance(rhs, version):

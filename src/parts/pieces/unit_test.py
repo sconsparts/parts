@@ -117,7 +117,7 @@ def unit_test_old(env, target, source, command_args=None, data_src=None, src_dir
     # as we know at this point we will have one
     unit_test_section.Part._AddSection(unit_test_section.Name, unit_test_section)
     env2.DependsOn([
-        env2.Component(env.PartName(), env.PartVersion(), section='build', requires=REQ.DEFAULT(internal=True))
+        env2.Component(f"alias::{env['PART_ALIAS']}", env.PartVersion(), section='build', requires=REQ.DEFAULT(internal=True))
     ])
 
     @unit_test_proxy.Group(target)

@@ -13,8 +13,34 @@ from .common import GnuInfo, gxx
 gxx.Register(
     # we assume that the system has the correct libraies installed to do a cross build
     # or that the user add the extra check for the stuff the need
-    hosts=[SystemPlatform('posix', 'x86'), SystemPlatform('posix', 'x86_64'), SystemPlatform('freebsd', 'x86_64'), SystemPlatform('posix', 'arm64')],
-    targets=[SystemPlatform('posix', 'x86'), SystemPlatform('posix', 'x86_64'), SystemPlatform('freebsd', 'x86_64'), SystemPlatform('posix', 'arm64')],
+    hosts=[SystemPlatform('posix', 'x86'), SystemPlatform('posix', 'x86_64'), SystemPlatform('freebsd', 'x86_64')],
+    targets=[SystemPlatform('posix', 'x86'), SystemPlatform('posix', 'x86_64'), SystemPlatform('freebsd', 'x86_64')],
+    info=[
+        GnuInfo(
+            # standard location, however there might be
+            # some posix offshoot that might tweak this directory
+            # so we allow this to be set
+            install_scanner=[
+                PathFinder(['/usr/bin'])
+            ],
+            opt_dirs=[
+                '/opt/'
+            ] + ['/opt/rh/devtoolset-{0}/root/usr/bin/'.format(i) for i in range(3, 12)
+                 ] + ['/opt/rh/gcc-toolset-{0}/root/usr/bin/'.format(i) for i in range(9, 20)],
+            script=None,
+            subst_vars={},
+            shell_vars={'PATH': '${GXX.INSTALL_ROOT}'},
+            test_file='g++',
+            opt_pattern='gcc\-?([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)'
+        )
+    ]
+)
+
+gxx.Register(
+    # we assume that the system has the correct libraies installed to do a cross build
+    # or that the user add the extra check for the stuff the need
+    hosts=[SystemPlatform('posix', 'arm64')],
+    targets=[SystemPlatform('posix', 'arm64')],
     info=[
         GnuInfo(
             # standard location, however there might be

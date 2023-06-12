@@ -102,7 +102,7 @@ def copy_metatags(target, source, env):
 def make_batch_value(uid):
     '''
     make a default batch key
-    @param uid  This provides a way to seperate this key for other keys that would have the 
+    @param uid  This provides a way to separate this key for other keys that would have the 
                 same value for the stack we try to get. This is like getting the Part Alias()
                 but in many cases this is the env.get_csig() as this is generally faster to get
                 and is a unique value independent of the "component" logic in Parts
@@ -116,7 +116,7 @@ def make_batch_value(uid):
 
 def CCopyAsWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw):
     # set some values to control the builder action
-    _CCOPY_VERBOSE_ = 'True'
+    _CCOPY_VERBOSE_ = 'False' # todo! map to verbose value is it is set
     _COPY_ONLY_ = 'True' if copy_logic == CCopy.copy else 'False'
 
     if "CCOPY_BATCH_KEY" not in kw:

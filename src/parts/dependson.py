@@ -155,8 +155,14 @@ def depends_on_classic(env, depends: Union[dependent_ref.dependent_ref, List[dep
         for r in comp.Requires:
             ## import logic
             # always map to namespace
+            tmp = comp.PartRef.Target.Name
+            if not tmp:
+                # The name was not set, so fall back to alias
+                # for the namespace generation
+                
+                tmp = comp.PartRef.Target.Alias
             # split the name so we can make an sub spaces
-            tmp = comp.PartRef.Target.Name.split('.')
+            tmp = tmp.split('.')
             # get the space in the environment
             try:
                 tmpspace = env['DEPENDS']

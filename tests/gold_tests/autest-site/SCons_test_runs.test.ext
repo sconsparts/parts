@@ -66,18 +66,20 @@ def AddOutOfDateCheckSCons(Test, target="all", options=''):
 
     return tr
 
-
-def AddBuildRun(Test, target="all", options=''):
+# todo set to not allow warnings unless we know they should happen
+def AddBuildRun(Test, target="all", options='',allow_warnings=True, extra="" ): 
 
     if options:
         s = "Building target-> {0} options-> {1}".format(target, options)
     else:
         s = "Building target-> {0}".format(target)
     tr = Test.AddTestRun(
-        s, "build-{}".format(filter_path_chars(target))
+        s, f"build-{filter_path_chars(target)}{extra}"
     )
     tr.Command = 'scons {0} {1} --console-stream=none'.format(target, options)
     tr.ReturnCode = 0
+    if not allow_warnings:
+        tr.Processes.Default.Streams.Warning.Content = Testers.ExcludesExpression("Parts: Warning!:","Warnings should not exists")
 
     return tr
 
