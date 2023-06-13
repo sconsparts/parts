@@ -1,8 +1,8 @@
 scons: Reading SConscript files ...
 scons: done reading SConscript files.
-``
-Message from Part "a": Version: 2.0.0
-``
-Parts: Loaded 1 Parts
+Parts: Updating disk
+Parts: Updating disk - Done
+{}
+Message from Part "a": Version: 1.2.3
 {}
 scons: done building targets.

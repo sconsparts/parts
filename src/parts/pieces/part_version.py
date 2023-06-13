@@ -48,14 +48,15 @@ def part_version(env, ver: Union[str, Version] = None, _warn=True):
         tmp = part_obj._cache.get('version')
         if not tmp:
             api.output.error_msg("VersionLogic.Force was set, but there was no version value defined to override with")
-        part_obj.Version = ret  # set version to allow fancy stuff to work
-        ret = get_version(tmp)
-        policy = part_obj._cache.get("version_policy", env.get("VERSION_POLICY", ReportingPolicy.message))
-        api.output.policy_msg(
-            policy if policy else ReportingPolicy.message,
-            ['version'],
-            f"Overriding the version with the value of {ret}"
-        )
+        tmp = get_version(tmp)
+        if tmp != ret:
+            policy = part_obj._cache.get("version_policy", env.get("VERSION_POLICY", ReportingPolicy.message))
+            api.output.policy_msg(
+                policy if policy else ReportingPolicy.message,
+                ['version'],
+                f"Overriding the version with the value of {tmp}"
+            )
+            ret = get_version(tmp)
 
     elif part_obj._cache.get("version_logic") in (VersionLogic.Verify, VersionLogic.StrictVerify):
         tmp = part_obj._cache.get('version')
@@ -65,6 +66,7 @@ def part_version(env, ver: Union[str, Version] = None, _warn=True):
             api.output.verbose_msg(['version'],"VersionLogic.Verify was set, but there was no version value defined to verify with. Ignoring...")
             
         if tmp:
+            tmp = get_version(tmp)
             if tmp != ret:
                 # we wanted to test that these match
                 # we default to error if they don't

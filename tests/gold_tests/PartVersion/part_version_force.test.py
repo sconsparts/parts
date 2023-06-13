@@ -17,3 +17,16 @@ tr.Processes.Default.ReturnCode = 2
 # test that the version is set with force logic
 tr = Test.AddBuildRun(options="--mode=TEST_FORCE,TEST_SETVERSION --verbose=version",allow_warnings=True)
 tr.Processes.Default.Streams.All = "gold/overrideversion.gold"
+
+# test that the version is set with force logic
+tr = Test.AddBuildRun(options="--mode=TEST_DEFAULT,TEST_FORCE,TEST_SUBST --verbose=version",allow_warnings=True)
+tr.Processes.Default.Streams.Warning = "gold/settingdefault.gold"
+tr.Processes.Default.Streams.All = "gold/2.0.0set.gold"
+
+# test that the version is set with force logic
+tr = Test.AddBuildRun(options="--mode=TEST_FORCE,TEST_SETVERSION,TEST_SUBST --verbose=version",allow_warnings=True)
+tr.Processes.Default.Streams.All = "gold/overrideversion.gold"
+
+# test that the version is set with force logic
+tr = Test.AddBuildRun(options="--mode=TEST_FORCE,TEST_MATCH,TEST_SUBST --verbose=version",allow_warnings=True)
+tr.Processes.Default.Streams.All = "gold/force_nochange.gold"

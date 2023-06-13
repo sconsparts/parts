@@ -6,10 +6,17 @@ ver = None
 logic = None
 policy = None
 
+
 if 'TEST_DEFAULT' in env['mode'] or 'TEST_SETVERSION' in env['mode']:
     ver = "2.0.0"
+    if "TEST_SUBST" in env['mode']:
+        SetOptionDefault('SUB_VERSION', '2.0.0')
+        ver = "${SUB_VERSION}"
 elif 'TEST_MATCH' in env['mode']:
     ver = "1.2.3"
+    if "TEST_SUBST" in env['mode']:
+        SetOptionDefault('SUB_VERSION', '1.2.3')
+        ver = "${SUB_VERSION}"
 
 if 'TEST_FORCE' in env['mode']:
     logic = VersionLogic.Force

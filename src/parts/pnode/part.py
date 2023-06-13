@@ -285,6 +285,9 @@ class Part(pnode.PNode):
         if self.isRoot:
             tmp=self.__cache.get('version', None)
             if self.__version == "0" and tmp and self.__cache.get('version', VersionLogic.Default) != VersionLogic.Verify:
+                if util.is_a.isString(tmp):
+                    tmp = self.Env.subst(tmp)
+                    tmp = version.version(tmp)
                 policy = self.__cache.get('version_policy',self.Env.get('VERSION_POLICY'))
                 api.output.policy_msg(
                     policy if policy else ReportingPolicy.warning,
