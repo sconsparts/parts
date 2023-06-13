@@ -1,5 +1,5 @@
 ***************
-Release  0.17.5
+Release  0.17.6
 ***************
 
 * Add updates to support native arm64 as a platform on the Mac M1/M2 and POSIX/linux platforms.
@@ -11,3 +11,58 @@ Release  0.17.5
 * Added `AUTO_MAKE_BUILDDIR` to better control the creation and referencing of the build directory and files within it.
 * Add fix for how the python process to be seen as a symlink correctly in cases when it is a symlink.
 * Changed the default value of verbose value passed to CCopy() logic to be False.
+
+**Note:** The versioning logic has been updated to support the following:
+
+The user can now pass the arguments of:
+
+* version - The version number to use for the component. It will be applied according to the version_logic value.
+* version_logic - Is an enum value defined in the global `VersionLogic`. This defines how the version will be applied. The values are:
+ 
+  * version_logic.Default - This is the default value. It will be applied if no version if applied to the component or by various functions that might be used to provide a version value for another source.
+  * version_logic.Verify - This will cause the version to be verified against the version set in the PartVersion() call. If no `version` argument is defined, it will act like a default value instead. If the version does not match the version_policy will be applied to report how it will be reported.
+  * version_logic.Verify - The same as Verify, but with StrictVerify if a value for `version` is not passed in, it will report an error.
+  * version_logic.Force - This will cause the version to be set to the value passed in the version argument. This will replace the version set in the PartVersion() call.
+* version_policy - this is of type `ReportingPolicy` and will control how the logic should report a failure.
+
+Likewise these values for the version_logic and version_policy can be set in the Environment() value use of the `VERSION_LOGIC` and `VERSION_POLICY` values
+
+Example 1
+---------
+
+SConstruct setting default value to version 2.0.0
+
+.. code-block:: python
+
+   # SConstruct
+   Part("My.part", version="2.0.0")
+
+In the Part file My.part
+
+.. code-block:: python
+
+    Import('*')
+    PartName("MyPart")
+    # does not call PartVersion(<value>)
+    print(PartVersion()) # Will print the value of 2.0.0
+    ...
+
+Example 2
+---------
+
+SConstruct setting force setting value to version 2.0.0
+
+.. code-block:: python
+
+   # SConstruct
+   Part("My.part", version="2.0.0", version_logic=VersionLogic.Force)
+
+In the Part file My.part
+
+.. code-block:: python
+
+    Import('*')
+    PartName("MyPart")
+    PartVersion("1.4.5") # a message reporting the version is being overridden will be reported
+    print(PartVersion()) # Will print the value of 2.0.0
+    ...
