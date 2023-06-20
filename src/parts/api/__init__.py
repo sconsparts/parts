@@ -1,5 +1,6 @@
-# import parts.api.register as register
-from . import output
-from . import register
-from . import requirement
-from . import platforms
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from . import output
+    from . import register
+    from . import requirement
+    from . import platforms
