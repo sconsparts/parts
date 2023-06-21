@@ -85,7 +85,7 @@ def map_dyn_imports(env, section=None):
 
 api.register.add_builder('_part_dyn_imports_', SCons.Builder.Builder(
     name="dynamic-import-state",
-    action=SCons.Action.Action(PartDynImportsAction, "Writting dynamically imported values in $TARGET"),
+    action=SCons.Action.Action(PartDynImportsAction, "Writing dynamically imported values in $TARGET"),
     target_factory=SCons.Node.FS.File,
     source_factory=SCons.Node.Python.Value,
     target_scanner=SCons.Script.Scanner(depend_dyn_scanner, name="dyn-import-scan"),

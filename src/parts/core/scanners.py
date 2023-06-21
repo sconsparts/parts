@@ -38,7 +38,7 @@ def depends_sdkfiles_scanner(node, env, path):
     # The easiest way to deal with this is to depend on the files SDK that would exists as part of the SDK being build. In
     # the case of raw make files with no configure logic it will assume the dependants exists. This mean we have to force
     # a depends to have that components fully built as we cannot depend scanners to get everything that is needed.
-    # (ie writting a Makefile/cmake or autoconf scanner could fix this, but is a very difficult it not near impossible task).
+    # (ie writing a Makefile/cmake or autoconf scanner could fix this, but is a very difficult it not near impossible task).
     # Making this less fine grain depends corrects the problem has should have minimal impact on SCons being able to build
     # quickly with -j
     import parts.core.builders as builders  # needed here because python3.6 has a loading issue

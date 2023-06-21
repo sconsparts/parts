@@ -68,7 +68,7 @@ def source_scanner(node, env, path):
 
 api.register.add_builder('_part_dyn_exports_', SCons.Builder.Builder(
     name="dynamic-export-state",
-    action=SCons.Action.Action(PartDynExportsAction, "Writting dynamically exported values in $TARGET"),
+    action=SCons.Action.Action(PartDynExportsAction, "Writing dynamically exported values in $TARGET"),
     target_factory=SCons.Node.FS.File,
     source_factory=SCons.Node.FS.Entry,
     #source_scanner=SCons.Script.Scanner(source_scanner, name="dyn-export-scan"),

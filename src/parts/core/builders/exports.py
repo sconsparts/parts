@@ -103,7 +103,7 @@ def target_scanner(node, env, path):
 
 api.register.add_builder('_part_exports_', SCons.Builder.Builder(
     name="export-state",
-    action=SCons.Action.Action(PartExportsAction, "Writting exported values in $TARGET"),
+    action=SCons.Action.Action(PartExportsAction, "Writing exported values in $TARGET"),
     target_factory=SCons.Node.FS.File,
     source_factory=SCons.Node.FS.Entry,
     # source_scanner=scanners.NullScanner,
