@@ -48,7 +48,7 @@ def print_msgf(sfmt, *lst, **kw):
     glb.rpter.part_message([kw.get('sep', ' '), msg, kw.get('end', '\n')], kw.get('show_prefix', True))
 
 
-def _verbose_pre(_func, catagory, *lst, **kw):
+def _verbose_pre(_func, category, *lst, **kw):
     if glb.rpter.isSetup == False:
         try:
             glb.rpter.verbose = SCons.Script.GetOption('verbose')
@@ -56,55 +56,55 @@ def _verbose_pre(_func, catagory, *lst, **kw):
             glb.rpter.verbose = []
     if glb.rpter.verbose is None:
         glb.rpter.verbose = []
-    _func(catagory, *lst, **kw)
+    _func(category, *lst, **kw)
 
 
-def _verbose_msgf(catagory, sfmt, *lst, **kw):
-    catagory = common.make_list(catagory)
-    catagory.append('all')
+def _verbose_msgf(category, sfmt, *lst, **kw):
+    category = common.make_list(category)
+    category.append('all')
     msg = common.dformat(sfmt, *lst, **kw)
-    glb.rpter.verbose_msg(catagory, [kw.get('sep', ' '), msg, kw.get('end', '\n')])
+    glb.rpter.verbose_msg(category, [kw.get('sep', ' '), msg, kw.get('end', '\n')])
 
 
-def _verbose_msg(catagory, *lst, **kw):
-    catagory = common.make_list(catagory)
-    catagory.append('all')
-    glb.rpter.verbose_msg(catagory, [kw.get('sep', ' ')] + list(lst) + [kw.get('end', '\n')])
+def _verbose_msg(category, *lst, **kw):
+    category = common.make_list(category)
+    category.append('all')
+    glb.rpter.verbose_msg(category, [kw.get('sep', ' ')] + list(lst) + [kw.get('end', '\n')])
 
 
-verbose_msgf = lambda catagory, *lst, **kw: _verbose_pre(_verbose_msgf, catagory, *lst, **kw)
-verbose_msg = lambda catagory, *lst, **kw: _verbose_pre(_verbose_msg, catagory, *lst, **kw)
+verbose_msgf = lambda category, *lst, **kw: _verbose_pre(_verbose_msgf, category, *lst, **kw)
+verbose_msg = lambda category, *lst, **kw: _verbose_pre(_verbose_msg, category, *lst, **kw)
 
 
-def _trace_pre(_func, catagory, *lst, **kw):
+def _trace_pre(_func, category, *lst, **kw):
     if glb.rpter.isSetup == False:
         glb.rpter.trace = SCons.Script.GetOption('trace')
     if not glb.rpter.trace:
         glb.rpter.trace = []
-    _func(catagory, *lst, **kw)
+    _func(category, *lst, **kw)
 
 
-def _trace_msgf(catagory, sfmt, *lst, **kw):
+def _trace_msgf(category, sfmt, *lst, **kw):
     msg = common.dformat(sfmt, *lst, **kw)
-    glb.rpter.trace_msg(catagory, [kw.get('sep', ' '), msg, kw.get('end', '\n')])
+    glb.rpter.trace_msg(category, [kw.get('sep', ' '), msg, kw.get('end', '\n')])
 
 
-def _trace_msg(catagory, *lst, **kw):
-    glb.rpter.trace_msg(catagory, [kw.get('sep', ' ')] + list(lst) + [kw.get('end', '\n')])
+def _trace_msg(category, *lst, **kw):
+    glb.rpter.trace_msg(category, [kw.get('sep', ' ')] + list(lst) + [kw.get('end', '\n')])
 
 
-trace_msgf = lambda catagory, *lst, **kw: _trace_pre(_trace_msgf, catagory, *lst, **kw)
-trace_msg = lambda catagory, *lst, **kw: _trace_pre(_trace_msg, catagory, *lst, **kw)
+trace_msgf = lambda category, *lst, **kw: _trace_pre(_trace_msgf, category, *lst, **kw)
+trace_msg = lambda category, *lst, **kw: _trace_pre(_trace_msg, category, *lst, **kw)
 
 
-def policy_msg(policy, catagory, *lst, **kw):
+def policy_msg(policy, category, *lst, **kw):
     from ..core import policy as Policy
     if policy == Policy.ReportingPolicy.ignore:
         return
     elif policy == Policy.ReportingPolicy.message:
         print_msg(*lst, **kw)
     elif policy == Policy.ReportingPolicy.verbose:
-        verbose_msg(catagory, *lst, **kw)
+        verbose_msg(category, *lst, **kw)
     elif policy == Policy.ReportingPolicy.warning:
         warning_msg(*lst, **kw)
     elif policy == Policy.ReportingPolicy.error:

@@ -29,8 +29,8 @@ class TestFilters(unittest.TestCase):
         self.assertEqual(True, hfe(myFile1))
         self.assertEqual(False, hfe(myFile2))
 
-    def test_HasPackageCatagory(self):
-        """Test HasPackageCatagory: create 2 nodes (files) and set 'package' tag to one of them and assosiate 'category' value with this tag"""
+    def test_HasPackageCategory(self):
+        """Test HasPackageCategory: create 2 nodes (files) and set 'package' tag to one of them and assosiate 'category' value with this tag"""
         dirname1 = "mydir1"
         filename1 = "myfile1.txt"
         myFile1 = self.__createFile(filename1, dirname1)
@@ -42,6 +42,6 @@ class TestFilters(unittest.TestCase):
         myCat = "my category"
         self.env.MetaTag(myFile1, 'package', category=myCat)
 
-        hpc = HasPackageCatagory(myCat)
+        hpc = HasPackageCategory(myCat)
         self.assertEqual(True, hpc(myFile1))
         self.assertEqual(False, hpc(myFile2))

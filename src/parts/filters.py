@@ -21,16 +21,21 @@ class hasFileExtension:
         return False
 
 
-class HasPackageCatagory:
+class HasPackageCategory:
 
-    def __init__(self, catagory):
+    def __init__(self, category):
         if __debug__:
             logInstanceCreation(self)
-        self.catagory = catagory
+        self.category = category
 
     def __call__(self, node):
-        return metatag.MetaTagValue(node, 'category', 'package') == self.catagory
+        return metatag.MetaTagValue(node, 'category', 'package') == self.category
 
+class HasPackageCatagory(HasPackageCategory):
+    def __call__(self, node):
+        api.output.warning_msg("[HasPackageCatagory] is deprecated, please use [HasPackageCategory]")
+        return super.__call__(self, node)
 
 api.register.add_global_object('hasFileExtension', hasFileExtension)
-api.register.add_global_object('HasPackageCatagory', HasPackageCatagory)
+api.register.add_global_object('HasPackageCatagory', HasPackageCatagory) # deprecated and emits a warning message on use
+api.register.add_global_object('HasPackageCategory', HasPackageCategory)

@@ -254,8 +254,8 @@ class reporter:
                 s = msg
             self.stdmsg(s, False)
 
-    def verbose_msg(self, catagory, msg_lst):
-        tmp = common.make_list(catagory)
+    def verbose_msg(self, category, msg_lst):
+        tmp = common.make_list(category)
         for c in tmp:
             if c.lower() in self.verbose:
                 msg = list(map(str, msg_lst[1:-1]))
@@ -264,8 +264,8 @@ class reporter:
                 self.stdverbose(s)
                 break
 
-    def trace_msg(self, catagory, msg_lst):
-        tmp = common.make_list(catagory)
+    def trace_msg(self, category, msg_lst):
+        tmp = common.make_list(category)
         for c in tmp:
             if c.lower() in self.trace:
                 msg = list(map(str, msg_lst[1:-1]))
@@ -404,7 +404,7 @@ class reporter:
         return len(msg)
 
 
-def _empty_msg(catagory, *lst, **kw):
+def _empty_msg(category, *lst, **kw):
     pass
 
 
@@ -428,15 +428,15 @@ def user_print_msg(*lst, **kw):
     glb.rpter.user_message(SCons.Script.DefaultEnvironment(), kw.get('sep', ' ').join(msg) + kw.get('end', '\n'))
 
 
-def user_verbose(catagory, *lst, **kw):
-    catagory = common.make_list(catagory)
-    catagory.append('all')
-    catagory.append('user')
+def user_verbose(category, *lst, **kw):
+    category = common.make_list(category)
+    category.append('all')
+    category.append('user')
     if glb.rpter.isSetup == False:
         glb.rpter.verbose = SCons.Script.GetOption('verbose')
         if glb.rpter.verbose is None:
             glb.rpter.verbose = []
-    glb.rpter.verbose_msg(catagory, [kw.get('sep', ' ')] + list(lst) + [kw.get('end', '\n')])
+    glb.rpter.verbose_msg(category, [kw.get('sep', ' ')] + list(lst) + [kw.get('end', '\n')])
 
 # env version
 
@@ -458,15 +458,15 @@ def user_print_msg_env(env, *lst, **kw):
     glb.rpter.user_message(env, kw.get('sep', ' ').join(msg) + kw.get('end', '\n'))
 
 
-def user_verbose_env(env, catagory, *lst, **kw):
-    catagory = common.make_list(catagory)
-    catagory.append('all')
-    catagory.append('user')
+def user_verbose_env(env, category, *lst, **kw):
+    category = common.make_list(category)
+    category.append('all')
+    category.append('user')
     if glb.rpter.isSetup == False:
         glb.rpter.verbose = SCons.Script.GetOption('verbose')
         if glb.rpter.verbose is None:
             glb.rpter.verbose = []
-    glb.rpter.verbose_msg(catagory, [kw.get('sep', ' ')] + list(lst) + [kw.get('end', '\n')])
+    glb.rpter.verbose_msg(category, [kw.get('sep', ' ')] + list(lst) + [kw.get('end', '\n')])
 
 
 api.register.add_bool_variable('STREAM_WARNING_AS_ERROR', False, 'Controls is warning based messages are treated as errors')
