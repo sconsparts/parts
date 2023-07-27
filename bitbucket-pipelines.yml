@@ -25,7 +25,7 @@ pipelines:
           - pip install pipenv
           - if [ ! -f reqgen/requirements.txt ]; then pipenv lock --dev ; pipenv requirements --dev > reqgen/requirements.txt; fi
           - pip install -r reqgen/requirements.txt
-          - ls -al
+          - autest --version
           - autest -D ./tests/gold_tests
           - pytest -v tests/unit --junitxml=test-reports/report.xml || true
   pull-requests:
