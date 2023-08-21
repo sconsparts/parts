@@ -454,6 +454,13 @@ def InstallPkgConfig(env, source, sub_dir='', no_pkg=False, create_sdk=True, **k
 
     return installed_files
 
+def InstallCMakeConfig(env, source, sub_dir='', no_pkg=False, create_sdk=True, **kw):
+
+    installed_files = InstallItem(env, '$INSTALL_CMAKE_CONFIG', source,
+                                  sub_dir=sub_dir, sdk_dir='$SDK_CMAKE_CONFIG', no_pkg=no_pkg, create_sdk=create_sdk,
+                                  **get_args('CMAKE_CONFIG', **kw))
+
+    return installed_files
 
 def InstallResource(env, source, sub_dir='', no_pkg=False, create_sdk=True, **kw):
 
@@ -574,6 +581,7 @@ api.register.add_method(InstallLib)
 api.register.add_method(InstallManPage)
 api.register.add_method(InstallMessage)
 api.register.add_method(InstallPkgConfig)
+api.register.add_method(InstallCMakeConfig)
 api.register.add_method(InstallPkgData)
 api.register.add_method(InstallPrivateBin)
 api.register.add_method(InstallSystemBin)
@@ -615,6 +623,7 @@ if 'win32' == glb._host_platform:
     api.register.add_variable('INSTALL_MANPAGE_SUBDIR', 'man', '')
     api.register.add_variable('INSTALL_MESSAGE_SUBDIR', 'message', '')
     api.register.add_variable('INSTALL_PKG_CONFIG_SUBDIR', 'pkgconfig', '')
+    api.register.add_variable('INSTALL_CMAKE_CONFIG_SUBDIR', 'cmake', '')
 
 else:  # assume posix like layout
     api.register.add_variable('INSTALL_CONFIG_SUBDIR', 'etc', '')
@@ -626,6 +635,7 @@ else:  # assume posix like layout
     api.register.add_variable('INSTALL_MANPAGE_SUBDIR', 'share/man', '')
     api.register.add_variable('INSTALL_MESSAGE_SUBDIR', 'share/nls', '')
     api.register.add_variable('INSTALL_PKG_CONFIG_SUBDIR', '${INSTALL_LIB_SUBDIR}/pkgconfig', '')
+    api.register.add_variable('INSTALL_CMAKE_CONFIG_SUBDIR', '${INSTALL_LIB_SUBDIR}/cmake', '')
 
 # this is not really defined in posix .. but useful
 api.register.add_variable('INSTALL_SOURCE_SUBDIR', 'src', '')
@@ -665,6 +675,7 @@ api.register.add_variable('INSTALL_PYTHON', '${INSTALL_ROOT}/${INSTALL_PYTHON_SU
 api.register.add_variable('INSTALL_SCRIPT', '${INSTALL_ROOT}/${INSTALL_SCRIPT_SUBDIR}', '')
 api.register.add_variable('INSTALL_PKGDATA', '${INSTALL_ROOT}/${INSTALL_PKGDATA_SUBDIR}', '')
 api.register.add_variable('INSTALL_PKG_CONFIG', '${INSTALL_ROOT}/${INSTALL_PKG_CONFIG_SUBDIR}', '')
+api.register.add_variable('INSTALL_CMAKE_CONFIG', '${INSTALL_ROOT}/${INSTALL_CMAKE_CONFIG_SUBDIR}', '')
 
 
 # file patterns

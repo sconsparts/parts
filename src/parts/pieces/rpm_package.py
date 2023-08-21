@@ -157,7 +157,7 @@ def rpm_scanner(node, env, path, args=None):
                     filtered = filtered_node
 
             # check to see if this type of file should be have the runpath
-            if pk_type in ("BIN", "LIB", "PRIVATE_BIN", 'SYSTEM_BIN') and not util.is_a.isSymLink(filtered) and env.get('PACKAGE_AUTO_RUNPATH',True):
+            if pk_type in ("BIN", "LIB", "PRIVATE_BIN", 'SYSTEM_BIN') and not util.is_a.isSymLink(filtered) and env.get('PACKAGE_AUTO_RUNPATH',True) and not env.MetaTagValue(filtered, 'SKIP_RPATH', default=False):
                 # we call build to modify the runpath as needed
                 # depending on what PACKAGE_RUNPATH is set to
                 # may remove , do nothing or change the runpath of a binary

@@ -231,6 +231,12 @@ def SdkPkgConfig(env, source, sub_dir='', create_sdk=True):
                   create_sdk=create_sdk)
     return ret
 
+def SdkCMakeConfig(env, source, sub_dir='', create_sdk=True):
+
+    ret = SdkItem(env, '$SDK_CMAKE_CONFIG', source, sub_dir, '', [(Xp.EXPORT_TYPES.PATH, 'CMAKE_CONFIG_PATH')],
+                  create_sdk=create_sdk)
+    return ret
+
 
 def SdkDoc(env, source, sub_dir='', create_sdk=True):
 
@@ -389,6 +395,7 @@ api.register.add_method(SdkSystemBin)
 api.register.add_method(Sdk)
 api.register.add_method(Sdk, 'SdkTarget')
 api.register.add_method(SdkPkgConfig)
+api.register.add_method(SdkCMakeConfig)
 api.register.add_method(SdkConfig)
 api.register.add_method(SdkDoc)
 api.register.add_method(SdkHelp)
@@ -447,6 +454,7 @@ api.register.add_variable('SDK_TOOLS', '$SDK_ROOT/tools', 'Full SDK directory fo
 api.register.add_variable('SDK_API', '$SDK_ROOT/API', 'Full SDK directory for the API concept')
 api.register.add_variable('SDK_CONFIG', '$SDK_ROOT/config', 'Full SDK directory for the configuration file concept')
 api.register.add_variable('SDK_PKG_CONFIG', '$SDK_LIB_ROOT/pkgconfig', '')
+api.register.add_variable('SDK_CMAKE_CONFIG', '$SDK_LIB_ROOT/cmake', '')
 api.register.add_variable('SDK_RESOURCE', '$SDK_ROOT/resource', 'Full SDK directory for the resource concept')
 api.register.add_variable('SDK_SAMPLE', '$SDK_ROOT/sample', 'Full SDK directory for the sample concept')
 api.register.add_variable('SDK_TOP_LEVEL', '$SDK_ROOT/TOP_LEVEL',

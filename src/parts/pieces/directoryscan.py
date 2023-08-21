@@ -272,6 +272,19 @@ pkgconfig_scan = dict(
         ],
     )
 )
+
+cmakeconfig_scan = dict(
+    InstallCMakeConfig=dict(
+        source=lambda node, env, default=None: [
+            env.Pattern(src_dir=node.Dir("lib/cmake"), includes=["*"]),
+            env.Pattern(src_dir=node.Dir(
+                "lib32/cmake"), includes=["*"]),
+            env.Pattern(src_dir=node.Dir(
+                "lib64/cmake"), includes=["*"]),
+        ],
+    )
+)
+
 include_scan = dict(
     InstallInclude=dict(
         source=lambda node, env, default=None: [
@@ -355,6 +368,8 @@ def ScanDirectory(env, default_dir, defaults=True, callbacks=[], extra_scanner=N
         "DIRECTORYSCAN_NO_LIB", False) else {})
     default_mappings_dict.update(pkgconfig_scan if not env.get(
         "DIRECTORYSCAN_NO_PKGCONFIG", False) else {})
+    default_mappings_dict.update(cmakeconfig_scan if not env.get(
+        "DIRECTORYSCAN_NO_CMAKECONFIG", False) else {})
     default_mappings_dict.update(include_scan if not env.get(
         "DIRECTORYSCAN_NO_INCLUDE", False) else {})
     default_mappings_dict.update(etc_scan if not env.get(
