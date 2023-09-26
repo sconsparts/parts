@@ -116,7 +116,8 @@ def make_batch_value(uid):
 
 def CCopyAsWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw):
     # set some values to control the builder action
-    _CCOPY_VERBOSE_ = 'False' # todo! map to verbose value is it is set
+    
+    _CCOPY_VERBOSE_ = 'True' if 'ccopy' in glb.rpter.verbose else 'True' if 'all' in glb.rpter.verbose else 'False'
     _COPY_ONLY_ = 'True' if copy_logic == CCopy.copy else 'False'
 
     if "CCOPY_BATCH_KEY" not in kw:
@@ -126,6 +127,7 @@ def CCopyAsWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw
     source = env.arg2nodes(source)
     target = env.arg2nodes(target)
     api.output.verbose_msg("ccopy", f"CCopyAs called with {len(source)} items")
+    api.output.trace_msg("ccopy", f"CCopyAs called with verbose = ${_CCOPY_VERBOSE_}")
 
     if len(target) != len(source):
         api.output.error_msg("Number of targets and sources should be the same")
@@ -149,8 +151,10 @@ def CCopyWrapper(env, target=None, source=None, copy_logic=CCopy.default, **kw):
         kw['CCOPY_BATCH_KEY'] = make_batch_value(env.get_csig_hash())
 
     # set some values to control the builder action
-    _CCOPY_VERBOSE_ = 'True'
+    _CCOPY_VERBOSE_ = 'True' if 'ccopy' in glb.rpter.verbose else 'True' if 'all' in glb.rpter.verbose else 'False'
     _COPY_ONLY_ = 'True' if copy_logic == CCopy.copy else 'False'
+    
+    api.output.trace_msg("ccopy", f"CCopy called with verbose = ${_CCOPY_VERBOSE_}")
 
     # convert the target to a node
     target_nodes = env.arg2nodes(target, env.fs.Dir)

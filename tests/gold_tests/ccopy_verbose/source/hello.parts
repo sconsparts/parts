@@ -1,0 +1,11 @@
+Import('*')
+
+PartName("hello")
+PartVersion("1.0.0")
+
+build.DependsOn([])
+
+@build
+def build(env):
+    ret=env.Program("hello","hello.c")
+    env.InstallTarget(ret)

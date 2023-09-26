@@ -1,0 +1,8 @@
+scons: Reading SConscript files ...
+``
+parts-smart-cp --sources _build{}hello{} --targets _sdk{}hello{} --copy-only=False --verbose=True
+_build{}hello{} file=True symlink=False
+{}
+Creating hard link: _sdk{}hello{} -> _build{}hello{}
+``
+scons: done building targets.

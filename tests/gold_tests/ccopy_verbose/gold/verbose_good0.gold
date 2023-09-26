@@ -1,0 +1,6 @@
+scons: Reading SConscript files ...
+``
+parts-smart-cp --sources _build{}hello{} --targets _sdk{}hello{} --copy-only=False --verbose=False
+Install file: "_sdk{}hello{}" as "_install{}hello{}"
+``
+scons: done building targets.

@@ -28,7 +28,9 @@ def command_output(cmd_str):
     return ret
 
 
-# def verbose_msg():
+def verbose_msg(message: object, verbose: bool):
+    if verbose:
+        print(message)
 
 def copytree(src: Path, dst: Path, verbose: bool):
     '''
@@ -39,17 +41,18 @@ def copytree(src: Path, dst: Path, verbose: bool):
     # copy the directory and any entries
     while dirs:
         current = dirs.popleft()
-        #print(f"current={current} {current.relative_to(src)}")
         src_dir = current
-        # print(f"dst={dst}")
         dst_dir = dst / current.relative_to(src)
-        # print(f"dst_dir={dst_dir}")
+
+        verbose_msg(f"current={current} {current.relative_to(src)}", verbose)
+        verbose_msg(f"dst={dst}", verbose)
+        verbose_msg(f"dst_dir={dst_dir}", verbose)
 
         ############################################
         # Make sure the destination directory exists
         try:
             if not dst_dir.is_dir():
-                #print(f"making dir {dst_dir}")
+                verbose_msg(f"making dir {dst_dir}")
                 os.makedirs(dst_dir)
         except OSError as error:
             if error.errno == errno.EEXIST:
@@ -61,13 +64,13 @@ def copytree(src: Path, dst: Path, verbose: bool):
         # Iterate by source directory entries.
         # Files are copied, directories are add to the dirs list.
         for entry in src_dir.iterdir():
-            #print(f"entry={entry}, dir={entry.is_dir()}, link={entry.is_symlink()}")
+            verbose_msg(f"entry={entry}, dir={entry.is_dir()}, link={entry.is_symlink()}", verbose)
             if entry.is_dir() and not entry.is_symlink():
-                #print(f"pushing dir {entry}")
+                verbose_msg(f"pushing dir {entry}", verbose)
                 dirs.append(entry)
             else:
                 target = dst_dir / entry.name
-                #print(f"target={target}")
+                verbose_msg(f"target={target}", verbose)
                 if target.exists() and not os.access(target, os.W_OK):
                     st = target.stat()
                     target.chmod(stat.S_IMODE(mode.st_mode) | stat.S_IWRITE)
@@ -76,9 +79,9 @@ def copytree(src: Path, dst: Path, verbose: bool):
                     # this might be a symlink. If it is we just recreate it
                     # This seem faster than checking if the link point to the correct value
                     if entry.is_symlink() and os.path.lexists(target):
-                        #print(f"unlink {target}")
+                        verbose_msg(f"unlink {target}", verbose)
                         os.unlink(target)
-                    #print(f"Copy {entry} {target.is_symlink()} to {target}")
+                    verbose_msg(f"Copy {entry} {target.is_symlink()} to {target}", verbose)
                     shutil.copy2(entry, target, follow_symlinks=False)
                 except IOError as e:
                     print(f"Error: While copying {entry} to {target}:\n {e}")
@@ -105,7 +108,7 @@ def _reportError(exception: Exception, message: str, path):
 
 def do_hard_copy_file(dst: Path, src: Path, verbose: bool) -> bool:
     try:
-        print(f"Creating hard link: {dst} -> {src}")
+        verbose_msg(f"Creating hard link: {dst} -> {src}", verbose)
         try:
             dst.unlink(missing_ok=True)
         except TypeError:  # missing_ok may not exist in older pythons
@@ -130,7 +133,7 @@ def do_copy_file(dst: Path, src: Path, verbose: bool) -> bool:
         # This is done because some people copy files from sources that have read only permission
         # which then can break the build
 
-        print(f"Copying file: {dst} -> {src}")
+        verbose_msg(f"Copying file: {dst} -> {src}", verbose)
         shutil.copy(src, dst)
         # copy source permissions and add owner write permission
         mode = src.stat()
@@ -148,7 +151,7 @@ def make_sym_link(dst: Path, src: Path, verbose: bool) -> bool:
     '''
     try:# get the link that the source points to
         linkto = os.readlink(src)  # src.readlink() need py 3.9
-        print(f"Creating Symlink: {dst} -> {linkto}")
+        verbose_msg(f"Creating Symlink: {dst} -> {linkto}", verbose)
         # set the link for the new target
         dst.symlink_to(linkto)
     except (OSError, IOError) as ex:
@@ -159,8 +162,7 @@ def make_sym_link(dst: Path, src: Path, verbose: bool) -> bool:
 
 
 def copy_dir(dst: Path, src: Path, verbose: bool, only_copy: bool):
-    if verbose:
-        print(f"Copying directory {src} to {dst}")
+    verbose_msg(f"Copying directory {src} to {dst}", verbose)
 
     try:
         copytree(src, dst, verbose)
@@ -176,7 +178,7 @@ def copy(dst_list: List[Path], src_list: List[Path], verbose: bool, only_copy: b
         if not src.is_symlink() and not src.exists():
             print(f"Error: {src} does not exist!")
             sys.exit(1)
-        #print(f"{src} {src.is_file()} {src.is_symlink()}")
+        verbose_msg(f"{src} file={src.is_file()} symlink={src.is_symlink()}", verbose)
         # symlinks are always remade
         # we don't do the copy dir symlink for the build as this
         # causes a lot of more issues than it solves

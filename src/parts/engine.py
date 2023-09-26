@@ -460,6 +460,7 @@ class parts_addon:
         api.output.trace_msg("parts_cache_option", "parts_cache =", SCons.Script.GetOption('parts_cache'))
         api.output.trace_msg("scm_jobs_option", "scm_jobs =", SCons.Script.GetOption('scm_jobs'))
         api.output.trace_msg("update_option", "update =", SCons.Script.GetOption('update'))
+        api.output.trace_msg("verbose_option", "verbose =", SCons.Script.GetOption('verbose'))
 
     # def _setup_sdk(self):
         # return
