@@ -1,0 +1,7 @@
+from parts import *
+
+Part(
+    alias = 'compbar',
+    parts_file = 'compbar.parts',
+    vcs_type = VcsGit(repository = 'git-compbar')
+)

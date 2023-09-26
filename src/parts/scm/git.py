@@ -112,8 +112,12 @@ class git(base):
                 self._full_path = f"git@{self.Server}:{self.Repository}.git"
             elif protocol == "https":
                 self._full_path = f"https://{self.Server}/{self.Repository}.git"
+            elif protocol == "file":
+                self._full_path = f"file:///{self.Server}"
+            elif protocol == "local":
+                self._full_path = f"{self.Server}"
             else:
-                api.output.error_msgf("Unknown git protocol provided. Must be 'https' or 'git'")
+                api.output.error_msgf("Unknown git protocol provided. Must be 'https', 'git', 'file' or 'local'")
         return self._full_path
 
     @property
@@ -152,6 +156,24 @@ class git(base):
         ret = [self._env.Action(cmd, strval)]
 
         return ret
+    
+    def get_remote_head(self):
+    
+        clone_path = self.FullPath
+    
+        ret, data = base.command_output(f'"{git.gitpath}" ls-remote --symref {clone_path} HEAD')
+        if not ret:
+            # Parse return value of the git command
+            # the first line should look something like: 
+            # ref: refs/heads/main	HEAD
+            
+            first_line = data.split("\n")[0]
+            ref = first_line.split("\t")[0]
+            default_branch = ref.split("/")[2]
+        else:
+            default_branch = None
+    
+        return default_branch
 
     def UpdateAction(self, out_dir):
         '''
@@ -204,10 +226,16 @@ class git(base):
         # need to get correct value as the "checkout" takes any value
         if self.__revision:
             branch = self.__revision
-        elif self.__branch is None:
-            branch = self._env["GIT_DEFAULT_BRANCH"]
+        elif not self.__branch:
+            if not self._env["GIT_DEFAULT_BRANCH"]:
+                branch = self.get_remote_head()
+            else: 
+                branch = self._env["GIT_DEFAULT_BRANCH"]
         else:
             branch = self.__branch
+            
+        api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"], " Requested branch: {0}", branch)
+        
         cmd1 = f'{cd_dir} "{git.gitpath}" checkout ${{GIT_CHECKOUT_ARGS}} {branch}'
         strval1 = f'{cd_dir} git checkout ${{GIT_CHECKOUT_ARGS}} {branch}'
         checkout_action = [
@@ -272,6 +300,9 @@ class git(base):
             if self.__revision or on_tag:
                 prefix = ''
             # hard reset_action
+            
+            api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"], " Requested branch: {0}{1}", prefix, branch)
+            
             cmd1 = f'{cd_dir} "{git.gitpath}" reset ${{GIT_RESET_ARGS}} --hard {prefix}{branch}'
             strval1 = f'{cd_dir} git reset ${{GIT_RESET_ARGS}} --hard {prefix}{branch}'
             hard_reset_action = [
@@ -344,10 +375,18 @@ class git(base):
             branch = f'-b {self.__branch}'
         elif self.__revision:
             branch = ''
+        elif self._env["GIT_DEFAULT_BRANCH"]:
+            branch = f'-b {self._env["GIT_DEFAULT_BRANCH"]}'
         else:
             # Default or revision case
             # as only tags and branch can be cloned and checked out in one command
-            branch = f'-b {self._env["GIT_DEFAULT_BRANCH"]}'
+            remote_head = self.get_remote_head()
+            if remote_head:
+                branch = f'-b {remote_head}'
+            else:
+                branch = ''
+
+        api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"], " Requested branch: {0}", branch)
 
         strval = f'git clone ${{GIT_CLONE_ARGS}} --progress {branch} {clone_path} "{git_out_path}"'
         cmd = f'"{git.gitpath}" clone ${{GIT_CLONE_ARGS}} --progress {branch} {clone_path} "{git_out_path}"'
@@ -779,9 +818,9 @@ api.register.add_variable('SCM_GIT_CACHE_DIR', '$SCM_CACHE_ROOT_DIR/git', '')
 api.register.add_variable('GIT_SERVER', '', '')
 api.register.add_variable('SCM_GIT_DIR', '$VCS_GIT_DIR', '')
 api.register.add_variable('VCS_GIT_DIR', '${CHECK_OUT_ROOT}/${PART_ALIAS}', '')
-api.register.add_variable('GIT_DEFAULT_BRANCH', 'master', '')
+api.register.add_variable('GIT_DEFAULT_BRANCH', '', '')
 api.register.add_bool_variable('GIT_IGNORE_UNTRACKED', False, 'Controls if we should care about untracked files when updating')
-api.register.add_enum_variable('GIT_PROTOCOL', 'https', '', ['https', 'git'])
+api.register.add_enum_variable('GIT_PROTOCOL', 'https', '', ['https', 'git', 'file', 'local'])
 
 # for external part pulls
 
