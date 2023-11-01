@@ -52,7 +52,7 @@ def copytree(src: Path, dst: Path, verbose: bool):
         # Make sure the destination directory exists
         try:
             if not dst_dir.is_dir():
-                verbose_msg(f"making dir {dst_dir}")
+                verbose_msg(f"making dir {dst_dir}", verbose)
                 os.makedirs(dst_dir)
         except OSError as error:
             if error.errno == errno.EEXIST:

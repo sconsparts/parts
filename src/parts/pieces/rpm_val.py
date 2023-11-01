@@ -53,6 +53,7 @@ headers = [
     dict(key='BuildRequires', extra_keys=('X_RPM_BUILDREQUIRES',), value_mapper=rpm_list_mapper, value='{key}: {value}\n',),
     dict(key='Provides', extra_keys=('X_RPM_PROVIDES',), value_mapper=rpm_list_mapper, value='{key}: {value}\n',),
     dict(key='Conflicts', extra_keys=('X_RPM_CONFLICTS',), value='{key}: {value}\n',),
+    dict(key='Obsoletes', extra_keys=('X_RPM_OBSOLETES',), value='{key}: {value}\n',),
     dict(key='Epoch', extra_keys=('X_RPM_EPOCH',), value='{key}: {value}\n',),
     dict(key='AutoReqProv', extra_keys=('X_RPM_AUTOREQPROV',), value='{key}: {value}\n',),
     dict(key='AutoReq', extra_keys=('X_RPM_AUTOREQ',), value='{key}: {value}\n',),
