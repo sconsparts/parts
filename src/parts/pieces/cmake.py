@@ -1,27 +1,27 @@
 # an enhanced Command function
 # that also accepts target scanners
 
-
+from typing import List, Dict, Any, Optional, Union
 import parts.api as api
-import parts.node_helpers as node_helpers
 import SCons.Builder
 import SCons.Scanner.Prog
 import parts.core.scanners as scanners
-# This is what we want to be setup in parts
+# This is for type checking
+from SCons.Node.FS import Dir
 from SCons.Script.SConscript import SConsEnvironment
 
 
-def CMake(env, destdir=None, cmakedir=None, auto_scanner={}, ignore=[], top_level=True, hide_c_flags=False, **kw):
+def CMake(env:SConsEnvironment, destdir:Optional[str]=None, cmakedir:Union[str,Dir]=None, auto_scanner={}, ignore:List[str]=[], top_level:bool=True, hide_c_flags:bool=False, **kw):
     '''
-        cmakedir - directory containing cmakelis.txt in parent repo
+        cmakedir - directory containing cmakelist.txt in parent repo
     '''
 
     env = env.Clone(**kw)
-    build_dir = env.Dir("$BUILD_DIR/build")
+    build_dir : Dir = env.Dir("$BUILD_DIR/build")
     # The sandbox for the build install
     if destdir:
         env["CMAKE_DESTDIR"] = env.Dir(destdir).abspath
-    cmake_install_dir = env.Dir("$CMAKE_DESTDIR")
+    cmake_install_dir : Dir = env.Dir("$CMAKE_DESTDIR")
     env.SetDefault(CMAKE='cmake')
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$$$$$$$ORIGIN")}'
 

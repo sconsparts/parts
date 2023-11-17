@@ -11,6 +11,7 @@
         "CCFLAGS",
         "CFLAGS",
         "chdir",
+        "cmakedir",
         "cmds",
         "CPPDEFFLAGS",
         "CPPFLAGS",
