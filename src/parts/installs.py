@@ -25,7 +25,7 @@ g_installargs = {}
 
 def SetDefaultInstallArguments(category, **kw):
     '''
-    Sets up flags that will automatically be added to a given catgory of Install
+    Sets up flags that will automatically be added to a given category of Install
     This is more of hack, then a proper solution
     '''
     try:
@@ -104,8 +104,12 @@ def ProcessInstall(env, target, sources, sub_dir, create_sdk, sdk_dir='', no_pkg
                               create_sdk=create_sdk
                               )
         elif target == pkg_config:
-            ret = env.SdkItem('$SDK_PKG_CONFIG', [sources], sub_dir, '', [(exportitem.EXPORT_TYPES.PATH, 'PKG_CONFIG_PATH')],
-                              create_sdk=create_sdk)
+            ret = env.SdkPkgConfig([sources], 
+                          from_prefix=kw.get('from_prefix', None), 
+                          make_uninstall=kw.get('make_uninstall', True),
+                          sub_dir=sub_dir,
+                          create_sdk=create_sdk
+                          )
         else:
             ret = env.SdkItem(dest_sdk, [sources], sub_dir, '', [],
                               create_sdk=create_sdk,

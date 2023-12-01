@@ -225,10 +225,21 @@ def SdkConfig(env, source, sub_dir='', create_sdk=True):
     return ret
 
 
-def SdkPkgConfig(env, source, sub_dir='', create_sdk=True):
+def SdkPkgConfig(env, source, sub_dir='', from_prefix=None, make_uninstall=True, create_sdk=True):
 
+    internal_nodes=[]
+    # for any pc files we want to general an uninstalled version
+    if create_sdk == True and make_uninstall == True:
+        # filter out any uninstalled pc files as these should be generated.
+        source = [src for src in source if not str(src).endswith('-uninstalled.pc')]
+        if not from_prefix:
+            from_prefix = '$PACKAGE_ROOT'
+        internal_nodes = env.PkgConfigUninstall(f'$SDK_PKG_CONFIG/{sub_dir}', source, from_prefix, '${SDK_ROOT}')
     ret = SdkItem(env, '$SDK_PKG_CONFIG', source, sub_dir, '', [(Xp.EXPORT_TYPES.PATH, 'PKG_CONFIG_PATH')],
                   create_sdk=create_sdk)
+    # want the sdk outputs to be dependent on the uninstalled files being generated first to reduce build race issues
+    env.Depends(ret, internal_nodes)
+    # don't return the internal nodes as they are not something we want to export
     return ret
 
 def SdkCMakeConfig(env, source, sub_dir='', create_sdk=True):

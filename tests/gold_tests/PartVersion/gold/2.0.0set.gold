@@ -4,5 +4,5 @@ scons: done reading SConscript files.
 Message from Part "a": Version: 2.0.0
 ``
 Parts: Loaded 1 Parts
-{}
+``
 scons: done building targets.

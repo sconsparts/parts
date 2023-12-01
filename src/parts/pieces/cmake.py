@@ -11,17 +11,42 @@ from SCons.Node.FS import Dir
 from SCons.Script.SConscript import SConsEnvironment
 
 
-def CMake(env:SConsEnvironment, destdir:Optional[str]=None, cmakedir:Union[str,Dir]=None, auto_scanner={}, ignore:List[str]=[], top_level:bool=True, hide_c_flags:bool=False, **kw):
+def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,Dir]=None, auto_scanner={}, ignore:List[str]=[], top_level:bool=True, hide_c_flags:bool=False, **kw):
     '''
-        cmakedir - directory containing cmakelist.txt in parent repo
+        prefix - assumed install default location
+        cmake_dir - directory containing cmakelist.txt in parent repo
+        auto_scanner - scanner override to use finding finial output files from cmake
+        ignore - list of files to ignore when defining the source files
+        top_level - if true only track files in the top level directory ( can help with speed at cost if correctness )
+        hide_c_flags - if true hide the CFLAGS from the cmake command line
     '''
-
+    env_org = env
     env = env.Clone(**kw)
     build_dir : Dir = env.Dir("$BUILD_DIR/build")
+    
     # The sandbox for the build install
-    if destdir:
-        env["CMAKE_DESTDIR"] = env.Dir(destdir).abspath
-    cmake_install_dir : Dir = env.Dir("$CMAKE_DESTDIR")
+    # we have three variables to help with this
+    #
+    # CMAKE_DESTDIR - the location under the build directory to install to
+    # CMAKE_CONFIGURE_PREFIX - the location to install to based on default $PACKAGE_ROOT
+    # CMAKE_INSTALL_DESTDIR - the location under the build directory to install to with "assumed" package root
+    # CMAKE_DESTDIR_FLAG - The flags we pass to the install command to tell it where to install to
+    if prefix:
+        # if a prefix is provided (default) we expect to do a DESTDIR install
+        env.SetDefault(CMAKE_CONFIGURE_PREFIX=env.Dir(prefix).abspath) # use Dir as this remove the '#' from the path    
+        env.SetDefault(CMAKE_INSTALL_DESTDIR="${CMAKE_DESTDIR}${CMAKE_CONFIGURE_PREFIX}")
+        env.SetDefault(CMAKE_DESTDIR_FLAG="DESTDIR=${CMAKE_DESTDIR}")
+        
+    else:
+        # if it is not provided we have a messed up automake build and we will want to install in the
+        # default build location 
+        env.SetDefault(CMAKE_CONFIGURE_PREFIX="${CMAKE_DESTDIR}") # use Dir as this remove the '#' from the path
+        env.SetDefault(CMAKE_INSTALL_DESTDIR="${CMAKE_DESTDIR}") 
+        env.SetDefault(CMAKE_DESTDIR_FLAG="")
+
+    cmake_scan_dir=env.subst("$CMAKE_INSTALL_DESTDIR")
+    env_org.SetDefault(CMAKE_INSTALL_DESTDIR=cmake_scan_dir)
+    
     env.SetDefault(CMAKE='cmake')
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$$$$$$$ORIGIN")}'
 
@@ -31,8 +56,7 @@ def CMake(env:SConsEnvironment, destdir:Optional[str]=None, cmakedir:Union[str,D
         cflags=''
 
     env.SetDefault(_CMAKE_ARGS='\
-        -DCMAKE_INSTALL_PREFIX=$CMAKE_DESTDIR '
-        '${define_if("$DESTDIR_PATH","-DCMAKE_PREFIX_PATH=\\"")}${MAKEPATH("$DESTDIR_PATH",";")}${define_if("$DESTDIR_PATH","\\"")} '
+        -DCMAKE_INSTALL_PREFIX=$CMAKE_CONFIGURE_PREFIX '
         '-DCMAKE_INSTALL_LIBDIR=lib '
         '-DCMAKE_INSTALL_BINDIR=bin '
         '-DCMAKE_BUILD_TYPE=Release '
@@ -43,9 +67,11 @@ def CMake(env:SConsEnvironment, destdir:Optional[str]=None, cmakedir:Union[str,D
         '-DCMAKE_C_COMPILER=$CC '
         '$CMAKE_ARGS'
                    )
-
-    if cmakedir:
-        cmake_file = "${CHECK_OUT_DIR}/" +  str(cmakedir) + "/CMakeLists.txt"
+    
+    if 'cmakedir' in kw:
+        cmake_dir = kw['cmakedir'] # for backwards compatibility
+    if cmake_dir:
+        cmake_file = "${CHECK_OUT_DIR}/" +  str(cmake_dir) + "/CMakeLists.txt"
     else:
         cmake_file = "${CHECK_OUT_DIR}/CMakeLists.txt"
 
@@ -91,16 +117,16 @@ def CMake(env:SConsEnvironment, destdir:Optional[str]=None, cmakedir:Union[str,D
 
     ret = env.CCommand(
         [
-            cmake_install_dir,
+            cmake_scan_dir,
         ],
         out + src_files,
         [
-            "cd ${SOURCE.dir} ; $CMAKE --build . --config Release --target install -- $_CMAKE_MAKE_ARGS"
+            "cd ${SOURCE.dir} ; $CMAKE --build . --config Release --target install -- $CMAKE_DESTDIR_FLAG $_CMAKE_MAKE_ARGS"
         ],
         source_scanner=scanners.NullScanner,
         target_factory=env.Dir,
         target_scanner=env.ScanDirectory(
-            cmake_install_dir,
+            cmake_scan_dir,
             # Program scanner for getting libs
             #extra_scanner=SCons.Scanner.Prog.ProgramScanner(),
             **auto_scanner
@@ -110,7 +136,7 @@ def CMake(env:SConsEnvironment, destdir:Optional[str]=None, cmakedir:Union[str,D
     )
 
     # export the install location
-    env.ExportItem("DESTDIR_PATH", env.Dir("$CMAKE_DESTDIR").abspath)
+    env.ExportItem("DESTDIR_PATH", env.Dir(cmake_scan_dir).abspath)
     return ret
 
 

@@ -290,6 +290,10 @@ class FileSymbolicLink(SCons.Node.FS.File):
         if __debug__:
             logInstanceCreation(self, 'parts.overrides.symlinks.FileSymbolicLink')
         SCons.Node.FS.File.__init__(self, name, directory, fs)
+        # 10 is just a number that is larger than expected values 
+        # to be used in the map this value is used for
+        self._func_get_contents = 10
+
 
     @property
     def linkto(self) -> Optional[str]:
@@ -335,8 +339,28 @@ class FileSymbolicLink(SCons.Node.FS.File):
     def get_contents(self):
         """
         Returns C{FileSymbolicLink.linkto} property value.
+
+        This is the value we want for when we make csig values
         """
-        return self.linkto.encode("utf-8") if self.linkto else b''
+        if self._func_get_contents == 10: #
+            return self.linkto.encode("utf-8") if self.linkto else b''
+        return super().get_contents()
+    
+    def get_text_contents(self) -> str:
+        """Return the contents of the file in text form.
+
+        This override exists as getting "text" content we want to get 
+        the value of the file it points to, vs content of the link
+        SCons has flawed logic in that it does not handle symlinks as 
+        first class objects. This mean get_context and get_text_context
+        only really differ in use encoding in the view SCons has
+        """
+
+        # for a moment we act like a file
+        self._func_get_contents = 3
+        ret = super().get_text_contents()
+        self._func_get_contents = 10
+        return ret
 
     def srcnode(self):
         """

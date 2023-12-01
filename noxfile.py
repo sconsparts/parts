@@ -12,4 +12,4 @@ def autests(session):
     '''Run AuTests'''
     session.install('autest')
     session.install("-e",".")
-    session.run("autest","-D","tests/gold_tests")
+    session.run("autest","-D","tests/gold_tests","--sandbox", f"_sandbox/{session.python}")

@@ -12,7 +12,7 @@ import SCons.Defaults
 import parts.core.scanners as scanners
 
 
-def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="configure", prefix=None, configure_args=[],
+def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="configure", prefix:str="$PACKAGE_ROOT", configure_args=[],
              auto_configure_args=True, configure_post_actions=None, targets="all", install_targets="install", top_level=True,
              copy_src=True, copy_top=False, auto_scanner={}, copy_scm=True, skip_check=False, check_targets='check', **kw):
     '''
@@ -24,7 +24,8 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                     special arguments to pass, or don't want any arguments passed.
     configure - The default configure program to call. Some configure like projects (-openssl-)
                 have a slightly different script (Configure) that should called instead
-    prefix    - If defined will use custom prefix and add DESTDIR to the make install
+    prefix - If defined will use custom prefix and add DESTDIR to the make install, 
+                if None it will use the default $AUTO_MAKE_DESTDIR and not add DESTDIR to the make install
     configure_args - are extra args we need to pass to correctly configure the build
     auto_configure_args - extra value to set various flags with what Parts is using. Certain automake like
                 projects don't allow setting flags at the configure level. Defaults to True.
@@ -58,29 +59,33 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                 This takes extra time and space but may be needed if the automake tool query git for information which
                 many project seem to do.
     '''
-
+    env_org=env
     env = env.Clone(**kw)
     # set up the install location for the auto make build
     # and custom prefix for build
-    if prefix:
-        # we have a custom prefix set. this mean we need to
-        # add DESTDIR to the automake install command
-        # add DESTDIR to the based on the value of AUTO_MAKE_DESTDIR
-        # as this will be the value we need to use as the base
-        env.PrependUnique(AUTOMAKE_INSTALL_ARGS=["DESTDIR=$AUTO_MAKE_DESTDIR"])
-        # update the CONFIGURE_PREFIX to use the custom prefix value
-        # this value need to be a absolute path.. try to do the right thing
-        env["CONFIGURE_PREFIX"] = env.Dir(prefix).abspath
-        # the new location that we will find information is now in the form of
-        # the AUTO_MAKE_DESTDIR plus the prefix value.
-        env["AUTO_MAKE_INSTALL_DESTDIR"] = "$AUTO_MAKE_DESTDIR$CONFIGURE_PREFIX"
 
+    # AUTO_MAKE_DESTDIR - the location under the build directory to install to
+    # AUTO_MAKE_CONFIGURE_PREFIX - the location to install to based on default $PACKAGE_ROOT
+    # AUTO_MAKE_INSTALL_DESTDIR - the location under the build directory to install to with "assumed" package root
+    # AUTO_MAKE_DESTDIR_FLAG - The flags we pass to the install command to tell it where to install to
+    if prefix:
+        # if a prefix is provided (default) we expect to do a DESTDIR install
+        env.SetDefault(AUTO_MAKE_CONFIGURE_PREFIX=env.Dir(prefix).abspath) # use Dir as this remove the '#' from the path    
+        env.SetDefault(AUTO_MAKE_INSTALL_DESTDIR="${AUTO_MAKE_DESTDIR}${AUTO_MAKE_CONFIGURE_PREFIX}")
+        env.SetDefault(AUTO_MAKE_DESTDIR_FLAG="DESTDIR=${AUTO_MAKE_DESTDIR}")
     else:
-        # use default logic. ideally this case does not need the use of
-        # DESTDIR which in generally need when the automake build uses configure
-        # paths to hard code at compile time locations on disk.
-        env["CONFIGURE_PREFIX"] = '$AUTO_MAKE_DESTDIR'
-        env["AUTO_MAKE_INSTALL_DESTDIR"] = '$AUTO_MAKE_DESTDIR'
+        # if it is not provided we have a messed up automake build and we will want to install in the
+        # default build location 
+        env.SetDefault(AUTO_MAKE_CONFIGURE_PREFIX=env.Dir("${AUTO_MAKE_DESTDIR}").abspath) # use Dir as this remove the '#' from the path
+        env.SetDefault(AUTO_MAKE_INSTALL_DESTDIR="${AUTO_MAKE_DESTDIR}")
+        env.SetDefault(AUTO_MAKE_DESTDIR_FLAG="")
+    
+    auto_scan_dir=env.subst("$AUTO_MAKE_INSTALL_DESTDIR")
+    env_org.SetDefault(AUTO_MAKE_INSTALL_DESTDIR=auto_scan_dir)
+    env['CONFIGURE_PREFIX'] = "$AUTO_MAKE_CONFIGURE_PREFIX" # backward compatibility
+    
+
+    env.PrependUnique(AUTO_MAKE_INSTALL_ARGS=[env["AUTO_MAKE_DESTDIR_FLAG"]])
 
     # set up some variable for various paths we might need
     # generation of some paths
@@ -287,18 +292,18 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
 
     ret = env.CCommand(
         [
-            "$AUTO_MAKE_INSTALL_DESTDIR",
+            auto_scan_dir, 
         ],
         build_files+sources,
         # the -rpath-link is to get the correct paths for the binaries to link with the rpath usage of the makefile
         [
             f'cd {build_dir.path} ; make $_AUTOMAKE_BUILD_ARGS $AUTOMAKE_BUILD_ARGS {targets} $(-j{jobs}$)',
-            f'cd {build_dir.path} ; make {install_targets} $AUTOMAKE_INSTALL_ARGS'
+            f'cd {build_dir.path} ; make {install_targets} $AUTO_MAKE_INSTALL_ARGS'
         ],
         source_scanner=scanners.NullScanner,
         target_factory=env.Dir,
         target_scanner=env.ScanDirectory(
-            "$AUTO_MAKE_INSTALL_DESTDIR",
+            auto_scan_dir,
             # Program scanner for getting libs
             #extra_scanner=SCons.Scanner.Prog.ProgramScanner(),
             **auto_scanner
@@ -337,7 +342,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         api.output.verbose_msg(["automake"], "skipping unit_test generation for '{name}'".format(name=env.PartName()))
 
     # export the install location
-    env.ExportItem("DESTDIR_PATH", env.Dir("$AUTO_MAKE_DESTDIR").abspath)
+    env.ExportItem("DESTDIR_PATH", env.Dir(auto_scan_dir).abspath)
     return ret
 
 

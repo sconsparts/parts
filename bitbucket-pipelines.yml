@@ -20,6 +20,8 @@ pipelines:
           - pip
           - requirements          
         script:
+          - git config --global user.email "CI@fake.com"
+          - git config --global user.name "CI"
           - apt update
           - apt install -y patchelf rpm
           - pip install pipenv
@@ -28,20 +30,25 @@ pipelines:
           - autest --version
           - autest -D ./tests/gold_tests
           - pytest -v tests/unit --junitxml=test-reports/report.xml || true
+        artifacts:
+          paths:
+            - _sandbox/**
   pull-requests:
     "**":
       - step:
           name: Pr-Testing
           caches:
-          - pip
-          - requirements          
-        script:
-          - apt update
-          - apt install -y patchelf rpm
-          - pip install pipenv
-          - if [ ! -f reqgen/requirements.txt ]; then pipenv lock --dev ; pipenv requirements --dev > reqgen/requirements.txt; fi
-          - pip install -r reqgen/requirements.txt
-          - ls -al
-          - autest -D ./tests/gold_tests
-          - pytest -v tests/unit --junitxml=test-reports/report.xml || true
+            - pip
+            - requirements          
+          script:
+            - git config --global user.email "CI@fake.com"
+            - git config --global user.name "CI"
+            - apt update
+            - apt install -y patchelf rpm
+            - pip install pipenv
+            - if [ ! -f reqgen/requirements.txt ]; then pipenv lock --dev ; pipenv requirements --dev > reqgen/requirements.txt; fi
+            - pip install -r reqgen/requirements.txt
+            - ls -al
+            - autest -D ./tests/gold_tests
+            - pytest -v tests/unit --junitxml=test-reports/report.xml || true
           

@@ -143,8 +143,9 @@ def _DynamicDirScanner(node, env, path, args):
         if node.isBuilt or node.isVisited:
             # we can scan the disk to get the information
             # as this state is correct and up to date
-            snode = env.Pattern(src_dir=node).files()
-            env.SideEffect(snode, node)
+            snodes = env.Pattern(src_dir=node).files()
+            env.Depends(env["DYN_EXPORT_FILE"],snodes)
+            #env.SideEffect(snode, node)
 
         # merging in custom logic
         overides = env.get("SCANDIR_OVERRIDES", scan_overrides)
@@ -264,14 +265,31 @@ lib_scan = dict(
 pkgconfig_scan = dict(
     InstallPkgConfig=dict(
         source=lambda node, env, default=None: [
-            env.Pattern(src_dir=node.Dir("lib/pkgconfig"), includes=["*.pc"]),
+            env.Pattern(src_dir=node.Dir("lib/pkgconfig"), includes=["*.pc"], excludes=['*-uninstalled.pc',]),
             env.Pattern(src_dir=node.Dir(
-                "lib32/pkgconfig"), includes=["*.pc"]),
+                "lib32/pkgconfig"), includes=["*.pc"], excludes=['*-uninstalled.pc',]),
             env.Pattern(src_dir=node.Dir(
-                "lib64/pkgconfig"), includes=["*.pc"]),
+                "lib64/pkgconfig"), includes=["*.pc"], excludes=['*-uninstalled.pc',]),
         ],
+        from_prefix="${PACKAGE_ROOT}",
+    ),
+    # this makes the uninstalled version of the pkg-config files
+    # given nothing seen generates this as part of known build system this without a guard.. 
+    # might want to add one all the same
+    PkgConfigUninstall = dict(
+        target=lambda node, env, default=None: node.Dir("lib/pkgconfig"),
+        source=lambda node, env, default=None: [
+            env.Pattern(src_dir=node.Dir("lib/pkgconfig"), includes=["*.pc"], excludes=['*-uninstalled.pc',]),
+            env.Pattern(src_dir=node.Dir(
+                "lib32/pkgconfig"), includes=["*.pc"], excludes=['*-uninstalled.pc',]),
+            env.Pattern(src_dir=node.Dir(
+                "lib64/pkgconfig"), includes=["*.pc"], excludes=['*-uninstalled.pc',]),
+        ],
+        to_prefix=lambda node, env, default=None: node.abspath ,
+        from_prefix="${PACKAGE_ROOT}",
     )
 )
+
 
 cmakeconfig_scan = dict(
     InstallCMakeConfig=dict(

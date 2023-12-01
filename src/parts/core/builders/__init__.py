@@ -5,3 +5,4 @@ from . import dyn_exports
 from . import imports
 from . import dyn_imports
 from . import ccopy
+from . import pkgconfig

@@ -85,8 +85,8 @@ def load_module(pathlst, name, type):
     made more generic so Parts can reuse the logic
     instead of using the C&P anti-patttern.
     """
-    #modname = '<{type}>{name}'.format(type=type, name=name)
-    modname = f'parts.{type}.{name}'    
+    # modname = '<{type}>{name}'.format(type=type, name=name)
+    modname = f'parts.{type}.{name}'
     try:
         return sys.modules[modname]
     except KeyError:
@@ -100,12 +100,13 @@ def load_module(pathlst, name, type):
             api.output.verbose_msg("load_module", "Module was loaded from {path}".format(path=path1))
         except ImportError:
             api.output.verbose_msg("load_module", "Failed to load module!")
-            api.output.verbose_msg(["load_module_failure", "load_module"],
-                                   "Stack:\n{0}".format(traceback.format_exc()))
+            api.output.verbose_msg(["load_module_failure", "load_module"], "Stack:\n{0}".format(traceback.format_exc()))
             raise SCons.Errors.UserError("Module named '{name}' failed to load!".format(name=name))
-        except Exception as e: # any other error is a bug
+        except Exception as e:  # any other error is a bug
+            api.output.verbose_msg("load_module", "Failed to load module!")
+            api.output.verbose_msg(["load_module_failure", "load_module"], "Stack:\n{0}".format(traceback.format_exc()))
             api.output.error_msg(f"Failed to load {name}")
-            
+
         finally:
             sys.path = oldPath
             if file:

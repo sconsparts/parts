@@ -184,8 +184,17 @@ def get_content(obj):
 
 
 def matches(value, includes, excludes=None) -> bool:
-    '''Function help with tell if a value (as a string) matched on of the include
-    patterns and doesn't match on of the exclude patterns.
+    '''Function to determine if a value (as a string) matches any of the include patterns
+    and does not match any of the exclude patterns.
+
+    Args:
+        value (str): The value to be checked.
+        includes (list): A list of patterns to include.
+        excludes (list, optional): A list of patterns to exclude. Defaults to None.
+
+    Returns:
+        bool: True if the value matches any of the include patterns and does not match
+        any of the exclude patterns, False otherwise.
     '''
     match = False
     if not includes:
