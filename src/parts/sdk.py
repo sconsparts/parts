@@ -229,6 +229,7 @@ def SdkPkgConfig(env, source, sub_dir='', from_prefix=None, make_uninstall=True,
 
     internal_nodes=[]
     # for any pc files we want to general an uninstalled version
+    source = common.make_list(source)
     if create_sdk == True and make_uninstall == True:
         # filter out any uninstalled pc files as these should be generated.
         source = [src for src in source if not str(src).endswith('-uninstalled.pc')]
