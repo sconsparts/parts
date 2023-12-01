@@ -24,7 +24,13 @@ def PkgConfigUninstallFunc(env, target, source, from_prefix:str, to_prefix:str, 
     """
     
     ret = []
-    subst_dict = {env.Dir(from_prefix).abspath:env.Dir(to_prefix).abspath}
+    subst_dict = {
+        # for compatibility with the pkg-config tool with system pkg-config files
+        "lib32":'lib',
+        "lib64":'lib',
+        # we need to replace the prefix with the new prefix
+        env.Dir(from_prefix).abspath:env.Dir(to_prefix).abspath
+        }
     # convert the target to a node
     target = env.arg2nodes(target, env.fs.Dir)
     if len(target) != 1:

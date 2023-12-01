@@ -1,5 +1,4 @@
 {
-    "python.pythonPath": "C:\\Users\\jkenny\\.virtualenvs\\parts-7HuQy3JO\\Scripts\\python.exe",
     "cSpell.words": [
         "ABSCPPINCFLAGS",
         "ABSLIBDIRFLAGS",
@@ -72,7 +71,6 @@
         "tests/unit"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.nosetestsEnabled": false,
     "python.testing.pytestEnabled": true,
     "esbonio.sphinx.confDir": "${workspaceFolder}\\doc\\source"
 }
