@@ -53,7 +53,8 @@ source_suffix = {
 # a list of builtin themes.
 #
 
-html_theme = 'karma_sphinx_theme'
+#html_theme = 'karma_sphinx_theme'
+html_theme = 'cloud'
 
 
 # Add any paths that contain custom static files (such as style sheets) here,
