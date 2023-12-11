@@ -28,6 +28,8 @@ Release  0.18.0
         * **CMAKE_DESTDIR_FLAG** - The flags we pass to the install command to tell it where to install to. Defaults to ``DESTDIR=${CMAKE_INSTALL_DESTDIR}`` given we have a defined prefix.
 * The load module logic now reports some error cases better
 * Symlink handling of has been tweaked to better handling of getting context for signature vs builders that need the text context of the file it is linked to.
+* updated range for rhel7 based dev toolset version that can be found
+* clean up various sort() calls of certain builders.
 * Added some more tests.
 
 Notes
