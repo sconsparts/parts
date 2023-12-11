@@ -25,7 +25,7 @@ gxx.Register(
             ],
             opt_dirs=[
                 '/opt/'
-            ] + ['/opt/rh/devtoolset-{0}/root/usr/bin/'.format(i) for i in range(3, 12)
+            ] + ['/opt/rh/devtoolset-{0}/root/usr/bin/'.format(i) for i in range(3, 20)
                  ] + ['/opt/rh/gcc-toolset-{0}/root/usr/bin/'.format(i) for i in range(9, 20)],
             script=None,
             subst_vars={},
@@ -51,7 +51,7 @@ gxx.Register(
             ],
             opt_dirs=[
                 '/opt/'
-            ] + ['/opt/rh/devtoolset-{0}/root/usr/bin/'.format(i) for i in range(3, 12)
+            ] + ['/opt/rh/devtoolset-{0}/root/usr/bin/'.format(i) for i in range(3, 20)
                  ] + ['/opt/rh/gcc-toolset-{0}/root/usr/bin/'.format(i) for i in range(9, 20)],
             script=None,
             subst_vars={},

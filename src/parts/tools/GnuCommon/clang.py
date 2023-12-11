@@ -77,7 +77,7 @@ clang.Register(
             ],
             opt_dirs=[
                 '/opt/'
-            ] + ['/opt/rh/llvm-toolset-{0}/root/usr/bin/'.format(i) for i in range(5, 10)],
+            ] + ['/opt/rh/llvm-toolset-{0}.0/root/usr/bin/'.format(i) for i in range(5, 20)],
             script=None,
             subst_vars={},
             shell_vars={'PATH': '${CLANG.INSTALL_ROOT}'},
