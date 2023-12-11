@@ -140,11 +140,11 @@ def _DynamicDirScanner(node, env, path, args):
         # We can "trust" the state on disk should be good at this point
         node = env.arg2nodes(node, env.fs.Dir)[0]
 
-        if node.isBuilt or node.isVisited:
+        #if node.isBuilt or node.isVisited:
             # we can scan the disk to get the information
             # as this state is correct and up to date
-            snodes = env.Pattern(src_dir=node).files()
-            env.Depends(env["DYN_EXPORT_FILE"],snodes)
+            #snodes = env.Pattern(src_dir=node).files()
+            #env.Depends(env["DYN_EXPORT_FILE"],snodes)
             #env.SideEffect(snode, node)
 
         # merging in custom logic
@@ -217,10 +217,11 @@ def _DynamicDirScanner(node, env, path, args):
         env['allow_duplicates'] = v1
         env['_PARTS_DYN'] = v2
         del env['_DYNSCANNER_NODE']
+        scan_results.sort()
         api.output.verbose_msgf(["scanner.scandirectory", "scanner", "scanner-results"],
                                 "Scanning results {0}", [str(r) for r in results])
 
-        if scan_results:  # have to have some data, else this is probally bad
+        if scan_results:  # have to have some data, else this is probably bad
             cache[node.ID] = scan_results
 
     return scan_results

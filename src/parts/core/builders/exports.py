@@ -94,7 +94,7 @@ def target_scanner(node, env, path):
                 # print(f"scan->{v}")
                 nodes.update(v)
     ret = list(nodes)
-    ret.sort(key=lambda x: x.ID)
+    ret.sort()
     #print(f"-scan {node.ID}\n ret={ret}")
     api.output.verbose_msgf(["scanner.export.static", "scanner.export", "scanner", ],
                             f" Section={section.ID} {node.ID} ret count={len(ret)}")

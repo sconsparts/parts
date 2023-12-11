@@ -170,7 +170,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         if autoreconf:
             configure_cmds.append(
                 f'cd {build_dir.path} && {autoreconf} {autoreconf_args}'
-            ),
+            )
 
         # Apply the correct copy logic for the source
         if callable(copy_top):

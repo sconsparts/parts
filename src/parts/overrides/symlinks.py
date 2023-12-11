@@ -346,21 +346,21 @@ class FileSymbolicLink(SCons.Node.FS.File):
             return self.linkto.encode("utf-8") if self.linkto else b''
         return super().get_contents()
     
-    def get_text_contents(self) -> str:
-        """Return the contents of the file in text form.
+    # def get_text_contents(self) -> str:
+    #     """Return the contents of the file in text form.
 
-        This override exists as getting "text" content we want to get 
-        the value of the file it points to, vs content of the link
-        SCons has flawed logic in that it does not handle symlinks as 
-        first class objects. This mean get_context and get_text_context
-        only really differ in use encoding in the view SCons has
-        """
+    #     This override exists as getting "text" content we want to get 
+    #     the value of the file it points to, vs content of the link
+    #     SCons has flawed logic in that it does not handle symlinks as 
+    #     first class objects. This mean get_context and get_text_context
+    #     only really differ in use encoding in the view SCons has
+    #     """
 
-        # for a moment we act like a file
-        self._func_get_contents = 3
-        ret = super().get_text_contents()
-        self._func_get_contents = 10
-        return ret
+    #     # for a moment we act like a file
+    #     self._func_get_contents = 3
+    #     ret = super().get_text_contents()
+    #     self._func_get_contents = 10
+    #     return ret
 
     def srcnode(self):
         """

@@ -75,7 +75,7 @@ class Pattern:
                 for node in src_nodes:
                     fl.append(node)
             # to help with sig generations
-            fl.sort(key=lambda x: x.ID)
+            fl.sort()
             return fl
 
         return self.map[directory]

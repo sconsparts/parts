@@ -53,6 +53,7 @@ def PkgConfigUninstallFunc(env, target, source, from_prefix:str, to_prefix:str, 
             node = env.arg2nodes(node, env.fs.File)[0]
             fname = node.name[:-3] # this is the base name of the file
             ret += env.Substfile(target=target_node.File(fname+"-uninstalled.pc"), source=node, SUBST_DICT=subst_dict, **kw)
+    env.ExportItem("SDKPKGCONFIG", ret, False, True)
     return ret
 
 api.register.add_method(PkgConfigUninstallFunc, "PkgConfigUninstall")
