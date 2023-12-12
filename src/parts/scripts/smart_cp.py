@@ -210,8 +210,8 @@ def copy(dst_list: List[Path], src_list: List[Path], verbose: bool, only_copy: b
 def _split_args(arg_str:str)->List[str]:
     '''
     faster version than shlex. Ideally the only cases we will have are path with spaces in them
-    that are quoted with a "" or '' at the ends. While techincal string can be formed to break this
-    simple logic here, it is unlikly (I hope). But a case like "foo"bar.txt will break this.
+    that are quoted with a "" or '' at the ends. While technical string can be formed to break this
+    simple logic here, it is unlikely (I hope). But a case like "foo"bar.txt will break this.
     This logic here is way faster then shlex for large arguments cases of the -@ argument
     '''
     split = arg_str.split()
@@ -268,8 +268,8 @@ def main():
         cmd_file: Path = args.command_file
         arg_str = cmd_file.read_text()
 
-    parser.add_argument("--sources", required=True, type=Path, nargs="+", help="Path to enities to copy")
-    parser.add_argument("--targets", required=True, type=Path, nargs="+", help="Path with enities name to copy to")
+    parser.add_argument("--sources", required=True, type=Path, nargs="+", help="Path to entities to copy")
+    parser.add_argument("--targets", required=True, type=Path, nargs="+", help="Path with entities name to copy to")
     parser.add_argument("--copy-only", type=to_bool, default=False, help="Don't try to make a hard link, instead do a full copy.")
     parser.add_argument("--verbose", '-v', type=to_bool, default=False, help="Print extra information about copy")
 

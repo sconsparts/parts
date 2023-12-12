@@ -3,7 +3,7 @@
 import os
 import subprocess
 
-#import parts.glb as glb
+import parts.glb as glb
 import parts.core.builders.ccopy as ccopy
 import parts.api as api
 import parts.common as common
@@ -29,7 +29,7 @@ def rpath_emit(target, source, env):
 
 ccopy_action = SCons.Action.Action(  # [
     # meta_copy,
-    '${TEMPFILE("parts-smart-cp --sources $($CHANGED_SOURCES $) --targets $($CHANGED_TARGETS $) --copy-only=True --verbose=True")}',
+    '${TEMPFILE("parts-smart-cp --sources $($CHANGED_SOURCES $) --targets $($CHANGED_TARGETS $) --copy-only=True --verbose=$_CCOPY_VERBOSE_")}',
     # ],
     #cmdstr=f"parts-smart-cp --sources $CHANGED_SOURCES --targets $CHANGED_TARGETS --copy-only=$_COPY_ONLY_ --verbose=$_CCOPY_VERBOSE_",
     batch_key=ccopy.batch_key
@@ -64,6 +64,7 @@ def _is_binary(node):
 
 
 def set_rpath_func(target, source, env):
+    env['_CCOPY_VERBOSE_'] = 'True' if 'ccopy' in glb.rpter.verbose else 'True' if 'all' in glb.rpter.verbose else 'False'
     dynamic_actions = None
 
     rpath = common.make_list(
