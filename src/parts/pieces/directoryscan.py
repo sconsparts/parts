@@ -310,11 +310,11 @@ include_scan = dict(
     InstallInclude=dict(
         source=lambda node, env, default=None: [
             env.Pattern(src_dir=node.Dir("include"), includes=[
-                        "*.h", "*.H", "*.hxx", "*.hpp", "*.hh"]),
+                        "*.h", "*.H", "*.hxx", "*.hpp", "*.hh", "*.tcc", "*.ipp"]),
             env.Pattern(src_dir=node.Dir("include32"), includes=[
-                        "*.h", "*.H", "*.hxx", "*.hpp", "*.hh"]),
+                        "*.h", "*.H", "*.hxx", "*.hpp", "*.hh", "*.tcc", "*.ipp"]),
             env.Pattern(src_dir=node.Dir("include64"), includes=[
-                        "*.h", "*.H", "*.hxx", "*.hpp", "*.hh"]),
+                        "*.h", "*.H", "*.hxx", "*.hpp", "*.hh", "*.tcc", "*.ipp"]),
         ],
     )
 )
