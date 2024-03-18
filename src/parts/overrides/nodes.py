@@ -601,7 +601,7 @@ def is_up_to_date_dir(self):
                 return False
     else:
         # clear cached items...
-        # we tend to have an issue with implict ordering
+        # we tend to have an issue with implicit ordering
         # so easiest thing is to whack the state and rebuild
         # the cached values
         try:
@@ -644,7 +644,7 @@ def is_up_to_date_file(self):
     '''
     for some odd reason the update function can get called after the node is built (ie it is up-to-date)
     Scons has some logic in which this can return None, which will cause a scan function to not be correctly 
-    called, which will result in implict depends not being found that should have been found
+    called, which will result in implicit depends not being found that should have been found
     '''
     if self.isVisited:
         return True
@@ -733,7 +733,7 @@ def get_stored_info_dir(self):
     return sconsign_entry
 
 
-# do the overide
+# do the override
 SCons.Node.FS.Dir.get_stored_info = get_stored_info_dir
 
 
@@ -751,29 +751,32 @@ def has_stored_info_fs(self):
 SCons.Node.FS.Base.has_stored_info = has_stored_info_fs
 
 # add a isBuilt property as read only.
-# will be set via an overide to the built() function (ie set after SCons default logic is called)
+# will be set via an override to the built() function (ie set after SCons default logic is called)
 
 
 def _get_isBuilt(self):
     try:
-        return self.attributes._isBuilt
+        return self.attributes._isBuilt or (hasattr(self, 'released_target_info') and self.released_target_info == True)
     except AttributeError:
+        self.attributes._isBuilt = (hasattr(self, 'released_target_info') and self.released_target_info == True)
         return False
 
 
 def wrap_built(klass):
     _built = klass.built
 
-    def set_built(self, *lst, **kw):
+    def set_built(self, *lst, **kw) -> None:
+        if self.isBuilt:
+            return
         # call scons function
         # built does not return anything at the moment
         # we do this to be safe in case it changed
-        ret = _built(self, *lst, **kw)
+        _built(self, *lst, **kw)
         # side effects are not "built" for some reason
         for side_effect in self.side_effects:
             side_effect.built()
         self.attributes._isBuilt = True
-        return ret
+        
     klass.built = set_built
 
 
@@ -1114,7 +1117,7 @@ def GenerateStoredInfo(self):
             # for some reason SCons will store the Alias "children" values as strings
             # not Nodes. This mean that the children of File nodes may not be normalized to
             # the expected value
-            # if the node is not known.. we probally want to swap the
+            # if the node is not known.. we probably want to swap the
             # os.sep value to a posix forms
             if not glb.pnodes.isKnownNode(node):
                 key = node.replace(os.sep, '/')

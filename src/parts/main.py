@@ -22,7 +22,7 @@ import parts.config as config
 import parts.engine as engine  # get engine
 import parts.filters as filters
 import parts.installs as installs
-import parts.overrides  # init all Scons overides
+import parts.overrides  # init all Scons overrides
 import parts.parts as parts
 import parts.pattern as pattern
 import parts.poptions as poptions
@@ -41,7 +41,7 @@ import parts.pieces as pieces # isort:skip
 # start up logic ... runs during import of the code
 glb.engine.Start()  # sets up everything
 
-# import extra funcion
+# import extra function
 # this will be viewed as global function to the user in the Sconstruct file
 globals().update(glb.globals)
 

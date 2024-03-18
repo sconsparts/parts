@@ -1,4 +1,4 @@
-# this overides the builer call so I can get the file that called the builder.
+# this overrides the builder call so I can get the file that called the builder.
 # this allow be a simple test to see what file to check for changes of build
 # context
 

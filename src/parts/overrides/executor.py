@@ -19,9 +19,9 @@ def scan(self, scanner, node_list):
     This essentially short-circuits an N*M scan of the sources for
     each individual target, which is a hell of a lot more efficient.
 
-    This function changes the core logic and depends on implict values being cached
+    This function changes the core logic and depends on implicit values being cached
     It will scan the source/depends nodes as these are static in general, then scan for the 
-    implict targets. This is done to make sure dynamic items scan correctly as the process of being scanned
+    implicit targets. This is done to make sure dynamic items scan correctly as the process of being scanned
     my define values in the Environments being used. Failure to do this can lead to cases in which 
     values are missed and false rebuilds happen
     """
@@ -38,25 +38,15 @@ def scan(self, scanner, node_list):
 
     # if this is target nodes.. scan the batch var targets and assign as we scan
     # the target case will only have the node show up once, so it is the easy and fast case
-    # we do this check as teh core scons does some stuff to "speed up" logic and cost of correctness
+    # we do this check as the core scons does some stuff to "speed up" logic and cost of correctness
     # which breaks correctness with batch_key usage.
     if self.batches[0].targets[0] == node_list[0]:
         for batch in self.batches:
             for trg in batch.targets:
                 api.output.verbose_msg(["node.scan", "node"], f"{trg} is being scanned. Results:")
                 trg.disambiguate()
-                # get the implict depends after we scan the children of the
+                # get the implicit depends after we scan the children of the
                 deps = trg.get_implicit_deps(env, scanner, path, kw)
-                # ------ FIX me .. make this a lamda
-                if deps:
-                    for d in deps:
-                        api.output.verbose_msg(["node.scan", "node"], f"  {d}")
-                else:
-                    api.output.verbose_msg(["node.scan", "node"], "  []")
-                # ------
-                # print(88,exec_depends)
-                # print(89,deps)
-                # trg.add_to_implicit(deps+exec_depends)
                 trg.add_to_implicit(exec_depends+deps)
         return
 
@@ -65,10 +55,11 @@ def scan(self, scanner, node_list):
     # in this case we have two concerns. The common case len(self.batches) == 1 and when it is
     # larger than 1 ( uncommon.. which is the case we are using batch_key in the actions )
     # the common case just scan the node list and assign all depends to all the targets
-    # the batch_key case when we have more then batch in batches we need to seperate the
-    # the depends to the correct target group list. The node list is a concat of the sources.
+    # the batch_key case when we need to separate the depends to the correct target group list. 
+    # The node list is a concat of the sources.
     # is it very unlikely we have any duplicates in the batches. If we do.. well bad things will
-    # probally happen.
+    # probably happen. We also don't want to add items to built targets as they are already built
+    # as this can cause a crash in SCons as the executor of the target may be set to None
 
     depends_map = {}
     for batch in self.batches:
@@ -78,7 +69,7 @@ def scan(self, scanner, node_list):
         for src in batch.sources:
             if id(src) not in depends_map:
                 src.disambiguate()
-                # we are here because we don't have implict set yet
+                # we are here because we don't have implicit set yet
                 depends_map[id(src)] = src.get_implicit_deps(env, scanner, path, kw)
             deps += depends_map[id(src)]
 
@@ -86,7 +77,6 @@ def scan(self, scanner, node_list):
 
         for trg in batch.targets:
             trg.add_to_implicit(deps)
-
 
 Executor.scan = scan
 

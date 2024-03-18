@@ -61,8 +61,8 @@ class UnitTest(MetaSection):
             env.fs.VariantDir(build_dir, env.Dir(srcDir), env['duplicate_build'])
 
             # this is the items outside the src_dir area
-            oot_build_dir = env.Dir(f"${{BUILD_DIR}}/{build_dir_leaf}/oot")
-            env['OUTOFTREE_BUILD_DIR'] = f"${{BUILD_DIR}}/{build_dir_leaf}/oot"
+            oot_build_dir = env.Dir(f"${{BUILD_DIR}}/{build_dir_leaf}/__oot")
+            env['OUTOFTREE_BUILD_DIR'] = f"${{BUILD_DIR}}/{build_dir_leaf}/__oot"
 
             env.VariantDir(variant_dir=oot_build_dir, src_dir="#", duplicate=env['duplicate_build'])
 

@@ -43,7 +43,7 @@ def rpm_group_values(env, dir, target, source, arg=None):
 
     for node in source:
         # This needs to be a child check as the group state file
-        # has no real soures, it all based on implicit values
+        # has no real sources, it all based on implicit values
         # This mean that it would only rebuild if a new file was added
         # We need to make sure we only give back files if all the inputs
         # to the group file are defined. Since a rebuilt child may not cause

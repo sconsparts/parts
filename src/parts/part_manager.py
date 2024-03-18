@@ -251,7 +251,7 @@ class part_manager:
                             return
                         api.output.verbose_msgf(['target_mapping'], 'Target: "{0}" is a Alias', tobj)
                     else:
-                        # this is not known.. backout
+                        # this is not known.. back out
                         api.output.verbose_msgf(
                             ['target_mapping'], 'No stored information found for "{0}", Loading everything', tobj)
                         return None
@@ -262,7 +262,7 @@ class part_manager:
 
                     if not name_matches:
                         api.output.verbose_msgf(['target_mapping'], 'No matches found for name, Loading everything', tobj)
-                        return None  # we don't have any known found values.. backout
+                        return None  # we don't have any known found values.. back out
 
                     pobjs_lst = [glb.pnodes.GetPNode(i) for i in name_matches]
                     # try to process known values
@@ -403,7 +403,7 @@ class part_manager:
                 # register any sections
                 [self.__defined_sections.add(sec) for sec in pobj.Sections]
 
-            #api.output.verbose_msg(['loading'],"{0:60}[{1:.2f} secs]".format(msg,(time.time()-part_file_load_time)))
+            #api.output.verbose_msg(['loading.stats','loading'],"{0:60}[{1:.2f} secs]".format(msg,(time.time()-part_file_load_time)))
             #api.output.console_msg(" Loading %3.2f%% %s \033[K"%((cnt/total*100),msg))
             # cnt+=1
                 pobj.LoadState = LoadState.FILE
@@ -411,7 +411,7 @@ class part_manager:
                 pobj.isLoading = False
 
         if processed:
-            api.output.verbose_msgf(['loading'], "Loaded {0:45}[{1:.2f} secs]", pobj.ID, (time.time() - part_file_load_time))
+            api.output.verbose_msgf(['loading.stats','loading'], "Loaded {0:45}[{1:.2f} secs]", pobj.ID, (time.time() - part_file_load_time))
 
     # might want to re-think this function
     def _define_sub_part(self, env, alias, parts_file, mode=[], scm_type=None,
@@ -555,7 +555,7 @@ class part_manager:
                     _add_list(basestr, t, tobj)
 
             elif tobj.Name:
-                # This case can have multipul matches
+                # This case can have multiple matches
                 # get a list of known alias that have this name
                 alias_lst = self.__name_to_alias.get(self.__alt_names.get(tobj.Name, tobj.Name))
 
@@ -715,7 +715,7 @@ class part_manager:
         # note... this allow dynamic builder to work as it
         # maps the dyn.json files used to delay other build items
         # that depend on the builder target to be built for getting new sources in a scanner call
-        api.output.verbose_msg(["loading","load_stats"], f"Loaded {num_sec} sections in {time.time() - start_total:.04} seconds")
+        api.output.verbose_msg(['loading.stats',"loading","load_stats"], f"Loaded {num_sec} sections in {time.time() - start_total:.04} seconds")
         api.output.print_msg(f"Total sections: {num_sec} Total known nodes: {glb.pnodes.TotalNodes}")
             # map target alias values
         glb.processing_sections=False
@@ -1048,7 +1048,7 @@ class part_manager:
 
                     if pobj.ConfigMatch:  # TODO double check this line!
                         # test that the configuration is based on request value
-                        # this allows "debug" to work when using my "MyCustonmDebug" config
+                        # this allows "debug" to work when using my "MyCustomDebug" config
                         if not pobj.Env.isConfigBasedOn(val):
                             match = False
                 # check target_platform/platform_match
@@ -1242,7 +1242,7 @@ class part_manager:
                 if format != 'new':
                     has_old = True
                 # update only part that have been loaded from file
-                if v.LoadState == LoadState.FILE:  # might need to relook at this case when we get new formats working
+                if v.LoadState == LoadState.FILE:  # might need to re-look at this case when we get new formats working
                     tmp[k] = {
                         'name': v.Name,
                         # 'version':v.Version,

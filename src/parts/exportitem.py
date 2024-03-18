@@ -152,7 +152,7 @@ def ExportLIBS(env, values, create_sdk=True):
     return ExportItem(env, 'LIBS', values, create_sdk)
 
 
-def ExportItem(env, variable, values, create_sdk=True, map_as_dependance=False):  # , public=False):
+def ExportItem(env, variable, values, create_sdk=True, map_as_dependance=False, add_unique=False):  # , public=False):
     '''
 
     @param env The current environment
@@ -187,7 +187,10 @@ def ExportItem(env, variable, values, create_sdk=True, map_as_dependance=False):
 
         # add our values
         # common.extend_unique(sobj.Exports[variable],values)
-        sobj.Exports[variable][0] += values
+        if add_unique:
+            common.extend_unique(sobj.Exports[variable][0], values)
+        else:
+            sobj.Exports[variable][0] += values
         api.output.verbose_msg(['export'], f"Exporting from {sobj.ID}:\n {variable} = {[str(v) for v in values]}")
 
     else:

@@ -154,7 +154,7 @@ class parts_addon:
         self._setup_variables()
         # setup command line arguments
         self._setup_arguments()
-        # setup default Environment overides
+        # setup default Environment overrides
         api.output.verbose_msg("startup", "Creating default environment")
         SCons.Script.DefaultEnvironment()
         # turn off all default building of any items without a target, or until
@@ -535,7 +535,7 @@ Use -H or --help-options for a list of scons options
             pass
 
         data = {}
-        # get overides Variables
+        # get overrides Variables
         vars = {}
         # vars=copy.deepcopy(glb.defaultoverides)
         vars.update(SCons.Script.ARGUMENTS)

@@ -81,18 +81,20 @@ def _DynamicDirScanner(node, env, path, args):
     # set post action
     # have to do it in scanner since the generation of the scanner does
     # not have the correct builder defined when we generate the scanner.
-    api.output.verbose_msgf(
-        ["scanner.scandirectory", "scanner"], "Checking post action")
-    executor = node.get_executor()
-    # check that this action is not defined already in the post actions, else add it
-    # this is needed because adding it twice will cause false rebuilds that we want to avoid
-    if WriteScanResultStateAction not in executor.post_actions:
+
+    if node.isBuilt or not hasattr(node, 'released_target_info') or not node.released_target_info:
         api.output.verbose_msgf(
-            ["scanner.scandirectory", "scanner"], "Adding post action")
-        env.AddPostAction(
-            node,
-            WriteScanResultStateAction
-        )
+            ["scanner.scandirectory", "scanner"], "Checking post action")
+        executor = node.get_executor()
+        # check that this action is not defined already in the post actions, else add it
+        # this is needed because adding it twice will cause false rebuilds that we want to avoid
+        if WriteScanResultStateAction not in executor.post_actions:
+            api.output.verbose_msgf(
+                ["scanner.scandirectory", "scanner"], "Adding post action")
+            env.AddPostAction(
+                node,
+                WriteScanResultStateAction
+            )
 
     # did the node have explicit changes
     #changed = node_helpers.has_changed(node, skip_implicit=False) & ChangeCheck.DIFF
@@ -122,7 +124,7 @@ def _DynamicDirScanner(node, env, path, args):
             api.output.verbose_msgf(["scanner.scandirectory", "scanner"],
                                     f"Calling extra scanner {node.ID}: results: {scan_results}")
     # did the node have explicit changes
-    # we cannot include implict changes yet as this scanner would be returning these values
+    # we cannot include implicit changes yet as this scanner would be returning these values
     # for this node, so binfo checks would see a difference of missing nodes.
     #print(f"calling 3 {node}")
     changed = node_helpers.has_changed(
@@ -148,7 +150,7 @@ def _DynamicDirScanner(node, env, path, args):
             #env.SideEffect(snode, node)
 
         # merging in custom logic
-        overides = env.get("SCANDIR_OVERRIDES", scan_overrides)
+        overrides = env.get("SCANDIR_OVERRIDES", scan_overrides)
 
         # default logic we want to look for
         # we either have a special user based mapping Via the SCANDIR_DEFAULTS value or we
@@ -158,11 +160,11 @@ def _DynamicDirScanner(node, env, path, args):
             default_mappings = default_mappings_dict
         else:
             default_mappings = env.get("SCANDIR_DEFAULTS", {})
-            if not default_mappings and not overides and not scan_callbacks:
+            if not default_mappings and not overrides and not scan_callbacks:
                 api.output.warning_msg(
                     "SCANDIR_DEFAULTS is an empty dictionary.")
 
-        for key, value in overides.items():
+        for key, value in overrides.items():
             # make copy of item to override
             default_mappings[key] = default_mappings.get(key, {}).copy()
             # do the override

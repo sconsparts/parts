@@ -7,12 +7,12 @@ import os
 import re
 import subprocess
 
-## todo! probally want to expand logic to need to load be able to import SCons vs not
+## todo! probably want to expand logic to need to load be able to import SCons vs not
 ## and calling the engine startup logic
 
 # depending on what is loading we might need to have SCons import-able
 # all our script that we will run with be in the form of parts-
-# these at the moment do not need scons and are independnt of the rest of the Parts code
+# these at the moment do not need scons and are independent of the rest of the Parts code
 # to all fast loading of these we check arg[0] to see if this is kind of script we are running
 script = True if os.path.basename(sys.argv[0]).startswith("parts-") else False
 

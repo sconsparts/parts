@@ -136,8 +136,12 @@ class Pattern:
                 is_dir = util.isDir(entity)
                 # __rt and __oot are funny files that are out of tree
                 # # or under the SConstruct but not the parts file
+                # match directories on exclude patterns only as they are not files, no need to match item under the directory
+                # if the directory is excluded.
+                dir_match = common.matches(self.src_dir.rel_path(entity), "*", self.excludes)
                 if is_dir:
-                    if entity.name not in ["__rt", "__oot", ".parts.cache"] and guard_path not in path.ID and self.recursive:
+                    if dir_match and entity.name not in ["__rt", "__oot", ".parts.cache"] and guard_path not in path.ID and self.recursive:
+                        api.output.verbose_msgf(["pattern.generate.add", "pattern.generate", "pattern"], f"Recursing {entity.ID}")
                         paths.append(entity)
                         continue
                     else:

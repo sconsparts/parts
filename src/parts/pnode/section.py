@@ -208,14 +208,14 @@ class Section(pnode.PNode):
     @property
     def Depends(self) -> List[dependent_ref]:
         '''
-        This delagates to ??? to handle hold the depends list
+        This delegates to ??? to handle hold the depends list
         '''
         return self.__metasection.Depends
 
     @Depends.setter
     def Depends(self, val: dependent_ref) -> None:
         '''
-        This delagates to ??? to handle hold the depends list
+        This delegates to ??? to handle hold the depends list
         '''
         self.__metasection.Depends = val
 
@@ -247,7 +247,7 @@ class Section(pnode.PNode):
     def DependsSorted(self):
         '''
         Sorts the depends the best we can to respect user order, but make sure depends ordering of the dependents
-        are enforced to allow toolschains to work correctly.
+        are enforced to allow toolchains to work correctly.
         Order is node that should be more to the bottom are first
         '''
 
@@ -690,7 +690,7 @@ class Section(pnode.PNode):
                 for child in children:
                     # is this a target of this section
                     if child in self.Targets:
-                        # this cannot be a botton level target node as it has a child
+                        # this cannot be a bottom level target node as it has a child
                         # node being built in this section
                         break
                 else:
@@ -772,7 +772,7 @@ class Section(pnode.PNode):
         ####################
         # current changes has this function only mapping top level alias targets
         # the alias_str will be mapped via the top level logic after the part is loaded
-        # ideall we could map this after the part load with the top level target mapping
+        # ideally we could map this after the part load with the top level target mapping
         a = self.__env.Alias(alias_str)
         # build::alias::foo -> build::alias::foo::
         api.output.verbose_msg(
@@ -831,7 +831,7 @@ class Section(pnode.PNode):
 
     def ESigs(self):
         '''
-        Export Signitures as a dictionary of keys with csig
+        Export Signatures as a dictionary of keys with csig
         The dictionary all us to see what change (esigs)
         While esig is a quick check to see that there is a change
 
@@ -1057,7 +1057,7 @@ class Section(pnode.PNode):
                 for node in self.InstalledFiles)
 
         # data about what this depends on we want the direct depend here
-        # as this will allow us to speed up incremential build latter
+        # as this will allow us to speed up incremental build latter
         tmp = []
         # to get the dependance sig
         for d in self.Depends:

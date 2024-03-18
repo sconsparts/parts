@@ -161,7 +161,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         # worried that if we are coping it is probably messed up enough to be an issue here
         configure_cmds = [
             # delete the directory we plan to install stuff into ..
-            # as this is probally out of date ( contains bad files to scan)
+            # as this is probably out of date ( contains bad files to scan)
             SCons.Defaults.Delete("$AUTO_MAKE_DESTDIR"),
         ]
         rel_src_path = "."
@@ -262,7 +262,11 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
             "config/*",
             "*/autom4te.cache",
             "*/config",
+            # internal to the build location we want the pattern to ignore 100%
+            f"{build_dir.ID}/*",
+            f"{build_dir.rel_path(env.Dir(auto_scan_dir))[3:]}/*",
         ]+env.get("IGNORE_FILES", [])
+
         sources = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=ignore_files).files()
 
     configure_cmds.append(
@@ -274,9 +278,10 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
     # generate the makefile
     api.output.trace_msgf(
         ['automake.makefile.depends','automake.makefile','automake'],
-        "target={target} source={source}",
+        "target={target}\n depends={depends}\n source={source}",
         target=auto_conf_buildfile,
-        source = depends+sources,
+        depends= depends,
+        source = sources,
         )
     build_files = env.CCommand(
         auto_conf_buildfile,

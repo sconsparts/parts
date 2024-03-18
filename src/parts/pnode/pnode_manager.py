@@ -99,7 +99,11 @@ class manager:
         Clear any state the SCons nodes have to force everything to be
         regenerated.
         '''
-        for node in self.__known_nodes.values():
+        # we do this to make sure that we don't have any srcnode() creations
+        # that could add to the known nodes and break the loops because a 
+        # new "known" node was added
+        nodes = tuple(self.__known_nodes.values())
+        for node in nodes:
             node._children_reset()
 
     def isKnownNode(self, ID: str) -> bool:
@@ -213,13 +217,13 @@ class manager:
 
     def GetStoredNodeInfo(self, node: SCons.Node.Node):
         '''
-        Retrive the stored node information for the given node
+        Retrieve the stored node information for the given node
         '''
         return self.GetStoredNodeIDInfo(node.ID)
 
     def GetStoredNodeIDInfo(self, ID: str):
         '''
-        Retrive the stored node information based on the ID
+        Retrieve the stored node information based on the ID
         '''
         data = self._get_cache()
         if data:
@@ -461,7 +465,7 @@ class manager:
 
     # this would mirror similar logic in the SCOns.Node classes
     # the goal here is to not load these Nodes as the memory hit
-    # of these objects because of imple details is to high
+    # of these objects because of impl details is to high
     # which has a side effect of slowing down the build.
     def ClearNodeinfo(self, nodeid):
         self.__cache['NodeInfo'] = {}
@@ -476,7 +480,7 @@ class manager:
             except KeyError:
                 self.__cache['NodeInfo'] = {}
             # we need to return a dict with two piece of information
-            # 1) a timestamp given that it makes sence
+            # 1) a timestamp given that it makes sense
             # 2) a csig value, or MD5 value of the context of the node
 
             # the trick is that object such as Aliases (and Values) are not yet defined
@@ -552,7 +556,7 @@ class manager:
 
         curr_info = self.Nodeinfo(snode)
         if ninfo.get('timestamp', 0) != curr_info.TimeStamp:
-            # do MD5 check to see if it is really diffent
+            # do MD5 check to see if it is really different
             if ninfo.get('csig', 0) != curr_info.CSig:
                 api.output.verbose_msg(['node_check'], "{0} is out of date:\n current CSIG = {1}\n stored CSIG = {2}".format(
                     curr_info.ID, curr_info.CSig, ninfo.get('csig', 0)))

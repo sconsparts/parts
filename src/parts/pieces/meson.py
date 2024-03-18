@@ -31,7 +31,7 @@ def Meson(env,auto_scanner={},**kw):
 
     # jobs = env.GetOption('num_jobs')
 
-    # the autoscan logic here it to address issues with rpath handing that cannot be conrtoled
+    # the auto scan logic here it to address issues with rpath handing that cannot be controlled
     # in meson. Currently the build system zero out the RPATH section of the elf format. At the moment
     # this only effect the binary "exe" files not the .so files
     _auto_scanner={
