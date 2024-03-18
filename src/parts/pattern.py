@@ -125,6 +125,15 @@ class Pattern:
         m = {}
         # create base path
         paths = [self.src_dir]
+        # test if we can skip a directory when walking the paths
+        can_skip_dir = False
+        for item in self.excludes:
+            # if it ends with a * then we can skip the directory
+            # otherwise there might be a file that matches the directory pattern in the directory
+            if item.endswith('*'):
+                can_skip_dir = True
+                break
+         
         # there is a quirk in which Glob() does some odd behavior when we scan a variant directory
         # This is to protect us from recursing down the variant directory more than once
         guard_path = f"{self.src_dir.ID}/{self._env.Dir('$BUILD_DIR_ROOT').name}"
@@ -138,7 +147,7 @@ class Pattern:
                 # # or under the SConstruct but not the parts file
                 # match directories on exclude patterns only as they are not files, no need to match item under the directory
                 # if the directory is excluded.
-                dir_match = common.matches(self.src_dir.rel_path(entity), "*", self.excludes)
+                dir_match = common.matches(self.src_dir.rel_path(entity), "*", self.excludes) if can_skip_dir else True
                 if is_dir:
                     if dir_match and entity.name not in ["__rt", "__oot", ".parts.cache"] and guard_path not in path.ID and self.recursive:
                         api.output.verbose_msgf(["pattern.generate.add", "pattern.generate", "pattern"], f"Recursing {entity.ID}")

@@ -17,6 +17,7 @@ class task_master:
         self.__i = 0
         self.__tasks = []
         self.__stopped = False
+        self.trace = False
         self.__return_code = 0
 
     def has_checkout_path(self, scmobj) -> bool:
