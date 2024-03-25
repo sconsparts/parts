@@ -85,7 +85,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
             # remake the directory as SCons thought it did this already
             SCons.Defaults.Mkdir(build_dir),
             # delete the directory we plan to install stuff into ..
-            # as this is probally out of date ( contains bad files to scan)
+            # as this is probably out of date ( contains bad files to scan)
             SCons.Defaults.Delete("$CMAKE_DESTDIR"),
             'cd ${TARGET.dir} ;'
             # CMAKE_PREFIX_PATH should replace this.. Have it as a fallback
@@ -105,15 +105,16 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
         ignore = []
 
     if top_level:
-        # track a lesser set.. which is probally ok as if CMake is being called this is probally
+        # track a lesser set.. which is probably ok as if CMake is being called this is probably
         #  only needed for support 
         src_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=cmake_build_files+[".git/*"]+ignore, recursive=False).files()
     else:
         # track a lot of files
         src_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=cmake_build_files+[".git/*"]+ignore).files()
-    env.SetDefault(_CMAKE_MAKE_ARGS='VERBOSE=1\
+    env.SetDefault(
+        _CMAKE_MAKE_ARGS='VERBOSE=1\
         $(-j{jobs}$)'.format(jobs=env.GetOption('num_jobs'))
-                   )
+    )
 
     ret = env.CCommand(
         [
