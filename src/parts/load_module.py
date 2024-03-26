@@ -19,8 +19,7 @@ def get_site_directories(subdir):
         return g_site_dir_cache[subdir]
     except KeyError:
         if glb._host_platform is None:
-            print("host_os bootstrap bug")
-            1 / 0
+            api.output.error_msg("host_os bootstrap bug")
 
         host_os = glb._host_platform  # can't use HOST_OS because of bootstrap issue.
         localpath = []

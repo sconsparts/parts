@@ -26,17 +26,23 @@ def parts_call_(self, env, target=None, source=None, chdir=SCons.Builder._null, 
         targets = self.Orig_call(env, target, source, chdir=chdir, **kw)   
         # this was just a simple way to do this in a generic way
         # If we have DYN_SCANNER define in the env.. we want to add the node referenced
-        #      
+        node = env.get('_PARTS_DYN')
+        if node:
+            for trg in targets:
+                data = env.MetaTagValue(trg, 'components', ns='partinfo', default=None) # this should always exist
+                data['isdynamic'] = True
+                #print(f"7777 {trg}={data}")
+        
     except errors.AllowedDuplication as e:
         # this happens when we have match on the duplication key
-        # the exeception has the targets to return
+        # the exception has the targets to return
         #print(f"7777 DUPLICATE {e.targets}")
         targets = e.targets
-    node = env.get('_DYNSCANNER_NODE')
-    if node:
-        for tg in targets:
-            if not tg.isVisited:
-                env.Depends(tg,node)
+    #node = env.get('_DYNSCANNER_NODE')
+    #if node:
+    #    for tg in targets:
+    #        if not tg.isVisited:
+    #            env.Depends(tg,node)
 
     return targets
 
