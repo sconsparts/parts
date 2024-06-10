@@ -22,7 +22,7 @@ copyright = '2021, Jason Kenny'
 author = 'Jason Kenny'
 
 # The full version, including alpha/beta/rc tags
-release = '0.16.0'
+release = 'Latest'
 
 
 # -- General configuration ---------------------------------------------------

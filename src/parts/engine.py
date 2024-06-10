@@ -102,7 +102,8 @@ class parts_addon:
         # some known data items
         self.__part_manager:part_manager.part_manager = None
         self.__def_env = None
-        self.__post_process_queue = []
+        self.__pre_load_queue = [] # call functions before all parts are processed, but after the pieces are loaded
+        self.__post_process_queue = [] # call functions after all parts are processed
         self.__cache_key = None
         self.__build_mode = None
         self.__had_error = None
@@ -184,6 +185,8 @@ class parts_addon:
         node = self.def_env.File(sys.executable)
         node.disambiguate()
         
+        # call the pre load queue
+        self.pre_load_queue()
 
         # this is a hack to get around an issue with stuff like the extract builder that would create
         # a a.sconsign.dblite file in the wrong directory as a side effect of the variant direct change of
@@ -302,6 +305,30 @@ class parts_addon:
         finally:
             memory_stats.append('after Parts processed')
             api.output.console_msg("\r")  # clears the console value for cleaner printing
+
+    def pre_load_queue(self):
+        memory_stats.append('Before pre logic queue processing')
+        try:
+            # process any data we have to post process
+            if self.__pre_load_queue != []:
+                api.output.print_msg("Processing pre logic queue")
+                total = len(self.__pre_load_queue) * 1.0
+                cnt = 0
+                msg = '{0}/{1}'.format(cnt, total)
+                api.output.console_msg(" Processing pre logic queue %3.2f%% %s \033[K" % ((cnt / total * 100), msg))
+                for cnt, i in enumerate(self.__pre_load_queue, 1):
+                    msg = '{0}/{1} '.format(cnt, total)
+                    api.output.verbose_msg(["pre_load_queue"],
+                                           "Processing pre logic queue {0:.2%} {1}".format((cnt / total), msg))
+                    api.output.console_msg(" Processing pre logic queue {0:.2%} {1} \033[K".format((cnt / total), msg))
+                    i()
+
+                msg = '{0}/{1}'.format(cnt, total)
+                api.output.console_msg(" Processing pre logic queue {0:.2%} {1} \033[K".format((cnt / total), msg))
+                self.__pre_load_queue = []
+                api.output.print_msg("Processing pre logic queue finished!")
+        finally:
+            memory_stats.append('After pre logic queue processed')
 
     def parts_process_queue(self):
 
@@ -492,6 +519,9 @@ class parts_addon:
 
             # SCons.Script.Progress(ProgressCounter(), 1)
             SCons.Script.Progress(self.def_env['PROGRESS_STR'], 1, file=glb.rpter.console, overwrite=True)
+
+    def add_preload_logic_queue(self, funcobj):
+        self.__pre_load_queue.append(funcobj)
 
     def add_preprocess_logic_queue(self, funcobj):
         self.__post_process_queue.append(funcobj)
