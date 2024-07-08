@@ -29,11 +29,11 @@ class Variables(dict, object):
 
     def __init__(self, files=None, args=None, user_defaults=None, **kw):
         """
-        Construct a Varibles object
+        Construct a Variables object
 
         @param files List of optional configuration files to load
         @param args The command line ARGUMENTS used to override any value from the command line
-        @param user_defaults Values to overide the defined varaible defaults with
+        @param user_defaults Values to override the defined variable defaults with
         """
         if __debug__:
             logInstanceCreation(self)
@@ -131,8 +131,8 @@ class Variables(dict, object):
                 self.Add(*o)
 
     def Add(self, key, help=None, default=None, validator=None, converter=None, help_group=None, **kw):
-        '''This will add a Variable that will the user can overide on the Command like or with a config file
-        @param key The name of the varable to add, or is a varaible type, if the latter the other arguments as overides
+        '''This will add a Variable that will the user can override on the Command like or with a config file
+        @param key The name of the variable to add, or is a variable type, if the latter the other arguments as overrides
         @param help The help text for this given item
         @param default The default value to be used for the variable, if no other value is provided.
         @param validator An optional call back function that will validate the value as good or bad

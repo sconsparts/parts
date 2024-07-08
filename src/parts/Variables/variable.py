@@ -28,14 +28,12 @@ class Variable:
             logInstanceCreation(self)
         if SCons.Util.is_List(name) or SCons.Util.is_Tuple(name):
             for k in name:
-                if not SCons.Util.is_String(k) or \
-                        not SCons.Environment.is_valid_construction_var(k):
+                if not SCons.Util.is_String(k):
                     api.output.error_msg("Illegal Variables.Add() key {0}".format(str(k)))
             self.__name = name[0]
             self.__aliases = name[1:]
         else:
-            if not SCons.Util.is_String(name) or \
-                    not SCons.Environment.is_valid_construction_var(name):
+            if not SCons.Util.is_String(name):
                 api.output.error_msg("Illegal Variables.Add() key {0}".format(str(name)))
             self.__name = name
             self.__aliases = []
