@@ -29,3 +29,9 @@ config.VersionRange(
         RPATHSUFFIX=",--enable-new-dtags",
     ),
 )
+
+config.VersionRange("7-*",
+    append=ConfigValues(
+        CCFLAGS=['-fdiagnostics-color=always']
+    )
+)
