@@ -2,7 +2,6 @@
 # PYTHON script builder
 #################################################################
 
-
 import parts.api as api
 import SCons.Script
 # This is what we want to be setup in parts
@@ -26,16 +25,19 @@ def py_bld(target, source, env):
 
 def py_blde(target, source, env):
     import sys
-    import imp
+    import importlib.machinery
+    import importlib.util
     import os
     path, base = os.path.split(source[0].srcnode().abspath)
-    fp, pathname, description = imp.find_module(base[:-3], [path])
 
     # need to replace '.' with some other value else it will try to load a
     # non-existing parent module
     mod_name = source[0].srcnode().abspath[:-3].replace('.', '<dot>')
 
-    m = imp.load_module(mod_name, fp, pathname, description)
+    spec = importlib.util.spec_from_file_location(mod_name, path)
+    module = importlib.util.module_from_spec(spec)
+    m = spec.loader.exec_module(module)
+
     headers = m.__dict__[env['__PYTHONSCRIPT_FUNC_']['emit']](**env['__PYTHONSCRIPT_ARGS_'])
     return (headers, source)
 

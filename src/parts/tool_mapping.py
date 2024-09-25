@@ -64,6 +64,10 @@ def get_tools(env, tlset):
             continue
         else:
             configured = True
+        # special tool name for not loading a tool
+        # useful for testing cases
+        if tool == 'null': 
+            continue
         if configuration is None or util.isString(configuration):
             # get the list subst for the value
             repeat = True
@@ -75,7 +79,7 @@ def get_tools(env, tlset):
                 # see if this is a tool that is loadable
                 try:
                     SCons.Tool.Tool(tool, toolpath=__tools_dirs)
-                except Exception:
+                except Exception as e:                    
                     api.output.error_msg("Failed to load Unknown ToolChain or Tool:", tool, show_stack=False)
                 else:
                     new_list.extend([(tool, {}, configured)])

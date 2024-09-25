@@ -152,7 +152,7 @@ def get_groups(tlst):
 
 
 def _parse_target(target):
-    '''
+    r'''
     Parses the Target to help Parts figure out how to treat the Target
 
     The current logic is to handle cases such as:

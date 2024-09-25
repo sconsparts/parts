@@ -1,4 +1,5 @@
-import imp
+import importlib.machinery
+import importlib.util
 import os
 import traceback
 import sys
@@ -29,13 +30,9 @@ def find_tests():
 
 
 def my_load(path, name):
-    fp, pathname, description = imp.find_module(name, [path])
-    try:
-        return imp.load_module(name[:-5], fp, pathname, description)
-    finally:
-        # Since we may exit via an exception, close fp explicitly.
-        if fp:
-            fp.close()
+    if (spec := importlib.util.find_spec(name, path)) is not None:
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
 
 
 def addCleanupSupport():

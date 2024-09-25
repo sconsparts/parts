@@ -241,6 +241,7 @@ def opt_logging(option, opt, value, parser):
     if value is None:
         value = 'text'
     tmp = value.lower()
+    mod=None
     try:
         if tmp in opt_true_values:
             def_logger = 'text'
@@ -248,16 +249,21 @@ def opt_logging(option, opt, value, parser):
                 load_module.get_site_directories('loggers'),
                 def_logger,
                 'loggers')
-            parser.values.logger = mod.__dict__.get(def_logger, logger.nil_logger)
+            if mod:
+                parser.values.logger = mod.__dict__.get(def_logger, logger.nil_logger)
         elif tmp in opt_false_values:
             parser.values.logger = logger.nil_logger
+            mod=True
         else:
             mod = load_module.load_module(
                 load_module.get_site_directories('loggers'),
                 value,
                 'loggers')
-            parser.values.logger = mod.__dict__.get(value, logger.nil_logger)
+            if mod:
+                parser.values.logger = mod.__dict__.get(value, logger.nil_logger)
     except ImportError:
+        pass
+    if not mod:
         raise OptionValueError('No logger called "%s" was found' % value)
 
 

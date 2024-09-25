@@ -1,6 +1,8 @@
 ﻿
 
-import imp
+import importlib.machinery
+import importlib.util
+
 import os
 import re
 import sys
@@ -87,30 +89,27 @@ def load_module(pathlst, name, type):
     """
     # modname = '<{type}>{name}'.format(type=type, name=name)
     modname = f'parts.{type}.{name}'
-    try:
+    #modname = name
+    
+    if modname in sys.modules:
         return sys.modules[modname]
-    except KeyError:
-        api.output.verbose_msg('load_module',
-                               'Trying to load module {name} type {type}'.format(name=name, type=type))
-        file, path1, desc = imp.find_module(name, pathlst)
-        oldPath = sys.path
-        sys.path = pathlst + sys.path
-        try:
-            mod = imp.load_module(modname, file, path1, desc)
-            api.output.verbose_msg("load_module", "Module was loaded from {path}".format(path=path1))
-        except ImportError:
-            api.output.verbose_msg("load_module", "Failed to load module!")
-            api.output.verbose_msg(["load_module_failure", "load_module"], "Stack:\n{0}".format(traceback.format_exc()))
-            raise SCons.Errors.UserError("Module named '{name}' failed to load!".format(name=name))
-        except Exception as e:  # any other error is a bug
-            api.output.verbose_msg("load_module", "Failed to load module!")
-            api.output.verbose_msg(["load_module_failure", "load_module"], "Stack:\n{0}".format(traceback.format_exc()))
-            api.output.error_msg(f"Failed to load {name}")
-
-        finally:
-            sys.path = oldPath
-            if file:
-                file.close()
+    elif (spec := importlib.machinery.PathFinder.find_spec(name, pathlst)) is not None:
+        #print(f"spec.name={spec.name}, modname={modname}")
+        #spec.name = modname
+        #print(f"here {spec}")
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules[modname] = mod
+        
+        #print(f"Loaded mod = {mod}")        
+        spec.loader.exec_module(mod)
+        #api.output.verbose_msg("load_module", "Module was loaded from {path}".format(path=path1))
+    else:
+        api.output.verbose_msg("load_module", f"Failed to load module {modname}!\n Not found on Path: {pathlst}")
+        return
+        #api.output.verbose_msg("load_module", "Failed to load module!")
+        #api.output.verbose_msg(["load_module_failure", "load_module"], "Stack:\n{0}".format(traceback.format_exc()))
+        #raise SCons.Errors.UserError("Module named '{name}' failed to load!".format(name=name))
+    
 
     return sys.modules[modname]
 

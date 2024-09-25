@@ -33,7 +33,7 @@ class file_system(base):
 
     @base.FullPath.getter
     def FullPath(self):
-        ''' returns the full path (server + repository)
+        r''' returns the full path (server + repository)
 
         We override this as we don't want to change the paths from \ to / on windows
         '''

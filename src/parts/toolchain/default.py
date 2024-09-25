@@ -10,7 +10,7 @@ import SCons.Tool
 
 
 def test_tool(env, tool):
-    return SCons.Tool.Tool(tool, toolpath=load_module.get_site_directories('tools')).Exists(env)
+    return SCons.Tool.Tool(tool, toolpath=load_module.get_site_directories('tools')).exists(env)
 
 
 def resolve(env, version):
