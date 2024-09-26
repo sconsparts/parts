@@ -515,8 +515,8 @@ def load_tool_config(env, name, tool, host, target):
                                             'Configuration <{0}> loaded! File <{1}>', name, mod.__file__)
 
                 except:
-                    api.output.warning_msg("Failed to load {module} Exception was thrown:\n",
-                                           traceback.format_exc(), print_once=True)
+                    api.output.warning_msg(f"Failed to load {configName} Exception was thrown:\n",
+                                           traceback.format_exc(), print_once=True, show_stack=False)
                     continue
 
                 # Load our config data, and map the version value
