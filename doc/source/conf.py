@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Parts'
-copyright = '2021, Jason Kenny'
+copyright = '2024, Jason Kenny'
 author = 'Jason Kenny'
 
 # The full version, including alpha/beta/rc tags

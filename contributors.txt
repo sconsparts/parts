@@ -2,3 +2,5 @@ Intel Corporation.
 Eugene Leskinen
 Vasilij N Litvinov
 Preeti Suman
+Phong Nguyen
+Brain France
