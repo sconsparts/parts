@@ -28,8 +28,14 @@ def get_tlset_module(tlchain, version):
         __toolchain_dirs = load_module.get_site_directories('toolchain')
 
     for name in name_list:
+        # the try catch should be removable. However I will
+        # look at this later after some more testing
         try:
-            return load_module.load_module(__toolchain_dirs, name, 'toolchain')
+            # it fails to load it will return None..
+            # we should no`t have the case of expections being thrown
+            ret = load_module.load_module(__toolchain_dirs, name, 'toolchain')
+            if ret:
+                return ret
         except (ImportError, UserError):
             pass
 

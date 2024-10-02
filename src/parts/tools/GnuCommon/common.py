@@ -64,22 +64,8 @@ class GnuInfo(ToolInfo):
         fullpath = path
         if os.path.isfile(fullpath):
             # this is to get the version number
-            pipe = subprocess.Popen(fullpath + ' --version',
-                                    shell=True,
-                                    #stdin = 'devnull',
-                                    stderr=subprocess.STDOUT,
-                                    stdout=subprocess.PIPE)
-
-            pipe.wait()
-            line = pipe.stdout.readline()  # first line has version in??
-
-            try:
-                while line == '\r\n' or line == '\n':
-                    line = pipe.stdout.readline()
-            except Exception:
-                pass
+            line = subprocess.check_output([fullpath, '--version'], stderr=subprocess.STDOUT)
             match = re.search(r'[vV ]([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+)', line.decode())
-            pipe.stdout.close()
             if match:
                 line = match.group(1)
                 return line
@@ -162,7 +148,7 @@ class GnuInfo(ToolInfo):
         api.output.verbose_msgf(['gnu_info', "tool_info"], "query scan install_root={root}", root=install_root)
         ret = {}
         if self.found is None:
-            reg = re.compile(self.test_file.replace('+', r'\+') + r'\-?([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)', re.I)
+            reg = re.compile(self.test_file.replace('+', r'\+') + r'\-?([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)?', re.I)
             if opt_scan == True:
                 if self.opt_pattern is not None:
                     opt_reg = re.compile(self.opt_pattern, re.I)
