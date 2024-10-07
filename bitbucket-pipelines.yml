@@ -11,7 +11,7 @@ definitions:
         files:
           - Pipfile
       path: reqgen
-image: python:3.8
+image: python:3.12
 pipelines:
   default:
     - step:
