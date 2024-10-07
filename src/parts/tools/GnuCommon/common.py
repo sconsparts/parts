@@ -148,7 +148,7 @@ class GnuInfo(ToolInfo):
         api.output.verbose_msgf(['gnu_info', "tool_info"], "query scan install_root={root}", root=install_root)
         ret = {}
         if self.found is None:
-            reg = re.compile(self.test_file.replace('+', r'\+') + r'\-?([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)?', re.I)
+            reg = re.compile(self.test_file.replace('+', r'\+') + r'\-?([0-9]+\.[0-9]+\.[0-9]*|[0-9]+\.[0-9]+|[0-9]+)', re.I)
             if opt_scan == True:
                 if self.opt_pattern is not None:
                     opt_reg = re.compile(self.opt_pattern, re.I)
