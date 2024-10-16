@@ -90,17 +90,18 @@ def load_module(pathlst, name, type):
     # modname = '<{type}>{name}'.format(type=type, name=name)
     modname = f'parts.{type}.{name}'
     #modname = name
-    
+
     if modname in sys.modules:
         return sys.modules[modname]
-    elif (spec := importlib.machinery.PathFinder.find_spec(name, pathlst)) is not None:
+    spec = importlib.machinery.PathFinder.find_spec(name, pathlst)
+    if spec is not None:
         #print(f"spec.name={spec.name}, modname={modname}")
         #spec.name = modname
         #print(f"here {spec}")
         mod = importlib.util.module_from_spec(spec)
         sys.modules[modname] = mod
-        
-        #print(f"Loaded mod = {mod}")        
+
+        #print(f"Loaded mod = {mod}")
         spec.loader.exec_module(mod)
         #api.output.verbose_msg("load_module", "Module was loaded from {path}".format(path=path1))
     else:
@@ -109,7 +110,7 @@ def load_module(pathlst, name, type):
         #api.output.verbose_msg("load_module", "Failed to load module!")
         #api.output.verbose_msg(["load_module_failure", "load_module"], "Stack:\n{0}".format(traceback.format_exc()))
         #raise SCons.Errors.UserError("Module named '{name}' failed to load!".format(name=name))
-    
+
 
     return sys.modules[modname]
 

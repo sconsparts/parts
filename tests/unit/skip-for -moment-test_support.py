@@ -30,7 +30,8 @@ def find_tests():
 
 
 def my_load(path, name):
-    if (spec := importlib.util.find_spec(name, path)) is not None:
+    spec = importlib.util.find_spec(name, path)
+    if spec is not None:
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
 
