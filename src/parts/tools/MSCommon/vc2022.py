@@ -32,7 +32,7 @@ msvc.Register(
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'x86 -vcvars_ver=14'),
             subst_vars={
-                'VCINSTALL': '${MSVC.INSTALL_ROOT}/VC',
+                'VCINSTALL': '${MSVC.INSTALL_ROOT}',
                 'VSINSTALL': '${MSVC.INSTALL_ROOT}',
                 'FRAMEWORK_ROOT': framework_root(),
                 'FRAMEWORK_ROOT64': framework_root64()
@@ -61,7 +61,7 @@ msvc.Register(
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'amd64_arm'),
             subst_vars={
-                'VCINSTALL': '${MSVC.INSTALL_ROOT}/VC',
+                'VCINSTALL': '${MSVC.INSTALL_ROOT}',
                 'VSINSTALL': '${MSVC.INSTALL_ROOT}',
                 'FRAMEWORK_ROOT': framework_root(),
                 'FRAMEWORK_ROOT64': framework_root64()
@@ -90,7 +90,7 @@ msvc.Register(
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'x86_arm'),
             subst_vars={
-                'VCINSTALL': '${MSVC.INSTALL_ROOT}/VC',
+                'VCINSTALL': '${MSVC.INSTALL_ROOT}',
                 'VSINSTALL': '${MSVC.INSTALL_ROOT}',
                 'FRAMEWORK_ROOT': framework_root(),
                 'FRAMEWORK_ROOT64': framework_root64()
@@ -119,7 +119,7 @@ msvc.Register(
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'amd64_arm64'),
             subst_vars={
-                'VCINSTALL': '${MSVC.INSTALL_ROOT}/VC',
+                'VCINSTALL': '${MSVC.INSTALL_ROOT}',
                 'VSINSTALL': '${MSVC.INSTALL_ROOT}',
                 'FRAMEWORK_ROOT': framework_root(),
                 'FRAMEWORK_ROOT64': framework_root64()
@@ -148,7 +148,7 @@ msvc.Register(
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'x86_arm64'),
             subst_vars={
-                'VCINSTALL': '${MSVC.INSTALL_ROOT}/VC',
+                'VCINSTALL': '${MSVC.INSTALL_ROOT}',
                 'VSINSTALL': '${MSVC.INSTALL_ROOT}',
                 'FRAMEWORK_ROOT': framework_root(),
                 'FRAMEWORK_ROOT64': framework_root64()
@@ -208,7 +208,7 @@ msvc.Register(
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'x86_amd64'),
             subst_vars={
-                'VCINSTALL': '${MSVC.INSTALL_ROOT}/VC',
+                'VCINSTALL': '${MSVC.INSTALL_ROOT}',
                 'VSINSTALL': '${MSVC.INSTALL_ROOT}',
                 'FRAMEWORK_ROOT': framework_root(),
                 'FRAMEWORK_ROOT64': framework_root64()
