@@ -1,0 +1,11 @@
+Import('*')
+
+env.PartVersion("0.0.0")
+env.PartName("part2")
+env.DependsOn([
+               Component('name::part1@platform_match:any-any',requires=REQ.EXISTS)
+               ])
+
+PrintMessage(env.subst('${DEPENDS.part1.EXISTS}'))
+
+env.InstallTarget(env.Program('a2','a.c'))

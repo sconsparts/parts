@@ -73,15 +73,20 @@ def Component(env, name, version_range=None, requires: requirement.REQ = None, s
         version_range = version.version_range(env.subst(version_range))
 
     # set the target value
-    if ('target' in trg.Properties) == False:  # ['target','target-platform','target_platform']
+    if ('target' not in trg.Properties) and ('platform_match' not in trg.Properties):  # ['target','target-platform','target_platform']
         api.output.trace_msg(
             ['component'],
             "Defining default platform_match mapping of:", env['TARGET_PLATFORM'])
         trg.Properties['platform_match'] = env['TARGET_PLATFORM']
     else:
-        api.output.trace_msg(
-            ['component'],
-            "Target defined platform_match mapping of:", trg.Properties['target'])
+        if 'target' in trg.Properties:
+            api.output.trace_msg(
+                ['component'],
+                "Target defined target mapping of:", trg.Properties['target'])
+        if 'platform_match' in trg.Properties:
+                api.output.trace_msg(
+                ['component'],
+                "Target defined platform_match mapping of:", trg.Properties['platform_match'])
 
     # set the version value
     if version_range:
@@ -159,7 +164,7 @@ def depends_on_classic(env, depends: Union[dependent_ref.dependent_ref, List[dep
             if not tmp:
                 # The name was not set, so fall back to alias
                 # for the namespace generation
-                
+
                 tmp = comp.PartRef.Target.Alias
             # split the name so we can make an sub spaces
             tmp = tmp.split('.')

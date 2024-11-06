@@ -1,0 +1,11 @@
+scons: Reading SConscript files ...
+scons: done reading SConscript files.
+``
+Trace: [component] Mapping defined for:
+  target: name::part1@platform_match:any-any
+ with part:
+  name:part2
+  section:build
+  ID=part2
+``
+scons: done building targets.
