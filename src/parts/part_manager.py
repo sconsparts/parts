@@ -780,31 +780,11 @@ class part_manager:
         # these are the list for item we will update on disk
         # we have a list of item we can do in parallel and item that
         # have to be done serial.
-        p_mirror_list = scm.task_master.task_master() # items that can be mirrored
-        p_list = scm.task_master.task_master() # items we can do in parallel
-        s_list = scm.task_master.task_master() # items that have to be done serially
-
-        def do_update(label: str, update_set: Set[scm.base.base]):
-            ######################################
-            # call the task logic with the SCons Job object to update item on disk
-            try:
-                if p_mirror_list._has_tasks():
-                    api.output.print_msg(f"Updating {label} scm mirror jobs")
-                    self.do_disk_update(scm_j, p_mirror_list)
-                    api.output.print_msg(f"Updating {label} scm mirror jobs - Done")
-                if p_list._has_tasks():
-                    api.output.print_msg(f"Updating {label} scm update jobs")
-                    self.do_disk_update(scm_j, p_list)
-                    api.output.print_msg(f"Updating {label} scm update jobs - Done")
-                if s_list._has_tasks():
-                    api.output.print_msg(f"Updating serial {label} scm jobs")
-                    self.do_disk_update(1, s_list)
-                    api.output.print_msg(f"Updating serial {label} scm jobs - Done")
-            finally:
-                # we do this here to not have to run the tasks if there is
-                # nothing to do
-                for p in update_set:
-                    p.PostProcess()
+        p_mirror_list = scm.task_master.task_master() # scm items that can be mirrored
+        p_extern_list = scm.task_master.task_master() # extern scm items we can do in parallel
+        s_extern_list = scm.task_master.task_master() # extern scm items that have to be done serially
+        p_list = scm.task_master.task_master() # scm items we can do in parallel
+        s_list = scm.task_master.task_master() # scm items that have to be done serially
 
         #########################################################
         # get value for level of number of concurrent checkouts
@@ -812,15 +792,45 @@ class part_manager:
         if scm_j == 0:
             scm_j = SCons.Script.GetOption('num_jobs')
 
+        ######################################
+        # call the task logic with the SCons Job object to update item on disk
         try:
-            scm_extern_update_set = set([]) # items we are updating on disk require update to the state files
-            self._get_scm_extern_tasks(part_list, scm_extern_update_set, p_mirror_list, p_list, s_list)
-            do_update("extern", scm_extern_update_set)
+            # Order required
+            # 1. Update all mirrors
+            # 2. Update extern SCM jobs (parallel and serial)
+            # 3. Update non-extern SCM jobs (parallel and serial)
+            # 4: Post-process everything
 
-            scm_update_set = set([]) # items we are updating on disk require update to the state files
-            self._get_scm_update_tasks(part_list, scm_update_set, p_mirror_list, p_list, s_list)
-            do_update("part", scm_update_set)
+            update_set: Set[scm.base.base] = set([]) # items we are updating on disk require update to the state files
+            self._get_scm_extern_tasks(part_list, update_set, p_mirror_list, p_extern_list, s_extern_list)
+            self._get_scm_update_tasks(part_list, update_set, p_mirror_list, p_list, s_list)
+
+            if p_mirror_list._has_tasks():
+                api.output.print_msg("Updating scm mirror jobs")
+                self.do_disk_update(scm_j, p_mirror_list)
+                api.output.print_msg("Updating scm mirror jobs - Done")
+            if p_extern_list._has_tasks():
+                api.output.print_msg("Updating extern scm update jobs")
+                self.do_disk_update(scm_j, p_extern_list)
+                api.output.print_msg("Updating extern scm update jobs - Done")
+            if s_extern_list._has_tasks():
+                api.output.print_msg("Updating serial extern scm update jobs")
+                self.do_disk_update(1, s_extern_list)
+                api.output.print_msg("Updating serial extern scm update jobs - Done")
+            if p_list._has_tasks():
+                api.output.print_msg("Updating part scm update jobs")
+                self.do_disk_update(scm_j, p_list)
+                api.output.print_msg("Updating part scm update jobs - Done")
+            if s_list._has_tasks():
+                api.output.print_msg("Updating serial part scm update jobs")
+                self.do_disk_update(1, s_list)
+                api.output.print_msg("Updating serial part scm update jobs - Done")
+
         finally:
+            # we do this here to not have to run the tasks if there is
+            # nothing to do
+            for p in update_set:
+                p.PostProcess()
             datacache.SaveCache(key='scm')
 
     def _get_scm_update_tasks(self, part_list: List[pnode.part.Part], update_set: Set[scm.base.base], p_mirror_list: scm.task_master.task_master, p_list: scm.task_master.task_master, s_list: scm.task_master.task_master):
