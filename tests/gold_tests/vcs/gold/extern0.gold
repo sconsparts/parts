@@ -1,0 +1,16 @@
+scons: Reading SConscript files ...
+scons: done reading SConscript files.
+Parts: Updating disk
+Parts: {} needs to be updated on disk
+Parts: Updating extern scm update jobs
+git clone --progress -b master {}git_foobar{}
+Parts: Updating extern scm update jobs - Done
+Parts: {} needs to be updated on disk
+Parts: {} needs to be updated on disk
+Parts: Updating part scm update jobs
+git clone --progress -b master {}
+git clone --progress -b master {}
+Parts: Updating part scm update jobs - Done
+Parts: Updating disk - Done
+Parts: Loaded 2 Parts
+{}

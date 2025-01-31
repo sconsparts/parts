@@ -1,0 +1,17 @@
+from parts import *
+from parts.api import output
+
+env = DefaultEnvironment()
+
+Part(
+    alias = 'compbar1',
+    parts_file = 'compbar.parts',
+    vcs_type = VcsGit(repository = 'git-compbar', server=env['PART_PATH'], protocol="file"),
+    extern = VcsGit(repository = 'git-foobar', server=env['EXTERN_PART_PATH'], protocol="file")
+)
+
+Part(
+    alias = 'compbar2',
+    parts_file = 'compbar2.parts',
+    vcs_type = VcsGit(repository = 'git-compbar2', server=env['PART2_PATH'], protocol="file"),
+)

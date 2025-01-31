@@ -1,5 +1,5 @@
 
-from typing import List, Dict, Union, Optional, Tuple, Any
+from typing import List, Set, Dict, Union, Optional, Tuple, Any
 import copy
 import hashlib
 import time
@@ -567,7 +567,7 @@ class part_manager:
                     pobj_lst = [self.parts[tobj.Alias]]
                 else:
                     pobj_lst = [self._from_alias(i) for i in alias_lst]
-                
+
                 # filter out any of these that don't match the properties
                 if tobj.Properties:
                     pobj_lst = self.reduce_list_from_target(tobj, set(pobj_lst))
@@ -694,7 +694,7 @@ class part_manager:
         # we load each section. The section itself know how to load itself
         # when loading the logic give he whole list of items to load.
         # his allow a section type to do full
-        
+
         glb.processing_sections=True
         num_sec=len(order_sections)
         start_total=time.time()
@@ -729,7 +729,7 @@ class part_manager:
         # at this point everything is defined
         # clear node states ??  still needed?
         glb.pnodes.ClearNodeStates()
-        
+
 
 
     def ProcessSection(self, sec_type, target):
@@ -764,18 +764,18 @@ class part_manager:
                 ret.append(s)
         return ret
 
-    def UpdateOnDisk(self, part_set=None):
+    def UpdateOnDisk(self, part_list: List[pnode.part.Part]=None):
         ''' Update any parts that need to be updated on disk
 
-        @param part_set The set of Part to see if they are up-to-date, if test all Parts
+        @param part_list The set of Part to see if they are up-to-date, if test all Parts
         '''
         # we need to see if any part needs to be checked out or updated
         # loop each part and ask it need to be updated
 
         # define the set of item to try to update
-        if part_set is None:
+        if part_list is None:
             # nothing defined so check all known parts
-            part_set = list(self.parts.values())
+            part_list = List(self.parts.values())
 
         # these are the list for item we will update on disk
         # we have a list of item we can do in parallel and item that
@@ -784,44 +784,52 @@ class part_manager:
         p_list = scm.task_master.task_master() # items we can do in parallel
         s_list = scm.task_master.task_master() # items that have to be done serially
 
-        # items we are updating on disk require update to the state files
-        update_set = set([])
+        def do_update(label: str, update_set: Set[scm.base.base]):
+            ######################################
+            # call the task logic with the SCons Job object to update item on disk
+            try:
+                if p_mirror_list._has_tasks():
+                    api.output.print_msg(f"Updating {label} scm mirror jobs")
+                    self.do_disk_update(scm_j, p_mirror_list)
+                    api.output.print_msg(f"Updating {label} scm mirror jobs - Done")
+                if p_list._has_tasks():
+                    api.output.print_msg(f"Updating {label} scm update jobs")
+                    self.do_disk_update(scm_j, p_list)
+                    api.output.print_msg(f"Updating {label} scm update jobs - Done")
+                if s_list._has_tasks():
+                    api.output.print_msg(f"Updating serial {label} scm jobs")
+                    self.do_disk_update(1, s_list)
+                    api.output.print_msg(f"Updating serial {label} scm jobs - Done")
+            finally:
+                # we do this here to not have to run the tasks if there is
+                # nothing to do
+                for p in update_set:
+                    p.PostProcess()
 
-        self._get_scm_update_tasks(part_set, update_set, p_mirror_list, p_list, s_list)
         #########################################################
         # get value for level of number of concurrent checkouts
         scm_j = SCons.Script.GetOption('scm_jobs')
         if scm_j == 0:
             scm_j = SCons.Script.GetOption('num_jobs')
 
-        ######################################
-        # call the task logic with the SCons Job object to update item on disk
         try:
-            if p_mirror_list._has_tasks():
-                api.output.print_msg("Updating mirrors")
-                self.do_disk_update(scm_j, p_mirror_list)
-                api.output.print_msg("Updating mirrors - Done")
-            if p_list._has_tasks():
-                # get value for level of number of concurrent checkouts
-                self.do_disk_update(scm_j, p_list)
-            if s_list._has_tasks():
-                self.do_disk_update(scm_j, s_list)
+            scm_extern_update_set = set([]) # items we are updating on disk require update to the state files
+            self._get_scm_extern_tasks(part_list, scm_extern_update_set, p_mirror_list, p_list, s_list)
+            do_update("extern", scm_extern_update_set)
+
+            scm_update_set = set([]) # items we are updating on disk require update to the state files
+            self._get_scm_update_tasks(part_list, scm_update_set, p_mirror_list, p_list, s_list)
+            do_update("part", scm_update_set)
         finally:
-            # we do this here to not have to run the tasks if there is
-            # nothing to do
-            for p in update_set:
-                p.PostProcess()
             datacache.SaveCache(key='scm')
 
-    def _get_scm_update_tasks(self, part_set, update_set, p_mirror_list, p_list, s_list):
+    def _get_scm_update_tasks(self, part_list: List[pnode.part.Part], update_set: Set[scm.base.base], p_mirror_list: scm.task_master.task_master, p_list: scm.task_master.task_master, s_list: scm.task_master.task_master):
         '''
         Break up the scm objects to parallel and serial list
         '''
-        # update any extern part cases we need to update
-        self._get_scm_extern_tasks(part_set, p_list, p_mirror_list, update_set)
 
         # this is the set of part we need to check for updating
-        for p in part_set:
+        for p in part_list:
             # if so add to queue for checkout
             scmobj = p.Scm
 
@@ -841,30 +849,33 @@ class part_manager:
                 # update cache file if it does not exist
                 update_set.add(scmobj)
 
-    def _get_scm_extern_tasks(self, part_set, scm_objs, mirror_objs, update_set):
+    def _get_scm_extern_tasks(self, part_list: List[pnode.part.Part], update_set: Set[scm.base.base], p_mirror_list: scm.task_master.task_master, p_list: scm.task_master.task_master, s_list: scm.task_master.task_master):
         '''
-
+        Break up the extern scm objects to parallel and serial list
         '''
-        # filter the part_set to get all item that have extern items
-        part_set = [pobj for pobj in part_set if pobj.ExternScm]
+        # filter the part_list to get all item that have extern items
+        part_list = [pobj for pobj in part_list if pobj.ExternScm]
 
         # for each item see if we have seen this item and if not add it to the
         # set of items to checkout. We detect if an item is seem by look at the
         # resolved $SCM_EXTERN_DIR value
         known_paths = []
-        for pobj in part_set:
+        for pobj in part_list:
             path = pobj.ExternScm._env.subst("${SCM_EXTERN_DIR}")
-            scm_obj = pobj.ExternScm
+            scm_obj : scm.base.base = pobj.ExternScm
             if path not in known_paths:
                 known_paths.append(path)
                 if scm_obj.NeedsToUpdate():
                     update_set.add(scm_obj)
-                    scm_objs.append(scm_obj)
+                    if scm_obj.AllowParallelAction():
+                        p_list.append(scm_obj)
+                    else:
+                        s_list.append(scm_obj)
 
                 if scm_obj.NeedsToUpdateMirror():
-                    mirror_objs.append(scm_obj, mirror=True)
+                    p_mirror_list.append(scm_obj, mirror=True)
 
-    def do_disk_update(self, count: int, scm_objs: List[scm.base.base]):
+    def do_disk_update(self, count: int, scm_objs: scm.task_master.task_master):
 
         def post_scm_func(jobs, tm):
             if jobs.were_interrupted():
