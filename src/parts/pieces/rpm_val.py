@@ -52,8 +52,8 @@ headers = [
     dict(key='Requires', extra_keys=('X_RPM_REQUIRES',), value_mapper=rpm_list_mapper, value='{key}: {value}\n',),
     dict(key='BuildRequires', extra_keys=('X_RPM_BUILDREQUIRES',), value_mapper=rpm_list_mapper, value='{key}: {value}\n',),
     dict(key='Provides', extra_keys=('X_RPM_PROVIDES',), value_mapper=rpm_list_mapper, value='{key}: {value}\n',),
-    dict(key='Conflicts', extra_keys=('X_RPM_CONFLICTS',), value='{key}: {value}\n',),
-    dict(key='Obsoletes', extra_keys=('X_RPM_OBSOLETES',), value='{key}: {value}\n',),
+    dict(key='Conflicts', extra_keys=('X_RPM_CONFLICTS',), value_mapper=rpm_list_mapper, value='{key}: {value}\n',),
+    dict(key='Obsoletes', extra_keys=('X_RPM_OBSOLETES',), value_mapper=rpm_list_mapper, value='{key}: {value}\n',),
     dict(key='Epoch', extra_keys=('X_RPM_EPOCH',), value='{key}: {value}\n',),
     dict(key='AutoReqProv', extra_keys=('X_RPM_AUTOREQPROV',), value='{key}: {value}\n',),
     dict(key='AutoReq', extra_keys=('X_RPM_AUTOREQ',), value='{key}: {value}\n',),
@@ -193,8 +193,8 @@ def rpm_spec(env, target, source):
 
 
 def add_if(env, tmpl, keylst, value_mapper, default, required, lookup):
-    key = keylst[0]    
-    if lookup:        
+    key = keylst[0]
+    if lookup:
         for i in keylst:
             if i.startswith("%"):
                 i = i[1:]
@@ -207,7 +207,7 @@ def add_if(env, tmpl, keylst, value_mapper, default, required, lookup):
                         value=value.replace(",,",",")
                 if value == ',':
                     value = ''
-                
+
                 if value:
                     return tmpl.format(
                         key=key,
