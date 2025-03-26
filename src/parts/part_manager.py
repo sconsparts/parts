@@ -680,15 +680,18 @@ class part_manager:
             full_section_set = glb.pnodes.KnownSections()
             api.output.verbose_msgf(['loading', 'load_stats'],
                                     "Loading everything")
+            api.output.verbose_msg(['dependtree'], pnode.section.get_dependency_tree(glb.pnodes.KnownSections()))
         else:
             # we need to sort the sobjs and add the depends.
             # this make a list in top item is first and anything below it needs to be loaded
             # as it might be a dependent item.
             full_section_set = pnode.section.get_dependent_sections(top_sections)
+            api.output.verbose_msg(['dependtree'], pnode.section.get_dependency_tree(top_sections))
         # get sections.. order first items are on the bottom
         # top level sections are at the back
         order_sections = pnode.section.toposort(full_section_set)
 
+        api.output.verbose_msg(['loading'], f"Sections to load: {[s.Part.ID for s in order_sections]}")
 
         # loop the order sections first to last
         # we load each section. The section itself know how to load itself

@@ -365,15 +365,15 @@ class Section(pnode.PNode):
         # define the import builder for all items that will be imported
         #import_out = builders.imports.map_imports(self.Env, self)
         #dyn_import_out = builders.dyn_imports.map_dyn_imports(self.Env, self)
-        
+
         # process the depends logic. Older version did via a scanner, which has risks
         # now that we can make sure that all sections are mapped after the depends are processed
-        # we can make sure we know all the depends, and statically map the import.jsn to the needed 
+        # we can make sure we know all the depends, and statically map the import.jsn to the needed
         # dependent export.jsn
         depends_dyn_exports = []
-        for comp in self.Depends: 
+        for comp in self.Depends:
             # if the depend is not matching and it is optional we can skip
-            if not comp.hasUniqueMatch and comp.isOptional:                
+            if not comp.hasUniqueMatch and comp.isOptional:
                 continue
             # does this depends has dynamic exports.. if so we need to do a mapping
             elif comp.Section.hasDynamicExports:
@@ -388,7 +388,7 @@ class Section(pnode.PNode):
                     targets = requirement.mapto(self)
                     for t in targets:
                         self._map_target(value, t)
-            
+
         # map targets with a depends on the imports, so they are mapped
         # in the environment before the target tries to build
         # ideally I would like to avoid this, but this allows everything to move forward
@@ -401,9 +401,9 @@ class Section(pnode.PNode):
         if depends_dyn_exports:
             for target in self.BottomLevelTargets():
                 api.output.verbose_msg(
-                    [f"loading.section.{self.ID}", "loading.section", "loading", f"mapping.section.{self.ID}", "mapping.section", "mapping"], 
+                    [f"loading.section.{self.ID}", "loading.section", "loading", f"mapping.section.{self.ID}", "mapping.section", "mapping"],
                     f"Mapping {target.ID} -> {depends_dyn_exports}"
-                    )                
+                    )
                 self.Env.Depends(target, depends_dyn_exports)
 
         # for each section we also want to define a export file
@@ -412,20 +412,20 @@ class Section(pnode.PNode):
         # this makes sure with code below that the REQ.EXISTS mapping data is handled at the very least
         export_jsn = self.Env._map_export_(depends_dyn_exports) # this is an empty list.. that is fine.
         api.output.verbose_msg(
-            [f"loading.section.{self.ID}", "loading.section", "loading",f"mapping.section.{self.ID}", "mapping.section", "mapping"], 
+            [f"loading.section.{self.ID}", "loading.section", "loading",f"mapping.section.{self.ID}", "mapping.section", "mapping"],
             f"Mapping {export_jsn[0]} -> {depends_dyn_exports}"
         )
 
-        
+
         # define the top level aliases mappings
         self._map_target(export_jsn) # map the export file to the top level alias
-        
+
         # define node for the packages to bind to if needed
         dnode = self.Env.DynamicPackageNodes(export_jsn)
         api.output.verbose_msg(
-            [f"loading.section.{self.ID}", "loading.section", "loading",f"mapping.section.{self.ID}", "mapping.section", "mapping"], 
+            [f"loading.section.{self.ID}", "loading.section", "loading",f"mapping.section.{self.ID}", "mapping.section", "mapping"],
             f"Mapping dynamic packaging state file {dnode} -> {export_jsn}")
-        
+
         self._map_targets()
         # because we exist. The REQ.EXISTS maps this value to any dependent Sections
         # because if this we need a node. We use the Alias node for the section.
@@ -443,7 +443,7 @@ class Section(pnode.PNode):
             #ret = node_helpers.has_changed(self.Env["DYN_EXPORT_FILE"], skip_implicit=False)
             #print(f"return = {ret & ChangeCheck.DIFF}")
             # reset the "cached" info in the code
-            
+
 
     @property
     def AlwaysBuild(self):
@@ -656,7 +656,7 @@ class Section(pnode.PNode):
         # filter some special targets
         alias_str = '{0}::alias::{1}'.format(self.Name, self.__pobj.Alias)
         rm_targets = set(self.__env.Alias(alias_str))
-        
+
         for trg in targets:
             tmp = (trg.sources if trg.sources else []) + \
                 (trg.depends if trg.depends else []) + \
@@ -664,7 +664,7 @@ class Section(pnode.PNode):
             rm_targets.update(tmp)
 
         ret = list(targets - rm_targets)
-        
+
         api.output.verbose_msgf(
             ['top-level-mapping'],
             f"Time to generate top level nodes {time.time()-st} sec"
@@ -675,12 +675,12 @@ class Section(pnode.PNode):
         return ret
 
     def BottomLevelTargets(self):
-        
+
         api.output.verbose_msg(['bottom-level-mapping'],"Generating bottom level target nodes")
         st=time.time()
         # for each target
         ret = []
-        
+
         #test_targets = set()
         #children = {}
         for node in self.filter_system_nodes(self.Targets):
@@ -738,7 +738,7 @@ class Section(pnode.PNode):
         return ret
 
     def _map_target(self, node: Union[SCons.Node.Node, Sequence[SCons.Node.Node]], subtarget: Optional[str] = None) -> None:
-        
+
         # if we have a sub-target, we will want to map it to the top-level target
         if subtarget:
             alias_str = f'{self._metasection.concepts[0]}::alias::{self.__pobj.Alias}::{subtarget}'
@@ -753,7 +753,7 @@ class Section(pnode.PNode):
                 [f"mapping.section.{self.ID}", "mapping.section", "mapping"],
                 'Mapping {0} -> {1}',alias_str,node
                 )
-        self.__env.Alias(alias_str, node)        
+        self.__env.Alias(alias_str, node)
 
     def _map_targets(self):
         '''
@@ -779,7 +779,7 @@ class Section(pnode.PNode):
             [f"mapping.section.{self.ID}", "mapping.section", "mapping"],
             f'Mapping recursive {alias_str_r} -> {a[0].ID}'
             )
-        
+
         a1 = self.__env.Alias(alias_str_r, a)
         # map build::alias::foo.sub1:: -> build::alias::foo::
         if not self.Part.isRoot:  # ie we have a parent
@@ -1160,6 +1160,24 @@ def get_dependent_sections(top_sections):
 
     return set(stack)
 
+# Print the dependency tree to the logs/console
+#
+# First step of thinking about how to speed up the superbuild by tracking changes in the part file and
+# only building what we need to build. General idea:
+# 1. Scan the dependency tree of the build and detect what has changed (added parts or updated parts)
+# 1a. Possible make this its own full-fledged Scons-Parts step (i.e. scons --dependency_tree foo)
+# 1b. Need to output to some sort of format: json? yaml?
+# 2. Fully walk the now filled-out tree and mark all paths leading to changed things. Anything marked
+#    needs to be rebuilt
+# 3. Add those things to stuff we should build at the top level, and regenerate the full_section_set and
+#    then the toposort
+#
+def get_dependency_tree(sections: Set[Section], depth: int = 0) -> str:
+    ret: str = ''
+    for section in sections:
+        ret += f"\n{' ' * depth * 3}{section.Part.Name} {section.Part.Version}"
+        ret += get_dependency_tree(section.DependentSections(), depth + 1)
+    return ret
 
 def map_requirement(env, req, dependref):
     '''
@@ -1203,7 +1221,7 @@ def map_requirement(env, req, dependref):
         if req.key in ("CPPDEFINES"):
             # this is special cases in SCons
             find_val = (find_val,)
-    
+
     if dependref.Section.hasDynamicExports:
         # need to map in the classic mapper way as we just don't know
         map_val = req.value_mapper(dependref.PartRef.Target, dependref.SectionName, dependref.isOptional)
