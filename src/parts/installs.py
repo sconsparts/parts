@@ -104,8 +104,8 @@ def ProcessInstall(env, target, sources, sub_dir, create_sdk, sdk_dir='', no_pkg
                               create_sdk=create_sdk
                               )
         elif target == pkg_config:
-            ret = env.SdkPkgConfig([sources], 
-                          from_prefix=kw.get('from_prefix', None), 
+            ret = env.SdkPkgConfig([sources],
+                          from_prefix=kw.get('from_prefix', None),
                           make_uninstall=kw.get('make_uninstall', True),
                           sub_dir=sub_dir,
                           create_sdk=create_sdk
@@ -128,7 +128,7 @@ def ProcessInstall(env, target, sources, sub_dir, create_sdk, sdk_dir='', no_pkg
                 sdk_files = s.target_source(pattern_dest_sdk)[0]
                 # do we even have something in the pattern?
                 if sdk_files:
-                    
+
                     ret = None
                     # if so see if we need to SDK it
                     sdkf, sr = s.target_source(pattern_dest_sdk)
@@ -136,7 +136,7 @@ def ProcessInstall(env, target, sources, sub_dir, create_sdk, sdk_dir='', no_pkg
                         if (sdkfile,sub_dir) not in sdk.g_sdked_files:
                             do_sdk(s)
                             break
-                    
+
                     inst, sr = s.target_source(dest_dir)
                     # translate the pattern to the install form correctly
                     inc = []
@@ -176,7 +176,7 @@ def ProcessInstall(env, target, sources, sub_dir, create_sdk, sdk_dir='', no_pkg
 
     else:
         #print(f"here, {sources}")
-        
+
         for s in sources:
             if isinstance(s, pattern.Pattern):
                 t, sr = s.target_source(dest_dir)
@@ -249,11 +249,18 @@ def InstallItem(env, target, source, sub_dir="", sdk_dir='', no_pkg=False, creat
         # add installed file to Part object
         pobj.DefiningSection.InstalledFiles.update(installed_files)
 
-        env.MetaTag(
-            installed_files, 'package',
+        metatag_dict = dict(
             part_alias=env['ALIAS'],
             part_name=env.subst('$PART_NAME'),
-            part_version=env.subst('$PART_VERSION')
+            part_version=env.subst('$PART_VERSION'),
+        )
+
+        if sub_dir:
+            metatag_dict['sub_dir'] = sub_dir
+
+        env.MetaTag(
+            installed_files, 'package',
+            **metatag_dict
         )
 
     errors.ResetPartStackFrameInfo()
@@ -284,7 +291,7 @@ def InstallTarget(env, source, sub_dir='', no_pkg=False, create_sdk=True, **kw):
         # We have an individual item
         if isinstance(i, SCons.Node.FS.File) or isinstance(
                 i, SCons.Node.FS.Dir) or isinstance(i, SCons.Node.Node) or util.isString(i):
-            
+
             if util.isString(i):
                 i = env.Entry(i)
 

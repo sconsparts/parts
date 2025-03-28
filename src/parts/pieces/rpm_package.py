@@ -141,6 +141,9 @@ def rpm_scanner(node, env, path, args=None):
             # get category of this node
             pk_type = env.MetaTagValue(n, 'category', 'package')
 
+            # get subdir of this node
+            sub_dir = env.MetaTagValue(n, 'sub_dir', 'package')
+
             ###############################################################
             # Process the package filters. These allow us to call other build
             # action to process items, such as runpath tweaking or tweaking
@@ -164,9 +167,14 @@ def rpm_scanner(node, env, path, args=None):
                 # This build should also check if it is a binary and skip
                 # "scripts" or text files that make be installed in these areas
 
+                target_prefix = f"$BUILD_DIR/_RPM_RUNPATH_${{PART_MINI_SIG}}/{pk_type}"
+
+                if sub_dir:
+                    target_prefix += f"/{sub_dir}"
+
                 filtered = env.SetRPath(
                     filtered,
-                    RPATH_TARGET_PREFIX=f"$BUILD_DIR/_RPM_RUNPATH_${{PART_MINI_SIG}}/{pk_type}",
+                    RPATH_TARGET_PREFIX=target_prefix,
                     allow_duplicates=True
                 )
 
