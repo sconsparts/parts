@@ -24,7 +24,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                     special arguments to pass, or don't want any arguments passed.
     configure - The default configure program to call. Some configure like projects (-openssl-)
                 have a slightly different script (Configure) that should called instead
-    prefix - If defined will use custom prefix and add DESTDIR to the make install, 
+    prefix - If defined will use custom prefix and add DESTDIR to the make install,
                 if None it will use the default $AUTO_MAKE_DESTDIR and not add DESTDIR to the make install
     configure_args - are extra args we need to pass to correctly configure the build
     auto_configure_args - extra value to set various flags with what Parts is using. Certain automake like
@@ -70,20 +70,20 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
     # AUTO_MAKE_DESTDIR_FLAG - The flags we pass to the install command to tell it where to install to
     if prefix:
         # if a prefix is provided (default) we expect to do a DESTDIR install
-        env.SetDefault(AUTO_MAKE_CONFIGURE_PREFIX=env.Dir(prefix).abspath) # use Dir as this remove the '#' from the path    
+        env.SetDefault(AUTO_MAKE_CONFIGURE_PREFIX=env.Dir(prefix).abspath) # use Dir as this remove the '#' from the path
         env.SetDefault(AUTO_MAKE_INSTALL_DESTDIR="${AUTO_MAKE_DESTDIR}${AUTO_MAKE_CONFIGURE_PREFIX}")
         env.SetDefault(AUTO_MAKE_DESTDIR_FLAG="DESTDIR=${AUTO_MAKE_DESTDIR}")
     else:
         # if it is not provided we have a messed up automake build and we will want to install in the
-        # default build location 
+        # default build location
         env.SetDefault(AUTO_MAKE_CONFIGURE_PREFIX=env.Dir("${AUTO_MAKE_DESTDIR}").abspath) # use Dir as this remove the '#' from the path
         env.SetDefault(AUTO_MAKE_INSTALL_DESTDIR="${AUTO_MAKE_DESTDIR}")
         env.SetDefault(AUTO_MAKE_DESTDIR_FLAG="")
-    
+
     auto_scan_dir=env.subst("$AUTO_MAKE_INSTALL_DESTDIR")
     env_org.SetDefault(AUTO_MAKE_INSTALL_DESTDIR=auto_scan_dir)
     env['CONFIGURE_PREFIX'] = "$AUTO_MAKE_CONFIGURE_PREFIX" # backward compatibility
-    
+
 
     env.PrependUnique(AUTO_MAKE_INSTALL_ARGS=[env["AUTO_MAKE_DESTDIR_FLAG"]])
 
@@ -297,7 +297,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
 
     ret = env.CCommand(
         [
-            auto_scan_dir, 
+            auto_scan_dir,
         ],
         build_files+sources,
         # the -rpath-link is to get the correct paths for the binaries to link with the rpath usage of the makefile
@@ -353,7 +353,8 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
 
 # adding logic to SCons Environment object
 api.register.add_method(AutoMake)
-api.register.add_variable('AUTO_MAKE_BUILDDIR', "$BUILD_DIR/build", 'Defines build directory for automake build')
+api.register.add_variable('AUTO_MAKE_BUILDDIR', "$BUILD_DIR/$AUTO_MAKE_BUILDSUBDIR", 'Defines build directory for automake build')
+api.register.add_variable('AUTO_MAKE_BUILDSUBDIR', "build", 'Defines build subdirectory for automake build')
 api.register.add_variable('AUTO_MAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines install directory for automake build')
 api.register.add_variable('_ABSCPPINCFLAGS', '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
 api.register.add_variable(

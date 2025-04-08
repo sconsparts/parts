@@ -22,8 +22,8 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
     '''
     env_org = env
     env = env.Clone(**kw)
-    build_dir : Dir = env.Dir("$BUILD_DIR/build")
-    
+    build_dir : Dir = env.Dir("$CMAKE_BUILDDIR")
+
     # The sandbox for the build install
     # we have three variables to help with this
     #
@@ -33,24 +33,24 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
     # CMAKE_DESTDIR_FLAG - The flags we pass to the install command to tell it where to install to
     if prefix:
         # if a prefix is provided (default) we expect to do a DESTDIR install
-        env.SetDefault(CMAKE_CONFIGURE_PREFIX=env.Dir(prefix).abspath) # use Dir as this remove the '#' from the path    
+        env.SetDefault(CMAKE_CONFIGURE_PREFIX=env.Dir(prefix).abspath) # use Dir as this remove the '#' from the path
         env.SetDefault(CMAKE_INSTALL_DESTDIR="${CMAKE_DESTDIR}${CMAKE_CONFIGURE_PREFIX}")
         env.SetDefault(CMAKE_DESTDIR_FLAG="DESTDIR=${CMAKE_DESTDIR}")
-        
+
     else:
         # if it is not provided we have a messed up automake build and we will want to install in the
-        # default build location 
+        # default build location
         env.SetDefault(CMAKE_CONFIGURE_PREFIX="${CMAKE_DESTDIR}") # use Dir as this remove the '#' from the path
-        env.SetDefault(CMAKE_INSTALL_DESTDIR="${CMAKE_DESTDIR}") 
+        env.SetDefault(CMAKE_INSTALL_DESTDIR="${CMAKE_DESTDIR}")
         env.SetDefault(CMAKE_DESTDIR_FLAG="")
 
     cmake_scan_dir=env.subst("$CMAKE_INSTALL_DESTDIR")
     env_org.SetDefault(CMAKE_INSTALL_DESTDIR=cmake_scan_dir)
-    
+
     env.SetDefault(CMAKE='cmake')
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$$$$$$$ORIGIN")}'
 
-    
+
     cflags = '-DCMAKE_C_FLAGS="$CCFLAGS" -DCMAKE_CXX_FLAGS="$CCFLAGS" '
     if hide_c_flags:
         cflags=''
@@ -67,7 +67,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
         '-DCMAKE_C_COMPILER=$CC '
         '$CMAKE_ARGS'
                    )
-    
+
     if 'cmakedir' in kw:
         cmake_dir = kw['cmakedir'] # for backwards compatibility
     if cmake_dir:
@@ -106,7 +106,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
 
     if top_level:
         # track a lesser set.. which is probally ok as if CMake is being called this is probally
-        #  only needed for support 
+        #  only needed for support
         src_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=cmake_build_files+[".git/*"]+ignore, recursive=False).files()
     else:
         # track a lot of files
@@ -143,4 +143,6 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
 # adding logic to Scons Environment object
 api.register.add_method(CMake)
 
+api.register.add_variable('CMAKE_BUILDDIR', "$BUILD_DIR/$CMAKE_BUILDSUBDIR", 'Defines build directory for CMake build')
+api.register.add_variable('CMAKE_BUILDSUBDIR', "build", 'Defines build subdirectory for CMake build')
 api.register.add_variable('CMAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines location to install bits from the CMake')
