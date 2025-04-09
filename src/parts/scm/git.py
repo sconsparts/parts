@@ -140,8 +140,8 @@ class git(base):
         git_out_path = self.MirrorPath
         clone_path = self.FullPath
 
-        strval = f'git clone --mirror --progress {clone_path} "{git_out_path}"'
-        cmd = f'"{git.gitpath}" clone --mirror --progress {clone_path} "{git_out_path}"'
+        strval = f'git clone --mirror ${{GIT_MIRROR_ARGS}} {clone_path} "{git_out_path}"'
+        cmd = f'"{git.gitpath}" clone --mirror ${{GIT_MIRROR_ARGS}} {clone_path} "{git_out_path}"'
         ret = [self._env.Action(cmd, strval)]
 
         return ret
@@ -151,28 +151,28 @@ class git(base):
         Update an exiting mirror
         '''
 
-        strval = f'cd {self.MirrorPath} && git fetch --force'
-        cmd = f'cd {self.MirrorPath} && "{git.gitpath}" fetch --force'
+        strval = f'cd {self.MirrorPath} && git fetch --force ${{GIT_FETCH_ARGS}}'
+        cmd = f'cd {self.MirrorPath} && "{git.gitpath}" fetch --force ${{GIT_FETCH_ARGS}}'
         ret = [self._env.Action(cmd, strval)]
 
         return ret
-    
+
     def get_remote_head(self):
-    
+
         clone_path = self.FullPath
-    
+
         ret, data = base.command_output(f'"{git.gitpath}" ls-remote --symref {clone_path} HEAD')
         if not ret:
             # Parse return value of the git command
-            # the first line should look something like: 
+            # the first line should look something like:
             # ref: refs/heads/main	HEAD
-            
+
             first_line = data.split("\n")[0]
             ref = first_line.split("\t")[0]
             default_branch = ref.split("/")[2]
         else:
             default_branch = None
-    
+
         return default_branch
 
     def UpdateAction(self, out_dir):
@@ -229,13 +229,13 @@ class git(base):
         elif not self.__branch:
             if not self._env["GIT_DEFAULT_BRANCH"]:
                 branch = self.get_remote_head()
-            else: 
+            else:
                 branch = self._env["GIT_DEFAULT_BRANCH"]
         else:
             branch = self.__branch
-            
+
         api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"], " Requested branch: {0}", branch)
-        
+
         cmd1 = f'{cd_dir} "{git.gitpath}" checkout ${{GIT_CHECKOUT_ARGS}} {branch}'
         strval1 = f'{cd_dir} git checkout ${{GIT_CHECKOUT_ARGS}} {branch}'
         checkout_action = [
@@ -300,9 +300,9 @@ class git(base):
             if self.__revision or on_tag:
                 prefix = ''
             # hard reset_action
-            
+
             api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"], " Requested branch: {0}{1}", prefix, branch)
-            
+
             cmd1 = f'{cd_dir} "{git.gitpath}" reset ${{GIT_RESET_ARGS}} --hard {prefix}{branch}'
             strval1 = f'{cd_dir} git reset ${{GIT_RESET_ARGS}} --hard {prefix}{branch}'
             hard_reset_action = [
@@ -388,8 +388,8 @@ class git(base):
 
         api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"], " Requested branch: {0}", branch)
 
-        strval = f'git clone ${{GIT_CLONE_ARGS}} --progress {branch} {clone_path} "{git_out_path}"'
-        cmd = f'"{git.gitpath}" clone ${{GIT_CLONE_ARGS}} --progress {branch} {clone_path} "{git_out_path}"'
+        strval = f'git clone ${{GIT_CLONE_ARGS}} {branch} {clone_path} "{git_out_path}"'
+        cmd = f'"{git.gitpath}" clone ${{GIT_CLONE_ARGS}} {branch} {clone_path} "{git_out_path}"'
         ret = [self._env.Action(cmd, strval)]
 
         cd_dir = f'cd {out_dir} &&'
@@ -830,6 +830,12 @@ api.register.add_variable('EXTERN_GIT_SERVER', '', '')
 api.register.add_enum_variable('EXTERN_GIT_PROTOCOL', 'https', '', ['https', 'git', 'file', 'local'])
 api.register.add_variable('EXTERN_GIT_REPOSITORY', '', '')
 
+api.register.add_variable('GIT_FETCH_ARGS', '', 'Additional arguments for git-fetch')
+api.register.add_variable('GIT_CHECKOUT_ARGS', '', 'Additional arguments for git-checkout')
+api.register.add_variable('GIT_PULL_ARGS', '', 'Additional arguments for git-pull')
+api.register.add_variable('GIT_RESET_ARGS', '', 'Additional arguments for git-reset')
+api.register.add_variable('GIT_CLONE_ARGS', '--progress', 'Additional arguments for git-clone')
+api.register.add_variable('GIT_MIRROR_ARGS', '--progress', 'Additional arguments for git-clone --mirror')
 
 api.register.add_global_object('VcsGit', git)
 api.register.add_global_object('ScmGit', git)
