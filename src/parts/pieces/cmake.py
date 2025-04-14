@@ -65,6 +65,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
         '-DCMAKE_EXE_LINKER_FLAGS="$LINKFLAGS $_RUNPATH $_ABSRPATHLINK" '
         '-DCMAKE_CXX_COMPILER=$CXX '
         '-DCMAKE_C_COMPILER=$CC '
+        '${define_if("$CMAKE_PREFIX_PATH","-DCMAKE_PREFIX_PATH=")}\"${MAKEPATH("$CMAKE_PREFIX_PATH",";")}\" '
         '$CMAKE_ARGS'
                    )
 

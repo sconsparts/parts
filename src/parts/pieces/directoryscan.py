@@ -277,7 +277,7 @@ pkgconfig_scan = dict(
         from_prefix="${PACKAGE_ROOT}",
     ),
     # this makes the uninstalled version of the pkg-config files
-    # given nothing seen generates this as part of known build system this without a guard.. 
+    # given nothing seen generates this as part of known build system this without a guard..
     # might want to add one all the same
     PkgConfigUninstall = dict(
         target=lambda node, env, default=None: node.Dir("lib/pkgconfig"),
@@ -297,11 +297,9 @@ pkgconfig_scan = dict(
 cmakeconfig_scan = dict(
     InstallCMakeConfig=dict(
         source=lambda node, env, default=None: [
-            env.Pattern(src_dir=node.Dir("lib/cmake"), includes=["*"]),
-            env.Pattern(src_dir=node.Dir(
-                "lib32/cmake"), includes=["*"]),
-            env.Pattern(src_dir=node.Dir(
-                "lib64/cmake"), includes=["*"]),
+            env.Pattern(src_dir=node.Dir("lib/cmake"), includes=["*.cmake"]),
+            env.Pattern(src_dir=node.Dir("lib32/cmake"), includes=["*.cmake"]),
+            env.Pattern(src_dir=node.Dir("lib64/cmake"), includes=["*.cmake"]),
         ],
     )
 )

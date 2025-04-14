@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import pathlib
 
 import SCons.Script
 
@@ -33,13 +34,13 @@ def process_Sdk_Copy(env, batch_key, target_dir, source, create_sdk: bool = True
                 src_dir.append(t)
             t, sr = s.target_source(target_dir)
             for tn, sn in zip(t,sr):
-            
+
                 subdir = common.relpath(os.path.dirname(tn.ID),target_dir.ID)
                 if subdir == ".":
                     subdir = ""
                 g_sdked_files.add((tn, subdir))
                 g_sdked_files.add((sn, subdir))
-            
+
             if create_sdk == False:
                 out += sr  # s.files(t)
             else:
@@ -100,12 +101,12 @@ def process_Sdk_Copy(env, batch_key, target_dir, source, create_sdk: bool = True
     return (out, src_dir)
 
 
-def SdkItem(env, target_dir, source, sub_dir='', post_fix='', export_info=[], add_to_path=True,
+def SdkItem(env, target_dir, sources, sub_dir='', post_fix='', export_info=[], add_to_path=True,
             auto_add_file=True, use_src_dir=False, use_build_dir=False, create_sdk=True):
 
     errors.SetPartStackFrameInfo(True)
 
-    source = SCons.Script.Flatten(source)
+    sources = SCons.Script.Flatten(sources)
 
     pobj = glb.engine._part_manager._from_env(env)
 
@@ -133,8 +134,8 @@ def SdkItem(env, target_dir, source, sub_dir='', post_fix='', export_info=[], ad
 
     batch_key = hash(pobj.Alias), hash(target_dir_name)
     # Process the SDK COPY part of the SDK Item
-    targets, source_dir = process_Sdk_Copy(env, batch_key, dest_dir, source, create_sdk, do_clean, sub_dir)
-    # print("sdk",targets,source_dir)
+    targets, source_dirs = process_Sdk_Copy(env, batch_key, dest_dir, sources, create_sdk, do_clean, sub_dir)
+    # print("sdk",targets,source_dirs)
     if create_sdk == False and use_build_dir == True:
         target_dir = env.Dir('$BUILD_DIR')
     elif create_sdk == False and use_build_dir == False:
@@ -146,12 +147,22 @@ def SdkItem(env, target_dir, source, sub_dir='', post_fix='', export_info=[], ad
         for _type, _prop in export_info:
             # add missing properties in map
             # might add case that allow export of all directories
-            if _type == Xp.EXPORT_TYPES.PATH and add_to_path:
-                target_paths += Xp.export_path(env, [dest_dir], source_dir, sec, _prop, use_src_dir, create_sdk)
+            if _type == Xp.EXPORT_TYPES.PATH:
+                if add_to_path:
+                    target_paths += Xp.export_path(env, [dest_dir], source_dirs, sec, _prop, use_src_dir, create_sdk)
                 # This line is a hack till we can get a BKM out
-                target_paths += Xp.export_path(env, [target_dir], source_dir, sec, _prop, use_src_dir, create_sdk)
-            elif _type == Xp.EXPORT_TYPES.PATH and not add_to_path:
-                target_paths += Xp.export_path(env, [target_dir], source_dir, sec, _prop, use_src_dir, create_sdk)
+                target_paths += Xp.export_path(env, [target_dir], source_dirs, sec, _prop, use_src_dir, create_sdk)
+            elif _type == Xp.EXPORT_TYPES.PATH_WITH_SUBDIR:
+                for source in sources:
+                    for subdir in source.sub_dirs():
+                        path_tokens = pathlib.Path(subdir.get_relpath()).parts
+                        sub_dir = path_tokens[-1]
+                        dest_subdir = env.Dir('./' + sub_dir, directory=target_dir) # To overcome the case when sub_dir starts with #
+                        source_subdirs = []
+                        for source_dir in source_dirs:
+                            source_subdirs.append(env.Dir('./' + sub_dir, directory=source_dir))
+                        target_paths += Xp.export_path(env, [dest_subdir], source_subdirs, sec, _prop, False, False)
+                target_paths += Xp.export_path(env, [target_dir], source_dirs, sec, _prop, use_src_dir, create_sdk)
             elif _type == Xp.EXPORT_TYPES.FILE and auto_add_file:
                 files = Xp.export_file(env, targets, sec, _prop)
             elif _type == Xp.EXPORT_TYPES.PATH_FILE:
@@ -243,10 +254,13 @@ def SdkPkgConfig(env, source, sub_dir='', from_prefix=None, make_uninstall=True,
     # don't return the internal nodes as they are not something we want to export
     return ret
 
-def SdkCMakeConfig(env, source, sub_dir='', create_sdk=True):
+def SdkCMakeConfig(env, source, sub_dir='', create_sdk=True, add_to_path=None):
 
-    ret = SdkItem(env, '$SDK_CMAKE_CONFIG', source, sub_dir, '', [(Xp.EXPORT_TYPES.PATH, 'CMAKE_CONFIG_PATH')],
-                  create_sdk=create_sdk)
+    if add_to_path is None:
+        add_to_path = env.get('SDK_CMAKE_CONFIG_ADD_TO_PATH', True)
+
+    ret = SdkItem(env, '$SDK_CMAKE_CONFIG', source, sub_dir, '', [(Xp.EXPORT_TYPES.PATH_WITH_SUBDIR, 'CMAKE_PREFIX_PATH')],
+                  create_sdk=create_sdk, add_to_path=add_to_path)
     return ret
 
 

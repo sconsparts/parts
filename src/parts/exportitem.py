@@ -16,7 +16,7 @@ class EXPORT_TYPES:
     FILE = 1
     PATH = 2
     PATH_FILE = 3
-
+    PATH_WITH_SUBDIR = 4
 
 def export_path(env, target_dirs, source_dirs, sobj, prop, use_src=False, create_sdk=True):
 

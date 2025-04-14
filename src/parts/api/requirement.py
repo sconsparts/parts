@@ -130,6 +130,7 @@ DefineRequirementSet('PKG_CONFIG_PATH', [requirement('PKG_CONFIG_PATH', public=T
 # help with third part builds ( cmake mostly in this case)
 DefineRequirementSet('DESTDIR_PATH', [requirement('DESTDIR_PATH', public=True, listtype=False,
                                                   policy=REQ.Policy.ignore, internal=True, force_internal=True)])
+DefineRequirementSet('CMAKE_PREFIX_PATH', [requirement('CMAKE_PREFIX_PATH', public=True, policy=REQ.Policy.ignore, internal=True)])
 
 # Packaging
 DefineRequirementSet('RPM_PACKAGE_RUNPATH', [requirement('RPM_PACKAGE_RUNPATH', public=True,
@@ -178,6 +179,7 @@ DefineRequirementSet(
         'PKG_CONFIG_PATH',
         "PKG_DEFAULTS",
         "DESTDIR_PATH",
+        "CMAKE_PREFIX_PATH",
         "RPATHLINK",
         "RPM_PACKAGE_RUNPATH"
     ],
