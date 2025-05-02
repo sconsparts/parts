@@ -362,3 +362,7 @@ api.register.add_variable(
 api.register.add_variable('_AUTOMAKE_BUILD_ARGS',
                           'LDFLAGS="$LINKFLAGS $MAKE_LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS" V=1', '')
 api.register.add_list_variable('AUTOMAKE_BUILD_ARGS', SCons.Util.CLVar(), '')
+
+# TODO: consider introducing $SYSINCPREFIX and $SYSINCSUFFIX somewhere
+# https://stackoverflow.com/a/74630953
+api.register.add_variable('_ABSCPPSYSINCFLAGS', '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
