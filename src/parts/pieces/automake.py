@@ -270,7 +270,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         sources = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=ignore_files).files()
 
     configure_cmds.append(
-        f'cd {build_dir.path} && ${{define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}}${{MAKEPATH("$PKG_CONFIG_PATH")}} $AUTO_MAKE_CONFIGURE_WRAPPER {rel_src_path}/{configure} $_CONFIGURE_ARGS $CONFIGURE_ARGS'
+        f'cd {build_dir.path} && ${{define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}}${{MAKEPATH("$PKG_CONFIG_PATH")}} {rel_src_path}/{configure} $_CONFIGURE_ARGS $CONFIGURE_ARGS'
     )
     if configure_post_actions:
         configure_cmds.append(configure_post_actions)
@@ -302,8 +302,8 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         build_files+sources,
         # the -rpath-link is to get the correct paths for the binaries to link with the rpath usage of the makefile
         [
-            f'cd {build_dir.path} ; $AUTO_MAKE_MAKE_WRAPPER make $_AUTOMAKE_BUILD_ARGS $AUTOMAKE_BUILD_ARGS {targets} $(-j{jobs}$)',
-            f'cd {build_dir.path} ; $AUTO_MAKE_MAKE_WRAPPER make {install_targets} $AUTO_MAKE_INSTALL_ARGS'
+            f'cd {build_dir.path} ; make $_AUTOMAKE_BUILD_ARGS $AUTOMAKE_BUILD_ARGS {targets} $(-j{jobs}$)',
+            f'cd {build_dir.path} ; make {install_targets} $AUTO_MAKE_INSTALL_ARGS'
         ],
         source_scanner=scanners.NullScanner,
         target_factory=env.Dir,
@@ -336,7 +336,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                         'set -e\n' +
                         'set -x\n' +
                         'export LD_LIBRARY_PATH=${__env__.Dir("$INSTALL_LIB").abspath}\n' +
-                        '$AUTO_MAKE_MAKE_WRAPPER make $_AUTOMAKE_BUILD_ARGS $AUTOMAKE_BUILD_ARGS {target}\n'.format(target=check_targets) +
+                        'make $_AUTOMAKE_BUILD_ARGS $AUTOMAKE_BUILD_ARGS {target}\n'.format(target=check_targets) +
                         'set +x\n' +
                         "popd\n"),
                     SCons.Defaults.Chmod("$TARGET", 0o755)
@@ -362,10 +362,7 @@ api.register.add_variable(
 api.register.add_variable('_AUTOMAKE_BUILD_ARGS',
                           'LDFLAGS="$LINKFLAGS $MAKE_LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS" V=1', '')
 api.register.add_list_variable('AUTOMAKE_BUILD_ARGS', SCons.Util.CLVar(), '')
-api.register.add_variable('AUTO_MAKE_CONFIGURE_WRAPPER', '', 'Defines a tool to wrap around configure (e.g. emconfigure)')
-api.register.add_variable('AUTO_MAKE_MAKE_WRAPPER', '', 'Defines a tool to wrap around make (e.g. emmake)')
 
 # TODO: consider introducing $SYSINCPREFIX and $SYSINCSUFFIX somewhere
 # https://stackoverflow.com/a/74630953
 api.register.add_variable('_ABSCPPSYSINCFLAGS', '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
-

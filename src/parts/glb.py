@@ -88,9 +88,6 @@ arch_map = {
     'arm': 'arm',
     'arm64': 'aarch64',
     'aarch64': 'aarch64',
-    'wasm32': 'wasm32',
-    'wasm64': 'wasm64',
-    'wasm': 'wasm32', # maybe?
     'any': 'any',
     'noarch': 'noarch',
     'NOARCH': 'NOARCH'
@@ -120,8 +117,6 @@ os_map = {
     'mac': 'darwin',
     'macos': 'darwin',
     'freebsd': 'freebsd',
-    'emscripten': 'emscripten',
-    'wasi': 'wasi',
     'any': 'any'
 }
 valid_arch = None
