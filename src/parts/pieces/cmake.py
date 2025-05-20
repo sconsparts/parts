@@ -152,7 +152,4 @@ api.register.add_variable('CMAKE_BUILDDIR', "$BUILD_DIR/$CMAKE_BUILDSUBDIR", 'De
 api.register.add_variable('CMAKE_BUILDSUBDIR', "build", 'Defines build subdirectory for CMake build')
 api.register.add_variable('CMAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines location to install bits from the CMake')
 api.register.add_variable('CMAKE_INCLUDE_FLAG', '$INCPREFIX', 'Define the include flag for current compiler toolchain')
-
-# TODO: consider introducing $SYSINCPREFIX somewhere
-# https://stackoverflow.com/a/74630953
-api.register.add_variable('CMAKE_INCLUDE_SYSTEM_FLAG', '$INCPREFIX', 'Define the system include flag for current compiler toolchain')
+api.register.add_variable('CMAKE_INCLUDE_SYSTEM_FLAG', '$SYSINCPREFIX', 'Define the system include flag for current compiler toolchain')

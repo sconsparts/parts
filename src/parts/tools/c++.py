@@ -45,6 +45,8 @@ def generate(env):
     env.SetDefault(CPPDEFSUFFIX='')
     env.SetDefault(INCPREFIX='-I')
     env.SetDefault(INCSUFFIX='')
+    env.SetDefault(SYSINCPREFIX='$INCPREFIX')
+    env.SetDefault(SYSINCSUFFIX='$INCSUFFIX')
     env.SetDefault(SHOBJSUFFIX='.os')
     env.SetDefault(OBJSUFFIX='.o')
     env.SetDefault(STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME=0)

@@ -357,12 +357,9 @@ api.register.add_variable('AUTO_MAKE_BUILDDIR', "$BUILD_DIR/$AUTO_MAKE_BUILDSUBD
 api.register.add_variable('AUTO_MAKE_BUILDSUBDIR', "build", 'Defines build subdirectory for automake build')
 api.register.add_variable('AUTO_MAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines install directory for automake build')
 api.register.add_variable('_ABSCPPINCFLAGS', '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
+api.register.add_variable('_ABSCPPSYSINCFLAGS', '$( ${_concat(SYSINCPREFIX, CPPPATH, SYSINCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
 api.register.add_variable(
     '_ABSLIBDIRFLAGS', '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
 api.register.add_variable('_AUTOMAKE_BUILD_ARGS',
                           'LDFLAGS="$LINKFLAGS $MAKE_LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS" V=1', '')
 api.register.add_list_variable('AUTOMAKE_BUILD_ARGS', SCons.Util.CLVar(), '')
-
-# TODO: consider introducing $SYSINCPREFIX and $SYSINCSUFFIX somewhere
-# https://stackoverflow.com/a/74630953
-api.register.add_variable('_ABSCPPSYSINCFLAGS', '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
