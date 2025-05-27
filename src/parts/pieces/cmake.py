@@ -11,7 +11,8 @@ from SCons.Node.FS import Dir
 from SCons.Script.SConscript import SConsEnvironment
 
 
-def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,Dir]=None, auto_scanner={}, ignore:List[str]=[], top_level:bool=True, hide_c_flags:bool=False, **kw):
+def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,Dir]=None, auto_scanner={}, ignore:List[str]=[],
+          top_level:bool=True, hide_c_flags:bool=False, targets:str="install", **kw):
     '''
         prefix - assumed install default location
         cmake_dir - directory containing cmakelist.txt in parent repo
@@ -57,9 +58,10 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
 
     env.SetDefault(_CMAKE_ARGS='\
         -DCMAKE_INSTALL_PREFIX=$CMAKE_CONFIGURE_PREFIX '
-        '-DCMAKE_INSTALL_LIBDIR=lib '
-        '-DCMAKE_INSTALL_BINDIR=bin '
-        '-DCMAKE_BUILD_TYPE=Release '
+        '-DCMAKE_INSTALL_LIBDIR=$INSTALL_LIB_SUBDIR '
+        '-DCMAKE_INSTALL_BINDIR=$INSTALL_BIN_SUBDIR '
+        '-DCMAKE_INSTALL_INCLUDEDIR=$INSTALL_INCLUDE_SUBDIR '
+        '-DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE '
         '-DCMAKE_INCLUDE_FLAG_C="$CMAKE_INCLUDE_FLAG" '
         '-DCMAKE_INCLUDE_FLAG_CXX="$CMAKE_INCLUDE_FLAG" '
         '-DCMAKE_INCLUDE_SYSTEM_FLAG_C="$CMAKE_INCLUDE_SYSTEM_FLAG" '
@@ -126,7 +128,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
         ],
         out + src_files,
         [
-            "cd ${SOURCE.dir} ; $CMAKE --build . --config Release --target install -- $CMAKE_DESTDIR_FLAG $_CMAKE_MAKE_ARGS"
+            f"cd ${{SOURCE.dir}} ; $CMAKE --build . --config $CMAKE_BUILD_TYPE --target {targets} -- $CMAKE_DESTDIR_FLAG $_CMAKE_MAKE_ARGS"
         ],
         source_scanner=scanners.NullScanner,
         target_factory=env.Dir,
@@ -150,6 +152,7 @@ api.register.add_method(CMake)
 
 api.register.add_variable('CMAKE_BUILDDIR', "$BUILD_DIR/$CMAKE_BUILDSUBDIR", 'Defines build directory for CMake build')
 api.register.add_variable('CMAKE_BUILDSUBDIR', "build", 'Defines build subdirectory for CMake build')
+api.register.add_variable('CMAKE_BUILD_TYPE', "Release", 'Defines release type for the CMake build')
 api.register.add_variable('CMAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines location to install bits from the CMake')
 api.register.add_variable('CMAKE_INCLUDE_FLAG', '$INCPREFIX', 'Define the include flag for current compiler toolchain')
 api.register.add_variable('CMAKE_INCLUDE_SYSTEM_FLAG', '$SYSINCPREFIX', 'Define the system include flag for current compiler toolchain')
