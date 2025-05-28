@@ -366,7 +366,3 @@ api.register.add_variable('_AUTOMAKE_BUILD_ARGS',
 api.register.add_list_variable('AUTOMAKE_BUILD_ARGS', SCons.Util.CLVar(), '')
 api.register.add_variable('AUTO_MAKE_CONFIGURE_WRAPPER', '', 'Defines a tool to wrap around configure (e.g. emconfigure)')
 api.register.add_variable('AUTO_MAKE_MAKE_WRAPPER', '', 'Defines a tool to wrap around make (e.g. emmake)')
-
-# TODO: consider introducing $SYSINCPREFIX and $SYSINCSUFFIX somewhere
-# https://stackoverflow.com/a/74630953
-api.register.add_variable('_ABSCPPSYSINCFLAGS', '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
