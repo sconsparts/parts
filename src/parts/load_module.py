@@ -10,7 +10,6 @@ import traceback
 
 import parts.api as api
 import parts.glb as glb
-import SCons.Errors
 import SCons.Script
 
 g_site_dir_cache = {}
@@ -25,9 +24,8 @@ def get_site_directories(subdir):
             1 / 0
 
         host_os = glb._host_platform  # can't use HOST_OS because of bootstrap issue.
-        localpath = []
         # local data
-        localpath = [
+        localpaths = [
             # homedir/.parts-site
             os.path.join(os.path.expanduser('~'), 'parts-site', subdir),
             os.path.join(os.path.expanduser('~'), '.parts-site', subdir)
@@ -36,17 +34,26 @@ def get_site_directories(subdir):
         if host_os == 'win32':
             # if we run as a service (like running in buildbot) we may not have a user directory
             if 'APPDATA' in os.environ:
-                localpath.append(os.path.join(os.environ['APPDATA'], 'parts-site', subdir))
+                localpaths.append(os.path.join(os.environ['APPDATA'], 'parts-site', subdir))
             # global system area. should not be needed.. just being careful
             if 'ALLUSERSPROFILE' in os.environ:
-                syspath = [os.path.join(os.environ['ALLUSERSPROFILE'], 'parts-site', subdir)]
-            else:
-                syspath = []
+                syspaths = [os.path.join(os.environ['ALLUSERSPROFILE'], 'parts-site', subdir)]
         elif host_os == 'darwin':
-            syspath = [os.path.join('/Library/Application Support/parts', 'parts-site', subdir)]
+            # by convention on macOS, app data goes into
+            # /Library/Application Support or ~/Library/Application Support
+            # but many UNIX-style tools still use /usr/local/share.
+            # /usr/share is typically hard read-only
+            syspaths = [
+                os.path.join('/Library/Application Support/parts', 'parts-site', subdir),
+                os.path.join('/usr/local/share/parts', 'parts-site', subdir)
+            ]
+            localpaths.append(os.path.join(os.path.expanduser('~/Library/Application Support/parts'), 'parts-site', subdir))
         else:
             # some kind of POSIX, most likely Linux
-            syspath = [os.path.join('/usr/share/parts', 'parts-site', subdir)]
+            syspaths = [
+                os.path.join('/usr/share/parts', 'parts-site', subdir),
+                os.path.join('/usr/local/share/parts', 'parts-site', subdir)
+            ]
 
         if SCons.Script.GetOption('use_part_site'):
             sitepaths = [
@@ -71,7 +78,7 @@ def get_site_directories(subdir):
                 os.path.join(glb.sconstruct_path, 'parts-site', subdir),
                 os.path.join(glb.sconstruct_path, '.parts-site', subdir)
                 # homedir/.parts-site
-            ] + localpath + syspath + [
+            ] + localpaths + syspaths + [
                 # user part-site in parts install
                 os.path.join(glb.parts_path, 'parts-site', subdir),
                 # parts install
