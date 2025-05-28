@@ -62,6 +62,10 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
         '-DCMAKE_INSTALL_BINDIR=$INSTALL_BIN_SUBDIR '
         '-DCMAKE_INSTALL_INCLUDEDIR=$INSTALL_INCLUDE_SUBDIR '
         '-DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE '
+        '-DCMAKE_COLOR_MAKEFILE=ON '
+        '-DCMAKE_COLOR_DIAGNOSTICS=ON '
+        '-DCLICOLOR_FORCE=1 '
+        '-DCMAKE_VERBOSE_MAKEFILE=ON '
         '-DCMAKE_INCLUDE_FLAG_C="$CMAKE_INCLUDE_FLAG" '
         '-DCMAKE_INCLUDE_FLAG_CXX="$CMAKE_INCLUDE_FLAG" '
         '-DCMAKE_INCLUDE_SYSTEM_FLAG_C="$CMAKE_INCLUDE_SYSTEM_FLAG" '
@@ -72,8 +76,9 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
         '-DCMAKE_CXX_COMPILER=$CXX '
         '-DCMAKE_C_COMPILER=$CC '
         '${define_if("$CMAKE_PREFIX_PATH","-DCMAKE_PREFIX_PATH=")}\"${MAKEPATH("$CMAKE_PREFIX_PATH",";")}\" '
+        '${define_if("$CMAKE_GENERATOR","-DCMAKE_GENERATOR=$CMAKE_GENERATOR")} '
         '$CMAKE_ARGS'
-                   )
+    )
 
     if 'cmakedir' in kw:
         cmake_dir = kw['cmakedir'] # for backwards compatibility
@@ -118,9 +123,11 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
     else:
         # track a lot of files
         src_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=cmake_build_files+[".git/*"]+ignore).files()
-    env.SetDefault(_CMAKE_MAKE_ARGS='VERBOSE=1\
+
+    # This is supported natively in CMake 3.12+
+    env.SetDefault(_CMAKE_MAKE_ARGS='\
         $(-j{jobs}$)'.format(jobs=env.GetOption('num_jobs'))
-                   )
+    )
 
     ret = env.CCommand(
         [
@@ -128,7 +135,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
         ],
         out + src_files,
         [
-            f"cd ${{SOURCE.dir}} ; $CMAKE --build . --config $CMAKE_BUILD_TYPE --target {targets} -- $CMAKE_DESTDIR_FLAG $_CMAKE_MAKE_ARGS"
+            f"cd ${{SOURCE.dir}} ; $CMAKE_DESTDIR_FLAG $CMAKE --build . --config $CMAKE_BUILD_TYPE --target {targets} -- $_CMAKE_MAKE_ARGS"
         ],
         source_scanner=scanners.NullScanner,
         target_factory=env.Dir,
@@ -156,3 +163,4 @@ api.register.add_variable('CMAKE_BUILD_TYPE', "Release", 'Defines release type f
 api.register.add_variable('CMAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines location to install bits from the CMake')
 api.register.add_variable('CMAKE_INCLUDE_FLAG', '$INCPREFIX', 'Define the include flag for current compiler toolchain')
 api.register.add_variable('CMAKE_INCLUDE_SYSTEM_FLAG', '$SYSINCPREFIX', 'Define the system include flag for current compiler toolchain')
+api.register.add_variable('CMAKE_VERBOSE_MAKEFILE', 'ON', 'Controls whether CMake generators emit verbose messages')
