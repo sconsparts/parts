@@ -1,15 +1,15 @@
+import os
 
-
-import parts.tools.Common
 import SCons.Util
-from parts.platform_info import SystemPlatform
-from parts.tools.Common.Finders import EnvFinder, PathFinder, ScriptFinder
-from parts.tools.Common.ToolInfo import ToolInfo
 from SCons.Debug import logInstanceCreation
 
-from . import android
-from .common import GnuInfo, binutils
+from parts.platform_info import SystemPlatform
+from parts.tools.Common.Finders import EnvFinder, PathFinder
+from parts.tools.Common.ToolInfo import ToolInfo
 
+from . import android
+from .emsdk import emsdk_install_base
+from .common import GnuInfo, binutils
 
 class BinutilInfo(GnuInfo):
     """
@@ -838,6 +838,30 @@ binutils.Register(
             },
             shell_vars={'PATH': '${BINUTILS.INSTALL_ROOT}'},
             test_file='x86_64-unknown-freebsd10.0-ld',
+        )
+    ]
+)
+
+binutils.Register(
+    hosts=[SystemPlatform('posix', 'any')],
+    targets=[SystemPlatform('emscripten', 'wasm32'), SystemPlatform('emscripten', 'wasm64')],
+    info=[
+        BinutilInfo(
+            install_scanner=[PathFinder(['/usr/bin'])],
+            opt_dirs=[
+                emsdk_install_base
+            ],
+            script=None,
+            subst_vars={
+                'SYS_ROOT': '${BINUTILS.INSTALL_ROOT}/../emscripten/cache/sysroot',
+                'AR': 'llvm-ar', # emar
+                'RANLIB': 'llvm-ranlib', # emranlib
+                'OBJCOPY': 'llvm-objcopy',
+                'AS': 'wasm-as',
+                'LD': 'wasm-ld'
+            },
+            shell_vars={'PATH': '${BINUTILS.INSTALL_ROOT}'},
+            test_file='wasm-ld',
         )
     ]
 )
