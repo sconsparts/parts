@@ -63,9 +63,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
     cmake_scan_dir=env.subst("$CMAKE_INSTALL_DESTDIR")
     env_org.SetDefault(CMAKE_INSTALL_DESTDIR=cmake_scan_dir)
 
-    env.SetDefault(CMAKE='cmake')
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$$$$$$$ORIGIN")}'
-
 
     cflags = '-DCMAKE_C_FLAGS="$CCFLAGS" -DCMAKE_CXX_FLAGS="$CCFLAGS $CXXFLAGS" '
     if hide_c_flags:
