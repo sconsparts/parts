@@ -5,4 +5,5 @@ from . import clang
 from . import gcc
 from . import gxx
 from . import emsdk
-from .common import binutils, clang, gcc, gxx, emsdk
+from . import cmake
+from .common import binutils, clang, gcc, gxx, emsdk, cmake

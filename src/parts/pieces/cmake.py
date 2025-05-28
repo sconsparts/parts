@@ -2,14 +2,21 @@
 # that also accepts target scanners
 
 from typing import List, Dict, Any, Optional, Union
+import SCons.Defaults
 import parts.api as api
-import SCons.Builder
-import SCons.Scanner.Prog
 import parts.core.scanners as scanners
+from parts.version import version as Version
+
 # This is for type checking
 from SCons.Node.FS import Dir
 from SCons.Script.SConscript import SConsEnvironment
 
+def is_cmake_a_tool(env) -> bool:
+    if isinstance(env.get('CMAKE'), dict):
+        if env['CMAKE'].get('VERSION') and env['CMAKE'].get('TOOL'):
+            return True
+
+    return False
 
 def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,Dir]=None, auto_scanner={}, ignore:List[str]=[],
           top_level:bool=True, hide_c_flags:bool=False, targets:str="install", **kw):
@@ -24,6 +31,14 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
     env_org = env
     env = env.Clone(**kw)
     build_dir : Dir = env.Dir("$CMAKE_BUILDDIR")
+
+    # pre-tool backcompat
+    if is_cmake_a_tool(env):
+        env.SetDefault(CMAKE_BIN=env['CMAKE']['TOOL'])
+    elif isinstance(env.get('CMAKE'), str):
+        env.SetDefault(CMAKE_BIN=env['CMAKE'])
+    else:
+        env.SetDefault(CMAKE_BIN='cmake')
 
     # The sandbox for the build install
     # we have three variables to help with this
@@ -102,7 +117,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
             'cd ${TARGET.dir} ;'
             # CMAKE_PREFIX_PATH should replace this.. Have it as a fallback
             '${define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}${MAKEPATH("$PKG_CONFIG_PATH")} '
-            f'$CMAKE_WRAPPER $CMAKE ${{SOURCE.dir.abspath}} $_CMAKE_ARGS'
+            f'$CMAKE_WRAPPER $CMAKE_BIN ${{SOURCE.dir.abspath}} $_CMAKE_ARGS'
         ],
         #source_scanner=scanners.NullScanner,
         target_scanner=scanners.NullScanner,
@@ -124,10 +139,11 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
         # track a lot of files
         src_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=cmake_build_files+[".git/*"]+ignore).files()
 
-    # This is supported natively in CMake 3.12+
-    env.SetDefault(_CMAKE_MAKE_ARGS='\
-        $(-j{jobs}$)'.format(jobs=env.GetOption('num_jobs'))
-    )
+    # CMake 3.12+ natively understands -j
+    if is_cmake_a_tool(env) and env['CMAKE']['VERSION'] > Version("3.12"):
+        env.SetDefault(_CMAKE_MAKE_ARGS=f"$(-j{env.GetOption('num_jobs')}$)")
+    else:
+        env.SetDefault(_CMAKE_MAKE_ARGS=f"-- $(-j{env.GetOption('num_jobs')}$)")
 
     ret = env.CCommand(
         [
@@ -135,7 +151,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
         ],
         out + src_files,
         [
-            f"cd ${{SOURCE.dir}} ; $CMAKE_DESTDIR_FLAG $CMAKE_WRAPPER $CMAKE --build . --config $CMAKE_BUILD_TYPE --target {targets} -- $_CMAKE_MAKE_ARGS"
+            f"cd ${{SOURCE.dir}} ; $CMAKE_DESTDIR_FLAG $CMAKE_WRAPPER $CMAKE_BIN --build . --config $CMAKE_BUILD_TYPE --target {targets} $_CMAKE_MAKE_ARGS"
         ],
         source_scanner=scanners.NullScanner,
         target_factory=env.Dir,
