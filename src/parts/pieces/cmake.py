@@ -65,7 +65,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
 
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$$$$$$$ORIGIN")}'
 
-    cflags = '-DCMAKE_C_FLAGS="$CCFLAGS" -DCMAKE_CXX_FLAGS="$CCFLAGS $CXXFLAGS" '
+    cflags = '-DCMAKE_C_FLAGS="$CCFLAGS $CFLAGS" -DCMAKE_CXX_FLAGS="$CCFLAGS $CXXFLAGS" '
     if hide_c_flags:
         cflags=''
 
