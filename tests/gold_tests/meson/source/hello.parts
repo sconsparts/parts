@@ -1,0 +1,10 @@
+Import('*')
+
+PartName("hello")
+PartVersion("1.0.0")
+
+build.DependsOn([])
+
+@build
+def build(env):
+    env.Meson()

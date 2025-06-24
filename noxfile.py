@@ -11,5 +11,6 @@ import nox
 def autests(session):
     '''Run AuTests'''
     session.install('autest')
+    session.install('meson') # needed for meson test
     session.install("-e",".")
     session.run("autest","-D","tests/gold_tests","--sandbox", f"_sandbox/{session.python}")

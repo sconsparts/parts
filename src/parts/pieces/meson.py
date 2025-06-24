@@ -4,9 +4,10 @@ import parts.core.scanners as scanners
 import SCons.Scanner
 from SCons.Script.SConscript import SConsEnvironment
 
-
-def Meson(env,auto_scanner={},**kw):
-    env['RUNPATHS'] = r'${GENRUNPATHS("\\$$$$$$$$ORIGIN")}'    
+# We set buildtype=plain by default so SCons can have complete control over the
+# build environment, otherwise there can be unpleasant surprises
+def Meson(env, auto_scanner={}, setup_args : str = '--buildtype=plain', **kw):
+    env['RUNPATHS'] = r'${GENRUNPATHS("\\$$$$$$$$ORIGIN")}'
 
     out_config = env.CCommand(
         "${BUILD_DIR}/build/build.ninja",
@@ -15,21 +16,19 @@ def Meson(env,auto_scanner={},**kw):
             SCons.Defaults.Delete("${TARGET.dir.abspath}"),
             SCons.Defaults.Mkdir("${TARGET.dir.abspath}"),
             'cd ${TARGET.dir}; '
-            "${define_if('$PKG_CONFIG_PATH','PKG_CONFIG_PATH=')}${MAKEPATH('$PKG_CONFIG_PATH')} "            
-            'CC=$CC \
+            "${define_if('$PKG_CONFIG_PATH','PKG_CONFIG_PATH=')}${MAKEPATH('$PKG_CONFIG_PATH')} "
+            f'CC=$CC \
             CXX=$CXX \
             CFLAGS="$CCFLAGS $CFLAGS $_CPPDEFFLAGS $_ABSCPPINCFLAGS" \
             CXXFLAGS="$CXXFLAGS $CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_ABSCPPINCFLAGS" \
             LDFLAGS="$LINKFLAGS $_RUNPATH $_ABSRPATHLINK -Wl,--enable-new-dtags" \
-            meson setup --prefix=${MESON_DESTDIR} ${TARGET.dir.abspath} ${SOURCE.dir.abspath}',
+            meson setup {setup_args} --prefix=${{MESON_DESTDIR}} ${{TARGET.dir.abspath}} ${{SOURCE.dir.abspath}}',
             #'cd ${TARGET.dir.abspath}; '
             #' meson configure build'
         ],
         source_scanner=scanners.NullScanner,
         target_scanner=scanners.DependsSdkScanner
     )
-
-    # jobs = env.GetOption('num_jobs')
 
     # the auto scan logic here it to address issues with rpath handing that cannot be controlled
     # in meson. Currently the build system zero out the RPATH section of the elf format. At the moment
@@ -75,4 +74,3 @@ def Meson(env,auto_scanner={},**kw):
 api.register.add_method(Meson)
 
 api.register.add_variable('MESON_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', '')
-

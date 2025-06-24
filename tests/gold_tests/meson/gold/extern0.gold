@@ -1,0 +1,12 @@
+scons: Reading SConscript files ...
+scons: done reading SConscript files.
+Parts: Updating disk
+Parts: Updating disk - Done
+Parts: Loaded 1 Parts
+Parts: Total sections: 1 Total known nodes: {}
+scons: Building targets ...
+Delete("{}/meson{}")
+Mkdir("{}/meson{}")
+cd {}meson setup --buildtype=plain{}
+The Meson build system
+{}

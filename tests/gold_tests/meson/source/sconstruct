@@ -1,0 +1,3 @@
+from parts import *
+
+Part('hello', 'hello.parts')
