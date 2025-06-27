@@ -136,7 +136,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
             ${define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}${MAKEPATH("$PKG_CONFIG_PATH")}\
             CC="$CC"\
             CXX="$CXX"\
-            CPPFLAGS="$CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $_ABSCPPINCFLAGS"\
+            CPPFLAGS="$CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $AUTO_MAKE_INCLUDE_FLAGS"\
             CFLAGS="$CCFLAGS $CFLAGS"\
             LDFLAGS="$LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS"\
             CXXFLAGS="$CXXFLAGS $CCFLAGS $CPPFLAGS"'
@@ -357,7 +357,8 @@ api.register.add_variable('AUTO_MAKE_BUILDDIR', "$BUILD_DIR/$AUTO_MAKE_BUILDSUBD
 api.register.add_variable('AUTO_MAKE_BUILDSUBDIR', "build", 'Defines build subdirectory for automake build')
 api.register.add_variable('AUTO_MAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines install directory for automake build')
 api.register.add_variable('AUTO_MAKE_VERBOSE', '1', 'Controls if make emits verbose messages')
-api.register.add_variable('_ABSCPPINCFLAGS', '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
+api.register.add_variable('AUTO_MAKE_INCLUDE_FLAGS', '$_ABSCPPINCFLAGS', 'Controls the dependency include flags')
+api.register.add_variable('_ABSCPPINCFLAGS',    '$( ${_concat(INCPREFIX,    CPPPATH,    INCPREFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
 api.register.add_variable('_ABSCPPSYSINCFLAGS', '$( ${_concat(SYSINCPREFIX, CPPPATH, SYSINCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
 api.register.add_variable(
     '_ABSLIBDIRFLAGS', '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
