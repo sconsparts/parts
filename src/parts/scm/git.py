@@ -370,9 +370,10 @@ class git(base):
         # TODO: guard this in a feature flag to prevent chaos?
         sparse_checkout : bool = self._env.get("GIT_SPARSE_CHECKOUT_ARGS", None)
         if sparse_checkout and use_mirror:
-            api.output.error_msg("Sparse checkout and mirror mode are mutually incompatible")
-            return None
-        elif sparse_checkout:
+            api.output.warning_msg("Sparse checkout does not work with mirror mode; disabling")
+            sparse_checkout = False
+
+        if sparse_checkout:
             sparse_checkout_clone_arg: str = '--no-checkout'
         else:
             sparse_checkout_clone_arg: str = ''
