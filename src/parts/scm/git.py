@@ -366,11 +366,23 @@ class git(base):
         # the initial clone
         git_out_path = out_dir.replace('\\', '/')
         use_mirror = self.useCache
+
+        # TODO: guard this in a feature flag to prevent chaos?
+        sparse_checkout : bool = self._env.get("GIT_SPARSE_CHECKOUT_ARGS", None)
+        if sparse_checkout and use_mirror:
+            api.output.error_msg("Sparse checkout and mirror mode are mutually incompatible")
+            return None
+        elif sparse_checkout:
+            sparse_checkout_clone_arg: str = '--no-checkout'
+        else:
+            sparse_checkout_clone_arg: str = ''
+
         if use_mirror:
             clone_path = self.MirrorPath
         else:
             clone_path = self.FullPath
 
+        # TODO: git-2.5+ supports cloning against a commit
         if self.__branch:
             branch = f'-b {self.__branch}'
         elif self.__revision:
@@ -388,15 +400,29 @@ class git(base):
 
         api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"], " Requested branch: {0}", branch)
 
-        strval = f'git clone ${{GIT_CLONE_ARGS}} {branch} {clone_path} "{git_out_path}"'
-        cmd = f'"{git.gitpath}" clone ${{GIT_CLONE_ARGS}} {branch} {clone_path} "{git_out_path}"'
+        strval = f'git clone ${{GIT_CLONE_ARGS}} {sparse_checkout_clone_arg} {branch} {clone_path} "{git_out_path}"'
+        cmd = f'"{git.gitpath}" clone ${{GIT_CLONE_ARGS}} {sparse_checkout_clone_arg} {branch} {clone_path} "{git_out_path}"'
         ret = [self._env.Action(cmd, strval)]
 
         cd_dir = f'cd {out_dir} &&'
+
+        # need git-2.35+
+        # user needs to set up $GIT_CLONE_ARGS properly to work with this, should we have
+        # any guardrails?
+        if sparse_checkout:
+            cmd = f'{cd_dir} "{git.gitpath}" sparse-checkout ${{GIT_SPARSE_CHECKOUT_ARGS}}'
+            strval = f'{cd_dir} git sparse-checkout ${{GIT_SPARSE_CHECKOUT_ARGS}}'
+            ret += [self._env.Action(cmd, strval)]
+
         # if this is a revision we want to checkout that revision
-        if self.__revision:
-            cmd = f'{cd_dir} "{git.gitpath}" checkout ${{GIT_CHECKOUT_ARGS}} {self.__revision}'
-            strval = f'{cd_dir} git checkout ${{GIT_CHECKOUT_ARGS}} {self.__revision}'
+        # if this is a sparse checkout we need to do one final checkout to populate
+        if self.__revision or sparse_checkout:
+            if self.__revision:
+                commit = self.__revision
+            else:
+                commit = ''
+            cmd = f'{cd_dir} "{git.gitpath}" checkout ${{GIT_CHECKOUT_ARGS}} {commit}'
+            strval = f'{cd_dir} git checkout ${{GIT_CHECKOUT_ARGS}} {commit}'
             ret += [self._env.Action(cmd, strval)]
 
         if use_mirror:
@@ -832,6 +858,7 @@ api.register.add_variable('EXTERN_GIT_REPOSITORY', '', '')
 
 api.register.add_variable('GIT_FETCH_ARGS', '', 'Additional arguments for git-fetch')
 api.register.add_variable('GIT_CHECKOUT_ARGS', '', 'Additional arguments for git-checkout')
+api.register.add_variable('GIT_SPARSE_CHECKOUT_ARGS', '', 'Additional arguments for git-sparse-checkout')
 api.register.add_variable('GIT_PULL_ARGS', '', 'Additional arguments for git-pull')
 api.register.add_variable('GIT_RESET_ARGS', '', 'Additional arguments for git-reset')
 api.register.add_variable('GIT_CLONE_ARGS', '--progress', 'Additional arguments for git-clone')
