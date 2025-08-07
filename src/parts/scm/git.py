@@ -864,6 +864,7 @@ api.register.add_variable('GIT_PULL_ARGS', '', 'Additional arguments for git-pul
 api.register.add_variable('GIT_RESET_ARGS', '', 'Additional arguments for git-reset')
 api.register.add_variable('GIT_CLONE_ARGS', '--progress', 'Additional arguments for git-clone')
 api.register.add_variable('GIT_MIRROR_ARGS', '--progress', 'Additional arguments for git-clone --mirror')
+api.register.add_variable('GIT_AM_ARGS', '', 'Additional arguments for git-am')
 
 api.register.add_global_object('VcsGit', git)
 api.register.add_global_object('ScmGit', git)
