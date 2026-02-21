@@ -9,13 +9,9 @@
 build/
 .mypy_cache/
 
-Pipfile.lock
+# Virtual environments
+.venv/
 
-**/.parts.cache/
-**/_build/
-**/_install/
-**/_sandbox/
-**/_sdk/
-**/scons_parts.egg-info
-**/sconsparts.egg-info
-**/parts.egg-info/
+src/scons_parts.egg-info/
+uv.lock
+_sandbox/

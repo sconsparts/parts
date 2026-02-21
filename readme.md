@@ -12,9 +12,14 @@ Help make SCons better: Strive to help show new ideas that can be moved into SCo
 
 pip install scons-parts
 
-## Release Notes
+## Requirements
 
-On the Wiki: [Here](https://bitbucket.org/sconsparts/parts/wiki/Home)
+- Python 3.11 or later
+- SCons 4.0+
+
+## Documentation
+
+Full documentation is available at [https://sconsparts.github.io/](https://sconsparts.github.io/)
 
 ## License
 

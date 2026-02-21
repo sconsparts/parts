@@ -28,6 +28,8 @@ msvc.Register(
                     r'C:\Program Files\Microsoft Visual Studio\2022\Professional\VC',
                     r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC',
                     r'C:\Program Files\Microsoft Visual Studio\2022\Community\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\BuildTools\VC',
                 ])
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'x86 -vcvars_ver=14'),
@@ -57,6 +59,8 @@ msvc.Register(
                     r'C:\Program Files\Microsoft Visual Studio\2022\Professional\VC',
                     r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC',
                     r'C:\Program Files\Microsoft Visual Studio\2022\Community\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\BuildTools\VC',
                 ])
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'amd64_arm'),
@@ -86,6 +90,8 @@ msvc.Register(
                     r'C:\Program Files\Microsoft Visual Studio\2022\Professional\VC',
                     r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC',
                     r'C:\Program Files\Microsoft Visual Studio\2022\Community\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\BuildTools\VC',
                 ])
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'x86_arm'),
@@ -115,6 +121,8 @@ msvc.Register(
                     r'C:\Program Files\Microsoft Visual Studio\2022\Professional\VC',
                     r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC',
                     r'C:\Program Files\Microsoft Visual Studio\2022\Community\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\BuildTools\VC',
                 ])
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'amd64_arm64'),
@@ -144,6 +152,8 @@ msvc.Register(
                     r'C:\Program Files\Microsoft Visual Studio\2022\Professional\VC',
                     r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC',
                     r'C:\Program Files\Microsoft Visual Studio\2022\Community\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\BuildTools\VC',
                 ])
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'x86_arm64'),
@@ -174,6 +184,8 @@ msvc.Register(
                     r'C:\Program Files\Microsoft Visual Studio\2022\Professional\VC',
                     r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC',
                     r'C:\Program Files\Microsoft Visual Studio\2022\Community\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\BuildTools\VC',
                 ])
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'amd64'),
@@ -204,6 +216,8 @@ msvc.Register(
                     r'C:\Program Files\Microsoft Visual Studio\2022\Professional\VC',
                     r'C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC',
                     r'C:\Program Files\Microsoft Visual Studio\2022\Community\VC',
+                    r'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC',
+                    r'C:\Program Files\Microsoft Visual Studio\2022\BuildTools\VC',
                 ])
             ],
             script=ScriptFinder('${MSVC.VCINSTALL}/Auxiliary/Build/vcvarsall.bat', 'x86_amd64'),

@@ -1,40 +1,25 @@
 [project]
-
-name = "scons-parts"  # Required
+name = "scons-parts"
 dynamic = ["version"]
-description = "Extension module to SCons build system"  # Optional
-requires-python = ">=3.6"
+description = "Extension module to SCons build system"
+requires-python = ">=3.11"
 license = {file = "license.txt"}
-
-keywords = ["build", "SCons", "extension"]  # Optional
-
-# This should be your name or the name of the organization who originally
-# authored the project, and a valid email address corresponding to the name
-# listed.
+keywords = ["build", "SCons", "extension"]
 authors = [
-  {name = "Jason Kenny", email = "dragon512@live.com" } # Optional
+  {name = "Jason Kenny", email = "dragon512@live.com"}
 ]
 
-#maintainers = [
-  #{name = "A. Great Maintainer", email = "maintainer@example.com" } # Optional
-#]
-
-# Classifiers help users find your project by categorizing it.
-#
-# For a list of valid classifiers, see https://pypi.org/classifiers/
-classifiers = [  # Optional
+classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Environment :: Console",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Terminals",
   "Programming Language :: Python :: 3 :: Only",
 ]
@@ -43,13 +28,7 @@ dependencies = [
   "scons"
 ]
 
-[tool.setuptools.packages.find]
-where = ["src"] 
-
-[tool.setuptools.dynamic]
-version = {attr = "parts.parts_version._PARTS_VERSION"}
-
-[project.optional-dependencies] # Optional
+[dependency-groups]
 dev = [
     "nox",
     "autest",
@@ -59,30 +38,30 @@ dev = [
     "autopep8",
     "sphinx",
     "myst-parser",
-    "karma-sphinx-theme",
+    "cloud-sptheme",
 ]
 
-[project.urls]  # Optional
-"Source Code" = "https://bitbucket.org/sconsparts/parts"
-"Documentation" = "https://sconsparts.bitbucket.io/index.html"
+[tool.setuptools.packages.find]
+where = ["src"] 
+
+[tool.setuptools.dynamic]
+version = {attr = "parts.parts_version._PARTS_VERSION"}
+
+[project.urls]
+"Homepage" = "https://github.com/sconsparts/parts"
+"Source Code" = "https://github.com/sconsparts/parts"
+"Documentation" = "https://sconsparts.github.io/"
 
 
-# The following would provide a command line executable called `sample`
-# which executes the function `main` from this package when invoked.
-[project.scripts]  # Optional
+[project.scripts]
 parts = "parts.version_info:parts_version_text"
 parts-smart-cp = "parts.scripts.smart_cp:main"
 
 # This is configuration specific to the `setuptools` build backend.
 # If you are using a different build backend, you will need to change this.
 [tool.setuptools]
-# If there are data files included in your packages that need to be
-# installed, specify them here.
-#package-data = {"" = ["*.txt"]}
 
 [build-system]
-# These are the assumed default build requirements from pip:
-# https://pip.pypa.io/en/stable/reference/pip/#pep-517-and-518-support
 requires = ["setuptools>=43.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
