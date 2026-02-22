@@ -36,6 +36,7 @@ dev = [
     "pylama",
     "mypy",
     "autopep8",
+    "setuptools",
     "sphinx",
     "myst-parser",
     "cloud-sptheme",
@@ -60,6 +61,17 @@ parts-smart-cp = "parts.scripts.smart_cp:main"
 # This is configuration specific to the `setuptools` build backend.
 # If you are using a different build backend, you will need to change this.
 [tool.setuptools]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v --tb=short --strict-markers -p no:pylama"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]
 
 [build-system]
 requires = ["setuptools>=43.0.0", "wheel"]

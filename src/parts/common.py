@@ -394,31 +394,53 @@ def relpath(to_dir, from_dir=os.curdir):
     Base can be a directory specified either as absolute or relative to current dir.
     Does not check to see if directories exist.. assumes you get that right yourself
     Also in drive based systems.. it returns the abs_path(to_dir) in cases of different drives
+    
+    This function is OS-independent and handles both Unix-style (/) and Windows-style (\) paths.
+    The output path separator style is detected from the input paths.
     """
 
-    from_dir_list = (os.path.abspath(from_dir)).split(os.sep)
-    to_dir_list = (os.path.abspath(to_dir)).split(os.sep)
+    # Detect path separator style from input - prefer forward slash if present
+    use_forward_slash = '/' in to_dir or '/' in from_dir
+    
+    # Normalize to forward slashes internally for consistent processing
+    to_dir_norm = to_dir.replace('\\', '/')
+    from_dir_norm = from_dir.replace('\\', '/')
+    
+    # Make paths absolute, then normalize separators back to forward slashes
+    to_dir_abs = os.path.abspath(to_dir_norm).replace('\\', '/')
+    from_dir_abs = os.path.abspath(from_dir_norm).replace('\\', '/')
+    
+    # Split using forward slash (consistent separator)
+    from_dir_list = from_dir_abs.split('/')
+    to_dir_list = to_dir_abs.split('/')
 
     # On the windows platform the target may be on a completely different drive from the base.
     if os.name in ['nt', 'dos', 'os2'] and from_dir_list[0] != to_dir_list[0]:
         # we could error .. but instead I return the to_path
-        return os.path.abspath(to_dir)
-
-    # Starting from the filepath root, work out how much of the filepath is
-    # shared by base and target.
-    for i in range(min(len(from_dir_list), len(to_dir_list))):
-        if from_dir_list[i] != to_dir_list[i]:
-            break
+        result = to_dir_abs
     else:
-        # If we broke out of the loop, i is pointing to the first differing path elements.
-        # If we didn't break out of the loop, i is pointing to identical path elements.
-        # Increment i so that in all cases it points to the first differing path elements.
-        i += 1
+        # Starting from the filepath root, work out how much of the filepath is
+        # shared by base and target.
+        for i in range(min(len(from_dir_list), len(to_dir_list))):
+            if from_dir_list[i] != to_dir_list[i]:
+                break
+        else:
+            # If we broke out of the loop, i is pointing to the first differing path elements.
+            # If we didn't break out of the loop, i is pointing to identical path elements.
+            # Increment i so that in all cases it points to the first differing path elements.
+            i += 1
 
-    rel_list = [os.pardir] * (len(from_dir_list) - i) + to_dir_list[i:]
-    if rel_list == []:
-        return '.'
-    return os.path.join(*rel_list)
+        rel_list = ['..'] * (len(from_dir_list) - i) + to_dir_list[i:]
+        if rel_list == []:
+            result = '.'
+        else:
+            result = '/'.join(rel_list)
+    
+    # Convert back to original path separator style if needed
+    if not use_forward_slash and os.sep == '\\':
+        result = result.replace('/', '\\')
+    
+    return result
 
 
 # ---------------------------------------------------------------------

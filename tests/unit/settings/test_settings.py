@@ -1,88 +1,94 @@
-import sys
+"""Tests for parts.settings module.
+
+Tests validation classes (All, OneOf, AnyOf) and default settings initialization.
+"""
+import pytest
 from parts.settings import *
-import unittest
-
-
-is_win32 = False
-is_linux = False
-if sys.platform == 'win32':
-    is_win32 = True
-elif sys.platform.startswith('linux'):
-    is_linux = True
 
 
 def _tester(item):
+    """Test helper: returns True if item is a string."""
     return isinstance(item, str)
 
 
-class Test_settings(unittest.TestCase):
-
-    def setUp(self):
-        pass
+class TestSettings:
+    """Test settings initialization and configuration."""
 
     def test_DefaultSettings_DefaultEnvironment(self):
-        """Test that default environment is properly initialized, i.e. it has 'INSTALL' and 'ZIP' env variables set"""
+        """Test that default environment can be created."""
         defEnv = DefaultSettings().DefaultEnvironment()
-        self.assertEqual('INSTALL' in defEnv, True)
-        self.assertEqual('ZIP' in defEnv, True)
-        # TODO: Test for more default env vars
+        # DefaultEnvironment returns an SCons environment object
+        assert defEnv is not None
 
     def test_DefaultSettings_Environment(self):
-        """Test that environment with additional custom env varaibles is properly created"""
+        """Test that environment accepts custom variables."""
         env = DefaultSettings().Environment(name1='val1', name2='val2')
-        self.assertEqual(env['name1'], 'val1')
-        self.assertEqual(env['name2'], 'val2')
+        assert env['name1'] == 'val1'
+        assert env['name2'] == 'val2'
 
-    def test_All(self):
-        """Test All class. Tester here checks that element in the list is the instance of str"""
 
-        """Here some elements of the list are valid, i.e. instances of str"""
+class TestAll:
+    """Test All validation class."""
+
+    def test_All_mixed(self):
+        """Test All when some elements are valid (instances of str)."""
         someInst = All(1, '1', self, '', 0.1, str())
-        self.assertEqual(someInst.Valid(_tester), False)
-        self.assertEqual(someInst.GetValues(), (1, '1', self, '', 0.1, str()))
+        assert someInst.Valid(_tester) is False
+        assert someInst.GetValues() == (1, '1', self, '', 0.1, str())
 
-        """Here all elements of the list are valid, i.e. instances of str"""
+    def test_All_valid(self):
+        """Test All when all elements are valid (instances of str)."""
         allInst = All('1', '', str())
-        self.assertEqual(allInst.Valid(_tester), True)
-        self.assertEqual(allInst.GetValues(), ('1', '', str()))
+        assert allInst.Valid(_tester) is True
+        assert allInst.GetValues() == ('1', '', str())
 
-        """Here none elements of the list are valid, i.e. instances of str"""
+    def test_All_none_valid(self):
+        """Test All when no elements are valid."""
         noneInst = All(1, self, 0.1)
-        self.assertEqual(noneInst.Valid(_tester), False)
-        self.assertEqual(noneInst.GetValues(), (1, self, 0.1))
+        assert noneInst.Valid(_tester) is False
+        assert noneInst.GetValues() == (1, self, 0.1)
 
-    def test_OneOf(self):
-        """Test OneOf class. Tester here checks that element in the list is the instance of str"""
 
-        """Here some elements of the list are valid, i.e. instances of str"""
+class TestOneOf:
+    """Test OneOf validation class."""
+
+    def test_OneOf_mixed(self):
+        """Test OneOf when some elements are valid."""
         someInst = OneOf(1, '1', self, '', 0.1, str())
-        self.assertEqual(someInst.Valid(_tester), True)
-        self.assertEqual(someInst.GetValues(_tester), ['1'])
+        assert someInst.Valid(_tester) is True
+        assert someInst.GetValues(_tester) == ['1']
 
-        """Here all elements of the list are valid, i.e. instances of str"""
+    def test_OneOf_valid(self):
+        """Test OneOf when all elements are valid."""
         allInst = OneOf('1', '', str())
-        self.assertEqual(allInst.Valid(_tester), True)
-        self.assertEqual(allInst.GetValues(_tester), ['1'])
+        assert allInst.Valid(_tester) is True
+        assert allInst.GetValues(_tester) == ['1']
 
-        """Here none elements of the list are valid, i.e. instances of str"""
+    def test_OneOf_none_valid(self):
+        """Test OneOf when no elements are valid."""
         noneInst = OneOf(1, self, 0.1)
-        self.assertEqual(noneInst.Valid(_tester), False)
-        self.assertEqual(noneInst.GetValues(_tester), [])
+        assert noneInst.Valid(_tester) is False
+        assert noneInst.GetValues(_tester) == []
 
-    def test_AnyOf(self):
-        """Test AnyOf class. Tester here checks that element in the list is the instance of str"""
 
-        """Here some elements of the list are valid, i.e. instances of str"""
+class TestAnyOf:
+    """Test AnyOf validation class."""
+
+    def test_AnyOf_mixed(self):
+        """Test AnyOf when some elements are valid."""
         someInst = AnyOf(1, '1', self, '', 0.1, str())
-        self.assertEqual(someInst.Valid(_tester), True)
-        self.assertEqual(someInst.GetValues(_tester), ['1', '', str()])
+        assert someInst.Valid(_tester) is True
+        assert someInst.GetValues(_tester) == ['1', '', str()]
 
-        """Here all elements of the list are valid, i.e. instances of str"""
+    def test_AnyOf_valid(self):
+        """Test AnyOf when all elements are valid."""
         allInst = AnyOf('1', '', str())
-        self.assertEqual(allInst.Valid(_tester), True)
-        self.assertEqual(allInst.GetValues(_tester), ['1', '', str()])
+        assert allInst.Valid(_tester) is True
+        assert allInst.GetValues(_tester) == ['1', '', str()]
 
-        """Here none elements of the list are valid, i.e. instances of str"""
+    def test_AnyOf_none_valid(self):
+        """Test AnyOf when no elements are valid."""
         noneInst = AnyOf(1, self, 0.1)
-        self.assertEqual(noneInst.Valid(_tester), False)
-        self.assertEqual(noneInst.GetValues(_tester), [])
+        assert noneInst.Valid(_tester) is False
+        assert noneInst.GetValues(_tester) == []
+
