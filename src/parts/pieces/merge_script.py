@@ -43,12 +43,20 @@ def normalize_env(shellenv=None, keys=None):
 
 
 def get_output(script, args=None, shellenv=None):
-    """Parse the output of given bat file, with given args."""
+    """
+    Parse the output of given script and return it as a string. 
+    The script is expected to print the environment variables in the format "KEY=VALUE" on each line.
+    Because of this on linux and macos we need to use bash to source the script and then print the environment variables, 
+    while on windows we can script expecting cmd.exe not powershell.
+    """
     if sys.platform == 'win32':
         cmdLine = '"%s" %s & set' % (script, (args if args else ''))
         shell = False
     elif sys.platform.startswith('linux') or sys.platform.startswith('darwin'):
-        cmdLine = '. {script} {args} ; set'.format(script=script, args=args if args else '')
+        cmdLine = 'bash -c ". {script} {args} ; set"'.format(
+            script=script,
+            args=args if args else ''
+        )
         shell = True
     else:
         raise Exception("Unsupported OS type: " + sys.platform)
@@ -84,18 +92,18 @@ def parse_output(output: str, keep: Optional[List[str]] = None, remove=None, nen
     if remove:
         filter_keys = filter_keys + tuple(remove)
 
+    keep_set = set(keep) if keep else None
+
     # parse everything
     reg = re.compile('(\\w*)=(.*)', re.I)
     for line in output.splitlines():
         m = reg.match(line)
         if m:
             key = m.group(1)
-            if keep:
-                # see if we need to filter out data
-                for regk in keep:
-                    if re.match(regk, key):
-                        ret[key] = m.group(2)
-                        break
+            if keep_set is not None:
+                # Filter by exact key names when keep is provided.
+                if key in keep_set:
+                    ret[key] = m.group(2)
             else:
                 # take everything that should not be skipped
                 skip = False
