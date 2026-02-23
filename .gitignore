@@ -11,6 +11,7 @@ build/
 
 # Virtual environments
 .venv/
+.vscode/
 
 src/scons_parts.egg-info/
 uv.lock
