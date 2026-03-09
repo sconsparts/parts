@@ -4,7 +4,7 @@ import os
 from optparse import OptionValueError
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.datacache as datacache
 import parts.glb as glb
 import parts.target_type as target_type

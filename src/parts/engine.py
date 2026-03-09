@@ -12,7 +12,7 @@ import time
 
 import parts.api as api
 import parts.api.output
-import parts.common as common
+import parts.core.util as common
 import parts.core.util as util
 import parts.core.builders  # load the core builders
 import parts.core.util.getcontent as getcontent

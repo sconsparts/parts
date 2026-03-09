@@ -7,7 +7,7 @@ import sys
 
 import parts.tools.Common.Finders as Finders
 import SCons.Util
-from parts.common import make_list
+from parts.core.util import make_list
 from SCons.Debug import logInstanceCreation
 
 from . import common

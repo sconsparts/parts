@@ -3,7 +3,7 @@ import subprocess
 import sys
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 
 #yum -y install --downloadonly --downloaddir=<dir> <packagename>
 # dnf download <packagename> 

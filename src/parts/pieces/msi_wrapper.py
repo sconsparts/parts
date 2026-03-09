@@ -2,7 +2,7 @@
 
 from builtins import filter
 
-import parts.common as common
+import parts.core.util as common
 import parts.errors
 import parts.glb as glb
 from SCons.Debug import logInstanceCreation

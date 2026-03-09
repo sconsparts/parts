@@ -8,7 +8,7 @@ import subprocess
 from builtins import filter
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.core.scanners as scanners
 import parts.core.util as util
 import parts.errors as errors

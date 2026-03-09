@@ -5,7 +5,7 @@ import re
 from typing import List, Union, Optional
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.datacache as datacache
 from parts.core import util
 # This is what we want to be setup in parts

@@ -6,7 +6,7 @@ import re
 import subprocess
 
 import parts.api as api
-import parts.common
+import parts.core.util as common
 import SCons.Util
 from parts.tools.Common.ToolInfo import ToolInfo
 from parts.tools.Common.ToolSetting import ToolSetting
@@ -56,7 +56,7 @@ class GnuInfo(ToolInfo):
 
     def __init__(self, install_scanner, opt_dirs, script, subst_vars, shell_vars, test_file, opt_pattern=None):
         ToolInfo.__init__(self, "*", install_scanner, script, subst_vars, shell_vars, test_file)
-        self.opt_paths = parts.common.make_list(opt_dirs)
+        self.opt_paths = common.make_list(opt_dirs)
         self.found = None
         self.opt_pattern = opt_pattern
 

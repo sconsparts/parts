@@ -1,7 +1,7 @@
 
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.core as core
 # This is what we want to be setup in parts
 from SCons.Script.SConscript import SConsEnvironment

@@ -2,7 +2,7 @@ from typing import Union, List, cast, Sequence, TypeVar
 
 import parts.api as api
 import parts.api.requirement  # this is need to have some data set at start correctly
-import parts.common as common
+import parts.core.util as common
 import parts.core.util as util
 import parts.dependent_ref as dependent_ref
 import parts.errors as errors

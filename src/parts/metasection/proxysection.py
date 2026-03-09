@@ -1,6 +1,6 @@
 import parts.glb as glb
 import parts.api.output as output
-import parts.common as common
+import parts.core.util as common
 import parts.core.util as util
 from parts.dependson import Component
 from .metasection import MetaSection, delegate

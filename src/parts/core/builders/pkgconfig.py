@@ -1,7 +1,7 @@
 from typing import List, Optional
 import parts.api as api
 import parts.core.scanners as scanners
-import parts.common as common
+import parts.core.util as common
 import parts.pattern as pattern
 
 

@@ -11,7 +11,7 @@ from pathlib import Path
 import sys
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.core.util as util
 import parts.glb as glb
 import parts.load_module as load_module

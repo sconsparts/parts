@@ -2,7 +2,7 @@
 from typing import List, Union, Optional
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.glb as glb
 from parts.core import util
 from parts.pnode import part

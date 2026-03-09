@@ -10,7 +10,7 @@ import traceback
 from typing import List, Union, Optional, cast
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.datacache as datacache
 import parts.part_ref as part_ref
 import parts.target_type as target_type

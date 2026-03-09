@@ -3,7 +3,7 @@
 from builtins import filter, map
 
 import SCons.Errors
-from parts.common import make_unique
+from parts.core.util import make_unique
 
 from .variable import Variable
 

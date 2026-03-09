@@ -6,7 +6,7 @@ import os
 import SCons.Script
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.core.util as util
 import parts.errors as errors
 import parts.exportitem as Xp

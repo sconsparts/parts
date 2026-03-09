@@ -8,7 +8,7 @@ from parts.dependent_ref import dependent_ref
 
 from parts.core.states import (LoadState, FileStyle)
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.config as config
 import parts.core.util as util
 import parts.datacache as datacache

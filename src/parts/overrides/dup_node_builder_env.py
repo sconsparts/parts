@@ -4,7 +4,7 @@
 # message is hard to deal with by default and it does not know of "part/components"
 # We also make what Component "owns" these node for faster checks latter.
 
-import parts.common as common
+import parts.core.util as common
 import parts.api as api
 import parts.errors as errors
 import parts.glb as glb

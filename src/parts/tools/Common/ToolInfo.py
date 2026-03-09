@@ -4,7 +4,7 @@ import os
 from builtins import range
 
 import parts.api as api
-import parts.common
+import parts.core.util as common
 import SCons.Util
 from parts.version import version_range
 from SCons.Debug import logInstanceCreation
@@ -154,7 +154,7 @@ class ToolInfo:
 
     def get_namespace(self, **kw):
         kw.update(self.subst_vars)
-        return parts.common.namespace(**kw)
+        return common.namespace(**kw)
 
     def query(self, env, namespace, root_path, use_script):
         if SCons.Util.is_List(self.install_root):

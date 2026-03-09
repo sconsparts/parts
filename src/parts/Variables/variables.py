@@ -3,12 +3,12 @@
 import os
 import sys
 
-import parts.common as common
+import parts.core.util as common
 import parts.api as api
 import parts.events as events
 import SCons.Environment
 import SCons.Util
-from parts.common import make_list
+from parts.core.util import make_list
 from SCons.Debug import logInstanceCreation
 
 from .variable import Variable

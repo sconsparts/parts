@@ -4,7 +4,7 @@ import os
 from typing import Dict, Optional, List
 from builtins import map
 
-import parts.common as common
+import parts.core.util as common
 import parts.core.util as util
 from parts.target_type import target_type
 from parts.core.states import LoadState

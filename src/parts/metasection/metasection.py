@@ -3,7 +3,7 @@ import types
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 from parts.core.util.decorators import classproperty
 
 

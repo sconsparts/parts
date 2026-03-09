@@ -2,7 +2,7 @@ import unittest
 import sys
 import SCons.Script
 import pytest
-from parts.common import *
+from parts.core.util import *
 
 # Platform detection
 is_win32 = sys.platform == 'win32'

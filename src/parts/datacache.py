@@ -5,7 +5,7 @@ import os
 import pickle
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.errors as errors
 import parts.glb as glb
 import SCons.Script

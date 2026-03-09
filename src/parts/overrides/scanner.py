@@ -17,7 +17,7 @@ processing later on the same environment for the same variable.
 #import parts.mappers as mappers
 #import parts.node_helpers as node_helpers
 #import parts.core.builders as builders
-import parts.common as common
+import parts.core.util as common
 import SCons.Scanner
 
 

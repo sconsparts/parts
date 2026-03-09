@@ -2,7 +2,7 @@
 import json
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.glb as glb
 import parts.node_helpers as node_helpers
 import SCons.Script

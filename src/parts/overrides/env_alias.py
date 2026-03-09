@@ -4,7 +4,7 @@ import SCons.Environment
 import SCons.Node
 from SCons.Script.SConscript import SConsEnvironment
 
-import parts.common as common
+import parts.core.util as common
 import parts.glb as glb
 import parts.api as api
 from parts.core import util

@@ -3,7 +3,7 @@
 import os
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.core.util as util
 import parts.load_module as load_module
 import SCons.Tool

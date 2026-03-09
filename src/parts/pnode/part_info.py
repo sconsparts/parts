@@ -1,6 +1,6 @@
 
 
-import parts.common as common
+import parts.core.util as common
 import parts.core as core
 import parts.glb as glb
 import parts.platform_info as platform_info

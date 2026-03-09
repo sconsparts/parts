@@ -18,7 +18,7 @@ import SCons.Action
 import SCons.Errors
 # We keep track of *all* installed files.
 import SCons.Tool.install
-from parts.common import make_list
+from parts.core.util import make_list
 from SCons.Debug import logInstanceCreation
 from SCons.Util import make_path_relative
 

@@ -10,7 +10,7 @@ from SCons.Debug import logInstanceCreation
 from SCons.Script.SConscript import SConsEnvironment
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.glb as glb
 import parts.core.util as util
 from parts.core.states import ChangeCheck

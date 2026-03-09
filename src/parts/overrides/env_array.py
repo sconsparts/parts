@@ -1,7 +1,7 @@
 # this handle overrides to the env [] operators
 
 
-import parts.common as common
+import parts.core.util as common
 import parts.glb as glb
 from parts.core import util
 from SCons.Script.SConscript import SConsEnvironment

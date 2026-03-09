@@ -24,10 +24,11 @@ from parts.core.logic import VersionLogic
 
 # these imports add stuff we will need to export to the parts file.
 #from .. import requirement
-from .. import (api, common, datacache, dependson, errors, functors, glb,
+from .. import (api, datacache, dependson, errors, functors, glb,
                 node_helpers, packaging, part_logger, platform_info, settings,
                 version)
 from ..core import util
+from ..core import util as common
 from ..target_type import target_type
 
 

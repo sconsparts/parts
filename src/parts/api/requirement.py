@@ -1,6 +1,6 @@
 
 
-from .. import common
+from ..core import util as common
 from . import output
 from ..requirement import (REQ, DefineRequirementSet, requirement,
                            requirement_internal, _added_types)

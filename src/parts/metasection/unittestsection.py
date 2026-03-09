@@ -3,7 +3,7 @@ import os
 import sys
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.core.util as util
 import parts.errors as errors
 import parts.pattern as pattern

@@ -6,7 +6,7 @@ import hashlib
 from SCons.Debug import logInstanceCreation
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.core.util as util
 import parts.glb as glb
 from parts.core.policy import ReportingPolicy, REQPolicy

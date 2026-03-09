@@ -4,7 +4,7 @@ import copy
 
 import parts.api as api
 import parts.api.output as output
-import parts.common as common
+import parts.core.util as common
 import parts.platform_info as platform_info
 import parts.version
 import SCons.Errors

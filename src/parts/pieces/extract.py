@@ -12,7 +12,7 @@ import SCons.Builder
 import SCons.Environment
 import SCons.Node.FS
 from parts import api
-from parts.common import matches
+from parts.core.util import matches
 from parts.overrides import symlinks
 
 try:

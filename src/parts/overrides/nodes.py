@@ -9,7 +9,7 @@ import sys
 from builtins import zip
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.datacache as datacache
 import parts.errors as errors
 import parts.glb as glb

@@ -8,7 +8,8 @@ import os
 import json
 import hashlib
 
-from parts.common import make_list, matches, extend_unique, TypeVar
+from typing import TypeVar
+from parts.core.util import make_list, matches, extend_unique
 import parts.api as api
 import parts.glb as glb
 import parts.core.scanners as scanners

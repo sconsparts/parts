@@ -6,7 +6,7 @@ import sys
 
 import parts.api as api
 import parts.api.output as output
-import parts.common as common
+import parts.core.util as common
 import parts.core.scanners as scanners
 import parts.core.util as util
 import parts.errors as errors

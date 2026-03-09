@@ -13,7 +13,7 @@ from SCons.Errors import UserError
 
 import parts.ansi_stream as ansi_stream
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.console as console
 import parts.core.util as util
 import parts.glb as glb

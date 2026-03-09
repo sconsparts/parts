@@ -3,7 +3,7 @@
 import json
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.core.scanners as scanners
 import parts.glb as glb
 #import parts.pnode.dependent_info as dependent_info

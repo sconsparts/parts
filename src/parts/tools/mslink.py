@@ -35,7 +35,7 @@ selection method.
 import os.path
 
 import parts.api.output as output
-import parts.common as common
+import parts.core.util as common
 import parts.tools.Common
 import SCons.Action
 import SCons.Defaults

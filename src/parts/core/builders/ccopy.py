@@ -9,7 +9,7 @@ from builtins import zip
 
 import parts.glb as glb
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import parts.core.util as util
 import parts.overrides.symlinks as symlinks
 import parts.pattern as pattern

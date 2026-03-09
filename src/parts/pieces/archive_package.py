@@ -3,7 +3,7 @@
     "bz2","zip", "tgz"'''
 
 
-import parts.common as common
+import parts.core.util as common
 import parts.errors
 import parts.glb as glb
 from SCons.Debug import logInstanceCreation

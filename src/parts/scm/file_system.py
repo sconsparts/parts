@@ -4,7 +4,7 @@ import os
 from typing import List, Union, Optional
 
 import parts.api as api
-import parts.common as common
+import parts.core.util as common
 import SCons.Defaults
 from parts.core import util
 
