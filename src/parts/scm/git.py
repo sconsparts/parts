@@ -49,13 +49,21 @@ class git(base):
         @param server The server to connect to
         @param branch The optional branch to use after the clone, or on an update
         @param remote_branches Optional remote branches to add to the clone for tracking
+        @param patchfile Optional patch file, or list of patch files, to `git am` (applied in list order)
         '''
         self.__branch = branch if branch is not None else ''
         self.__revision = revision
         self._disk_data = None
         self._completed = None
         self._protocol = protocol
-        self._patchfile = patchfile
+        # patchfile may be a single path or a list of paths applied in order;
+        # normalize to a list so the rest of the class can treat it uniformly.
+        if patchfile is None:
+            self._patchfile = []
+        elif isinstance(patchfile, str):
+            self._patchfile = [patchfile]
+        else:
+            self._patchfile = list(patchfile)
 
         if repository.endswith('.git'):
             repository = repository[:-4]
@@ -157,6 +165,16 @@ class git(base):
 
         return ret
     
+    def apply_patch_file(self, cd_dir):
+        '''Return actions that `git am` each configured patch file, in order.'''
+        ret = []
+        for patch in self._patchfile:
+            fullpath = self._env.File(patch).abspath
+            strval = f'{cd_dir} git am ${{GIT_AM_ARGS}} "{fullpath}"'
+            cmd = f'{cd_dir} "{git.gitpath}" am ${{GIT_AM_ARGS}} "{fullpath}"'
+            ret += [self._env.Action(cmd, strval)]
+        return ret
+
     def get_remote_head(self):
     
         clone_path = self.FullPath
@@ -345,12 +363,9 @@ class git(base):
                 if not do_clean:
                     ret += pull_action
 
-            # reapply the patch if any
+            # reapply the patch(es) if any
             if self._patchfile and ret:
-                fullpath = self._env.File(self._patchfile).abspath
-                strval = f'{cd_dir} git am ${{GIT_AM_ARGS}} "{fullpath}"'
-                cmd = f'{cd_dir} {git.gitpath} am ${{GIT_AM_ARGS}} "{fullpath}"'
-                ret += [self._env.Action(cmd, strval)]
+                ret += self.apply_patch_file(cd_dir)
 
         return ret
 
@@ -408,12 +423,9 @@ class git(base):
                 self._env.Action(cmd1, strval1)
             ]
 
-        # have patch file .. apply it
+        # have patch file(s) .. apply them
         if self._patchfile:
-            fullpath = self._env.File(self._patchfile).abspath
-            strval = f'{cd_dir} git am ${{GIT_AM_ARGS}} "{fullpath}"'
-            cmd = f'{cd_dir} "{git.gitpath}" am ${{GIT_AM_ARGS}} "{fullpath}"'
-            ret += [self._env.Action(cmd, strval)]
+            ret += self.apply_patch_file(cd_dir)
 
         return ret
 
