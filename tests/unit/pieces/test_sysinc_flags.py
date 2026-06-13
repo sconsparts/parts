@@ -25,16 +25,20 @@ PARTS_TOOLS = os.path.abspath(
 )
 
 
+# toolchain=[] gives a compiler-less env, so these fixtures observe the generic
+# c++/cc tool defaults (SYSINCPREFIX=$INCPREFIX) in isolation rather than the
+# platform compiler's settings. gcc/clang override SYSINCPREFIX to -isystem (see
+# test_system_includes.py); that override is deliberately out of scope here.
 @pytest.fixture
 def env_cxx():
-    env = parts_settings.DefaultSettings().Environment()
+    env = parts_settings.DefaultSettings().Environment(toolchain=[])
     env.Tool('c++', toolpath=[PARTS_TOOLS])
     return env
 
 
 @pytest.fixture
 def env_cc():
-    env = parts_settings.DefaultSettings().Environment()
+    env = parts_settings.DefaultSettings().Environment(toolchain=[])
     env.Tool('cc', toolpath=[PARTS_TOOLS])
     return env
 

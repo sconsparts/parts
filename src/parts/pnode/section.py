@@ -1222,8 +1222,10 @@ def map_requirement(env, req, dependref):
         1/0
         return
     else:
-        # map the data in the export table
-        map_val = dependref.Section.Exports.get(req.key)
+        # map the data in the export table. read_key is normally req.key, but a
+        # requirement may source a different export key than it writes (e.g.
+        # SYSCPPPATH reads the dependency's CPPPATH export).
+        map_val = dependref.Section.Exports.get(req.read_key)
         #print(f"map_val for {dependref.Section.ID} {req.key}:{dependref.Section.Exports.get(req.key)}")
         if not map_val and not dependref.Section.hasDynamicExports:
             # nothing to map and the section exports are static
