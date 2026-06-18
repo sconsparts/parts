@@ -1,6 +1,8 @@
 Intel Corporation.
+Yahoo! Inc.
+
 Eugene Leskinen
 Vasilij N Litvinov
 Preeti Suman
 Phong Nguyen
-Brain France
+Brian France
