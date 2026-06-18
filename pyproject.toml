@@ -25,7 +25,7 @@ classifiers = [
 ]
 
 dependencies = [
-  "scons"
+  "scons>=4.10.1"
 ]
 
 [dependency-groups]
@@ -43,7 +43,7 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["src"] 
+where = ["src"]
 
 [tool.setuptools.dynamic]
 version = {attr = "parts.parts_version._PARTS_VERSION"}
