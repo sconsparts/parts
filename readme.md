@@ -15,7 +15,7 @@ pip install scons-parts
 ## Requirements
 
 - Python 3.11 or later
-- SCons 4.0+
+- SCons 4.10+
 
 ## Documentation
 
