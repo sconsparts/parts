@@ -31,7 +31,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "nox",
-    "autest",
+    "autest >= 1.10.5",
     "pytest",
     "pylama",
     "mypy",
