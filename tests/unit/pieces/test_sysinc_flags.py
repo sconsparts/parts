@@ -5,6 +5,7 @@ through a separate prefix/suffix pair (e.g. ``-isystem``) without changing the
 defaults for parts that don't opt in.
 """
 import os
+import platform
 
 import pytest
 import SCons.Script
@@ -105,12 +106,14 @@ class TestCMakeIncludeFlagVariables:
 
     def test_cmake_include_flag_default(self, env_cxx):
         assert env_cxx['CMAKE_INCLUDE_FLAG'] == '$INCPREFIX'
-        assert env_cxx.subst('$CMAKE_INCLUDE_FLAG') == '-I'
+        expected = '/I' if platform.system() == 'Windows' else '-I'
+        assert env_cxx.subst('$CMAKE_INCLUDE_FLAG') == expected
 
     def test_cmake_include_system_flag_default(self, env_cxx):
         assert env_cxx['CMAKE_INCLUDE_SYSTEM_FLAG'] == '$SYSINCPREFIX'
-        # SYSINCPREFIX defaults to $INCPREFIX which is '-I'
-        assert env_cxx.subst('$CMAKE_INCLUDE_SYSTEM_FLAG') == '-I'
+        # SYSINCPREFIX defaults to $INCPREFIX which is '-I' (or '/I' on Windows)
+        expected = '/I' if platform.system() == 'Windows' else '-I'
+        assert env_cxx.subst('$CMAKE_INCLUDE_SYSTEM_FLAG') == expected
 
     def test_cmake_include_system_flag_follows_sysincprefix(self, env_cxx):
         env_cxx['SYSINCPREFIX'] = '-isystem '
@@ -120,4 +123,5 @@ class TestCMakeIncludeFlagVariables:
         """Regression guard: CMAKE_INCLUDE_FLAG (the non-system one) must keep
         tracking INCPREFIX even if a user overrides SYSINCPREFIX."""
         env_cxx['SYSINCPREFIX'] = '-isystem '
-        assert env_cxx.subst('$CMAKE_INCLUDE_FLAG') == '-I'
+        expected = '/I' if platform.system() == 'Windows' else '-I'
+        assert env_cxx.subst('$CMAKE_INCLUDE_FLAG') == expected

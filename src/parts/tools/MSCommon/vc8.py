@@ -115,7 +115,7 @@ msvc.Register(
                 'INCLUDE':
                 '${MSVC.VCINSTALL}/ATLMFC/INCLUDE' + os.pathsep +
                 '${MSVC.VCINSTALL}/INCLUDE' + os.pathsep +
-                '${MSVC.VCINSTALL}/PlatformSDK\include' + os.pathsep +
+                r'${MSVC.VCINSTALL}/PlatformSDK/include' + os.pathsep +
                 '${MSVC.VSINSTALL}/SDK/v2.0/include',
                 'LIB':
                 '${MSVC.VCINSTALL}/ATLMFC/LIB/AMD64' + os.pathsep +
