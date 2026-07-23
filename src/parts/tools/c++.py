@@ -34,12 +34,18 @@ def generate(env):
     env['CXX'] = parts.tools.Common.toolvar('c++', ('c++',), env=env)
 
     env.SetDefault(CXXFLAGS=SCons.Util.CLVar(''))
+
+    # Optional compiler launcher prefixed to the C++ compile command (e.g. ccache
+    # or sccache). Empty by default; kept separate from $CXX so $CXX stays a clean
+    # compiler path (see tools/cc.py CC_LAUNCHER for the rationale).
+    env.SetDefault(CXX_LAUNCHER='')
+
     #env['CXXCOM']     = '$CXX -o $TARGET -c $CXXFLAGS $CCFLAGS $_CCCOMCOM $SOURCES'
-    env.SetDefault(CXXCOM='${TEMPFILE("$CXX -o $TARGET -c $CXXFLAGS $CCFLAGS $_CCCOMCOM $SOURCES $CCARCHFLAGS","$CXXCOMSTR")}')
+    env.SetDefault(CXXCOM='${TEMPFILE("$CXX_LAUNCHER $CXX -o $TARGET -c $CXXFLAGS $CCFLAGS $_CCCOMCOM $SOURCES $CCARCHFLAGS","$CXXCOMSTR")}')
     env.SetDefault(SHCXX='$CXX')
     env.SetDefault(SHCXXFLAGS=SCons.Util.CLVar('$CXXFLAGS'))
     #env['SHCXXCOM']   = '$SHCXX -o $TARGET -c $SHCXXFLAGS $SHCCFLAGS $_CCCOMCOM $SOURCES'
-    env.SetDefault(SHCXXCOM='${TEMPFILE("$SHCXX -o $TARGET -c $SHCXXFLAGS $SHCCFLAGS $_CCCOMCOM $SOURCES $CCARCHFLAGS","$SHCXXCOMSTR")}')
+    env.SetDefault(SHCXXCOM='${TEMPFILE("$CXX_LAUNCHER $SHCXX -o $TARGET -c $SHCXXFLAGS $SHCCFLAGS $_CCCOMCOM $SOURCES $CCARCHFLAGS","$SHCXXCOMSTR")}')
 
     env.SetDefault(CPPDEFPREFIX='-D')
     env.SetDefault(CPPDEFSUFFIX='')
