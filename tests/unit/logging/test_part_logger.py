@@ -1,3 +1,4 @@
+import contextlib
 import os
 import threading
 import time
@@ -47,13 +48,44 @@ class collector:
         return ''.join(self.writes)
 
 
-def drain_blocking(chunks):
-    '''Run the blocking (win32) reader synchronously over chunks; return (text, error).'''
-    out = collector()
+@contextlib.contextmanager
+def captured_warnings():
+    '''Intercept api.output.warning_msg, which otherwise needs a reporter that unit tests do
+    not stand up -- and which is why the abandon branch had no coverage at all before.'''
+    calls = []
+    saved = part_logger.api.output.warning_msg
+    part_logger.api.output.warning_msg = lambda *a, **kw: calls.append((a, kw))
+    try:
+        yield calls
+    finally:
+        part_logger.api.output.warning_msg = saved
+
+
+@contextlib.contextmanager
+def blocking_reader():
+    """Force the win32 code path, so it stays covered when the suite runs on POSIX."""
+    saved = part_logger.canPollPipes
+    part_logger.canPollPipes = False
+    try:
+        yield
+    finally:
+        part_logger.canPollPipes = saved
+
+
+def drain_blocking(chunks, output=None):
+    '''Run the blocking (win32) reader over chunks and return (text, error).
+
+    Driven through _readerthread rather than calling _read_blocking directly, so the platform
+    dispatch and the error handling wrapped around it are covered too -- and so that asserting
+    on `error` actually means something, since only _readerthread ever sets it.
+    '''
+    out = collector() if output is None else output
     redirector = part_logger.pipeRedirector(stubPipe(chunks), out, taskId=1,
-                                           streamId=Console.out_stream)
-    redirector._read_blocking()
-    return out.text(), redirector.error
+                                            streamId=Console.out_stream)
+    with blocking_reader():
+        redirector._readerthread()
+    text = out.text() if isinstance(out, collector) else ''
+    return text, redirector.error
 
 
 def feed_pipe(chunks, gap=0.15):
@@ -107,6 +139,66 @@ class TestBlockingReaderDecoding(unittest.TestCase):
         self.assertEqual(error, '')
         self.assertTrue(text.startswith('-- partial '), text)
         self.assertIn(REPLACEMENT, text)
+
+    def test_a_failing_writer_is_reported_through_readerthread(self):
+        '''Gives the `error` assertions above something to be measured against: this is the
+        one case on this path where error is expected to be set.'''
+        class exploding:
+            def WriteStream(self, taskId, streamId, msg):
+                raise RuntimeError('boom')
+
+        text, error = drain_blocking([b'-- x\n'], output=exploding())
+        self.assertIn('RuntimeError', error)
+
+
+class TestLineSplitting(unittest.TestCase):
+    '''Lines are split by searching only each newly read chunk, on the invariant that the
+    carry-over buffer never contains a newline. Searching the whole accumulated buffer on
+    every read is quadratic in the length of a newline-free stream, and progress meters
+    produce exactly that. The scaling itself is measured out of band; these check that the
+    result is byte-exact and that the emitted granularity has not changed.'''
+
+    def test_newline_free_stream_is_reassembled_exactly(self):
+        payload = b''.join(b'\rprogress %d' % i for i in range(120000))   # ~2.5MB, no newline
+        read_fd, write_fd = os.pipe()
+        out = collector()
+        redirector = part_logger.pipeRedirector(os.fdopen(read_fd, 'rb'), out, taskId=1,
+                                                streamId=Console.out_stream)
+        redirector.__enter__()
+        with os.fdopen(write_fd, 'wb') as writer:
+            writer.write(payload)
+        redirector.close()
+        self.assertEqual(redirector.error, '')
+        self.assertEqual(out.text(), payload.decode())
+
+    def test_lines_are_still_emitted_one_at_a_time(self):
+        '''Several lines arriving in a single read must still reach WriteStream individually,
+        or stdout/stderr interleaving in the part logs gets coarser.'''
+        read_fd, write_fd = os.pipe()
+        out = collector()
+        redirector = part_logger.pipeRedirector(os.fdopen(read_fd, 'rb'), out, taskId=1,
+                                                streamId=Console.out_stream)
+        redirector.__enter__()
+        with os.fdopen(write_fd, 'wb') as writer:
+            writer.write(b'one\ntwo\nthree\ntail-with-no-newline')
+        redirector.close()
+        self.assertEqual(out.writes, ['one\n', 'two\n', 'three\n', 'tail-with-no-newline'])
+
+
+class TestTimeoutOverrides(unittest.TestCase):
+
+    def test_environment_override(self):
+        os.environ['PARTS_TEST_SECONDS'] = '1.5'
+        self.addCleanup(os.environ.pop, 'PARTS_TEST_SECONDS', None)
+        self.assertEqual(part_logger._env_seconds('PARTS_TEST_SECONDS', 9.0), 1.5)
+
+    def test_unset_and_unusable_values_fall_back(self):
+        for bad in ('', 'soon', '0', '-3'):
+            os.environ['PARTS_TEST_SECONDS'] = bad
+            self.addCleanup(os.environ.pop, 'PARTS_TEST_SECONDS', None)
+            self.assertEqual(part_logger._env_seconds('PARTS_TEST_SECONDS', 9.0), 9.0, bad)
+        os.environ.pop('PARTS_TEST_SECONDS', None)
+        self.assertEqual(part_logger._env_seconds('PARTS_TEST_SECONDS', 9.0), 9.0)
 
 
 class TestInterruptibleReaderDecoding(unittest.TestCase):
@@ -209,6 +301,139 @@ class TestPipeRedirectorShutdown(unittest.TestCase):
         elapsed = self.timed_close(redirector)
         self.assertLess(elapsed, 3, 'close() took {0:.1f}s'.format(elapsed))
         self.assertIn('RuntimeError', redirector.error)
+
+    def test_a_still_writing_lingerer_cannot_hold_close_open(self):
+        '''The stop check only fires when the pipe goes quiet, so a leftover process that keeps
+        writing would keep the reader busy until close()'s join gave up -- join_timeout per
+        redirector, and part_spawner nests two of them per task. The drain is bounded instead.'''
+        read_fd, write_fd = os.pipe()
+        os.set_blocking(write_fd, False)        # never let the noise thread block on a full pipe
+        self.addCleanup(os.close, write_fd)
+        stop = threading.Event()
+        self.addCleanup(stop.set)               # LIFO: runs before the fd is closed
+        out = collector()
+        redirector = part_logger.pipeRedirector(os.fdopen(read_fd, 'rb'), out, taskId=1,
+                                                streamId=Console.out_stream)
+        redirector.join_timeout = 30            # must not be what rescues us
+        redirector.drain_grace = 0.5
+
+        def chatter():
+            while not stop.is_set():
+                try:
+                    os.write(write_fd, b'lingering process still talking\n')
+                except OSError:
+                    pass                        # pipe full, or closed by cleanup
+                time.sleep(0.002)
+
+        redirector.__enter__()
+        threading.Thread(target=chatter, daemon=True).start()
+        time.sleep(0.3)
+        elapsed = self.timed_close(redirector)
+        stop.set()
+        self.assertLess(elapsed, 5,
+                        'close() took {0:.1f}s despite a 0.5s drain grace'.format(elapsed))
+        self.assertTrue(out.text(), 'nothing was captured, so it was not really draining')
+
+    def test_pipe_is_released_even_when_it_never_reaches_eof(self):
+        '''The quiet case: the reader stops on the flag and hands the pipe back.'''
+        read_fd, write_fd = os.pipe()
+        self.addCleanup(os.close, write_fd)
+        pipein = os.fdopen(read_fd, 'rb')
+        redirector = part_logger.pipeRedirector(pipein, collector(), taskId=1,
+                                                streamId=Console.out_stream)
+        redirector.__enter__()
+        time.sleep(0.3)
+        self.timed_close(redirector)
+        self.assertTrue(pipein.closed, 'the reader did not release the pipe')
+
+    def abandoning_redirector(self):
+        '''Force close() to give up on a reader that is still running: a lingering writer keeps
+        the pipe busy, and the drain grace deliberately outlasts the join timeout.'''
+        read_fd, write_fd = os.pipe()
+        os.set_blocking(write_fd, False)
+        self.addCleanup(os.close, write_fd)
+        stop = threading.Event()
+        self.addCleanup(stop.set)               # LIFO: runs before the fd is closed
+        pipein = os.fdopen(read_fd, 'rb')
+        redirector = part_logger.pipeRedirector(pipein, collector(), taskId=1,
+                                                streamId=Console.out_stream)
+        redirector.join_timeout = 0.2
+        redirector.drain_grace = 1.0
+
+        def chatter():
+            while not stop.is_set():
+                try:
+                    os.write(write_fd, b'still talking\n')
+                except OSError:
+                    pass
+                time.sleep(0.002)
+
+        redirector.__enter__()
+        reader = redirector.thread              # close() clears the attribute
+        threading.Thread(target=chatter, daemon=True).start()
+        time.sleep(0.3)
+        return redirector, pipein, stop, reader
+
+    def test_an_abandoned_reader_releases_the_pipe(self):
+        '''close() cannot close the pipe when it gives up on a live reader, so the reader has
+        to hand it back itself. Otherwise every abandoned reader leaks two descriptors for the
+        rest of the build.'''
+        redirector, pipein, stop, reader = self.abandoning_redirector()
+        with captured_warnings() as warned:
+            self.timed_close(redirector)
+        # the warning is the proof that close() took the abandon branch; asserting
+        # thread.is_alive() out here instead would be racing the reader's own deadline
+        self.assertTrue(warned, 'expected close() to warn that it abandoned the reader')
+        stop.set()
+        reader.join(timeout=10)
+        self.assertFalse(reader.is_alive(), 'the reader never finished')
+        self.assertTrue(pipein.closed, 'the abandoned reader did not release the pipe')
+
+    def test_an_abandoned_reader_stops_writing_to_the_logger(self):
+        '''part_spawner calls TaskEnd as soon as close() returns, and that deletes this task's
+        cache entry. A write after that point raises KeyError with several jobs, and with one
+        job goes straight to the console in the middle of an unrelated task's output.'''
+        redirector, pipein, stop, reader = self.abandoning_redirector()
+        out = redirector.output
+        with captured_warnings() as warned:
+            self.timed_close(redirector)
+        self.assertTrue(warned, 'expected close() to abandon the reader')
+        written = len(out.writes)
+        self.assertTrue(written, 'nothing was logged before close(), so the test proves nothing')
+        # the lingering writer is still going and the reader is still draining it
+        time.sleep(0.4)
+        self.assertTrue(reader.is_alive(), 'the reader stopped early; nothing was being drained')
+        self.assertEqual(len(out.writes), written,
+                         'the abandoned reader logged after close() returned')
+        stop.set()
+        reader.join(timeout=10)
+
+    def test_close_is_idempotent(self):
+        '''__exit__ calls close(), so an explicit close() first used to leave the second call
+        dereferencing a cleared self.thread.'''
+        read_fd, write_fd = os.pipe()
+        with os.fdopen(write_fd, 'wb') as writer:
+            writer.write(b'-- done\n')
+        redirector = part_logger.pipeRedirector(os.fdopen(read_fd, 'rb'), collector(), taskId=1,
+                                                streamId=Console.out_stream)
+        redirector.__enter__()
+        self.timed_close(redirector)
+        redirector.close()                      # must not raise
+        redirector.__exit__(None, None, None)   # nor via the context manager
+
+    def test_the_abandon_warning_avoids_the_shared_stack_frame(self):
+        '''warning_msg defaults to show_stack=True, which walks glb.part_frame -- module-global
+        state with no lock. From a build worker thread concurrent callers can pop each other's
+        entries, and an IndexError here escapes close() and masks the real build error.'''
+        redirector, pipein, stop, reader = self.abandoning_redirector()
+        with captured_warnings() as warned:
+            self.timed_close(redirector)
+        self.assertEqual(len(warned), 1)
+        args, kw = warned[0]
+        self.assertIs(kw.get('show_stack'), False, 'must not build a stack frame')
+        self.assertIs(kw.get('print_once'), True, 'one lingering process usually means many')
+        stop.set()
+        reader.join(timeout=10)                 # do not leak it into the next test
 
     def test_pipe_is_closed_once_the_reader_has_finished(self):
         read_fd, write_fd = os.pipe()
