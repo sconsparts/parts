@@ -11,7 +11,7 @@ from SCons.Node.FS import Dir
 from SCons.Script.SConscript import SConsEnvironment
 
 
-def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,Dir]=None, auto_scanner={}, ignore:List[str]=[], top_level:bool=True, hide_c_flags:bool=False, **kw):
+def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,Dir]=None, auto_scanner={}, ignore:List[str]=[], top_level:bool=True, hide_c_flags:bool=False, targets:str="install", **kw):
     '''
         prefix - assumed install default location
         cmake_dir - directory containing cmakelist.txt in parent repo
@@ -22,7 +22,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
     '''
     env_org = env
     env = env.Clone(**kw)
-    build_dir : Dir = env.Dir("$BUILD_DIR/build")
+    build_dir : Dir = env.Dir("$CMAKE_BUILDDIR")
     
     # The sandbox for the build install
     # we have three variables to help with this
@@ -51,15 +51,20 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$$$$$$$ORIGIN")}'
 
     
-    cflags = '-DCMAKE_C_FLAGS="$CCFLAGS" -DCMAKE_CXX_FLAGS="$CCFLAGS" '
+    cflags = '-DCMAKE_C_FLAGS="$CCFLAGS $CFLAGS" -DCMAKE_CXX_FLAGS="$CCFLAGS $CXXFLAGS" '
     if hide_c_flags:
         cflags=''
 
     env.SetDefault(_CMAKE_ARGS='\
         -DCMAKE_INSTALL_PREFIX=$CMAKE_CONFIGURE_PREFIX '
-        '-DCMAKE_INSTALL_LIBDIR=lib '
-        '-DCMAKE_INSTALL_BINDIR=bin '
-        '-DCMAKE_BUILD_TYPE=Release '
+        '-DCMAKE_INSTALL_LIBDIR:PATH=$INSTALL_LIB_SUBDIR '
+        '-DCMAKE_INSTALL_BINDIR:PATH=$INSTALL_BIN_SUBDIR '
+        '-DCMAKE_INSTALL_INCLUDEDIR:PATH=$INSTALL_INCLUDE_SUBDIR '
+        '-DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE '
+        '-DCMAKE_COLOR_MAKEFILE=ON '
+        '-DCMAKE_COLOR_DIAGNOSTICS=ON '
+        '-DCLICOLOR_FORCE=1 '
+        '-DCMAKE_VERBOSE_MAKEFILE=ON '
         '-DCMAKE_INCLUDE_FLAG_C="$CMAKE_INCLUDE_FLAG" '
         '-DCMAKE_INCLUDE_FLAG_CXX="$CMAKE_INCLUDE_FLAG" '
         '-DCMAKE_INCLUDE_SYSTEM_FLAG_C="$CMAKE_INCLUDE_SYSTEM_FLAG" '
@@ -69,6 +74,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
         '-DCMAKE_EXE_LINKER_FLAGS="$LINKFLAGS $_RUNPATH $_ABSRPATHLINK" '
         '-DCMAKE_CXX_COMPILER=$CXX '
         '-DCMAKE_C_COMPILER=$CC '
+        '${define_if("$CMAKE_GENERATOR","-DCMAKE_GENERATOR=$CMAKE_GENERATOR")} '
         '$CMAKE_ARGS'
                    )
     
@@ -115,7 +121,9 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
     else:
         # track a lot of files
         src_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=cmake_build_files+[".git/*"]+ignore).files()
-    env.SetDefault(_CMAKE_MAKE_ARGS='VERBOSE=1\
+    # verbosity is driven by -DCMAKE_VERBOSE_MAKEFILE=ON in the configure step
+    # (works for all generators, not just make), so no VERBOSE=1 here.
+    env.SetDefault(_CMAKE_MAKE_ARGS='\
         $(-j{jobs}$)'.format(jobs=env.GetOption('num_jobs'))
                    )
 
@@ -125,7 +133,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
         ],
         out + src_files,
         [
-            "cd ${SOURCE.dir} ; $CMAKE --build . --config Release --target install -- $CMAKE_DESTDIR_FLAG $_CMAKE_MAKE_ARGS"
+            f"cd ${{SOURCE.dir}} ; $CMAKE --build . --config $CMAKE_BUILD_TYPE --target {targets} -- $CMAKE_DESTDIR_FLAG $_CMAKE_MAKE_ARGS"
         ],
         source_scanner=scanners.NullScanner,
         target_factory=env.Dir,
@@ -147,6 +155,10 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
 # adding logic to Scons Environment object
 api.register.add_method(CMake)
 
+api.register.add_variable('CMAKE_BUILDDIR', "$BUILD_DIR/$CMAKE_BUILDSUBDIR", 'Defines build directory for the CMake build')
+api.register.add_variable('CMAKE_BUILDSUBDIR', "build", 'Defines build subdirectory name for the CMake build')
+api.register.add_variable('CMAKE_BUILD_TYPE', "Release", 'CMAKE_BUILD_TYPE used for the configure and --build steps')
+api.register.add_variable('CMAKE_GENERATOR', '', 'If set, passed as -DCMAKE_GENERATOR (e.g. "Ninja"); empty uses cmake\'s default')
 api.register.add_variable('CMAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines location to install bits from the CMake')
 api.register.add_variable('CMAKE_INCLUDE_FLAG', '$INCPREFIX', 'Define the include flag for current compiler toolchain')
 api.register.add_variable('CMAKE_INCLUDE_SYSTEM_FLAG', '$SYSINCPREFIX', 'Define the system include flag for current compiler toolchain')
