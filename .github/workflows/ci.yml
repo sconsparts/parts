@@ -12,26 +12,43 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        image: ['ubuntu:latest', 'almalinux:latest', 'fedora:latest']
         python-version: ["3.11", "3.12", "3.13", "3.14"]
+
+    container:
+      image: ${{ matrix.image }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Install uv and set the Python version
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           python-version: ${{ matrix.python-version }}
-          cache: pip
+          version: "0.11.33"
 
-      - name: System deps
+      - name: Ubuntu system dependencies
+        if: ${{ matrix.image == 'ubuntu:latest' }}
         run: |
-          sudo apt-get update
-          sudo apt-get install -y patchelf rpm
+          apt-get update
+          apt-get install -y patchelf rpm procps git build-essential
+
+      - name: Fedora System dependencies
+        if: ${{ matrix.image == 'fedora:latest' }}
+        run: |
+          dnf install -y git procps-ng patchelf @development-tools
+
+      - name: EL System dependencies
+        if: ${{ matrix.image == 'almalinux:latest' }}
+        run: |
+          dnf install -y epel-release 'dnf-command(config-manager)'
+          dnf config-manager --set-enabled crb
+          dnf group install -y "Development Tools"
+          dnf install -y patchelf git procps-ng
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip uv
           uv sync --dev
 
       - name: Configure git
