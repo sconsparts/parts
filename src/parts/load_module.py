@@ -43,10 +43,21 @@ def get_site_directories(subdir):
             else:
                 syspath = []
         elif host_os == 'darwin':
-            syspath = [os.path.join('/Library/Application Support/parts', 'parts-site', subdir)]
+            # by convention on macOS app data lives under /Library/Application
+            # Support (system) or ~/Library/Application Support (user), but many
+            # UNIX-style tools also use /usr/local/share. /usr/share is
+            # typically read-only.
+            localpath.append(os.path.join(os.path.expanduser('~/Library/Application Support/parts'), 'parts-site', subdir))
+            syspath = [
+                os.path.join('/Library/Application Support/parts', 'parts-site', subdir),
+                os.path.join('/usr/local/share/parts', 'parts-site', subdir)
+            ]
         else:
             # some kind of POSIX, most likely Linux
-            syspath = [os.path.join('/usr/share/parts', 'parts-site', subdir)]
+            syspath = [
+                os.path.join('/usr/share/parts', 'parts-site', subdir),
+                os.path.join('/usr/local/share/parts', 'parts-site', subdir)
+            ]
 
         if SCons.Script.GetOption('use_part_site'):
             sitepaths = [
