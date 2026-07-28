@@ -1,0 +1,6 @@
+Import('*')
+PartName("w")
+
+@build
+def build(env):
+    env.InstallBin(env.Program('hello', 'hello.c'))
