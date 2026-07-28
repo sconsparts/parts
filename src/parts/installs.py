@@ -62,6 +62,7 @@ def ProcessInstall(env, target, sources, sub_dir, create_sdk, sdk_dir='', no_pkg
     target_lib = env.subst('${INSTALL_LIB}')
     target_include = env.subst('${INSTALL_INCLUDE}')
     pkg_config = env.subst('${INSTALL_PKG_CONFIG}')
+    cmake_config = env.subst('${INSTALL_CMAKE_CONFIG}')
 
     if sub_dir != '' and sdk_dir != '':
         dest_dir = os.path.join(target, sub_dir)
@@ -104,9 +105,16 @@ def ProcessInstall(env, target, sources, sub_dir, create_sdk, sdk_dir='', no_pkg
                               create_sdk=create_sdk
                               )
         elif target == pkg_config:
-            ret = env.SdkPkgConfig([sources], 
-                          from_prefix=kw.get('from_prefix', None), 
+            ret = env.SdkPkgConfig([sources],
+                          from_prefix=kw.get('from_prefix', None),
                           make_uninstall=kw.get('make_uninstall', True),
+                          sub_dir=sub_dir,
+                          create_sdk=create_sdk
+                          )
+        elif target == cmake_config:
+            # route cmake-config installs through SdkCMakeConfig so the SDK
+            # cmake dir is exported as CMAKE_PREFIX_PATH (mirrors pkg_config above)
+            ret = env.SdkCMakeConfig([sources],
                           sub_dir=sub_dir,
                           create_sdk=create_sdk
                           )

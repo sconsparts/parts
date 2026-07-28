@@ -92,7 +92,11 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
             # as this is probally out of date ( contains bad files to scan)
             SCons.Defaults.Delete("$CMAKE_DESTDIR"),
             'cd ${TARGET.dir} ;'
-            # CMAKE_PREFIX_PATH should replace this.. Have it as a fallback
+            # cmake reads the CMAKE_PREFIX_PATH env var for find_package; it carries
+            # the cmake-config dirs propagated from dependencies (see SdkCMakeConfig
+            # and the CMAKE_PREFIX_PATH requirement). PKG_CONFIG_PATH is kept as a
+            # fallback for projects that locate deps via pkg-config instead.
+            '${define_if("$CMAKE_PREFIX_PATH","CMAKE_PREFIX_PATH=")}${MAKEPATH("$CMAKE_PREFIX_PATH")} '
             '${define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}${MAKEPATH("$PKG_CONFIG_PATH")} '
             '$CMAKE ${SOURCE.dir.abspath} $_CMAKE_ARGS'
         ],

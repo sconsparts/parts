@@ -1,0 +1,9 @@
+Import('*')
+PartName("consumer")
+build.DependsOn(['foo'])
+
+@build
+def source(env):
+    # find_package(foo) below must resolve via the CMAKE_PREFIX_PATH propagated
+    # from the foo part; if propagation breaks, cmake configure fails the build.
+    env.CMake()
