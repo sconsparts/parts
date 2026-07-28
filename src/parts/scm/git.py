@@ -148,8 +148,8 @@ class git(base):
         git_out_path = self.MirrorPath
         clone_path = self.FullPath
 
-        strval = f'git clone --mirror --progress {clone_path} "{git_out_path}"'
-        cmd = f'"{git.gitpath}" clone --mirror --progress {clone_path} "{git_out_path}"'
+        strval = f'git clone --mirror ${{GIT_MIRROR_ARGS}} {clone_path} "{git_out_path}"'
+        cmd = f'"{git.gitpath}" clone --mirror ${{GIT_MIRROR_ARGS}} {clone_path} "{git_out_path}"'
         ret = [self._env.Action(cmd, strval)]
 
         return ret
@@ -403,8 +403,8 @@ class git(base):
 
         api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"], " Requested branch: {0}", branch)
 
-        strval = f'git clone ${{GIT_CLONE_ARGS}} --progress {branch} {clone_path} "{git_out_path}"'
-        cmd = f'"{git.gitpath}" clone ${{GIT_CLONE_ARGS}} --progress {branch} {clone_path} "{git_out_path}"'
+        strval = f'git clone ${{GIT_CLONE_ARGS}} {branch} {clone_path} "{git_out_path}"'
+        cmd = f'"{git.gitpath}" clone ${{GIT_CLONE_ARGS}} {branch} {clone_path} "{git_out_path}"'
         ret = [self._env.Action(cmd, strval)]
 
         cd_dir = f'cd {out_dir} &&'
@@ -833,6 +833,19 @@ api.register.add_variable('VCS_GIT_DIR', '${CHECK_OUT_ROOT}/${PART_ALIAS}', '')
 api.register.add_variable('GIT_DEFAULT_BRANCH', '', '')
 api.register.add_bool_variable('GIT_IGNORE_UNTRACKED', False, 'Controls if we should care about untracked files when updating')
 api.register.add_enum_variable('GIT_PROTOCOL', 'https', '', ['https', 'git', 'file', 'local'])
+
+# Additional, per-subcommand git arguments. These are referenced by the
+# clone/mirror/fetch/checkout/pull/reset/am command strings above; register
+# them so they have documented defaults and can be overridden per part.
+# CLONE/MIRROR default to --progress (the historical hardcoded behavior);
+# set them to '' to suppress git's progress output.
+api.register.add_variable('GIT_CLONE_ARGS', '--progress', 'Additional arguments for git-clone')
+api.register.add_variable('GIT_MIRROR_ARGS', '--progress', 'Additional arguments for git-clone --mirror')
+api.register.add_variable('GIT_FETCH_ARGS', '', 'Additional arguments for git-fetch')
+api.register.add_variable('GIT_CHECKOUT_ARGS', '', 'Additional arguments for git-checkout')
+api.register.add_variable('GIT_PULL_ARGS', '', 'Additional arguments for git-pull')
+api.register.add_variable('GIT_RESET_ARGS', '', 'Additional arguments for git-reset')
+api.register.add_variable('GIT_AM_ARGS', '', 'Additional arguments for git-am')
 
 # for external part pulls
 
