@@ -1,0 +1,10 @@
+Import('*')
+
+env.PartName("packaging")
+
+# Set the dist path in one place. With RPM_PACKAGE_DIST_PATH set, RPMPackage
+# places the built rpm into this directory itself -- no per-part
+# `env.CCopy("#dist", out)` needed.
+env['RPM_PACKAGE_DIST_PATH'] = '#_dist'
+
+out = env.RPMPackage('foo-1.0-1.${TARGET_ARCH}', source=['pkg1', 'pkg_control1'], TARGET_ARCH='x86', arch_mapper={'x86': 'joe'})

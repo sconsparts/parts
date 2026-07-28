@@ -415,6 +415,7 @@ def RpmPackage_wrapper(env, target, source=None, **kw):
         api.output.warning_msgf("{} is not a known defined TARGET_ARCH", target_arch)
         del kw["TARGET_ARCH"]
 
+    env_org = env
     env = env.Clone(**kw)
 
     if target_arch:
@@ -435,7 +436,25 @@ def RpmPackage_wrapper(env, target, source=None, **kw):
     env['TARGET_ARCH'] = rpmarch(env, env['TARGET_ARCH'])
     api.output.verbose_msgf(['rpm'], "mapping architecture to rpm value of: {0}", env['TARGET_ARCH'])
 
-    return env._RPMPackage(target, source, **kw)
+    ret = env._RPMPackage(target, source, **kw)
+
+    # If a dist path is configured, also place the built rpm(s) there. This lets
+    # the destination be controlled by a single variable (e.g. set once in a
+    # parts-site) instead of a hand-written `env.CCopy(...)` after every
+    # RPMPackage call. Empty by default, so it is purely opt-in.
+    #
+    # The copy is registered under the part's `::dist` alias (the same pattern
+    # parts users wrote by hand) so it is tied into the part's target tree and
+    # builds along with the rpm.
+    dist_path = env.subst('$RPM_PACKAGE_DIST_PATH')
+    if dist_path:
+        dist_copy = env.CCopy(dist_path, ret)
+        # register on the original (section) env, matching the by-hand pattern,
+        # so the alias attaches to the part's target tree and builds with it
+        env_org.Alias("${PART_SECTION}::alias::${PART_ALIAS}::dist", dist_copy)
+        ret = ret + dist_copy
+
+    return ret
 
 
 api.register.add_method(RpmPackage_wrapper, 'RPMPackage')
@@ -474,3 +493,10 @@ api.register.add_variable(
 api.register.add_variable(
     'RPM_PACKAGE_RUNPATH', [],
     'The runpath values of dependent packages that we need to add to the runpath added by the user')
+
+api.register.add_variable(
+    'RPM_PACKAGE_DIST_PATH', '',
+    'If set, RPMPackage copies each built .rpm into this directory. Lets the '
+    'collection point be set in one place (e.g. a parts-site) instead of a '
+    'per-part CCopy. Empty disables the copy. Following the _sdk/_build/_scm '
+    'convention, "#_dist" is the recommended value.')
