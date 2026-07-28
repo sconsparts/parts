@@ -66,6 +66,31 @@ def rpm_group_values(env, dir, target, source, arg=None):
 g_cache = {}
 
 
+def rpath_staging_prefix(env, pk_type, sub_dir, node):
+    '''Compute the RPATH_TARGET_PREFIX: the temporary staging location used
+    while rewriting a node's runpath before it is packaged.
+
+    Two rpath-rewritable files that share a basename but install to different
+    paths must stage to distinct locations, otherwise SCons sees two builders
+    writing the same target and fails. Disambiguation, in priority order:
+
+      * an explicit per-node ``sub_dir`` (set via MetaTag) is appended, else
+      * if ``RPM_PACKAGE_FILE_DIFFERS_PATH`` is enabled, the node's
+        install-relative subpath is appended automatically (opt-in), else
+      * the base ``.../<pk_type>`` prefix is used unchanged.
+    '''
+    target_prefix = f"$BUILD_DIR/_RPM_RUNPATH_${{PART_MINI_SIG}}/{pk_type}"
+    if sub_dir:
+        # explicit sub_dir provided via MetaTag
+        target_prefix += f"/{sub_dir}"
+    elif env.get('RPM_PACKAGE_FILE_DIFFERS_PATH', False):
+        # derive a unique subpath from where the file is being installed
+        install_pk_type_subpath = env.subst(f'$INSTALL_{pk_type}').replace("#", "")
+        filtered_subpath = node.dir.rstr().replace(install_pk_type_subpath, "")
+        target_prefix += filtered_subpath
+    return target_prefix
+
+
 def rpm_scanner(node, env, path, args=None):
     '''
     The goal of the scanner is to add the depend of the rpm
@@ -141,6 +166,11 @@ def rpm_scanner(node, env, path, args=None):
             # get category of this node
             pk_type = env.MetaTagValue(n, 'category', 'package')
 
+            # optional per-node staging sub_dir to disambiguate same-named
+            # rpath-rewritable files installed to different paths. Defaults to
+            # empty (no extra staging subdir) when unset.
+            sub_dir = env.MetaTagValue(n, 'sub_dir', '')
+
             ###############################################################
             # Process the package filters. These allow us to call other build
             # action to process items, such as runpath tweaking or tweaking
@@ -164,9 +194,14 @@ def rpm_scanner(node, env, path, args=None):
                 # This build should also check if it is a binary and skip
                 # "scripts" or text files that make be installed in these areas
 
+                target_prefix = rpath_staging_prefix(env, pk_type, sub_dir, filtered)
+                api.output.verbose_msgf(
+                    ["rpm-scanner", "scanner"],
+                    "Setting RPATH for {} in staging location {}", filtered, target_prefix)
+
                 filtered = env.SetRPath(
                     filtered,
-                    RPATH_TARGET_PREFIX=f"$BUILD_DIR/_RPM_RUNPATH_${{PART_MINI_SIG}}/{pk_type}",
+                    RPATH_TARGET_PREFIX=target_prefix,
                     allow_duplicates=True
                 )
 
@@ -474,3 +509,9 @@ api.register.add_variable(
 api.register.add_variable(
     'RPM_PACKAGE_RUNPATH', [],
     'The runpath values of dependent packages that we need to add to the runpath added by the user')
+
+api.register.add_bool_variable(
+    'RPM_PACKAGE_FILE_DIFFERS_PATH', False,
+    'When set, the rpm scanner stages each rpath-rewritten file under its '
+    'install-relative subpath, so same-named files installed to different '
+    'paths do not collide during the rpath rewrite')
