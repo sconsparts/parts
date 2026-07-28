@@ -147,6 +147,12 @@ DefineRequirementSet('PKG_DEFAULTS', ['PKG_RPM', 'PKG_RPM_DEVEL', 'PKG_RPM_VERSI
 
 # C/C++ like
 DefineRequirementSet('CPPPATH', [requirement('CPPPATH', public=True, policy=REQ.Policy.ignore)])
+# "System" include paths: read a dependency's exported CPPPATH (its include dirs)
+# but land them in the consumer's SYSCPPPATH, which is emitted with $SYSINCPREFIX
+# (-isystem on gcc/clang) instead of -I. This lets a consumer suppress warnings
+# from a dependency's headers. read_key='CPPPATH' is what does the routing; the
+# requirement is otherwise a normal direct (non-transitive) header requirement.
+DefineRequirementSet('SYSCPPPATH', [requirement('SYSCPPPATH', read_key='CPPPATH', public=True, policy=REQ.Policy.ignore)])
 DefineRequirementSet('CPPDEFINES', [requirement('CPPDEFINES', public=True, policy=REQ.Policy.ignore)])
 DefineRequirementSet('CXXFLAGS', [requirement('CXXFLAGS', public=True, policy=REQ.Policy.ignore)])
 DefineRequirementSet('CFLAGS', [requirement('CFLAGS', public=True, policy=REQ.Policy.ignore)])
@@ -165,6 +171,13 @@ DefineRequirementSet('LIBS', ['LIBPATH', requirement('LIBS', public=True, policy
 DefineRequirementSet('CPP_DEFAULTS', ['LIBS', 'HEADERS'], weight=-9000)
 DefineRequirementSet('C_DEFAULTS', ['LIBS', 'HEADERS'], weight=-9000)
 
+# "System" variants: same as HEADERS/CPP_DEFAULTS but a dependency's include dirs
+# are pulled in as SYSCPPPATH (-isystem) rather than CPPPATH (-I). Note there is
+# no plain CPPPATH here, so a system dependency's headers are emitted only once
+# (as -isystem), never both -I and -isystem.
+DefineRequirementSet('SYSTEM_HEADERS', ['SYSCPPPATH', 'CPPDEFINES'], weight=-5000)
+DefineRequirementSet('SYSTEM_CPP_DEFAULTS', ['LIBS', 'SYSTEM_HEADERS'], weight=-9000)
+
 
 # defaults
 DefineRequirementSet(
@@ -175,6 +188,24 @@ DefineRequirementSet(
         'EXISTS',
         #'SDKLIB',
         #'SDKBIN',
+        'PKG_CONFIG_PATH',
+        "PKG_DEFAULTS",
+        "DESTDIR_PATH",
+        "RPATHLINK",
+        "RPM_PACKAGE_RUNPATH"
+    ],
+    weight=-10000
+)
+
+# Like DEFAULT, but the dependency's headers come in as system includes
+# (-isystem). Use on a dependency edge (or via Component(..., system=True)) to
+# say "I depend on this, and I don't want to see warnings from its headers."
+# Mirrors DEFAULT exactly except CPP_DEFAULTS/C_DEFAULTS -> SYSTEM_CPP_DEFAULTS.
+DefineRequirementSet(
+    'SYSTEM_HEADER_DEFAULT',
+    [
+        'SYSTEM_CPP_DEFAULTS',
+        'EXISTS',
         'PKG_CONFIG_PATH',
         "PKG_DEFAULTS",
         "DESTDIR_PATH",
