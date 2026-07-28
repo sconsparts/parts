@@ -94,7 +94,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
             'cd ${TARGET.dir} ;'
             # CMAKE_PREFIX_PATH should replace this.. Have it as a fallback
             '${define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}${MAKEPATH("$PKG_CONFIG_PATH")} '
-            '$CMAKE ${SOURCE.dir.abspath} $_CMAKE_ARGS'
+            '$CMAKE_WRAPPER $CMAKE ${SOURCE.dir.abspath} $_CMAKE_ARGS'
         ],
         #source_scanner=scanners.NullScanner,
         target_scanner=scanners.NullScanner,
@@ -125,7 +125,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
         ],
         out + src_files,
         [
-            "cd ${SOURCE.dir} ; $CMAKE --build . --config Release --target install -- $CMAKE_DESTDIR_FLAG $_CMAKE_MAKE_ARGS"
+            "cd ${SOURCE.dir} ; $CMAKE_WRAPPER $CMAKE --build . --config Release --target install -- $CMAKE_DESTDIR_FLAG $_CMAKE_MAKE_ARGS"
         ],
         source_scanner=scanners.NullScanner,
         target_factory=env.Dir,
@@ -147,6 +147,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
 # adding logic to Scons Environment object
 api.register.add_method(CMake)
 
+api.register.add_variable('CMAKE_WRAPPER', '', 'Optional command to wrap the cmake configure/build invocations (e.g. emcmake); empty by default')
 api.register.add_variable('CMAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines location to install bits from the CMake')
 api.register.add_variable('CMAKE_INCLUDE_FLAG', '$INCPREFIX', 'Define the include flag for current compiler toolchain')
 api.register.add_variable('CMAKE_INCLUDE_SYSTEM_FLAG', '$SYSINCPREFIX', 'Define the system include flag for current compiler toolchain')
