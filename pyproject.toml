@@ -40,6 +40,7 @@ dev = [
     "sphinx",
     "myst-parser",
     "cloud-sptheme",
+    "pyflakes>=3.4.0",
 ]
 
 [tool.setuptools.packages.find]
