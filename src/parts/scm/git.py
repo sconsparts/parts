@@ -82,7 +82,7 @@ class git(base):
             self.__branch: str = tag
             self._istag: bool = True
 
-        super(git, self).__init__(repository, server)
+        super(git, self).__init__(repository, server, use_cache)
 
     @property
     def canMirror(self) -> bool:
@@ -164,7 +164,7 @@ class git(base):
         ret = [self._env.Action(cmd, strval)]
 
         return ret
-    
+
     def apply_patch_file(self, cd_dir):
         '''Return actions that `git am` each configured patch file, in order.'''
         ret = []
@@ -176,21 +176,21 @@ class git(base):
         return ret
 
     def get_remote_head(self):
-    
+
         clone_path = self.FullPath
-    
+
         ret, data = base.command_output(f'"{git.gitpath}" ls-remote --symref {clone_path} HEAD')
         if not ret:
             # Parse return value of the git command
-            # the first line should look something like: 
+            # the first line should look something like:
             # ref: refs/heads/main	HEAD
-            
+
             first_line = data.split("\n")[0]
             ref = first_line.split("\t")[0]
             default_branch = ref.split("/")[2]
         else:
             default_branch = None
-    
+
         return default_branch
 
     def UpdateAction(self, out_dir):
@@ -247,13 +247,13 @@ class git(base):
         elif not self.__branch:
             if not self._env["GIT_DEFAULT_BRANCH"]:
                 branch = self.get_remote_head()
-            else: 
+            else:
                 branch = self._env["GIT_DEFAULT_BRANCH"]
         else:
             branch = self.__branch
-            
+
         api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"], " Requested branch: {0}", branch)
-        
+
         cmd1 = f'{cd_dir} "{git.gitpath}" checkout ${{GIT_CHECKOUT_ARGS}} {branch}'
         strval1 = f'{cd_dir} git checkout ${{GIT_CHECKOUT_ARGS}} {branch}'
         checkout_action = [
@@ -318,9 +318,9 @@ class git(base):
             if self.__revision or on_tag:
                 prefix = ''
             # hard reset_action
-            
+
             api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"], " Requested branch: {0}{1}", prefix, branch)
-            
+
             cmd1 = f'{cd_dir} "{git.gitpath}" reset ${{GIT_RESET_ARGS}} --hard {prefix}{branch}'
             strval1 = f'{cd_dir} git reset ${{GIT_RESET_ARGS}} --hard {prefix}{branch}'
             hard_reset_action = [
