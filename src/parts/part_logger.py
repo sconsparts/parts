@@ -1,4 +1,5 @@
 
+import codecs
 import json
 import subprocess
 import sys
@@ -29,16 +30,24 @@ closeFileDescriptors = sys.platform not in ('win32', 'cygwin')
 class pipeRedirector:
 
     def _readerthread(self):
-        line = ' '
+        # The pipe is read in binary mode, so the text has to be decoded here. Decode
+        # incrementally: a multi-byte character can be split across two reads, as the write
+        # end of the pipe is inherited by the child's own children and writes larger than
+        # PIPE_BUF are not atomic, so a line is not guaranteed to hold whole characters.
+        # Undecodable bytes become U+FFFD instead of raising -- nothing downstream accepts
+        # bytes, so letting a decode error escape would take down the build over log text.
+        decoder = codecs.getincrementaldecoder('utf-8')(errors='replace')
+        data = b' '
         try:
-            while line:
-                line = self.pipein.readline()
-                try:
-                    line = line.decode()
-                except Exception:
-                    pass
+            while data:
+                data = self.pipein.readline()
+                line = decoder.decode(data)
                 if line:
                     self.output.WriteStream(self.taskId, self.streamId, line)
+            # flush anything the decoder held back as an incomplete trailing sequence
+            line = decoder.decode(b'', final=True)
+            if line:
+                self.output.WriteStream(self.taskId, self.streamId, line)
         except Exception:
             # There was an error... that shouldn't happen, but still it did. So we report it
             # to the caller and close our pipe end so that spawned program won't block
@@ -197,6 +206,11 @@ class part_logger:
             pass
 
     def WriteStream(self, taskId, stream, msg):
+        if isinstance(msg, bytes):
+            # Nothing below this point handles bytes: the chunk cache concatenates onto a
+            # str, _empty_cache joins with str separators, and strip_ansi_codes compares
+            # against str. Normalize here so no caller can poison those paths.
+            msg = msg.decode('utf-8', errors='replace')
         if not self.block_text:
             self.streamWrite[stream](msg)
             self.otherOutWrite[stream](taskId, msg)
