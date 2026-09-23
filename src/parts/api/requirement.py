@@ -127,6 +127,8 @@ DefineRequirementSet(
 
 # pkgconfig -- for better third party builds integration
 DefineRequirementSet('PKG_CONFIG_PATH', [requirement('PKG_CONFIG_PATH', public=True, policy=REQ.Policy.ignore, internal=True)])
+# cmake find_package -- propagate the SDK cmake config location to dependents (mirrors PKG_CONFIG_PATH)
+DefineRequirementSet('CMAKE_PREFIX_PATH', [requirement('CMAKE_PREFIX_PATH', public=True, policy=REQ.Policy.ignore, internal=True)])
 # help with third part builds ( cmake mostly in this case)
 DefineRequirementSet('DESTDIR_PATH', [requirement('DESTDIR_PATH', public=True, listtype=False,
                                                   policy=REQ.Policy.ignore, internal=True, force_internal=True)])
@@ -176,6 +178,7 @@ DefineRequirementSet(
         #'SDKLIB',
         #'SDKBIN',
         'PKG_CONFIG_PATH',
+        'CMAKE_PREFIX_PATH',
         "PKG_DEFAULTS",
         "DESTDIR_PATH",
         "RPATHLINK",

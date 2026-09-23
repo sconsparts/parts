@@ -245,7 +245,12 @@ def SdkPkgConfig(env, source, sub_dir='', from_prefix=None, make_uninstall=True,
 
 def SdkCMakeConfig(env, source, sub_dir='', create_sdk=True):
 
-    ret = SdkItem(env, '$SDK_CMAKE_CONFIG', source, sub_dir, '', [(Xp.EXPORT_TYPES.PATH, 'CMAKE_CONFIG_PATH')],
+    # Export the SDK cmake-config directory ($SDK_CMAKE_CONFIG, i.e. lib/cmake)
+    # as CMAKE_PREFIX_PATH so it propagates to dependent parts (a public
+    # requirement, like PKG_CONFIG_PATH) and their cmake builds can find_package
+    # it. cmake searches CMAKE_PREFIX_PATH for <prefix>/<name>*/<name>Config.cmake,
+    # so the lib/cmake dir resolves packages installed at lib/cmake/<name>/.
+    ret = SdkItem(env, '$SDK_CMAKE_CONFIG', source, sub_dir, '', [(Xp.EXPORT_TYPES.PATH, 'CMAKE_PREFIX_PATH')],
                   create_sdk=create_sdk)
     return ret
 

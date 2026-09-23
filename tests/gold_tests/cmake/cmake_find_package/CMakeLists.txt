@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.10)
+project(consumer NONE)
+find_package(foo REQUIRED CONFIG)
+message(STATUS "CONSUMER_FOO_FOUND=${foo_FOUND}")
+install(FILES CMakeLists.txt DESTINATION share/consumer)

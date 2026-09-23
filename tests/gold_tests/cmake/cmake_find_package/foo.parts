@@ -1,0 +1,7 @@
+Import('*')
+PartName("foo")
+# installs fooConfig.cmake to lib/cmake/foo/ and exports the SDK cmake dir as
+# CMAKE_PREFIX_PATH for dependents. The file must be named fooConfig.cmake (not
+# FooConfig.cmake): cmake's find_package(foo) searches for <name>Config.cmake,
+# and that lookup is case-sensitive on Linux.
+env.InstallCMakeConfig('fooConfig.cmake', sub_dir='foo')
