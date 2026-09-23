@@ -17,7 +17,7 @@ from SCons.Debug import logInstanceCreation
 from SCons.Script.SConscript import SConsEnvironment
 
 
-def Component(env, name, version_range=None, requires: requirement.REQ = None, section="build", optional: bool = False) -> dependent_ref.dependent_ref:
+def Component(env, name, version_range=None, requires: requirement.REQ = None, section="build", optional: bool = False, system: bool = False) -> dependent_ref.dependent_ref:
 
     # Resolve value in the name string is any
     name = env.subst(name)
@@ -45,7 +45,10 @@ def Component(env, name, version_range=None, requires: requirement.REQ = None, s
 
     # compatibility with 0.15.8 and older
     if not requires:
-        requires = requirement.REQ.DEFAULT
+        # system=True is sugar for "treat this dependency's headers as system
+        # (-isystem)"; it selects SYSTEM_HEADER_DEFAULT in place of DEFAULT. An
+        # explicit requires= always wins.
+        requires = requirement.REQ.SYSTEM_HEADER_DEFAULT if system else requirement.REQ.DEFAULT
 
     # get any local space that was set
     localspace = pobj.Uses
@@ -123,8 +126,8 @@ class ComponentEnv:
             logInstanceCreation(self)
         self.env = env
 
-    def __call__(self, name, version_range=None, requires=None, section="build", optional: bool = False):
-        return self.env.Component(name, version_range, requires, section, optional)
+    def __call__(self, name, version_range=None, requires=None, section="build", optional: bool = False, system: bool = False):
+        return self.env.Component(name, version_range, requires, section, optional, system)
 
 
 def depends_on_classic(env, depends: Union[dependent_ref.dependent_ref, List[dependent_ref.dependent_ref]]):

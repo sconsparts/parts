@@ -24,6 +24,10 @@ def generate(env):
     cplusplus.generate(env)
     parts.tools.cc.generate(env)
 
+    # aocc (AMD clang) emits system includes (SYSCPPPATH) with -isystem; override
+    # the generic $INCPREFIX default set by cc/c++ (see tools/cc.py).
+    env['SYSINCPREFIX'] = '-isystem '
+
     # set up shell env for running compiler
     parts.tools.AoccCommon.aocc.MergeShellEnv(env)
 

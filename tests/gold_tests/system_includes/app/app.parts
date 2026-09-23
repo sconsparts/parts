@@ -1,0 +1,10 @@
+Import('*')
+PartName("app")
+
+# -Werror so an unsuppressed warning from the provider's header would fail the
+# build. system=True marks the dependency's headers as system (-isystem), which
+# suppresses that warning -- so a clean build proves the routing worked. (With a
+# plain DependsOn the same build fails on provider's -Wunused-function.)
+env.AppendUnique(CCFLAGS=['-Wall', '-Werror'])
+env.DependsOn([Component('provider', env.PartVersion(), system=True)])
+env.Program('app', 'main.c')

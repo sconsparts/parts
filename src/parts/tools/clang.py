@@ -24,6 +24,10 @@ def generate(env):
     cplusplus.generate(env)
     parts.tools.cc.generate(env)
 
+    # clang emits system includes (SYSCPPPATH) with -isystem; override the
+    # generic $INCPREFIX default set by cc/c++ (see tools/cc.py).
+    env['SYSINCPREFIX'] = '-isystem '
+
     # set up shell env for running compiler
     parts.tools.GnuCommon.clang.MergeShellEnv(env)
 

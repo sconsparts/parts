@@ -47,6 +47,15 @@ def generate(env):
     env.SetDefault(INCSUFFIX='')
     env.SetDefault(SYSINCPREFIX='$INCPREFIX')
     env.SetDefault(SYSINCSUFFIX='$INCSUFFIX')
+
+    # System include paths (SYSCPPPATH) -> $SYSINCPREFIX (gcc/clang: -isystem).
+    # See tools/cc.py for the rationale; SYSINCPREFIX defaults to $INCPREFIX so
+    # this is a no-op until a toolchain sets it.
+    env.SetDefault(SYSCPPPATH=[])
+    env.SetDefault(_CPPSYSINCFLAGS='$( ${_concat(SYSINCPREFIX, SYSCPPPATH, SYSINCSUFFIX, __env__, RDirs, TARGET, SOURCE)} $)')
+    if '$_CPPSYSINCFLAGS' not in env['_CCCOMCOM']:
+        env['_CCCOMCOM'] += ' $_CPPSYSINCFLAGS'
+
     env.SetDefault(SHOBJSUFFIX='.os')
     env.SetDefault(OBJSUFFIX='.o')
     env.SetDefault(STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME=0)
