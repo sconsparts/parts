@@ -55,7 +55,7 @@ version = {attr = "parts.parts_version._PARTS_VERSION"}
 
 
 [project.scripts]
-parts = "parts.version_info:parts_version_text"
+parts = "parts.version_info:print_version"
 parts-smart-cp = "parts.scripts.smart_cp:main"
 
 # This is configuration specific to the `setuptools` build backend.
