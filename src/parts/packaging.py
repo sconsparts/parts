@@ -49,6 +49,7 @@ def PackageGroup(name, parts=None) -> Tuple[str, ...]:
     or Dir ( and like items) are not being handled at this time as we really
     don't know where we want to put the files in the package.
     '''
+    global g_resort_package_data
 
     name = SCons.Script.DefaultEnvironment().subst(name)
     if not name:
@@ -68,8 +69,11 @@ def PackageGroup(name, parts=None) -> Tuple[str, ...]:
             else:
                 raise RuntimeError(f"{p} does not refer to a defined Part")
 
-    # We need to clear the sorted data as new items are being added
-    g_resort_package_data = True
+    # We need to clear the sorted data as new items are being added.
+    # Under the lock so this cannot land between SortPackageGroups() finishing
+    # its pass and clearing the flag, which would drop the invalidation.
+    with g_sort_data_lock:
+        g_resort_package_data = True
 
     return tuple(x for x in result)
 
@@ -280,6 +284,13 @@ def SortPackageGroups():
     with g_sort_data_lock:
         g_known_num_of_install_files = current_num
 
+        # Cleared before the pass, not after: a PackageGroup() call made while we
+        # are sorting has to force another sort, and clearing at the end would
+        # throw that away. A PACKAGE_NODE_FILTER callback can reach PackageGroup()
+        # on this thread, and g_sort_data_lock is an RLock, so this is not only a
+        # cross-thread concern.
+        g_resort_package_data = False
+
         # reset the cache
         _clear_sorted_group()
 
@@ -316,8 +327,6 @@ def SortPackageGroups():
                 api.output.verbose_msgf(["packaging-mapping"], "{0} add to group(s)={1}, no_pkg={2}", node.ID, part_grp, no_pkg)
             # run the node filter on the node to add it to any extra groups
             _filter_node(node, node_filters, metainfo)
-
-    g_resort_package_data = False
     return
 
 
