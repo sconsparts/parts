@@ -383,6 +383,16 @@ api.register.add_method(PrependPackageGroupCriteriaEnv,'PrependPackageGroupCrite
 # TODO ... update the Var to map based on target platform
 api.register.add_variable('PACKAGE_ROOT', "/", "")
 
+# Locations the dynamic loader searches by default. Absolute paths generated for a
+# package RUNPATH that match one of these are dropped, as they add nothing and are
+# rejected by rpmbuild's check-rpaths on Red Hat based systems. This matters mostly
+# when PACKAGE_ROOT is left at "/", which makes PACKAGE_LIB resolve to "/lib".
+api.register.add_variable(
+    'PACKAGE_LOADER_DEFAULT_PATHS',
+    ['/lib', '/lib64', '/usr/lib', '/usr/lib64'],
+    'Paths already searched by the dynamic loader, omitted from a generated package RUNPATH'
+)
+
 api.register.add_variable('PACKAGE_LIB', '${PACKAGE_ROOT}/$INSTALL_LIB_SUBDIR', '')
 api.register.add_variable('PACKAGE_BIN', '${PACKAGE_ROOT}/$INSTALL_BIN_SUBDIR', '')
 api.register.add_variable('PACKAGE_PRIVATE_BIN', '${PACKAGE_ROOT}/$INSTALL_PRIVATE_BIN_SUBDIR', '')

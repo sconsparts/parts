@@ -885,16 +885,19 @@ class pkgrunpath_mapper(mapper):
 
     name = 'GEN_PKG_RUNPATHS'
 
-    def __init__(self, lib_paths, bin_path="$PACKAGE_BIN", origin=r'$$$$ORIGIN', use_origin=True):
+    def __init__(self, lib_paths, bin_path="$PACKAGE_BIN", origin=r'$$$$ORIGIN', use_origin=True,
+                 skip_paths="$PACKAGE_LOADER_DEFAULT_PATHS"):
         self._origin = origin
         self._lib_paths = lib_paths
         self._bin_path = bin_path
         self._use_origin = use_origin
+        self._skip_paths = skip_paths
 
         super(pkgrunpath_mapper, self).__init__()
 
     def __repr__(self):
-        return "${{{0}('{1}','{2}','{3}','{4}')}}".format(self.name, self._lib_paths, self._bin_path, self._origin, self._use_origin)
+        return "${{{0}('{1}','{2}','{3}','{4}','{5}')}}".format(
+            self.name, self._lib_paths, self._bin_path, self._origin, self._use_origin, self._skip_paths)
 
     def _guarded_call(self, target, source, env, for_signature):
 
@@ -926,8 +929,22 @@ class pkgrunpath_mapper(mapper):
                     )
                 )
         else:
+            # the dynamic loader already searches these locations, so adding them to a
+            # RUNPATH is at best redundant. Some packaging tools reject it outright:
+            # rpmbuild on Red Hat based systems runs check-rpaths, which fails the build
+            # with "contains a standard runpath" when it sees one of these.
+            skip_paths = {
+                env.Dir(str(path)).abspath
+                for path in env.Flatten(env.subst_list(self._skip_paths))
+            }
             for libpath in libpaths:
                 libpath = env.Dir(str(libpath))
+                if libpath.abspath in skip_paths:
+                    api.output.verbose_msgf(
+                        ["package-runpath", "packaging"],
+                        "Skipping default loader path {} in generated RUNPATH", libpath.abspath
+                    )
+                    continue
                 rlst.append(libpath.abspath)
         ret = common.make_unique(rlst)
         return ret
