@@ -40,16 +40,18 @@ class git(base):
         '_protocol',
         '_patchfile',
         '_istag',
+        '_username',
     ]
     gitpath = None  # the path to the git program to run
 
-    def __init__(self, repository, server=None, protocol=None, branch=None, tag=None, revision=None, patchfile=None, use_cache=None, **kw):
+    def __init__(self, repository, server=None, protocol=None, branch=None, tag=None, revision=None, patchfile=None, use_cache=None, username=None, **kw):
         '''Constructor call for the GIT object
         @param repository The repository or path from server under the server to get our data from
         @param server The server to connect to
         @param branch The optional branch to use after the clone, or on an update
         @param remote_branches Optional remote branches to add to the clone for tracking
         @param patchfile Optional patch file, or list of patch files, to `git am` (applied in list order)
+        @param username Optional username for the git-ssh protocol (defaults to $GIT_DEFAULT_SSH_USER)
         '''
         self.__branch = branch if branch is not None else ''
         self.__revision = revision
@@ -64,6 +66,7 @@ class git(base):
             self._patchfile = [patchfile]
         else:
             self._patchfile = list(patchfile)
+        self._username = username
 
         if repository.endswith('.git'):
             repository = repository[:-4]
@@ -101,7 +104,10 @@ class git(base):
 
     @property
     def MirrorPath(self) -> Path:
-        return Path(self._env.subst("$SCM_GIT_CACHE_DIR")) / self.Server / f"{self.Repository}.git"
+        server = self.Server
+        if (user := self._ssh_user_key) is not None:
+            server = f"{user}@{server}"
+        return Path(self._env.subst("$SCM_GIT_CACHE_DIR")) / server / f"{self.Repository}.git"
 
     def _branch_changed(self, data):
         return data['branch'] != f"{self.__branch}...origin/{self.__branch}" and self.__branch not in data['tags']
@@ -117,7 +123,10 @@ class git(base):
         if not self._full_path:
             protocol = self._protocol if self._protocol else self._env['GIT_PROTOCOL']
             if protocol == "git":
-                self._full_path = f"git@{self.Server}:{self.Repository}.git"
+                # an empty user leaves it out of the URL, so the User from the
+                # ssh configuration applies
+                user = f"{self.Username}@" if self.Username else ""
+                self._full_path = f"{user}{self.Server}:{self.Repository}.git"
             elif protocol == "https":
                 self._full_path = f"https://{self.Server}/{self.Repository}.git"
             elif protocol == "file":
@@ -140,6 +149,43 @@ class git(base):
         if ret.endswith("/"):
             ret = ret[:-1]
         return ret
+
+    @property
+    def Username(self):
+        '''Username for the git-ssh URL: the username given to ScmGit, else $GIT_DEFAULT_SSH_USER.'''
+        if self._username is not None:
+            return self._username
+        # None counts as empty: no user in the URL
+        return self._env['GIT_DEFAULT_SSH_USER'] or ''
+
+    @property
+    def _ssh_user_key(self):
+        '''The ssh user, when it is part of what identifies the repository.
+
+        With the git protocol a different user can reach a different repository:
+        on a plain ssh server a relative path resolves under that user's home.
+        So a user other than "git", the one the URL always had before it could
+        be chosen, keeps its own mirror and extern checkout. "git" and the other
+        protocols return None, which leaves existing mirrors and extern
+        checkouts where they are.
+        '''
+        protocol = self._protocol if self._protocol else self._env['GIT_PROTOCOL']
+        if protocol != "git" or self.Username == "git":
+            return None
+        return self.Username
+
+    def _request_hash(self):
+        '''Hash of what the extern checkout directory is shared by.'''
+        md5 = hashlib.md5()
+        md5.update(self.Server.encode())
+        md5.update(self.Repository.encode())
+        if self.__revision:
+            md5.update(self.__revision.encode())
+        else:
+            md5.update(self.__branch.encode())
+        if (user := self._ssh_user_key) is not None:
+            md5.update(f"user={user}".encode())
+        return md5.hexdigest()
 
     def CreateMirrorAction(self):
         '''
@@ -164,7 +210,7 @@ class git(base):
         ret = [self._env.Action(cmd, strval)]
 
         return ret
-    
+
     def apply_patch_file(self, cd_dir):
         '''Return actions that `git am` each configured patch file, in order.'''
         ret = []
@@ -176,21 +222,21 @@ class git(base):
         return ret
 
     def get_remote_head(self):
-    
+
         clone_path = self.FullPath
-    
+
         ret, data = base.command_output(f'"{git.gitpath}" ls-remote --symref {clone_path} HEAD')
         if not ret:
             # Parse return value of the git command
-            # the first line should look something like: 
+            # the first line should look something like:
             # ref: refs/heads/main	HEAD
-            
+
             first_line = data.split("\n")[0]
             ref = first_line.split("\t")[0]
             default_branch = ref.split("/")[2]
         else:
             default_branch = None
-    
+
         return default_branch
 
     def UpdateAction(self, out_dir):
@@ -247,13 +293,13 @@ class git(base):
         elif not self.__branch:
             if not self._env["GIT_DEFAULT_BRANCH"]:
                 branch = self.get_remote_head()
-            else: 
+            else:
                 branch = self._env["GIT_DEFAULT_BRANCH"]
         else:
             branch = self.__branch
-            
+
         api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"], " Requested branch: {0}", branch)
-        
+
         cmd1 = f'{cd_dir} "{git.gitpath}" checkout ${{GIT_CHECKOUT_ARGS}} {branch}'
         strval1 = f'{cd_dir} git checkout ${{GIT_CHECKOUT_ARGS}} {branch}'
         checkout_action = [
@@ -318,9 +364,9 @@ class git(base):
             if self.__revision or on_tag:
                 prefix = ''
             # hard reset_action
-            
+
             api.output.verbose_msgf(["scm.update.git", "scm.update", "scm.git", "scm"], " Requested branch: {0}{1}", prefix, branch)
-            
+
             cmd1 = f'{cd_dir} "{git.gitpath}" reset ${{GIT_RESET_ARGS}} --hard {prefix}{branch}'
             strval1 = f'{cd_dir} git reset ${{GIT_RESET_ARGS}} --hard {prefix}{branch}'
             hard_reset_action = [
@@ -595,14 +641,7 @@ class git(base):
 
         # define a request hash that is used to help with making extern checkout
         # directories more sharable.
-        md5 = hashlib.md5()
-        md5.update(self.Server.encode())
-        md5.update(self.Repository.encode())
-        if self.__revision:
-            md5.update(self.__revision.encode())
-        else:
-            md5.update(self.__branch.encode())
-        request_hash = md5.hexdigest()
+        request_hash = self._request_hash()
 
         env_key = 'SCM_EXTERN' if self.isExtern else "SCM"
         self._env[env_key] = common.namespace(
@@ -831,6 +870,7 @@ api.register.add_variable('GIT_SERVER', '', '')
 api.register.add_variable('SCM_GIT_DIR', '$VCS_GIT_DIR', '')
 api.register.add_variable('VCS_GIT_DIR', '${CHECK_OUT_ROOT}/${PART_ALIAS}', '')
 api.register.add_variable('GIT_DEFAULT_BRANCH', '', '')
+api.register.add_variable('GIT_DEFAULT_SSH_USER', 'git', 'The default username for git-ssh (git@) clone URLs')
 api.register.add_bool_variable('GIT_IGNORE_UNTRACKED', False, 'Controls if we should care about untracked files when updating')
 api.register.add_enum_variable('GIT_PROTOCOL', 'https', '', ['https', 'git', 'file', 'local'])
 
