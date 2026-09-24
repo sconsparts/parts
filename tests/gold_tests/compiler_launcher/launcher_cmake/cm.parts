@@ -1,0 +1,10 @@
+Import('*')
+PartName('cm')
+
+@build
+def source(env):
+    # the C launcher has an argument: CMake needs it as a ;-separated list
+    env['CC_LAUNCHER'] = env.File('#launch.sh').abspath + ' --tag cmake'
+    # the C++ launcher's path has a space in it: quoted, it is one word
+    env['CXX_LAUNCHER'] = '"' + env.File('#my tools/launch.sh').abspath + '"'
+    env.CMake()

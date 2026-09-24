@@ -1,0 +1,9 @@
+Import('*')
+PartName('am')
+
+@build
+def source(env):
+    # a launcher given with an argument ends up inside CC="..." whole
+    env['CC_LAUNCHER'] = env.File('#launch.sh').abspath + ' --tag automake'
+    # the configure here is hand written, so no autoreconf and no autotools
+    env.AutoMake(autoreconf=None)

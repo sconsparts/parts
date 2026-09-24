@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.10)
+project(cm C CXX)
+add_executable(cmake_main cmake_main.c)
+add_executable(cmake_cxx cmake_cxx.cpp)
+install(TARGETS cmake_main cmake_cxx DESTINATION bin)
