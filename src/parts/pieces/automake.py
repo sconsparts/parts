@@ -270,7 +270,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         sources = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=ignore_files).files()
 
     configure_cmds.append(
-        f'cd {build_dir.path} && ${{define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}}${{MAKEPATH("$PKG_CONFIG_PATH")}} {rel_src_path}/{configure} $_CONFIGURE_ARGS $CONFIGURE_ARGS'
+        f'cd {build_dir.path} && ${{define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}}${{MAKEPATH("$PKG_CONFIG_PATH")}} $AUTO_MAKE_CONFIGURE_WRAPPER {rel_src_path}/{configure} $_CONFIGURE_ARGS $CONFIGURE_ARGS'
     )
     if configure_post_actions:
         configure_cmds.append(configure_post_actions)
@@ -302,8 +302,8 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         build_files+sources,
         # the -rpath-link is to get the correct paths for the binaries to link with the rpath usage of the makefile
         [
-            f'cd {build_dir.path} ; make $_AUTOMAKE_BUILD_ARGS $AUTOMAKE_BUILD_ARGS {targets} $(-j{jobs}$)',
-            f'cd {build_dir.path} ; make {install_targets} $AUTO_MAKE_INSTALL_ARGS'
+            f'cd {build_dir.path} ; $AUTO_MAKE_MAKE_WRAPPER make $_AUTOMAKE_BUILD_ARGS $AUTOMAKE_BUILD_ARGS {targets} $(-j{jobs}$)',
+            f'cd {build_dir.path} ; $AUTO_MAKE_MAKE_WRAPPER make {install_targets} $AUTO_MAKE_INSTALL_ARGS'
         ],
         source_scanner=scanners.NullScanner,
         target_factory=env.Dir,
@@ -336,7 +336,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                         'set -e\n' +
                         'set -x\n' +
                         'export LD_LIBRARY_PATH=${__env__.Dir("$INSTALL_LIB").abspath}\n' +
-                        'make $_AUTOMAKE_BUILD_ARGS $AUTOMAKE_BUILD_ARGS {target}\n'.format(target=check_targets) +
+                        '$AUTO_MAKE_MAKE_WRAPPER make $_AUTOMAKE_BUILD_ARGS $AUTOMAKE_BUILD_ARGS {target}\n'.format(target=check_targets) +
                         'set +x\n' +
                         "popd\n"),
                     SCons.Defaults.Chmod("$TARGET", 0o755)
@@ -355,6 +355,8 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
 api.register.add_method(AutoMake)
 api.register.add_variable('AUTO_MAKE_BUILDDIR', "$BUILD_DIR/build", 'Defines build directory for automake build')
 api.register.add_variable('AUTO_MAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines install directory for automake build')
+api.register.add_variable('AUTO_MAKE_CONFIGURE_WRAPPER', '', 'Optional command to wrap the configure invocation (e.g. emconfigure); empty by default')
+api.register.add_variable('AUTO_MAKE_MAKE_WRAPPER', '', 'Optional command to wrap make invocations (e.g. emmake); empty by default')
 api.register.add_variable('AUTO_MAKE_INCLUDE_FLAGS', '$_ABSCPPINCFLAGS', 'Controls the dependency include flags passed to configure (override with $_ABSCPPSYSINCFLAGS to route includes through -isystem)')
 api.register.add_variable('_ABSCPPINCFLAGS', '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
 api.register.add_variable('_ABSCPPSYSINCFLAGS', '$( ${_concat(SYSINCPREFIX, CPPPATH, SYSINCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
