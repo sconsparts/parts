@@ -38,7 +38,7 @@ flowchart TD
     X -->|"no"| L["sort roots by declaration order<br/>LoadPart(root) for every root"]:::hot
     L --> MT["map_targets_sections()<br/>returns top sections, unknown"]
     MT --> Q{"any unknown targets?"}
-    Q -->|"yes: a file, a typo, a mistyped flag"| ALL["every known section<br/>(warns: unknown to Parts)"]
+    Q -->|"yes: a file, a typo, a mistyped flag"| ALL["every known section<br/>(no warning: only a --verbose=loading message)"]
     Q -->|"no"| CLO["get_dependent_sections(top)<br/>the closure"]
     ALL --> TS["toposort"]
     CLO --> TS
@@ -62,9 +62,9 @@ flowchart TD
     B -->|"yes"| B1["print: was already read"]
     B -->|"no"| C["for each glb.section_definitions entry<br/>create a section proxy<br/>pre-create the build and unit_test Sections"]
     C --> D["export_map = glb.parts_objs<br/>+ section proxies + per-env objects + env"]
-    D --> E["VariantDir for BUILD_DIR, OUTOFTREE_BUILD_DIR,<br/>ROOT_BUILD_DIR, extern PART_DIR"]
-    E --> F["prepend source dir to sys.path"]
-    F --> G["env.SConscript(part file, src_dir,<br/>variant_dir=BUILD_DIR, exports=export_map)<br/>inside part_loading_context for -k"]
+    D --> E["prepend source dir to sys.path"]
+    E --> F["VariantDir for OUTOFTREE_BUILD_DIR, ROOT_BUILD_DIR,<br/>and BUILD_DIR/_extern for an out-of-tree<br/>or extern part dir (sets PART_DIR)"]
+    F --> G["env.SConscript(part file, src_dir,<br/>variant_dir=BUILD_DIR, exports=export_map)<br/>(SCons maps BUILD_DIR here)<br/>inside part_loading_context for -k"]
     G --> H["part file body runs"]
     H --> H1["PartName() fills the name registry<br/>PartVersion() sets the version"]
     H --> H2["DependsOn / Component<br/>raw dependent_ref lists"]
@@ -75,7 +75,7 @@ flowchart TD
 
 A part file needs its source tree present when it is read:
 
-- `PartVersion(GitVersionFromTag(...))` runs `git tag --points-at HEAD` in the checkout and falls back to a default without one.
+- `PartVersion(GitVersionFromTag(...))` reads `env['SCM']['TAGS']`, a lazy value that calls the git SCM object's `get_git_data()`. That accessor runs `GetGitData()` (which runs `git tag --points-at HEAD`, or `HEAD^` when the Part sets `patchfile=`) only if its `_disk_data` memo is empty. The `NeedsToUpdate()` check may already have filled it (`do_force_logic()` and the modification test both read it), and `PostProcess()` empties it again only for an SCM queued for update or missing its cache file. `GitVersionFromTag` returns its default when no tag matches or `env['SCM']` has no `TAGS` (for example a `null_t` or `svn` main SCM). It reads only `env['SCM']`: a git `extern=` writes `SCM_EXTERN` and does not count.
 - `Pattern()` lists source files at read time, and sub-part files are read from paths next to the parent.
 - Site pieces that a part file calls also run during the read, so anything they query (a package repository, a network service) becomes part of reading.
 
@@ -104,6 +104,7 @@ flowchart TD
     classDef hot stroke:#dc2626,stroke-width:3px
 ```
 
-- `X::` is a recursive name target, not an alias.
+- `X::` is an ambiguous recursive target: it is tried as a name, then as an alias, and is unknown if it is neither.
+- A `name::` target with an `@property` (for example `scons 'name::foo@platform_match:darwin-aarch64'`) fails in `map_targets_sections()` with `AttributeError: 'NoneType' object has no attribute 'ID'`, even when the property matches; the same name without the property maps normally. `target_type.MapToAliasTarget()` rewrites `name::foo` to `alias::ALIAS` by string replacement, so the property text stays glued to the alias, `TargetToSections()` returns `[None]`, and a verbose-message argument reads `.ID` on it. The bare form (`scons 'foo@platform_match:...'`) does not crash there: the replacement finds no `name::foo`, so it selects every build section and then reaches the `platform_match` removal in `map_scons_target_list()`, which raises `RuntimeError` on a mismatch ([04-sections-and-dependencies.md](04-sections-and-dependencies.md#matching-a-dependency)).
 - `ALIAS_PREFIX` and `ALIAS_POSTFIX` are baked into aliases at setup; target mapping never applies them.
 - `map_scons_target_list()` replaces `SCons.Script.BUILD_TARGETS` (an SCons `TargetList`) with a plain `list` of target strings (mostly section aliases), which has no `_add_Default` or `_clear`.

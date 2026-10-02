@@ -7,7 +7,7 @@ Every Parts environment comes from one funnel, `Settings._env_const_ref()` in `s
 ```mermaid
 flowchart TD
     C1["SCons.Script.DefaultEnvironment()<br/>(patched)"] --> DE["Settings.DefaultEnvironment()<br/>cached as DefaultEnvironment"]
-    C2["Part setup: Settings.Environment(**kw)<br/>2 to 3 calls per Part"] --> K
+    C2["Part._setup_: at most one Settings.Environment(**kw),<br/>plus zero to two direct _env_const_ref calls<br/>for the environment diff"] --> K
     DE --> K["_env_const_ref(**kw)<br/>key = get_cache_values(prepend, append, kw)"]:::hot
     K -->|"hit"| ENVB
     K -->|"miss"| B["BasicEnvironment()<br/>cached as base"]
@@ -22,7 +22,8 @@ flowchart TD
     TS --> AP["append / prepend kwargs"]
     AP --> ENVB["ENV: os.environ if --use-env,<br/>then Settings ReplaceENV, PrependENVPath, AppendENVPath"]
     ENVB --> ST["store in __env_cache"]
-    INV["Variable change event<br/>SetOptionDefault, ReplaceENV,<br/>getter reads"] -->|"_handle_var_change empties cache"| K
+    INV["Variable change event:<br/>SetOptionDefault, getter reads"] -->|"_handle_var_change empties cache"| K
+    INV2["Settings.ReplaceENV, PrependENVPath,<br/>AppendENVPath call it directly"] -->|"_handle_var_change"| K
     classDef hot stroke:#dc2626,stroke-width:3px
 ```
 
@@ -36,24 +37,24 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A["--tc gcc_12,binutils<br/>poptions opt_chain splits on _"] --> B["core/util/misc.py process_tool_arg<br/>normalize to name, version<br/>more than one _ is an error"]
+    A["--tc gcc_12,binutils<br/>poptions opt_chain splits on _"] --> B["_ToolChain: core/util/misc.py process_tool_arg<br/>normalize to name, version, more than one _ is an error,<br/>then REVERSE the list"]
     B --> C["tool_mapping.get_tools(env, list)"]
-    C --> D{"entry config is<br/>None or a string?"}
+    C --> D{"entry config is<br/>None or a string?<br/>(a 3-tuple from a toolchain<br/>passes through unchanged)"}
     D -->|"yes"| E["get_tlset_module(name, version)<br/>try toolchain/NAME_VERSION.py, then NAME.py<br/>on the site path"]
     E -->|"module found"| F["mod.resolve(env, version)<br/>returns list of name, config"]
     F -->|"recurse until stable"| C
-    E -->|"no module"| G["SCons.Tool.Tool(name) probe<br/>leaf tool, config"]
-    D -->|"dict"| H["leaf tool: env.Replace(**config)<br/>before generate"]
-    D -->|"callable"| I["leaf tool: config(env)<br/>before generate"]
-    G --> J["for each leaf tool"]
+    E -->|"no module"| G["SCons.Tool.Tool(name) probe:<br/>a leaf tool with an empty config"]
+    D -->|"dict or callable"| H["a leaf tool, kept as is"]
+    G --> J["resolution done: for each leaf tool,<br/>in list order, one tool at a time"]
     H --> J
-    I --> J
-    J --> K["append to env CONFIGURED_TOOLS"]
+    J --> J1["apply its config:<br/>dict: env.Replace(**config),<br/>callable: config(env)"]
+    J1 --> K["append to env CONFIGURED_TOOLS,<br/>unless the toolchain marked the entry False<br/>(gnutools g++/gcc, mstools msvc)"]
     K --> L["SCons.Tool.Tool(name, toolpath)(env)<br/>overrides/tool.py Parts_Tool<br/>tools/NAME.py generate()"]
+    L -->|"next tool"| J1
     C -.->|"name is null"| N["skipped"]
 ```
 
-Example: `toolchain/default.py` picks a compiler family by host and target; on a POSIX host without the Intel compiler it returns `[('gxx', None)]`. `toolchain/gxx.py resolve()` returns `[('g++', f), ('gcc', f), ('ar', None), ('gas', None), ('gnulink', None)]` (`applelink` and `lipo` instead of `gnulink` on darwin), where `f` threads the version into `GXX_VERSION`/`GCC_VERSION`. `ar` has no toolchain module, so it becomes a leaf tool.
+Example: `toolchain/default.py` picks a compiler family by host and target; on a POSIX host it returns `[('gxx', None)]`, or `[('gnutools', None), ('icc', None)]` when the Intel compiler is found. `toolchain/gxx.py resolve()` returns `[('g++', f), ('gcc', f), ('ar', None), ('gas', None), ('gnulink', None)]` (`applelink` and `lipo` instead of `gnulink` on darwin), where `f` threads the version into `GXX_VERSION`/`GCC_VERSION`. `ar` has no toolchain module, so it becomes a leaf tool. Because `process_tool_arg` reverses the chain, the tools `_env_const_ref` appends (`install`, `zip`, `textfile`) are generated first and the first `--tc` entry last; a toolchain's own `resolve()` list keeps its order. Each tool's config is applied just before its own `generate()`, after the previous tool's `generate()`.
 
 Consequences:
 
@@ -84,10 +85,10 @@ flowchart TD
     D --> H["load the dependent level first"]
     H --> F["search in load_tool_config:<br/>first site dir with a file that loads wins,<br/>most specific of 28 name forms wins:<br/>TOOL_HOST_TARGET ... TOOL"]
     F --> G["import file<br/>on an error: warning,<br/>then the next name form"]:::hot
-    G --> E["ver = the level's version mapper(env)<br/>map_none_version"]
-    E --> BS["dependent level's settings for ver"]
+    G --> E["ver = the found file's mapper,<br/>mod.config.map_none_version(env).<br/>No file: ver stays None"]
+    E --> BS["dependent level's settings for ver<br/>(ver None: the dependent's own mapper picks it)"]
     BS --> I["config.merge(ver, dependent settings)<br/>only the first VersionRange that holds ver,<br/>no match keeps the dependent settings"]:::hot
-    I --> J["store under the matched range"]
+    I --> J["store under the matched range<br/>(no file: the dependent's settings, or empty<br/>settings without a dependent, for every version)"]
     J --> K["apply flags: replace, then AppendUnique,<br/>then PrependUnique"]
     K --> L["prepend_env, append_env on env ENV:<br/>PrependENVPath, AppendENVPath"]
     L --> M["post_process_func list"]

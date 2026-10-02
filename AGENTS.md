@@ -99,7 +99,7 @@ There is no lint job and no coverage gate. Read the failing job's log before sus
 - **Do not build an environment in a piece module body.** It is cached without `--tc`/`--target` and without builders that later pieces register. Do not call `SetOptionDefault()` inside a toolchain `resolve()`.
 - **Tool overlays:** after calling a base SCons `generate()`, override base-set variables with `env[...] =`. `SetDefault()` is a no-op once the base set the key.
 - **Reading `Part.Name` on an unread Part writes its alias into the name registry.** `Part(name=...)` does not register a name; only `PartName()` does.
-- **`DependsOn()` cannot be called inside a section callback;** the check meant to report it raises `NameError`. `Component()` resolves `requires=` during the read and exits on an unknown alias.
+- **The global or `env.DependsOn()` inside a section callback aborts with `NameError`.** The check meant to report it with `error_msg` calls an undefined name (`output`). The section form, `build.DependsOn()`, reports it correctly. `Component()` resolves `requires=` during the read and exits on an unknown alias.
 - **`PartRef.Matches` caches its first non-empty answer forever.** Do not resolve a dependency before every candidate Part is read.
 - **Recursive targets prefix-match without a `.` boundary:** `apr::` also selects `apr_util`.
 - **An unmappable target loads every section** (including `unit_test`). A dropped `--` in front of a flag is the usual cause.

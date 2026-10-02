@@ -59,8 +59,8 @@ flowchart TD
     G -->|"no"| GN["name registry: every alias<br/>registered for the name"]
     GA --> R["reduce_list_from_target"]
     GN --> R
-    R --> R1["version: string range gets .*,<br/>so * is tested as *.*"]
-    R1 --> R2["platform_match, config, other properties"]
+    R --> R1["test properties in insertion order:<br/>string @properties, platform_match,<br/>version (a string range gets .*, so * is *.*),<br/>config"]
+    R1 --> R2["a mismatch sets match False, except<br/>platform_match: it only removes from the list,<br/>so a platform mismatch alone does not drop the Part"]:::hot
     R2 --> R3["keep only the highest version"]
     R3 --> OUT["matches"]
     OUT --> DP{"dependent_ref.Part"}
@@ -68,12 +68,13 @@ flowchart TD
     DP -->|"none, required"| X1["error_msg: exits"]
     DP -->|"none, optional"| X2["warning, NilPart"]
     DP -->|"several"| X3["error_msg: ambiguous"]
+    classDef hot stroke:#dc2626,stroke-width:3px
 ```
 
 - `PartRef.Matches` stores only a non-empty result, for the life of the object. A match made before every candidate was read sticks.
 - The local-space loop reads `pobj.Name`, which on an unread Part writes its alias into the registry.
 - `_from_alias()` returning `None` is appended as-is, and `reduce_list_from_target` then fails on `p.ID`.
-- `reduce_list_from_target` removes items from the list it is iterating in its `platform_match` branch.
+- The `platform_match` branch of `reduce_list_from_target` does not filter: it calls `part_lst.remove(pobj)` and never sets `match = False`, so a platform mismatch alone does not drop the Part (a later `version` or `config` test still can). On the `PartRef` path the argument is a list, and the removal skips the next candidate. `map_scons_target_list()` passes a `set`, and there the removal raises `RuntimeError: Set changed size during iteration`. A bare target such as `scons 'foo@platform_match:win32-x86'` reaches it: `map_targets_sections()` selects every build section for it, and `map_scons_target_list()` then reduces the Parts named `foo` (probe: two Parts named `foo` on a darwin-aarch64 host; with a matching platform the higher version builds). Only the `name::` form of a registered name fails earlier ([03-part-loading.md](03-part-loading.md#mapping-targets-to-sections)).
 
 ## Processing a section
 
@@ -82,13 +83,13 @@ flowchart TD
 ```mermaid
 flowchart TD
     A["Section.ProcessSection()"] --> B["ResolveDepends()<br/>DependsSorted: user order,<br/>constrained by FullDependsSorted"]
-    B --> C["for each dependency, for each requirement:<br/>map_requirement(env, req, dep)"]
+    B --> C["for each dependency, for each requirement:<br/>map_requirement(env, req, dep), then, if the<br/>requirement is not internal, add the value<br/>to this section's Exports"]
     C --> D["metasection bound, chdir to BUILD_DIR,<br/>VariantDir for out-of-tree sources"]
     D --> E["MetaSection.ProcessSection(0)<br/>run phase callbacks"]
     E --> F["map top-level targets to the section alias<br/>(by group for unit_test)"]
     F --> G["one pass over Depends:<br/>collect the export.jsn of dependencies<br/>with dynamic exports, map requirement.mapto aliases"]
     G --> H["Depends(bottom targets,<br/>collected export.jsn files)"]
-    H --> I["env._map_export_: write this section's export.jsn,<br/>map it to the alias"]
+    H --> I["env._map_export_ declares the export.jsn node<br/>(written at build time from the final Exports),<br/>ProcessSection maps it to the alias"]
     I --> J["DynamicPackageNodes(export.jsn)"]
     J --> K["Exports EXISTS = section alias"]
 ```
@@ -101,22 +102,23 @@ flowchart TD
     B -->|"yes, classically mapped"| B1["keep the delayed mapper value"]
     B -->|"yes"| B2["map_val = delayed mapper"]
     B -->|"no"| C["map_val = dependency Exports KEY<br/>(static, resolved now)"]
-    C -->|"classically mapped"| C1["remove the classic mapper value<br/>from env KEY first"]
+    C -->|"empty"| CE["return the delayed mapper value,<br/>write nothing"]
     B2 --> N
     C --> N["env DEPENDS.NAME.KEY = map_val"]
-    C1 --> N
     N --> P{"req.is_public?"}
-    P -->|"list"| P1["env.PrependUnique(KEY=map_val)"]
+    P -->|"list"| C1["if classically mapped: remove the<br/>classic mapper value from env KEY"]
+    C1 --> P1["env.PrependUnique(KEY=map_val)"]
     P -->|"scalar"| P2["env KEY = map_val"]
-    P -->|"not public"| X
-    P1 --> X{"req.is_internal?"}
-    P2 --> X
-    X -->|"no"| X1["also add to this section's Exports,<br/>so its own dependents get it"]
+    P1 --> R["return map_val to ResolveDepends"]
+    P2 --> R
+    P -->|"not public"| R
+    A -.-> O["dependency optional and unmatched:<br/>branch ends in 1/0, unreachable"]:::dead
+    classDef dead fill:#e5e7eb,stroke:#9ca3af,color:#4b5563
 ```
 
 ## Requirements
 
-A requirement names one variable and how it travels: `public` maps it into the consumer's top-level environment, `internal` keeps it from being re-exported to the consumer's own dependents, `force_internal` routes it through the recursive export mapper, `listtype` appends instead of replacing, `mapto` binds extra aliases. Sets are defined with `DefineRequirementSet()` in `api/requirement.py`.
+A requirement names one variable and how it travels: `public` maps it into the consumer's top-level environment, `internal` keeps it from being re-exported to the consumer's own dependents, `force_internal` stops any set-level internal value from changing the requirement's own flag (including the `internal=True` that every `REQ.<SET>` lookup applies since 0.16, through `metaREQ.__getattr__`), `listtype` merges the value into a list instead of replacing it (`PrependUnique` into the consumer env, `extend_unique` into Exports), `mapto` binds extra aliases. Sets are defined with `DefineRequirementSet()` in `api/requirement.py`.
 
 ```mermaid
 flowchart LR
@@ -133,7 +135,7 @@ flowchart LR
     DEF --> RPM["RPM_PACKAGE_RUNPATH"]
 ```
 
-- Headers are direct-only: `CPPPATH` reaches the immediate consumer and stops. `RPATHLINK` reaches the whole chain because it is re-resolved at each level through the recursive `PARTIDEXPORTS` mapper. Setting `internal=False` on a requirement without `force_internal=True` does not make it transitive.
-- Since 0.16, `REQ.DEFAULT` is `internal=True` by default. A part with `COMPAT_REQ_INTERNAL` set in its env gets the old behaviour and a deprecation warning.
+- Transitivity comes from `internal=False`: `ResolveDepends` copies such a value into the consumer's own Exports, so each level re-exports it to the next. `CPPPATH` is internal, so headers reach the immediate consumer and stop; `RPATHLINK` is `internal=False` and reaches the whole chain. `force_internal=True` on `RPATHLINK` matters for every dependency, because of the next point.
+- Since 0.16, every `REQ.<SET>` lookup (through `metaREQ.__getattr__`), including `REQ.DEFAULT`, `Component()`'s default, builds its requirements with `internal=True`, which overrides each member's flag unless it has `force_internal`. While a Part whose env sets `COMPAT_REQ_INTERNAL` is being read (and its sub-parts, which are read inside it), `glb.compat_internal` is non-zero and lookups use `internal=False` instead, with a deprecation warning.
 - Export tables are lists of lists (`Exports[KEY] == [[...]]`), and they are merged with `common.extend_unique`, which is O(n²).
 - `append_unique` moves a repeated item to the end. That is deliberate link-order behaviour; keep it in any rewrite.

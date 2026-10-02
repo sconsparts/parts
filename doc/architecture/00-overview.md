@@ -56,7 +56,7 @@ Notes:
 
 - `engine.Process()` returns early when `BUILD_TARGETS` is empty, so `scons` with no target reads no part file. Use `scons all`.
 - The default target is cleared in `Start()` (`def_env.Default('')`), so nothing builds without a target.
-- `extract_sources` alone stops after `UpdateOnDisk()`.
+- With `extract_sources` as the only target, `ProcessParts()` returns after `UpdateOnDisk()` without reading any part file; `engine.Process()` still runs the post-process queue and `PostProcessEvent`.
 - Details of each step are in [01-startup.md](01-startup.md) and [03-part-loading.md](03-part-loading.md).
 
 ## Module map

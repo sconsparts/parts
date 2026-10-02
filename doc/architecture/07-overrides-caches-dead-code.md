@@ -1,6 +1,6 @@
 # L3: Overrides, caches, and dead code
 
-Parts is to a large degree a monkeypatch layer over SCons internals. This page lists what it patches, every cache it keeps and what invalidates it, the code paths that look live but are not, and the measured hotspots. Read it before you change anything that touches SCons nodes, signatures, or the build decision.
+Parts is to a large degree a monkeypatch layer over SCons internals. This page groups the patches by file and names the main ones (it is not exhaustive: there are about 75 `SCons.*`/`SConsEnvironment.*` assignments across 17 files in `overrides/`, more through imported class names such as `executor.py`'s `Executor.scan`, and a few outside it, such as `api/register.py add_method`, `version_info.py`, `packaging.py`, and `core/builders/dyn_exports.py`), then lists every cache it keeps and what invalidates it, the code paths that look live but are not, and the measured hotspots. Read it before you change anything that touches SCons nodes, signatures, or the build decision.
 
 ## The overrides layer
 
@@ -12,19 +12,22 @@ flowchart LR
     O --> DE["default_env:<br/>Script.DefaultEnvironment<br/>to Settings"]
     O --> SCR["sconscript:<br/>_SConscript._SConscript (forked)"]
     O --> BLD["builder, build_wrapper,<br/>dup_node_builder_env:<br/>Builder, BuilderBase call,<br/>_node_errors (tag_part_info)"]
-    O --> ENV["env_clone, env_csig, env_array,<br/>env_alias: Clone, get_csig,<br/>getitem/setitem, AliasBuilder"]
+    O --> ENV["env_clone, env_csig, env_array,<br/>env_alias: Clone, get_csig,<br/>getitem/setitem, Alias, AliasBuilder"]
     O --> ND["nodes, symlinks:<br/>_decider_map, node.ID, Stored,<br/>Dir visit/timestamp, FileSymbolicLink"]
     O --> SCN["scanner, executor:<br/>ScannerBase.path, Prog.scan,<br/>Executor.scan (reimplemented)"]
-    O --> MISC["tool, subst, sconf, error_handling,<br/>stubprocess, debug, os_file"]
+    O --> MISC["tool, subst, sconf, error_handling,<br/>debug, os_file"]
+    O -.-> STUB["stubprocess: never installs<br/>(sys.platform linux2)"]:::dead
+    classDef dead fill:#e5e7eb,stroke:#9ca3af,color:#4b5563
 ```
 
 Classes of risk, read against SCons 4.10.1:
 
 | Class | Examples |
 | --- | --- |
-| Silent wrong behaviour today | Decider override binds `func` late: all 7 `_decider_map` slots call the last decider (content hash), so `env.Decider('timestamp-match')` is ignored. `PartsClone` has no `variables` parameter and passes `parse_flags` positionally into SCons' `variables` slot (`Clone(tools, toolpath, variables, parse_flags)`), so `Clone(parse_flags=...)` is misrouted and `variables=` becomes a construction variable. `BUILD_TARGETS` becomes a plain `list` |
+| Silent wrong behaviour today | Decider override binds `func` late: all 7 `_decider_map` slots call the last decider (content hash), so `env.Decider('timestamp-match')` is ignored. `BUILD_TARGETS` becomes a plain `list` |
+| Latent crash | `PartsClone` has no `variables` parameter (added to SCons `Clone` in 4.8) and passes `parse_flags` positionally into SCons' `variables` slot (`Clone(tools, toolpath, variables, parse_flags)`). `Clone(parse_flags=...)` then hands a string, list, or dict to `variables.Update()` and raises `AttributeError`; `Clone(variables=V)` raises `TypeError` (two values for one parameter). Nothing in the tree calls either form |
 | Forked bodies that drift | `Executor.scan`, `_node_errors`, `_SConscript` (`must_exist` default differs from SCons 4.6+), `find_deepest_user_frame`, `AliasBuilder`, `_concat_ixes` |
-| Private-symbol patches | `SCons.Util._semi_deepcopy_*`, `SCons.Builder._null`, `Prog.scan` by `__code__` swap, `SCons.Tool.install._INSTALLED_FILES` |
+| Private-symbol coupling | Replaces public `SCons.Util.semi_deepcopy` with a copy that reads private `_semi_deepcopy_dispatch` and `_semi_deepcopy_list`; reads `SCons.Builder._null` as a default argument; replaces `Prog.scan` by `__code__` swap; appends to `SCons.Tool.install._INSTALLED_FILES` |
 | Not versioned against SCons | `.parts.cache` stores nothing derived from the SCons version. The `DirNodeInfo`/`DirBuildInfo` overrides change the shape of `.sconsign` entries while keeping SCons' `current_version_id` |
 
 ## Caches and their keys
@@ -56,7 +59,7 @@ flowchart TD
 - `glb.subst_cache` can serve one Part's mapper result to another: the `get_csig` memo is copied by `Clone()`, and `runpath_mapper`'s `repr` is the same constant for every Part, so a stale key can put one Part's RPATH into another Part's link line.
 - The run key names the data-cache directory; it does not sign build outputs. A new `ARGUMENTS` entry re-keys it once (a slower first run, not a rebuild). `USE_CACHE_KEY=...` on the command line forces a key.
 - `generate_cache_key()` records an option's default, not the value given, when the option differs from its default (read in code, not tested), so two non-default values of the same option give the same key.
-- `.parts.cache` has a Parts format key (`datacache.db_key`, "DB Cache Version 1.3.0" plus the entry length, and a per-entry `__version__`) but nothing derived from the SCons version. `BuildInfo` is not pickled into it on the live path; only `pnode_manager.Store()`/`StoreAlias()` would do that, and they never run.
+- `.parts.cache` entries carry a Parts format key (`datacache.db_key`, an md5 of "DB Cache Version 1.3.0 length N") and a per-entry `__version__`, but nothing derived from the SCons version. `BuildInfo` is not pickled into it on the live path; only `pnode_manager.Store()`/`StoreAlias()` would do that, and they never run.
 - `ClearNodeStates()` at the end of `ProcessParts()` resets every node's `_memo`, so the build phase re-stats everything.
 
 ## Dead code
@@ -77,7 +80,7 @@ flowchart LR
     classDef dead fill:#e5e7eb,stroke:#9ca3af,color:#4b5563
 ```
 
-Also dead or inert: `overrides/scons_util.py` (Python 2 `UniqueList`), the `Subst.Literal.__hash__` override (identical to SCons'), the `sconf.py` backport, `core/util/sdk_gen.py`, and the commented-out `INSTALL*`/`SDK*` requirement sets in `api/requirement.py`.
+Also dead or inert: `overrides/stubprocess.py` (guarded by `sys.platform in ('linux2',)`, which Python 3 never reports, and it calls `base64.encodestring`, removed in 3.9), the `1/0` branch for an optional unmatched dependency in `pnode/section.py map_requirement` (its only caller, `ResolveDepends`, passes matched dependencies only), `overrides/scons_util.py` (Python 2 `UniqueList`), the `Subst.Literal.__hash__` override (identical to SCons'), the `sconf.py` backport, `core/util/sdk_gen.py`, and the commented-out `INSTALL*`/`SDK*` requirement sets in `api/requirement.py`.
 
 ## Known hotspots
 

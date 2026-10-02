@@ -1,6 +1,6 @@
 # L1: Start-up
 
-Everything on this page happens inside `from parts import *`, before the first line of the SConstruct after that import. The order matters: what a piece or hook can see depends on when it runs.
+Up to `globals().update(glb.globals)` in the first diagram, everything on this page happens inside `from parts import *`, before the next line of the SConstruct runs; the later steps show where the start-up hands over. The order matters: what a piece or hook can see depends on when it runs.
 
 ## Import order
 
@@ -50,7 +50,7 @@ Custom platforms belong in a piece module body: pieces run before `post_option_s
 
 ```mermaid
 flowchart LR
-    D["Variable Default<br/>(SetOptionDefault sets this)"] --> UD["user_defaults<br/>(empty today)"]
+    D["Variable Default<br/>(SetOptionDefault sets it for a declared<br/>variable, the value field for a new key)"] --> UD["user_defaults<br/>(empty today)"]
     UD --> CF["parts.cfg<br/>exec of --cfg-file,<br/>default ./parts.cfg"]
     CF --> AR["SCons.Script.ARGUMENTS<br/>KEY=VALUE on the command line,<br/>plus --target --cfg --tc --mode<br/>injected by _setup_arguments"]
     AR --> M["merged value"]

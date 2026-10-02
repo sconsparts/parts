@@ -7,14 +7,14 @@ A Part publishes outputs in two directions. **SDK** calls copy files into `$SDK_
 ```mermaid
 flowchart TD
     A["env.InstallLib(libfoo)<br/>InstallBin, InstallInclude, ..."] --> PI["installs.py ProcessInstall"]
-    PI --> SDK["env.SdkItem('$SDK_LIB', ...)<br/>unless create_sdk is False"]
+    PI --> SDK["env.SdkItem('$SDK_LIB', ..., create_sdk)<br/>copies unless create_sdk or env CREATE_SDK is False.<br/>LIBS, LIBPATH, RPATHLINK, CPPPATH export either way,<br/>the SDK dir key (SDKLIB) only when copied"]
     PI --> INS["env.Install / InstallAs to $INSTALL_LIB<br/>tags: category, part_alias, no_package"]
     B["env.SdkLib, SdkInclude, Sdk ..."] --> SDK
     SDK --> CP["process_Sdk_Copy<br/>CCopy, batched by Part and dir"]
     CP --> SC["parts-smart-cp console script<br/>one Python process per 50 files"]:::hot
     SDK --> XP["exportitem.export_path / export_file<br/>Section Exports: LIBS, LIBPATH,<br/>RPATHLINK, CPPPATH"]
     C["env.ExportItem(KEY, values)<br/>ExportCPPPATH, ExportLIBS, ..."] --> XP
-    XP --> EJ["export.jsn per Section<br/>written in ProcessSection"]
+    XP --> EJ["ALIAS.SECTION.exports.jsn<br/>declared in ProcessSection,<br/>written at build time"]
     INS --> IF["SCons.Tool.install._INSTALLED_FILES<br/>(private SCons global)"]
     classDef hot stroke:#dc2626,stroke-width:3px
 ```
@@ -27,13 +27,18 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    P["Part(..., package_group='runtime')<br/>or PackageGroup(name, parts)"] --> G["packaging.g_package_groups<br/>group name to Part aliases"]
-    IF["_INSTALLED_FILES"] --> S["SortPackageGroups()<br/>under g_sort_data_lock"]
-    G --> S
-    S --> F1["PACKAGE_GROUP_FILTER<br/>criteria per group"]
-    S --> F2["PACKAGE_NODE_FILTER<br/>callbacks returning groups"]
-    F1 --> SG["_sorted_groups:<br/>pkg and no_pkg sets of nodes per group"]
-    F2 --> SG
+    P["Part(..., package_group='runtime')"] --> PG["the Part's PackageGroup property"]
+    P -.->|"Part._setup_ also registers the alias"| G
+    PGN["PackageGroup(name, parts)"] --> G["packaging.g_package_groups:<br/>read only by PackageGroups(),<br/>never by the sort"]:::hot
+    IF["_INSTALLED_FILES"] --> S["SortPackageGroups(), per node,<br/>under g_sort_data_lock"]
+    S --> F0{"node metatag groups or group?"}
+    F0 -->|"yes"| SG
+    F0 -->|"no"| F1{"a PACKAGE_GROUP_FILTER<br/>criterion matches?"}
+    F1 -->|"yes"| SG
+    F1 -->|"no"| PG
+    PG --> SG["_sorted_groups:<br/>pkg and no_pkg sets of nodes per group"]
+    SG --> F2["then PACKAGE_NODE_FILTER callbacks<br/>add the node to extra groups"]
+    classDef hot stroke:#dc2626,stroke-width:3px
     SG --> DPN["DynamicPackageNodes:<br/>PARTS_SYS_DIR/package.groups.jsn,<br/>depends on every export.jsn"]
     SG --> GF["env.GetPackageGroupFiles(group)<br/>GetFilesFromPackageGroups(target, groups)"]
     GF --> PK["package builders:<br/>RPMPackage, tar, zip, deb, msi"]
@@ -42,6 +47,8 @@ flowchart TD
 
 - Packaging is lazy: the group sets are re-sorted when the number of installed files changes, so a package builder sees files installed by Sections processed after it was declared.
 - `PackageGroup()` sets `g_resort_package_data = True` without a `global` statement, so that assignment is local and never forces a re-sort.
+- `PackageGroup(name, parts)` records Part aliases in `g_package_groups`, but `SortPackageGroups()` never reads that table: a file goes to its metatag groups, else a matching `PACKAGE_GROUP_FILTER` group, else its Part's `package_group=`. So `PackageGroup(name, parts)` registers a group name (which `PackageGroups()` lists) and adds no files.
+- The first sort records the chosen groups in the node's own `groups` field, so every later re-sort takes the metatag branch for that node: new `PACKAGE_GROUP_FILTER` criteria or a changed `package_group=` do not move files that are already sorted.
 - A file in two groups is reported through `PACKAGE_DUPLICATE_FILES_HANDLING` (`error`, `warning`, or ignore).
 
 ## RPM
