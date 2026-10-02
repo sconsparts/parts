@@ -1,3 +1,5 @@
+Shared agent instructions for this repo live in AGENTS.md - read it first.
+
 # Copilot Instructions
 
 ## Cross-Platform Testing (UV First)
