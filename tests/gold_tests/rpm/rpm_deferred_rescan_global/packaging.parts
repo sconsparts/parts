@@ -1,0 +1,26 @@
+Import('*')
+env.PartName('packaging')
+
+# The release comes from a file, not from Part() arguments, so changing it
+# gives a new rpm target without changing the part or its package group node.
+with open(AbsFile('release.txt')) as f:
+    release = f.read().strip()
+
+# The group stays global: its node depends on package.groups.jsn, not on this
+# part's export file.
+out = env.RPMPackage(
+    '${NAME}-${VERSION}-${RELEASE}.${TARGET_ARCH}',
+    source=['pkg_lib1'],
+    TARGET_ARCH='x86_64',
+    arch_mapper={'x86_64': 'x86_64'},
+    NAME='lib1-devel',
+    VERSION='1.0',
+    RELEASE=release,
+    summary='lib1 headers',
+    description='lib1 headers',
+    license='None',
+    group='Development/Tools',
+    url='http://example.com',
+    RPM_VARS=['%define debug_package %{nil}'],
+)
+env.CCopy('#dist', out)

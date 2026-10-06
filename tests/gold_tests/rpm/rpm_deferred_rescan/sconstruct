@@ -1,0 +1,4 @@
+from parts import *
+
+Part('lib1', 'lib1.parts', package_group='pkg_lib1')
+Part('packaging', 'packaging.parts')
