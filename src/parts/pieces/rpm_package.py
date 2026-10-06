@@ -30,6 +30,8 @@ def rpm_scan_check(node, env):
     # we can scan given the children all all built or up to date
     ret = node_helpers.has_children_changed(node) & ChangeCheck.SAME
     api.output.verbose_msg(["rpm-scanner", "scanner"], f"Scanner Check {node.ID}: {ret}")
+    if not ret:
+        node_helpers.mark_scan_deferred(node)
     return ret
 
 

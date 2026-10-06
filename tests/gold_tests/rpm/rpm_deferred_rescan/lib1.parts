@@ -1,0 +1,10 @@
+Import('*')
+env.PartName('lib1')
+
+# The test changes stamp.txt between builds. That changes the command line, so
+# the header is rebuilt, but its content stays the same.
+with open(AbsFile('stamp.txt')) as f:
+    stamp = f.read().strip()
+hdr = env.Command('gen/lib1_gen.h', 'lib1.h',
+                  'cp $SOURCE $TARGET # stamp ' + stamp)
+env.InstallInclude(hdr)
