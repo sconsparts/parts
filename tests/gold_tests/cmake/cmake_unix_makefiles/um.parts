@@ -1,0 +1,8 @@
+Import('*')
+PartName('um')
+
+@build
+def source(env):
+    # a generator name with a space in it, which has to reach cmake as one -G
+    env['CMAKE_GENERATOR'] = 'Unix Makefiles'
+    env.CMake()

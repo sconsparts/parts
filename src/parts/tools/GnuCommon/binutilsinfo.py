@@ -842,4 +842,28 @@ binutils.Register(
     ]
 )
 
+binutils.Register(
+    hosts=[SystemPlatform('any', 'any')],
+    targets=[SystemPlatform('emscripten', 'wasm32'), SystemPlatform('emscripten', 'wasm64')],
+    info=[
+        BinutilInfo(
+            # emsdk ships the llvm-based binutils under $EMSDK/upstream/bin
+            # (wasm-ld, llvm-ar, ...); $EMSDK is resolved lazily at scan time.
+            install_scanner=[EnvFinder(['EMSDK'], 'upstream/bin')],
+            opt_dirs=[],
+            script=None,
+            subst_vars={
+                'SYS_ROOT': '${BINUTILS.INSTALL_ROOT}/../emscripten/cache/sysroot',
+                'AR': 'emar',
+                'RANLIB': 'emranlib',
+                'OBJCOPY': 'llvm-objcopy',
+                'AS': 'llvm-as',
+                'LD': 'wasm-ld',
+            },
+            shell_vars={'PATH': '${BINUTILS.INSTALL_ROOT}'},
+            test_file='wasm-ld',
+        )
+    ]
+)
+
 # vim: set et ts=4 sw=4 ai :
