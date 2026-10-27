@@ -1,0 +1,9 @@
+Import('*')
+
+PartName('A')
+PartVersion('1.0.0')
+
+
+@build
+def source(env):
+    env.InstallLib(env.SharedLibrary('A', ['a.c']))

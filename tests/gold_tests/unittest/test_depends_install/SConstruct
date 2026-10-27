@@ -1,0 +1,5 @@
+from parts import *
+
+Part('A', 'a/A.part')
+Part('B', 'b/B.part')
+Part('C', 'c/C.part')

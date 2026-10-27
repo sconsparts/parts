@@ -388,6 +388,11 @@ class Section(pnode.PNode):
                     targets = requirement.mapto(self)
                     for t in targets:
                         self._map_target(value, t)
+                        # "" is the section alias. A grouped section's run alias (run_utest::alias::foo::group)
+                        # waits only on its group alias, so map the value onto each group alias as well
+                        if not t and self._metasection.definition.TargetMappingLogic == GroupLogic.GROUPED:
+                            for group in self.Groups:
+                                self._map_target(value, group)
             
         # map targets with a depends on the imports, so they are mapped
         # in the environment before the target tries to build

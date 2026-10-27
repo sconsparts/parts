@@ -1,0 +1,8 @@
+Import('*')
+
+env.PartName('C')
+env.PartVersion('1.0.0')
+
+env.DependsOn([Component('A')])
+env.AppendUnique(LIBS=['A'])
+env.UnitTest('test', ['main.c'])
