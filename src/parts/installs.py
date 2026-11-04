@@ -249,11 +249,20 @@ def InstallItem(env, target, source, sub_dir="", sdk_dir='', no_pkg=False, creat
         # add installed file to Part object
         pobj.DefiningSection.InstalledFiles.update(installed_files)
 
-        env.MetaTag(
-            installed_files, 'package',
+        metatag_dict = dict(
             part_alias=env['ALIAS'],
             part_name=env.subst('$PART_NAME'),
-            part_version=env.subst('$PART_VERSION')
+            part_version=env.subst('$PART_VERSION'),
+        )
+        # carry the install sub_dir onto the node so the rpm scanner can stage
+        # its rpath rewrite under a unique location (avoids collisions between
+        # same-named files installed to different sub_dirs)
+        if sub_dir:
+            metatag_dict['sub_dir'] = sub_dir
+
+        env.MetaTag(
+            installed_files, 'package',
+            **metatag_dict
         )
 
     errors.ResetPartStackFrameInfo()
