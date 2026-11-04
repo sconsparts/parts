@@ -1,0 +1,6 @@
+from parts import *
+
+# provider: installs a cmake package config and SDKs it
+Part('foo', 'foo.parts')
+# consumer: a cmake build that find_package()s the provider's config
+Part('consumer', 'consumer.parts')
