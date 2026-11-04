@@ -85,7 +85,7 @@ class git(base):
             self.__branch: str = tag
             self._istag: bool = True
 
-        super(git, self).__init__(repository, server)
+        super(git, self).__init__(repository, server, use_cache)
 
     @property
     def canMirror(self) -> bool:
