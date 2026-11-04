@@ -14,6 +14,10 @@ def generate(env):
     """Add Builders and construction variables for gcc to an Environment."""
     parts.tools.cc.generate(env)
 
+    # gcc emits system includes (SYSCPPPATH) with -isystem; override the generic
+    # $INCPREFIX default set by cc (see tools/cc.py).
+    env['SYSINCPREFIX'] = '-isystem '
+
     # set up shell env for running compiler
     parts.tools.GnuCommon.gcc.MergeShellEnv(env)
     # does the tool define tweaks to the bnutils.. if so set these "gloally"

@@ -26,6 +26,10 @@ def generate(env):
     # get the basic C++ flags (unix based stuff only??)
     cplusplus.generate(env)
 
+    # g++ emits system includes (SYSCPPPATH) with -isystem; override the generic
+    # $INCPREFIX default set by c++ (see tools/cc.py).
+    env['SYSINCPREFIX'] = '-isystem '
+
     # set up shell env for running compiler
     parts.tools.GnuCommon.gxx.MergeShellEnv(env)
 

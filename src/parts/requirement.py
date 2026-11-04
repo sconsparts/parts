@@ -17,6 +17,7 @@ _added_types = {}
 class requirement:
     __slots__=(
         '_key',
+        '_read_key',
         '_force_internal',
         '_internal',
         '_weight',
@@ -26,7 +27,7 @@ class requirement:
         '_mapper',
         '_map_to',
     )
-    def __init__(self, key, internal=None, public=None, policy=None, mapper=None, listtype=None, weight=0, mapto=None, force_internal=False):
+    def __init__(self, key, internal=None, public=None, policy=None, mapper=None, listtype=None, weight=0, mapto=None, force_internal=False, read_key=None):
         ''' Sets up the requirement object
 
         @param value The value to import
@@ -37,10 +38,14 @@ class requirement:
         @param listtype Tells if this type is a list type or not..
         @param mapTo Optional function that given dependent section, and returns a list of subtarget to map values to
         @param force_internal prevents the ability to overide internal value. Needed in some cases as changing this is always wrong
+        @param read_key Optional key to read from the dependency's export table; defaults to @p key. Lets a
+                        requirement source a dependency's exported value under one name and land it in the
+                        consumer under another (e.g. read 'CPPPATH', write 'SYSCPPPATH').
         '''
         if __debug__:
             logInstanceCreation(self)
         self._key = key
+        self._read_key = read_key if read_key is not None else key
         self._force_internal = force_internal
         if internal is not None:
             self._internal = internal
@@ -85,7 +90,7 @@ class requirement:
         '''
         return a mapper string to get the result of this requirement
         '''
-        return f"${{{self._mapper}('{name}','{section}','{self.key}',{self.policy},{optional})}}"
+        return f"${{{self._mapper}('{name}','{section}','{self.read_key}',{self.policy},{optional})}}"
 
     @property
     def mapto(self):
@@ -110,6 +115,11 @@ class requirement:
     @property
     def key(self):
         return self._key
+
+    @property
+    def read_key(self):
+        '''The dependency export key to read from (defaults to @ref key).'''
+        return self._read_key
 
     @property
     def policy(self):
@@ -179,6 +189,7 @@ class requirement:
 
     def Serialize(self):
         return {'key': self._key,
+                'read_key': self._read_key,
                 'internal': self._internal,
                 'public': self._public,
                 'policy': self._policy,
