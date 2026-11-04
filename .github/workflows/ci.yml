@@ -7,6 +7,33 @@ on:
     branches: [main]
 
 jobs:
+  # Source-only, so this runs once rather than once per python version. Kept
+  # independent of the test job: a failure here names the broken line directly,
+  # which the gold tests cannot do, but you still get suite results either way.
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip uv
+          uv sync --dev
+
+      # Catches an import and its call site going out of sync, which otherwise
+      # surfaces as an unrelated tool-load failure much later, or not at all
+      # until someone runs the affected platform.
+      - name: Undefined names
+        run: uv run python tests/lint/undefined_names.py
+
   test:
     runs-on: ubuntu-latest
     strategy:

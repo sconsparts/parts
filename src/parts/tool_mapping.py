@@ -1,6 +1,7 @@
 
 
 import os
+import traceback
 
 import parts.api as api
 import parts.core.util as common
@@ -85,8 +86,22 @@ def get_tools(env, tlset):
                 # see if this is a tool that is loadable
                 try:
                     SCons.Tool.Tool(tool, toolpath=__tools_dirs)
-                except Exception as e:                    
-                    api.output.error_msg("Failed to load Unknown ToolChain or Tool:", tool, show_stack=False)
+                except UserError as e:
+                    # SCons found no module for this name on the toolpath, so the
+                    # name really is unknown. Report where we looked.
+                    api.output.error_msgf(
+                        "Failed to load Unknown ToolChain or Tool: {0}\n {1}\n Searched: {2}",
+                        tool, e, os.pathsep.join(str(d) for d in __tools_dirs),
+                        show_stack=False)
+                except Exception as e:
+                    # The module exists but raised while loading, which is a bug in
+                    # the tool, not an unknown name. Report the traceback: without it
+                    # any error in a tool module (or anything it imports) reads as
+                    # "unknown tool" and sends you looking in the wrong place.
+                    api.output.error_msgf(
+                        "Failed to load ToolChain or Tool: {0}\n Loading it raised {1}: {2}\n{3}",
+                        tool, type(e).__name__, e, traceback.format_exc(),
+                        show_stack=False)
                 else:
                     new_list.extend([(tool, {}, configured)])
         else:

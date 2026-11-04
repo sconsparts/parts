@@ -1,5 +1,6 @@
 
 
+import parts.api.output
 import SCons.Action
 import SCons.Tool.applelink as applelink
 from parts.tools.Common import toolvar
