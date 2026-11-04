@@ -121,9 +121,13 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
             # as this is probally out of date ( contains bad files to scan)
             SCons.Defaults.Delete("$CMAKE_DESTDIR"),
             'cd ${TARGET.dir} ;'
-            # CMAKE_PREFIX_PATH should replace this.. Have it as a fallback
+            # cmake reads the CMAKE_PREFIX_PATH env var for find_package; it carries
+            # the cmake-config dirs propagated from dependencies (see SdkCMakeConfig
+            # and the CMAKE_PREFIX_PATH requirement). PKG_CONFIG_PATH is kept as a
+            # fallback for projects that locate deps via pkg-config instead.
+            '${define_if("$CMAKE_PREFIX_PATH","CMAKE_PREFIX_PATH=")}${MAKEPATH("$CMAKE_PREFIX_PATH")} '
             '${define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}${MAKEPATH("$PKG_CONFIG_PATH")} '
-            '$CMAKE ${SOURCE.dir.abspath} $_CMAKE_ARGS'
+            '$CMAKE_WRAPPER $CMAKE ${SOURCE.dir.abspath} $_CMAKE_ARGS'
         ],
         #source_scanner=scanners.NullScanner,
         target_scanner=scanners.NullScanner,
@@ -159,7 +163,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
             # DESTDIR goes in the environment, where cmake's install step reads
             # it with any generator; after "--" it is a make variable, which
             # Ninja rejects as an unknown target
-            f"cd ${{SOURCE.dir}} ; $CMAKE_DESTDIR_FLAG $CMAKE --build . --config $CMAKE_BUILD_TYPE --target {targets} -- $_CMAKE_MAKE_ARGS"
+            f"cd ${{SOURCE.dir}} ; $CMAKE_DESTDIR_FLAG $CMAKE_WRAPPER $CMAKE --build . --config $CMAKE_BUILD_TYPE --target {targets} -- $_CMAKE_MAKE_ARGS"
         ],
         source_scanner=scanners.NullScanner,
         target_factory=env.Dir,
@@ -185,6 +189,7 @@ api.register.add_variable('CMAKE_BUILDDIR', "$BUILD_DIR/$CMAKE_BUILDSUBDIR", 'De
 api.register.add_variable('CMAKE_BUILDSUBDIR', "build", 'Defines build subdirectory name for the CMake build')
 api.register.add_variable('CMAKE_BUILD_TYPE', "Release", 'CMAKE_BUILD_TYPE used for the configure and --build steps')
 api.register.add_variable('CMAKE_GENERATOR', '', 'If set, passed to cmake as -G (e.g. "Ninja", "Unix Makefiles"); empty uses cmake\'s default')
+api.register.add_variable('CMAKE_WRAPPER', '', 'Optional command to wrap the cmake configure/build invocations (e.g. emcmake); empty by default')
 api.register.add_variable('CMAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines location to install bits from the CMake')
 api.register.add_variable('CMAKE_INCLUDE_FLAG', '$INCPREFIX', 'Define the include flag for current compiler toolchain')
 api.register.add_variable('CMAKE_INCLUDE_SYSTEM_FLAG', '$SYSINCPREFIX', 'Define the system include flag for current compiler toolchain')

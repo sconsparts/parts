@@ -1,4 +1,4 @@
-.. py:function:: ScmGit(repository, server=None, protocol=None, branch=None, tag=None, revision=None, patchfile=None, use_cache=None, **kw):
+.. py:function:: ScmGit(repository, server=None, protocol=None, branch=None, tag=None, revision=None, patchfile=None, use_cache=None, username=None, **kw):
 
     Will clone source from the provided location.
     An optional patch file can be provided to be applied after the code 
@@ -32,6 +32,15 @@
     :param Optional[bool] use_cache: Allow for manual control if Parts should use the 
             git mirror cache when cloning.
             If not provided the value of ``$USE_SCM_CACHE`` will be used.
+    :param Optional[str] username: The user in the clone URL of the ``git`` (ssh)
+            protocol, ``<username>@<server>:<repository>.git``.
+            If not provided the value of ``$GIT_DEFAULT_SSH_USER`` will be used.
+            An empty value leaves ``<username>@`` out of the URL, so the ``User``
+            from the ssh configuration applies.
+            A user other than ``git`` gets its own mirror and extern checkout,
+            since on a plain ssh server the same path can name a different
+            repository for each user.
+            The other protocols ignore it.
     :param **kw: This value is ignored and provided as a way to help
             with future compatibility.
 
@@ -191,11 +200,19 @@ ScmGit can be control via a number of variables.
         **example**  `https://bitbucket.org/sconsparts/parts.git`
 
     **ssh**
-        which is the form of `git@<server>:<repository>.git`
+        which is the form of `<user>@<server>:<repository>.git`, where the user
+        is the ``username`` given to ScmGit, else ``$GIT_DEFAULT_SSH_USER``
+        (``git`` by default)
         
         **example** `git@bitbucket.org:sconsparts/parts.git`
 
     In both cases the ".git" will be added if not provided with the repository argument 
+
+.. py:data:: GIT_DEFAULT_SSH_USER
+
+    The user in the clone URL of the ``git`` (ssh) protocol when ScmGit is not
+    given ``username``. An empty value leaves the user out of the URL.
+    Defaults to ``git``
 
 .. py:data:: GIT_TAG_ARGS
     
