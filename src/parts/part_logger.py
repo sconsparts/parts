@@ -1,5 +1,8 @@
 
+import codecs
 import json
+import os
+import selectors
 import subprocess
 import sys
 import threading
@@ -25,26 +28,173 @@ from parts.process_tools import killProcessTree, waitForProcess
 # inherit parent file descriptors by default, so nothing to close.
 closeFileDescriptors = sys.platform not in ('win32', 'cygwin')
 
+# On Windows select() only accepts sockets, so an anonymous pipe cannot be polled there and
+# the reader has no way to wake itself up. POSIX gets the interruptible reader; Windows keeps
+# a blocking readline() loop and depends on close()'s bounded join to stop a stuck reader
+# from stalling the whole build.
+canPollPipes = sys.platform not in ('win32', 'cygwin')
+
+# poll() needs no descriptor of its own, where epoll and kqueue each allocate one. With two
+# readers per concurrent task that saves 2*N descriptors on a wide build.
+_selector_class = getattr(selectors, 'PollSelector', selectors.DefaultSelector)
+
+
+def _env_seconds(name, default):
+    '''Read a timeout override out of the environment, ignoring anything unusable.
+
+    Read once, at import, so these have to be set in the environment scons is launched from
+    rather than on its command line.
+    '''
+    try:
+        value = float(os.environ[name])
+    except (KeyError, TypeError, ValueError):
+        return default
+    return value if value > 0 else default
+
 
 class pipeRedirector:
 
+    # How long close() waits for the reader to finish before giving up on it. Expected to
+    # matter only where the reader cannot be interrupted.
+    join_timeout = _env_seconds('PARTS_LOG_JOIN_TIMEOUT', 30.0)
+    # How long the reader keeps draining after being asked to stop. This has to be bounded: a
+    # leftover process that keeps writing holds the pipe readable for as long as it lives, so
+    # an unbounded drain would never honour the stop request at all. Only a lingering process
+    # that is still producing output costs the full grace; a quiet one costs one poll_interval
+    # and the ordinary case costs nothing, since the reader stops at EOF. part_spawner nests
+    # two readers per task, so the worst case is twice this.
+    drain_grace = _env_seconds('PARTS_LOG_DRAIN_GRACE', 2.0)
+    # how often the interruptible reader wakes up to notice that close() asked it to stop
+    poll_interval = 0.25
+    read_size = 65536
+
     def _readerthread(self):
-        line = ' '
         try:
-            while line:
-                line = self.pipein.readline()
-                try:
-                    line = line.decode()
-                except Exception:
-                    pass
-                if line:
-                    self.output.WriteStream(self.taskId, self.streamId, line)
+            if canPollPipes:
+                self._read_interruptible()
+            else:
+                self._read_blocking()
         except Exception:
             # There was an error... that shouldn't happen, but still it did. So we report it
-            # to the caller and close our pipe end so that spawned program won't block
+            # to the caller and then keep the pipe drained: if nothing reads it the spawned
+            # program blocks forever once the pipe fills, and closing it instead kills the
+            # program with EPIPE. Throwing away the rest of the text is the least bad option.
             self.error = traceback.format_exc()
-            self.pipein.close()
-            self.pipein = None
+            self._discard()
+        finally:
+            # The reader owns the pipe, not close(). close() cannot release it safely -- it may
+            # have given up on a reader that is still inside a read -- so however this thread
+            # ends, it hands the descriptor back on the way out. Otherwise every task whose
+            # reader had to be abandoned leaks two descriptors for the life of the build.
+            self._close_pipe()
+
+    def _close_pipe(self):
+        pipe, self.pipein = self.pipein, None
+        if pipe is not None:
+            try:
+                pipe.close()
+            except Exception:
+                pass
+
+    def _write(self, text):
+        # An abandoned reader must stop logging. part_spawner calls TaskEnd as soon as close()
+        # returns, and that drops the logger's cache entry for this task, so a later write
+        # either raises KeyError or -- with a single job, where text goes straight out -- lands
+        # in the middle of an unrelated task's console output. Draining continues so the
+        # spawned program cannot block on a full pipe; only the logging stops.
+        # (decoding also legitimately produces nothing when a read ends mid-character)
+        if text and not self.detached:
+            self.output.WriteStream(self.taskId, self.streamId, text)
+
+    def _decoder(self):
+        # Decode incrementally: a multi-byte character can be split across two reads, as the
+        # write end of the pipe is inherited by the child's own children and writes larger
+        # than PIPE_BUF are not atomic, so neither a line nor a read holds whole characters.
+        # Undecodable bytes become U+FFFD instead of raising -- nothing downstream accepts
+        # bytes, so letting a decode error escape would take down the build over log text.
+        return codecs.getincrementaldecoder('utf-8')(errors='replace')
+
+    def _read_interruptible(self):
+        '''Read the pipe without ever blocking indefinitely, so close() can stop this thread
+        by clearing self.executing.
+
+        Breaking a blocking readline() by closing the pipe under it cannot work, which is
+        worth recording because it looks like it should: BufferedReader.close() has to take
+        the buffer lock, and the in-flight read holds that lock until it returns, so close()
+        ends up waiting on precisely the read it was meant to interrupt.
+        '''
+        decoder = self._decoder()
+        fd = self.pipein.fileno()
+        os.set_blocking(fd, False)
+        pending = bytearray()
+        deadline = None
+        with _selector_class() as selector:
+            selector.register(fd, selectors.EVENT_READ)
+            while True:
+                if deadline is None and not self.executing:
+                    # close() has asked us to stop. Keep draining for a moment so text already
+                    # in the pipe still gets logged, but put a bound on it: a leftover process
+                    # that keeps writing holds the pipe readable for as long as it lives, and
+                    # an unbounded drain would ignore the stop request entirely, leaving
+                    # close() to time out instead.
+                    deadline = time.monotonic() + self.drain_grace
+                if deadline is not None and time.monotonic() >= deadline:
+                    break
+                if not selector.select(timeout=self.poll_interval):
+                    # Nothing readable. If we have been asked to stop, the pipe has gone quiet
+                    # and there is nothing left to drain, so leave straight away.
+                    if not self.executing:
+                        break
+                    continue
+                try:
+                    data = os.read(fd, self.read_size)
+                except BlockingIOError:
+                    continue
+                if not data:
+                    break                   # EOF: every writer has let go of the write end
+                # pending never holds a newline, so only the new chunk has to be searched.
+                # Re-searching the whole accumulated buffer on every read -- which splitting
+                # one line at a time does -- is quadratic in the length of a newline-free
+                # stream, and progress meters emit exactly that for long stretches.
+                end = data.rfind(b'\n')
+                if end < 0:
+                    pending += data
+                    continue
+                head = bytes(pending) + data[:end + 1]
+                pending = bytearray(data[end + 1:])
+                start = 0
+                while True:
+                    nl = head.find(b'\n', start)
+                    if nl < 0:
+                        break
+                    self._write(decoder.decode(head[start:nl + 1]))
+                    start = nl + 1
+        if pending:
+            self._write(decoder.decode(bytes(pending)))  # a final line with no newline
+        self._write(decoder.decode(b'', final=True))
+
+    def _read_blocking(self):
+        '''Windows reader. readline() cannot be interrupted, so a reader parked in here can
+        only be abandoned by close().'''
+        decoder = self._decoder()
+        data = b' '
+        while data:
+            data = self.pipein.readline()
+            self._write(decoder.decode(data))
+        self._write(decoder.decode(b'', final=True))
+
+    def _discard(self):
+        '''Drain and throw away whatever is left in the pipe after a reader failure.'''
+        try:
+            fd = self.pipein.fileno()
+            while self.executing:
+                try:
+                    if not os.read(fd, self.read_size):
+                        return              # EOF
+                except BlockingIOError:
+                    time.sleep(self.poll_interval)
+        except Exception:
+            pass
 
     def __init__(self, pipein, output, taskId, streamId):
         if __debug__:
@@ -53,9 +203,14 @@ class pipeRedirector:
         self.output = output
         self.taskId = taskId
         self.streamId = streamId
-        self.thread = threading.Thread(target=self._readerthread, args=())
+        # daemon: where the reader cannot be interrupted it has to be abandoned, and a
+        # non-daemon thread parked in readline() would then block interpreter shutdown,
+        # turning a stalled task into a build that never exits.
+        self.thread = threading.Thread(target=self._readerthread, args=(), daemon=True)
         self.executing = True
         self.error = ''
+        # set once close() gives up on the reader; see _write
+        self.detached = False
 
     def __enter__(self):
         self.thread.start()
@@ -67,10 +222,29 @@ class pipeRedirector:
             raise UserError('Error while redirecting pipe: {0}'.format(self.error))
 
     def close(self):
+        if self.thread is None:
+            return                      # already closed; an explicit close then __exit__
+        # Ask the reader to stop, then wait for it. The pipe is deliberately not touched here:
+        # closing it cannot break a blocking read (see _read_interruptible), and if we end up
+        # giving up on a reader that is still running it would not be safe to close underneath
+        # it either. The reader releases the pipe itself as it exits.
         self.executing = False
-        self.thread.join()
-        if self.pipein:
-            self.pipein.close()
+        self.thread.join(timeout=self.join_timeout)
+        if self.thread.is_alive():
+            # Stop it logging before TaskEnd removes this task from the logger's cache. Set
+            # before the warning so there is no window where it could still write.
+            self.detached = True
+            # Expected only where the reader cannot be interrupted; on POSIX the bounded drain
+            # means reaching here implies the reader is stuck somewhere other than its poll
+            # loop. Abandon it -- the thread is a daemon and will release the pipe if it ever
+            # finishes. show_stack is off because the frame is this line and building it walks
+            # unsynchronized global state (glb.part_frame) from a build worker thread; a build
+            # that leaks one lingering process usually leaks many, hence print_once.
+            api.output.warning_msg(
+                'A log reader did not stop within {0} seconds and has been abandoned. Some '
+                'command output may be missing from the part logs. A process spawned by the '
+                'build is probably still holding its output pipe open.'.format(self.join_timeout),
+                show_stack=False, print_once=True)
         self.thread = None
 
 
@@ -197,6 +371,11 @@ class part_logger:
             pass
 
     def WriteStream(self, taskId, stream, msg):
+        if isinstance(msg, bytes):
+            # Nothing below this point handles bytes: the chunk cache concatenates onto a
+            # str, _empty_cache joins with str separators, and strip_ansi_codes compares
+            # against str. Normalize here so no caller can poison those paths.
+            msg = msg.decode('utf-8', errors='replace')
         if not self.block_text:
             self.streamWrite[stream](msg)
             self.otherOutWrite[stream](taskId, msg)

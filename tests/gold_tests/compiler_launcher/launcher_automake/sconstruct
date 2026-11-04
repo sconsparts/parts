@@ -1,0 +1,4 @@
+from parts import *
+
+# AutoMake() works on the part's checkout directory; VcsLocal makes that am_src
+Part('am', '#am.parts', vcs_type=VcsLocal('#am_src'))

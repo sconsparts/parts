@@ -1,6 +1,7 @@
 # an enhanced Command function
 # that also accepts target scanners
 
+import shlex
 from typing import List, Dict, Any, Optional, Union
 import parts.api as api
 import SCons.Builder
@@ -11,7 +12,51 @@ from SCons.Node.FS import Dir
 from SCons.Script.SConscript import SConsEnvironment
 
 
-def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,Dir]=None, auto_scanner={}, ignore:List[str]=[], top_level:bool=True, hide_c_flags:bool=False, **kw):
+def launcher_definition(env, lang: str, launcher_var: str) -> str:
+    '''The -DCMAKE_<LANG>_COMPILER_LAUNCHER argument for a launcher variable.
+
+    The launcher goes through CMake's COMPILER_LAUNCHER rather than into
+    CMAKE_<LANG>_COMPILER, so the compiler identity/version probe is
+    unaffected. CMake takes it as a ;-separated list, the program and then its
+    arguments. Shell-style splitting keeps a quoted path with a space in it as
+    one word, a ; inside a word is escaped with a backslash so CMake does not
+    split the word there, the whole argument is shell-quoted so quotes inside a
+    word survive, and $ is escaped: the launcher is expanded here, so the
+    command's own expansion must leave it as it is. Empty when no launcher is
+    set, so the configure command does not change for parts without one. A
+    launcher that does not split, such as one with an unbalanced quote, is
+    reported as an error.
+    '''
+    value = env.subst(f'${launcher_var}')
+    try:
+        words = shlex.split(value)
+    except ValueError as e:
+        api.output.error_msg(f'{launcher_var} {value!r} cannot be split into words: {e}')
+    if not words:
+        return ''
+    launcher = ';'.join(word.replace(';', r'\;') for word in words)
+    return shlex.quote(f'-DCMAKE_{lang}_COMPILER_LAUNCHER={launcher}').replace('$', '$$')
+
+
+def configure_output(generator: str) -> str:
+    '''The file the configure step is tracked by, for a CMake generator name.
+
+    It has to be a file the generator writes, or SCons finds the target missing
+    and every build configures again. The default and the Makefile generators
+    write Makefile and the Ninja generators build.ninja, and those stay the
+    targets so existing build trees do not configure again. Every other
+    generator (Xcode, Visual Studio, ...) is tracked by CMakeCache.txt, which
+    configure always writes.
+    '''
+    name = generator.lower()
+    if not name or "makefiles" in name:
+        return "Makefile"
+    if "ninja" in name:
+        return "build.ninja"
+    return "CMakeCache.txt"
+
+
+def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,Dir]=None, auto_scanner={}, ignore:List[str]=[], top_level:bool=True, hide_c_flags:bool=False, targets:str="install", **kw):
     '''
         prefix - assumed install default location
         cmake_dir - directory containing cmakelist.txt in parent repo
@@ -22,7 +67,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
     '''
     env_org = env
     env = env.Clone(**kw)
-    build_dir : Dir = env.Dir("$BUILD_DIR/build")
+    build_dir : Dir = env.Dir("$CMAKE_BUILDDIR")
     
     # The sandbox for the build install
     # we have three variables to help with this
@@ -50,16 +95,31 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
     env.SetDefault(CMAKE='cmake')
     env['RUNPATHS'] = r'${GENRUNPATHS("\\$$$$$$$$ORIGIN")}'
 
+    # The generator goes to cmake as -G, quoted: most generator names have a
+    # space in them. Only when one is set, so the default configure command does
+    # not change.
+    env['_CMAKE_GENERATOR_ARG'] = '-G "$CMAKE_GENERATOR"' if env.subst("$CMAKE_GENERATOR") else ''
+
+    # Optional compiler launchers (e.g. ccache/sccache). Like the generator,
+    # they are read here, when CMake() is called.
+    env['_CMAKE_C_LAUNCHER_ARG'] = launcher_definition(env, 'C', 'CC_LAUNCHER')
+    env['_CMAKE_CXX_LAUNCHER_ARG'] = launcher_definition(env, 'CXX', 'CXX_LAUNCHER')
+
     
-    cflags = '-DCMAKE_C_FLAGS="$CCFLAGS" -DCMAKE_CXX_FLAGS="$CCFLAGS" '
+    cflags = '-DCMAKE_C_FLAGS="$CCFLAGS $CFLAGS" -DCMAKE_CXX_FLAGS="$CCFLAGS $CXXFLAGS" '
     if hide_c_flags:
         cflags=''
 
     env.SetDefault(_CMAKE_ARGS='\
         -DCMAKE_INSTALL_PREFIX=$CMAKE_CONFIGURE_PREFIX '
-        '-DCMAKE_INSTALL_LIBDIR=lib '
-        '-DCMAKE_INSTALL_BINDIR=bin '
-        '-DCMAKE_BUILD_TYPE=Release '
+        '-DCMAKE_INSTALL_LIBDIR:PATH=$INSTALL_LIB_SUBDIR '
+        '-DCMAKE_INSTALL_BINDIR:PATH=$INSTALL_BIN_SUBDIR '
+        '-DCMAKE_INSTALL_INCLUDEDIR:PATH=$INSTALL_INCLUDE_SUBDIR '
+        '-DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE '
+        '-DCMAKE_COLOR_MAKEFILE=ON '
+        '-DCMAKE_COLOR_DIAGNOSTICS=ON '
+        '-DCLICOLOR_FORCE=1 '
+        '-DCMAKE_VERBOSE_MAKEFILE=ON '
         '-DCMAKE_INCLUDE_FLAG_C="$CMAKE_INCLUDE_FLAG" '
         '-DCMAKE_INCLUDE_FLAG_CXX="$CMAKE_INCLUDE_FLAG" '
         '-DCMAKE_INCLUDE_SYSTEM_FLAG_C="$CMAKE_INCLUDE_SYSTEM_FLAG" '
@@ -69,6 +129,9 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
         '-DCMAKE_EXE_LINKER_FLAGS="$LINKFLAGS $_RUNPATH $_ABSRPATHLINK" '
         '-DCMAKE_CXX_COMPILER=$CXX '
         '-DCMAKE_C_COMPILER=$CC '
+        '$_CMAKE_GENERATOR_ARG '
+        '$_CMAKE_C_LAUNCHER_ARG '
+        '$_CMAKE_CXX_LAUNCHER_ARG '
         '$CMAKE_ARGS'
                    )
     
@@ -81,7 +144,7 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
 
     # generate the build files
     out = env.CCommand(
-        [build_dir.File("Makefile")],
+        [build_dir.File(configure_output(env.subst("$CMAKE_GENERATOR")))],
         [cmake_file],
         [
             # delete the directory as it can contains cached data
@@ -92,9 +155,13 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
             # as this is probally out of date ( contains bad files to scan)
             SCons.Defaults.Delete("$CMAKE_DESTDIR"),
             'cd ${TARGET.dir} ;'
-            # CMAKE_PREFIX_PATH should replace this.. Have it as a fallback
+            # cmake reads the CMAKE_PREFIX_PATH env var for find_package; it carries
+            # the cmake-config dirs propagated from dependencies (see SdkCMakeConfig
+            # and the CMAKE_PREFIX_PATH requirement). PKG_CONFIG_PATH is kept as a
+            # fallback for projects that locate deps via pkg-config instead.
+            '${define_if("$CMAKE_PREFIX_PATH","CMAKE_PREFIX_PATH=")}${MAKEPATH("$CMAKE_PREFIX_PATH")} '
             '${define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}${MAKEPATH("$PKG_CONFIG_PATH")} '
-            '$CMAKE ${SOURCE.dir.abspath} $_CMAKE_ARGS'
+            '$CMAKE_WRAPPER $CMAKE ${SOURCE.dir.abspath} $_CMAKE_ARGS'
         ],
         #source_scanner=scanners.NullScanner,
         target_scanner=scanners.NullScanner,
@@ -115,7 +182,9 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
     else:
         # track a lot of files
         src_files = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=cmake_build_files+[".git/*"]+ignore).files()
-    env.SetDefault(_CMAKE_MAKE_ARGS='VERBOSE=1\
+    # verbosity is driven by -DCMAKE_VERBOSE_MAKEFILE=ON in the configure step
+    # (works for all generators, not just make), so no VERBOSE=1 here.
+    env.SetDefault(_CMAKE_MAKE_ARGS='\
         $(-j{jobs}$)'.format(jobs=env.GetOption('num_jobs'))
                    )
 
@@ -125,7 +194,10 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
         ],
         out + src_files,
         [
-            "cd ${SOURCE.dir} ; $CMAKE --build . --config Release --target install -- $CMAKE_DESTDIR_FLAG $_CMAKE_MAKE_ARGS"
+            # DESTDIR goes in the environment, where cmake's install step reads
+            # it with any generator; after "--" it is a make variable, which
+            # Ninja rejects as an unknown target
+            f"cd ${{SOURCE.dir}} ; $CMAKE_DESTDIR_FLAG $CMAKE_WRAPPER $CMAKE --build . --config $CMAKE_BUILD_TYPE --target {targets} -- $_CMAKE_MAKE_ARGS"
         ],
         source_scanner=scanners.NullScanner,
         target_factory=env.Dir,
@@ -147,6 +219,11 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
 # adding logic to Scons Environment object
 api.register.add_method(CMake)
 
+api.register.add_variable('CMAKE_BUILDDIR', "$BUILD_DIR/$CMAKE_BUILDSUBDIR", 'Defines build directory for the CMake build')
+api.register.add_variable('CMAKE_BUILDSUBDIR', "build", 'Defines build subdirectory name for the CMake build')
+api.register.add_variable('CMAKE_BUILD_TYPE', "Release", 'CMAKE_BUILD_TYPE used for the configure and --build steps')
+api.register.add_variable('CMAKE_GENERATOR', '', 'If set, passed to cmake as -G (e.g. "Ninja", "Unix Makefiles"); empty uses cmake\'s default')
+api.register.add_variable('CMAKE_WRAPPER', '', 'Optional command to wrap the cmake configure/build invocations (e.g. emcmake); empty by default')
 api.register.add_variable('CMAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines location to install bits from the CMake')
 api.register.add_variable('CMAKE_INCLUDE_FLAG', '$INCPREFIX', 'Define the include flag for current compiler toolchain')
 api.register.add_variable('CMAKE_INCLUDE_SYSTEM_FLAG', '$SYSINCPREFIX', 'Define the system include flag for current compiler toolchain')

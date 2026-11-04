@@ -1,0 +1,7 @@
+Import('*')
+# a launcher given with an argument, as ccache and sccache often are
+# an env prefix with a quoted value, as `env CCACHE_DIR="..." ccache` is often given
+env['CC_LAUNCHER'] = 'env CCACHE_DIR="two words" ' + env.File('#launch.sh').abspath + ' --tag native'
+env['CXX_LAUNCHER'] = env.File('#launch.sh').abspath
+env.InstallBin(env.Program('native', 'native.c'))
+env.InstallBin(env.Program('native_cxx', 'native_cxx.cpp'))
