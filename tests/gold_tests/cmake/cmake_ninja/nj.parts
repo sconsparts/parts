@@ -1,0 +1,7 @@
+Import('*')
+PartName('nj')
+
+@build
+def source(env):
+    env['CMAKE_GENERATOR'] = 'Ninja'
+    env.CMake()

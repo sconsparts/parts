@@ -1,0 +1,5 @@
+Import('*')
+env['CC_LAUNCHER'] = env.File('#launch.sh').abspath
+# force every command through a response file (TEMPFILE)
+env['MAXLINELENGTH'] = 20
+env.InstallBin(env.Program('native_rsp', 'native_rsp.c'))

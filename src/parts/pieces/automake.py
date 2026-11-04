@@ -2,6 +2,7 @@
 # that also accepts target scanners
 
 
+import shlex
 from pathlib import Path
 
 import parts.api as api
@@ -10,6 +11,30 @@ from parts.pieces.append_action import AppendFile
 import SCons.Scanner.Prog
 import SCons.Defaults
 import parts.core.scanners as scanners
+
+
+def compiler_assignment(env, var, launcher_var):
+    '''The CC= or CXX= argument AutoMake passes to configure.
+
+    A launcher (e.g. ccache/sccache) is folded into it, since autotools has no
+    launcher concept; CC="ccache gcc" is the standard ccache+autotools idiom.
+    configure splits $CC at whitespace and does not remove quotes, so no word
+    of the launcher or the compiler can contain whitespace: a quoted word with
+    a space in it fails configure's compiler probes. CMake() takes the
+    launcher as a list, so there a word can contain whitespace. With a
+    launcher, the launcher and the compiler are expanded here, the whole
+    argument is shell-quoted so it reaches configure as one argument, and $ is
+    escaped so the command's own expansion leaves it as it is. Without a
+    launcher it is exactly CC="$CC", as it always was, so existing parts do
+    not configure again. It is the same when the compiler is empty, so
+    configure still finds one itself rather than taking the launcher alone as
+    the compiler.
+    '''
+    launcher = env.subst(f'${launcher_var}')
+    compiler = env.subst(f'${var}')
+    if not launcher or not compiler:
+        return f'{var}="${var}"'
+    return shlex.quote(f'{var}={launcher} {compiler}').replace('$', '$$')
 
 
 def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="configure", prefix:str="$PACKAGE_ROOT", configure_args=[],
@@ -132,10 +157,12 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
     #env['_ABSCPPINCFLAGS'] = '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)'
     #env['_ABSLIBDIRFLAGS'] = '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)'
     if auto_configure_args:
+        env["_AUTO_MAKE_CC_ARG"] = compiler_assignment(env, 'CC', 'CC_LAUNCHER')
+        env["_AUTO_MAKE_CXX_ARG"] = compiler_assignment(env, 'CXX', 'CXX_LAUNCHER')
         env["_CONFIGURE_ARGS"] = '--prefix=$CONFIGURE_PREFIX\
             ${define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}${MAKEPATH("$PKG_CONFIG_PATH")}\
-            CC="$CC"\
-            CXX="$CXX"\
+            $_AUTO_MAKE_CC_ARG\
+            $_AUTO_MAKE_CXX_ARG\
             CPPFLAGS="$CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $AUTO_MAKE_INCLUDE_FLAGS"\
             CFLAGS="$CCFLAGS $CFLAGS"\
             LDFLAGS="$LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS"\
@@ -270,7 +297,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         sources = env.Pattern(src_dir="${CHECK_OUT_DIR}", excludes=ignore_files).files()
 
     configure_cmds.append(
-        f'cd {build_dir.path} && ${{define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}}${{MAKEPATH("$PKG_CONFIG_PATH")}} {rel_src_path}/{configure} $_CONFIGURE_ARGS $CONFIGURE_ARGS'
+        f'cd {build_dir.path} && ${{define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}}${{MAKEPATH("$PKG_CONFIG_PATH")}} $AUTO_MAKE_CONFIGURE_WRAPPER {rel_src_path}/{configure} $_CONFIGURE_ARGS $CONFIGURE_ARGS'
     )
     if configure_post_actions:
         configure_cmds.append(configure_post_actions)
@@ -302,8 +329,8 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
         build_files+sources,
         # the -rpath-link is to get the correct paths for the binaries to link with the rpath usage of the makefile
         [
-            f'cd {build_dir.path} ; make $_AUTOMAKE_BUILD_ARGS $AUTOMAKE_BUILD_ARGS {targets} $(-j{jobs}$)',
-            f'cd {build_dir.path} ; make {install_targets} $AUTO_MAKE_INSTALL_ARGS'
+            f'cd {build_dir.path} ; $AUTO_MAKE_MAKE_WRAPPER make $_AUTOMAKE_BUILD_ARGS $AUTOMAKE_BUILD_ARGS {targets} $(-j{jobs}$)',
+            f'cd {build_dir.path} ; $AUTO_MAKE_MAKE_WRAPPER make {install_targets} $AUTO_MAKE_INSTALL_ARGS'
         ],
         source_scanner=scanners.NullScanner,
         target_factory=env.Dir,
@@ -336,7 +363,7 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
                         'set -e\n' +
                         'set -x\n' +
                         'export LD_LIBRARY_PATH=${__env__.Dir("$INSTALL_LIB").abspath}\n' +
-                        'make $_AUTOMAKE_BUILD_ARGS $AUTOMAKE_BUILD_ARGS {target}\n'.format(target=check_targets) +
+                        '$AUTO_MAKE_MAKE_WRAPPER make $_AUTOMAKE_BUILD_ARGS $AUTOMAKE_BUILD_ARGS {target}\n'.format(target=check_targets) +
                         'set +x\n' +
                         "popd\n"),
                     SCons.Defaults.Chmod("$TARGET", 0o755)
@@ -355,6 +382,8 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
 api.register.add_method(AutoMake)
 api.register.add_variable('AUTO_MAKE_BUILDDIR', "$BUILD_DIR/build", 'Defines build directory for automake build')
 api.register.add_variable('AUTO_MAKE_DESTDIR', '${ABSPATH("$BUILD_DIR/destdir")}', 'Defines install directory for automake build')
+api.register.add_variable('AUTO_MAKE_CONFIGURE_WRAPPER', '', 'Optional command to wrap the configure invocation (e.g. emconfigure); empty by default')
+api.register.add_variable('AUTO_MAKE_MAKE_WRAPPER', '', 'Optional command to wrap make invocations (e.g. emmake); empty by default')
 api.register.add_variable('AUTO_MAKE_INCLUDE_FLAGS', '$_ABSCPPINCFLAGS', 'Controls the dependency include flags passed to configure (override with $_ABSCPPSYSINCFLAGS to route includes through -isystem)')
 api.register.add_variable('_ABSCPPINCFLAGS', '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
 api.register.add_variable('_ABSCPPSYSINCFLAGS', '$( ${_concat(SYSINCPREFIX, CPPPATH, SYSINCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)', '')
