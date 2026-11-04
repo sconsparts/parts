@@ -1,0 +1,11 @@
+Import('*')
+PartName('cm')
+
+@build
+def source(env):
+    # the C launcher has an argument: CMake needs it as a ;-separated list
+    # with an env prefix whose value has a space, double quotes and a ; in it
+    env['CC_LAUNCHER'] = 'env \'CCACHE_DIR=two "quoted" words;semi\' ' + env.File('#launch.sh').abspath + ' --tag cmake'
+    # the C++ launcher's path has a space in it: quoted, it is one word
+    env['CXX_LAUNCHER'] = '"' + env.File('#my tools/launch.sh').abspath + '"'
+    env.CMake()

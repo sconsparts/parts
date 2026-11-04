@@ -1,0 +1,24 @@
+#!/bin/sh
+# minimal autoconf-style configure: takes --prefix= and CC=, writes a Makefile
+srcdir=$(cd "$(dirname "$0")" && pwd)
+prefix=/usr/local
+CC=cc
+for arg in "$@"; do
+    case "$arg" in
+        --prefix=*) prefix=${arg#--prefix=} ;;
+        CC=*) CC=${arg#CC=} ;;
+    esac
+done
+# a compiler probe as autoconf runs it: $CC unquoted, so it is split at
+# whitespace and its quotes are not removed
+echo 'int main(void) { return 0; }' > conftest.c
+$CC -o conftest conftest.c || { echo "configure: error: C compiler cannot create executables" >&2; exit 77; }
+rm -f conftest conftest.c
+cat > Makefile <<MAKEFILE
+all: automake_main
+automake_main: $srcdir/automake_main.c
+	$CC -o automake_main $srcdir/automake_main.c
+install: automake_main
+	mkdir -p \$(DESTDIR)$prefix/bin
+	cp automake_main \$(DESTDIR)$prefix/bin/
+MAKEFILE

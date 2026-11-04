@@ -2,6 +2,7 @@
 # that also accepts target scanners
 
 
+import shlex
 from pathlib import Path
 
 import parts.api as api
@@ -10,6 +11,30 @@ from parts.pieces.append_action import AppendFile
 import SCons.Scanner.Prog
 import SCons.Defaults
 import parts.core.scanners as scanners
+
+
+def compiler_assignment(env, var, launcher_var):
+    '''The CC= or CXX= argument AutoMake passes to configure.
+
+    A launcher (e.g. ccache/sccache) is folded into it, since autotools has no
+    launcher concept; CC="ccache gcc" is the standard ccache+autotools idiom.
+    configure splits $CC at whitespace and does not remove quotes, so no word
+    of the launcher or the compiler can contain whitespace: a quoted word with
+    a space in it fails configure's compiler probes. CMake() takes the
+    launcher as a list, so there a word can contain whitespace. With a
+    launcher, the launcher and the compiler are expanded here, the whole
+    argument is shell-quoted so it reaches configure as one argument, and $ is
+    escaped so the command's own expansion leaves it as it is. Without a
+    launcher it is exactly CC="$CC", as it always was, so existing parts do
+    not configure again. It is the same when the compiler is empty, so
+    configure still finds one itself rather than taking the launcher alone as
+    the compiler.
+    '''
+    launcher = env.subst(f'${launcher_var}')
+    compiler = env.subst(f'${var}')
+    if not launcher or not compiler:
+        return f'{var}="${var}"'
+    return shlex.quote(f'{var}={launcher} {compiler}').replace('$', '$$')
 
 
 def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="configure", prefix:str="$PACKAGE_ROOT", configure_args=[],
@@ -132,10 +157,12 @@ def AutoMake(env, autoreconf="autoreconf", autoreconf_args="-if", configure="con
     #env['_ABSCPPINCFLAGS'] = '$( ${_concat(INCPREFIX, CPPPATH, INCSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)'
     #env['_ABSLIBDIRFLAGS'] = '$( ${_concat(LIBDIRPREFIX, LIBPATH, LIBDIRSUFFIX, __env__, ABSDir, TARGET, SOURCE)} $)'
     if auto_configure_args:
+        env["_AUTO_MAKE_CC_ARG"] = compiler_assignment(env, 'CC', 'CC_LAUNCHER')
+        env["_AUTO_MAKE_CXX_ARG"] = compiler_assignment(env, 'CXX', 'CXX_LAUNCHER')
         env["_CONFIGURE_ARGS"] = '--prefix=$CONFIGURE_PREFIX\
             ${define_if("$PKG_CONFIG_PATH","PKG_CONFIG_PATH=")}${MAKEPATH("$PKG_CONFIG_PATH")}\
-            CC="$CC"\
-            CXX="$CXX"\
+            $_AUTO_MAKE_CC_ARG\
+            $_AUTO_MAKE_CXX_ARG\
             CPPFLAGS="$CCFLAGS $CPPFLAGS $_CPPDEFFLAGS $AUTO_MAKE_INCLUDE_FLAGS"\
             CFLAGS="$CCFLAGS $CFLAGS"\
             LDFLAGS="$LINKFLAGS $_RUNPATH $_ABSRPATHLINK $_ABSLIBDIRFLAGS"\

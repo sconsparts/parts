@@ -1,6 +1,7 @@
 # an enhanced Command function
 # that also accepts target scanners
 
+import shlex
 from typing import List, Dict, Any, Optional, Union
 import parts.api as api
 import SCons.Builder
@@ -9,6 +10,32 @@ import parts.core.scanners as scanners
 # This is for type checking
 from SCons.Node.FS import Dir
 from SCons.Script.SConscript import SConsEnvironment
+
+
+def launcher_definition(env, lang: str, launcher_var: str) -> str:
+    '''The -DCMAKE_<LANG>_COMPILER_LAUNCHER argument for a launcher variable.
+
+    The launcher goes through CMake's COMPILER_LAUNCHER rather than into
+    CMAKE_<LANG>_COMPILER, so the compiler identity/version probe is
+    unaffected. CMake takes it as a ;-separated list, the program and then its
+    arguments. Shell-style splitting keeps a quoted path with a space in it as
+    one word, a ; inside a word is escaped with a backslash so CMake does not
+    split the word there, the whole argument is shell-quoted so quotes inside a
+    word survive, and $ is escaped: the launcher is expanded here, so the
+    command's own expansion must leave it as it is. Empty when no launcher is
+    set, so the configure command does not change for parts without one. A
+    launcher that does not split, such as one with an unbalanced quote, is
+    reported as an error.
+    '''
+    value = env.subst(f'${launcher_var}')
+    try:
+        words = shlex.split(value)
+    except ValueError as e:
+        api.output.error_msg(f'{launcher_var} {value!r} cannot be split into words: {e}')
+    if not words:
+        return ''
+    launcher = ';'.join(word.replace(';', r'\;') for word in words)
+    return shlex.quote(f'-DCMAKE_{lang}_COMPILER_LAUNCHER={launcher}').replace('$', '$$')
 
 
 def configure_output(generator: str) -> str:
@@ -73,6 +100,11 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
     # not change.
     env['_CMAKE_GENERATOR_ARG'] = '-G "$CMAKE_GENERATOR"' if env.subst("$CMAKE_GENERATOR") else ''
 
+    # Optional compiler launchers (e.g. ccache/sccache). Like the generator,
+    # they are read here, when CMake() is called.
+    env['_CMAKE_C_LAUNCHER_ARG'] = launcher_definition(env, 'C', 'CC_LAUNCHER')
+    env['_CMAKE_CXX_LAUNCHER_ARG'] = launcher_definition(env, 'CXX', 'CXX_LAUNCHER')
+
     
     cflags = '-DCMAKE_C_FLAGS="$CCFLAGS $CFLAGS" -DCMAKE_CXX_FLAGS="$CCFLAGS $CXXFLAGS" '
     if hide_c_flags:
@@ -98,6 +130,8 @@ def CMake(env:SConsEnvironment, prefix:str="$PACKAGE_ROOT", cmake_dir:Union[str,
         '-DCMAKE_CXX_COMPILER=$CXX '
         '-DCMAKE_C_COMPILER=$CC '
         '$_CMAKE_GENERATOR_ARG '
+        '$_CMAKE_C_LAUNCHER_ARG '
+        '$_CMAKE_CXX_LAUNCHER_ARG '
         '$CMAKE_ARGS'
                    )
     
