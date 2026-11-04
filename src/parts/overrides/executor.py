@@ -2,6 +2,7 @@
 
 from SCons.Executor import TSList, Executor
 import parts.api as api
+import parts.node_helpers as node_helpers
 
 
 def def_TSList___iter__(klass):
@@ -79,6 +80,25 @@ def scan(self, scanner, node_list):
             trg.add_to_implicit(deps)
 
 Executor.scan = scan
+
+
+_get_all_children = Executor.get_all_children
+
+
+def get_all_children(self):
+    """The Taskmaster calls this each time it evaluates a node. A deferred
+    scan (node_helpers.mark_scan_deferred) is not kept: scan the targets
+    again now. SCons itself only rescans after a child is built, so without
+    this a node whose awaited child turned out to be up to date, or whose
+    scan was deferred while something else checked it for changes, would
+    build with the partial dependency list.
+    """
+    for trg in self.get_all_targets():
+        node_helpers.rescan_if_deferred(trg)
+    return _get_all_children(self)
+
+
+Executor.get_all_children = get_all_children
 
 
 # vim: set et ts=4 sw=4 ai ft=python :
