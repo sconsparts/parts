@@ -297,11 +297,9 @@ pkgconfig_scan = dict(
 cmakeconfig_scan = dict(
     InstallCMakeConfig=dict(
         source=lambda node, env, default=None: [
-            env.Pattern(src_dir=node.Dir("lib/cmake"), includes=["*"]),
-            env.Pattern(src_dir=node.Dir(
-                "lib32/cmake"), includes=["*"]),
-            env.Pattern(src_dir=node.Dir(
-                "lib64/cmake"), includes=["*"]),
+            env.Pattern(src_dir=node.Dir("lib/cmake"), includes=["*.cmake"]),
+            env.Pattern(src_dir=node.Dir("lib32/cmake"), includes=["*.cmake"]),
+            env.Pattern(src_dir=node.Dir("lib64/cmake"), includes=["*.cmake"]),
         ],
     )
 )
