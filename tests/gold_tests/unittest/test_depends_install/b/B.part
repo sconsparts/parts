@@ -1,0 +1,18 @@
+Import('*')
+
+PartName('B')
+PartVersion('1.0.0')
+
+unit_test.DependsOn([Component('A')])
+
+
+@unit_test.Group('test')
+def run(env, test):
+    env.AppendUnique(LIBS=['A'])
+    test.Sources = ['main.c']
+
+
+# running group 'test' must not build this group
+@unit_test.Group('other')
+def run(env, test):
+    test.Sources = ['other.c']
