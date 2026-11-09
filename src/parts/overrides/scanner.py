@@ -19,6 +19,7 @@ processing later on the same environment for the same variable.
 #import parts.core.builders as builders
 import parts.core.util as common
 import SCons.Scanner
+import SCons.Tool
 
 
 def wrap_Prog_scan(func):
@@ -48,6 +49,36 @@ def path_reduce(self, env, dir=None, target=None, source=None):
 
 SCons.Scanner.ScannerBase.orig_path=SCons.Scanner.ScannerBase.path
 SCons.Scanner.ScannerBase.path = path_reduce
+
+
+class _IncludeAndSystemIncludeDirs:
+    '''
+    The C scanner's path function: the CPPPATH directories, then the
+    SYSCPPPATH ones. A directory in both lists is searched only at its
+    SYSCPPPATH position, as gcc and clang ignore -I for a directory that is
+    also given with -isystem.
+    '''
+
+    def __init__(self):
+        self._include = SCons.Scanner.FindPathDirs('CPPPATH')
+        self._system = SCons.Scanner.FindPathDirs('SYSCPPPATH')
+
+    def __call__(self, env, dir=None, target=None, source=None, argument=None):
+        system = self._system(env, dir, target, source, argument)
+        include = tuple(d for d in self._include(env, dir, target, source, argument) if d not in system)
+        return include + system
+
+
+# A C/C++ source finds headers through CPPPATH and, for a dependency declared
+# with system=True, through SYSCPPPATH, which the cc and c++ tools pass after
+# CPPPATH ($_CPPSYSINCFLAGS after $_CPPINCFLAGS in _CCCOMCOM), as -isystem on
+# gcc and clang. SCons' default C scanner searches only CPPPATH, so a header
+# found through SYSCPPPATH was never a dependency of the object, and changing
+# it rebuilt nothing. Have that scanner search both, in the compile line's
+# order. An empty or unset SYSCPPPATH adds no directories. Only the default
+# C scanner (SCons.Tool.CScanner) is changed; a project that installs its own,
+# such as SCons' CConditionalScanner, still searches CPPPATH alone.
+SCons.Tool.CScanner.path_function = _IncludeAndSystemIncludeDirs()
 
 # def wrap_FindPathDirs(klass):
 #     def _call(self, env, dir, target=None, source=None, argument=None):
