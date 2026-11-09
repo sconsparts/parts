@@ -4,10 +4,15 @@ Test the Setting PartVersion() api with various overrides and checks logic
 
 Setup.Copy.FromDirectory('base_test1')
 
+# The gold files below hold stdout only, so they compare against Streams.stdout.
+# AuTest builds stream.all.txt by merging stdout and stderr from two reader
+# threads, so a stderr line such as "Parts: Warning!:" lands at an unstable
+# position in it. stderr is covered separately by the checks below.
+
 # test that the version is set with force logic
 tr = Test.AddBuildRun(options="--mode=TEST_DEFAULT,TEST_FORCE --verbose=version",allow_warnings=True)
 tr.Processes.Default.Streams.Warning = "gold/settingdefault.gold"
-tr.Processes.Default.Streams.All = "gold/2.0.0set.gold"
+tr.Processes.Default.Streams.stdout = "gold/2.0.0set.gold"
 
 # test that the version is set with force logic .. should error out with no version default being defined
 tr = Test.AddBuildRun(options="--mode=TEST_FORCE --verbose=version",allow_warnings=True)
@@ -16,17 +21,17 @@ tr.Processes.Default.ReturnCode = 2
 
 # test that the version is set with force logic
 tr = Test.AddBuildRun(options="--mode=TEST_FORCE,TEST_SETVERSION --verbose=version",allow_warnings=True)
-tr.Processes.Default.Streams.All = "gold/overrideversion.gold"
+tr.Processes.Default.Streams.stdout = "gold/overrideversion.gold"
 
 # test that the version is set with force logic
 tr = Test.AddBuildRun(options="--mode=TEST_DEFAULT,TEST_FORCE,TEST_SUBST --verbose=version",allow_warnings=True)
 tr.Processes.Default.Streams.Warning = "gold/settingdefault.gold"
-tr.Processes.Default.Streams.All = "gold/2.0.0set.gold"
+tr.Processes.Default.Streams.stdout = "gold/2.0.0set.gold"
 
 # test that the version is set with force logic
 tr = Test.AddBuildRun(options="--mode=TEST_FORCE,TEST_SETVERSION,TEST_SUBST --verbose=version",allow_warnings=True)
-tr.Processes.Default.Streams.All = "gold/overrideversion.gold"
+tr.Processes.Default.Streams.stdout = "gold/overrideversion.gold"
 
 # test that the version is set with force logic
 tr = Test.AddBuildRun(options="--mode=TEST_FORCE,TEST_MATCH,TEST_SUBST --verbose=version",allow_warnings=True)
-tr.Processes.Default.Streams.All = "gold/force_nochange.gold"
+tr.Processes.Default.Streams.stdout = "gold/force_nochange.gold"
