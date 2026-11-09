@@ -182,39 +182,35 @@ DefineRequirementSet('SYSTEM_CPP_DEFAULTS', ['LIBS', 'SYSTEM_HEADERS'], weight=-
 
 
 # defaults
+# What DEFAULT pulls besides the headers and libraries. SYSTEM_HEADER_DEFAULT
+# below is built from the same list, so a requirement added here also reaches
+# the parts that depend with system=True. AddRequirement('DEFAULT', ...) at
+# run time extends DEFAULT alone; add it to SYSTEM_HEADER_DEFAULT as well.
+_DEFAULT_NON_HEADER_SETS = [
+    'EXISTS',
+    #'SDKLIB',
+    #'SDKBIN',
+    'PKG_CONFIG_PATH',
+    'CMAKE_PREFIX_PATH',
+    "PKG_DEFAULTS",
+    "DESTDIR_PATH",
+    "RPATHLINK",
+    "RPM_PACKAGE_RUNPATH"
+]
+
 DefineRequirementSet(
     'DEFAULT',
-    [
-        'CPP_DEFAULTS',
-        'C_DEFAULTS',
-        'EXISTS',
-        #'SDKLIB',
-        #'SDKBIN',
-        'PKG_CONFIG_PATH',
-        'CMAKE_PREFIX_PATH',
-        "PKG_DEFAULTS",
-        "DESTDIR_PATH",
-        "RPATHLINK",
-        "RPM_PACKAGE_RUNPATH"
-    ],
+    ['CPP_DEFAULTS', 'C_DEFAULTS'] + _DEFAULT_NON_HEADER_SETS,
     weight=-10000
 )
 
 # Like DEFAULT, but the dependency's headers come in as system includes
 # (-isystem). Use on a dependency edge (or via Component(..., system=True)) to
 # say "I depend on this, and I don't want to see warnings from its headers."
-# Mirrors DEFAULT exactly except CPP_DEFAULTS/C_DEFAULTS -> SYSTEM_CPP_DEFAULTS.
+# The same as DEFAULT except CPP_DEFAULTS/C_DEFAULTS -> SYSTEM_CPP_DEFAULTS.
 DefineRequirementSet(
     'SYSTEM_HEADER_DEFAULT',
-    [
-        'SYSTEM_CPP_DEFAULTS',
-        'EXISTS',
-        'PKG_CONFIG_PATH',
-        "PKG_DEFAULTS",
-        "DESTDIR_PATH",
-        "RPATHLINK",
-        "RPM_PACKAGE_RUNPATH"
-    ],
+    ['SYSTEM_CPP_DEFAULTS'] + _DEFAULT_NON_HEADER_SETS,
     weight=-10000
 )
 

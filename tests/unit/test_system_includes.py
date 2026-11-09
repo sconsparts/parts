@@ -33,6 +33,14 @@ def _set_keys(name):
     return sorted({r.key for r in _added_types[name][0]})
 
 
+def _ordered_keys(name):
+    keys = []
+    for r in _added_types[name][0]:
+        if r.key not in keys:
+            keys.append(r.key)
+    return keys
+
+
 class TestReadKey:
     def test_defaults_to_key(self):
         assert requirement('CPPPATH', public=True).read_key == 'CPPPATH'
@@ -89,6 +97,13 @@ class TestSystemRequirementSets:
         default = set(_set_keys('DEFAULT'))
         system = set(_set_keys('SYSTEM_HEADER_DEFAULT'))
         assert system == (default - {'CPPPATH'}) | {'SYSCPPPATH'}
+
+    def test_system_header_default_keeps_default_order(self):
+        # the same entries in the same order once the headers are set aside
+        headers = {'CPPPATH', 'SYSCPPPATH'}
+        default = [k for k in _ordered_keys('DEFAULT') if k not in headers]
+        system = [k for k in _ordered_keys('SYSTEM_HEADER_DEFAULT') if k not in headers]
+        assert system == default
 
     def test_default_is_unchanged(self):
         keys = _set_keys('DEFAULT')
