@@ -1,0 +1,4 @@
+Import('*')
+env.PartName("rpm_package1")
+env.InstallTarget(env.Program('hello', 'hello.cpp'))
+
