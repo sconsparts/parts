@@ -49,6 +49,7 @@ def PackageGroup(name, parts=None) -> Tuple[str, ...]:
     or Dir ( and like items) are not being handled at this time as we really
     don't know where we want to put the files in the package.
     '''
+    global g_resort_package_data
 
     name = SCons.Script.DefaultEnvironment().subst(name)
     if not name:
@@ -68,7 +69,13 @@ def PackageGroup(name, parts=None) -> Tuple[str, ...]:
             else:
                 raise RuntimeError(f"{p} does not refer to a defined Part")
 
-    # We need to clear the sorted data as new items are being added
+    # Mark the sorted data stale, so the next SortPackageGroups() sorts again;
+    # the criteria functions call this with no parts for that. A re-sort does
+    # not apply a changed criterion to a file that is already sorted: the first
+    # sort records the file's groups on it and later sorts use those. It
+    # does run the PACKAGE_NODE_FILTER callbacks again. The sort does not read
+    # g_package_groups. No lock: SortPackageGroups() clears the flag
+    # before it reads its inputs, so a set that lands during a pass survives it.
     g_resort_package_data = True
 
     return tuple(x for x in result)
@@ -270,54 +277,76 @@ def _get_file_entries(node):
 
 
 def SortPackageGroups():
-    # do a quick test to see if we had installed new files since last
-    # sort. This is avoid resorting unless g_resort_package_data is set
     global g_resort_package_data
     global g_known_num_of_install_files
-    current_num = len(SCons.Tool.install._INSTALLED_FILES)
-    if g_known_num_of_install_files == current_num and not g_resort_package_data:
-        return
+    # Skip the sort unless files were installed since the last one or
+    # g_resort_package_data is set. The test is under the lock, so a caller on
+    # another thread waits for a pass in progress instead of taking the quick
+    # return. A reader of _sorted_groups has to hold the lock across this call
+    # and its read, as GetPackageGroupFiles() does. A filter callback on the
+    # sorting thread gets the RLock, so its read sees the cache only as far as
+    # the pass has filled it. If the data was marked stale earlier in the pass,
+    # its read starts a nested pass instead, and a callback that marks and
+    # reads on every node recurses without end.
     with g_sort_data_lock:
+        current_num = len(SCons.Tool.install._INSTALLED_FILES)
+        if g_known_num_of_install_files == current_num and not g_resort_package_data:
+            return
         g_known_num_of_install_files = current_num
 
-        # reset the cache
-        _clear_sorted_group()
+        # Cleared before the pass, not after: a PackageGroup() call made while we
+        # are sorting has to force another sort, and clearing at the end would
+        # throw that away. A PACKAGE_GROUP_FILTER criterion or a PACKAGE_NODE_FILTER
+        # callback can call PackageGroup() on this thread mid-pass, so this is not
+        # only a cross-thread concern. A callback that does that on every pass
+        # keeps the data stale for good, so every lookup sorts again.
+        g_resort_package_data = False
 
-        group_filters = glb.engine.def_env.get('PACKAGE_GROUP_FILTER', {})
-        node_filters = glb.engine.def_env.get('PACKAGE_NODE_FILTER', [])
+        try:
+            # reset the cache
+            _clear_sorted_group()
 
-        # for each node that is "installed"
-        for node in SCons.Tool.install._INSTALLED_FILES:
-            api.output.verbose_msgf(["packaging"], "Mapping node {0}", node.ID)
-            try:
-                # get the package object
-                metainfo = node.attributes.package
-            except AttributeError:
-                # if it does not exist set the value for group and no_pkg default values
-                # we should see this case... but to be safe
-                node.attributes.package = metainfo = common.namespace()
+            group_filters = glb.engine.def_env.get('PACKAGE_GROUP_FILTER', {})
+            node_filters = glb.engine.def_env.get('PACKAGE_NODE_FILTER', [])
 
-            part_alias = metainfo.part_alias
-            no_pkg = metainfo.get('no_package', False)
-            pobj = glb.engine._part_manager._from_alias(part_alias)
-            # the default group to map this to
-            part_grp = pobj.PackageGroup
+            # for each node that is "installed"
+            for node in SCons.Tool.install._INSTALLED_FILES:
+                api.output.verbose_msgf(["packaging"], "Mapping node {0}", node.ID)
+                try:
+                    # get the package object
+                    metainfo = node.attributes.package
+                except AttributeError:
+                    # if it does not exist set the value for group and no_pkg default values
+                    # we should see this case... but to be safe
+                    node.attributes.package = metainfo = common.namespace()
 
-            # does it have a Metatag value forcing it to a group(s)?
-            # if so we use this and we don't do a criteria filter
-            if "groups" in metainfo:
-                for group in metainfo.groups:
-                    get_group_set(group, no_pkg).add(node)
-            elif "group" in metainfo:
-                get_group_set(metainfo.group, no_pkg).add(node)
-            elif not _filter_by_criteria(node, group_filters, metainfo):
-                get_group_set(part_grp, no_pkg).add(node)
-                metainfo.update(groups=(part_grp,))
-                api.output.verbose_msgf(["packaging-mapping"], "{0} add to group(s)={1}, no_pkg={2}", node.ID, part_grp, no_pkg)
-            # run the node filter on the node to add it to any extra groups
-            _filter_node(node, node_filters, metainfo)
+                part_alias = metainfo.part_alias
+                no_pkg = metainfo.get('no_package', False)
+                pobj = glb.engine._part_manager._from_alias(part_alias)
+                # the default group to map this to
+                part_grp = pobj.PackageGroup
 
-    g_resort_package_data = False
+                # does it have a Metatag value forcing it to a group(s)?
+                # if so we use this and we don't do a criteria filter
+                if "groups" in metainfo:
+                    for group in metainfo.groups:
+                        get_group_set(group, no_pkg).add(node)
+                elif "group" in metainfo:
+                    get_group_set(metainfo.group, no_pkg).add(node)
+                elif not _filter_by_criteria(node, group_filters, metainfo):
+                    get_group_set(part_grp, no_pkg).add(node)
+                    metainfo.update(groups=(part_grp,))
+                    api.output.verbose_msgf(["packaging-mapping"], "{0} add to group(s)={1}, no_pkg={2}", node.ID, part_grp, no_pkg)
+                # run the node filter on the node to add it to any extra groups
+                _filter_node(node, node_filters, metainfo)
+        except BaseException:
+            # The pass did not finish, so the cache is partly filled. Mark the
+            # data stale again, so the next call sorts again instead of taking
+            # the quick return. BaseException, not Exception: SCons turns a
+            # SystemExit from a scanner or action into a build error and, with
+            # -k, keeps building, so later calls still read the cache.
+            g_resort_package_data = True
+            raise
     return
 
 
