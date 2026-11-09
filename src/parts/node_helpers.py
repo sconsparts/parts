@@ -689,6 +689,44 @@ def has_changed(node, skip_implicit: bool = False, indent: int = 0) -> ChangeChe
     return node.attributes._has_changed
 
 
+def mark_scan_deferred(node) -> None:
+    '''
+    Record that a scanner returned without all of node's dependencies because
+    it is waiting for a child to be built first (it will return more later).
+
+    SCons only rescans a node when one of its children is built (Node.built()
+    clears the parent's implicit list). A child that turns out to be up to
+    date is only visited, so a deferred scan would never run again and the
+    node would build with the partial list. Executor.get_all_children (see
+    overrides/executor.py) calls rescan_if_deferred() each time the Taskmaster
+    evaluates a node, so a deferred result is never kept.
+    '''
+    node.attributes._scan_deferred = True
+
+
+def clear_implicit(node) -> None:
+    '''
+    Clear node's implicit dependencies, and its target peers', so the next
+    children() call scans again. This mirrors what Node.built() does for
+    the waiting parents (target peers: SCons issue #2811).
+    '''
+    node.implicit = None
+    for peer in getattr(node, 'target_peers', ()):
+        peer.implicit = None
+
+
+def rescan_if_deferred(node) -> None:
+    '''
+    If node's last scan was deferred (mark_scan_deferred), clear its implicit
+    dependencies so it is scanned again.
+    '''
+    if not getattr(node.attributes, '_scan_deferred', False):
+        return
+    node.attributes._scan_deferred = False
+    api.output.verbose_msgf(["node.scan", "scanner"], "Rescanning {} as its last scan was deferred", node.ID)
+    clear_implicit(node)
+
+
 def has_children_changed(node, indent=0) -> ChangeCheck:
     '''
     Like has_changed expect that we only care if the depends and sources need to be updated

@@ -170,9 +170,12 @@ def GroupNodesScanner(node, env, path):
     # We want to check the export file added above for changes
     # to decide if we will add the sources at this point in time
     if node_helpers.has_changed(ret[0]) & ChangeCheck.SAME:
-        node = ".".join(node.name.split(".")[2:-1])
-        new_sources, _ = env.GetFilesFromPackageGroups("", [node])
+        group_name = ".".join(node.name.split(".")[2:-1])
+        new_sources, _ = env.GetFilesFromPackageGroups("", [group_name])
         ret += new_sources
+    else:
+        # the group files get added once the export file is built or visited
+        node_helpers.mark_scan_deferred(node)
 
     api.output.verbose_msgf(["groupbuilder-scanner", "scanner"], "Returned {}", common.DelayVariable(lambda: [i.ID for i in ret]))
     return ret
