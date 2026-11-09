@@ -1,0 +1,7 @@
+Import('*')
+
+env.PartName("packaging")
+
+# both parts install a program named "tool", under different sub_dirs, into one
+# package, so their runpath rewrites have to stage to different places
+env.RPMPackage('foo-1.0-1.${TARGET_ARCH}', source=['pkg_tools', 'pkg_control'], TARGET_ARCH='x86_64')
