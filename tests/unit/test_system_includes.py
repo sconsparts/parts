@@ -127,6 +127,33 @@ class TestToolWiring:
         assert env_cxx['SYSINCPREFIX'] == '$INCPREFIX'
 
 
+class TestHeaderScannerPath:
+    # SCons' C scanner finds a source's #includes through its path function. A
+    # header on SYSCPPPATH has to be found too, or changing it rebuilds nothing,
+    # and CPPPATH comes first, as -I does before -isystem. The system_includes
+    # gold test checks the rebuild itself.
+    # directory names no other test uses: the SCons node tree is shared by
+    # every test in the process
+    def _scanner_dirs(self, **kw):
+        import SCons.Tool
+        env = parts_settings.DefaultSettings().Environment(toolchain=[], **kw)
+        return [d.name for d in SCons.Tool.CScanner.path(env, env.Dir('#'))]
+
+    def test_searches_cpppath_then_syscpppath(self):
+        assert self._scanner_dirs(CPPPATH=['scan_inc'], SYSCPPPATH=['scan_sysinc']) == ['scan_inc', 'scan_sysinc']
+
+    def test_without_syscpppath_searches_cpppath_only(self):
+        assert self._scanner_dirs(CPPPATH=['scan_inc']) == ['scan_inc']
+
+    def test_empty_syscpppath_searches_cpppath_only(self):
+        # what every env with the cc/c++ tools and no system dependency has
+        assert self._scanner_dirs(CPPPATH=['scan_inc'], SYSCPPPATH=[]) == ['scan_inc']
+
+    def test_dir_in_both_is_searched_at_its_system_position(self):
+        # gcc and clang ignore -I for a directory also given with -isystem
+        assert self._scanner_dirs(CPPPATH=['scan_a', 'scan_b'], SYSCPPPATH=['scan_a']) == ['scan_b', 'scan_a']
+
+
 class TestGnuToolchainDefault:
     def test_gnu_or_clang_defaults_to_isystem(self):
         # gcc/g++/clang/aocc override the generic base so a system dependency's

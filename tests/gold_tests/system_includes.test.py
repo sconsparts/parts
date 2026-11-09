@@ -23,3 +23,18 @@ Setup.Copy.FromDirectory('system_includes')
 
 t = Test.AddBuildRun('all')
 t.ReturnCode = 0
+
+# up to date before the change, so the rebuild below is the header's doing
+Test.AddUpdateCheck('all')
+
+# A change to the provider's header has to rebuild the consumer. The consumer
+# finds the header through SYSCPPPATH (-isystem), so unless the C scanner
+# searches SYSCPPPATH too, the header never becomes a dependency of main.o.
+t = Test.AddTestRun('change-provider-header', "Change the provider's header")
+t.Command = "echo '#define PROVIDER_CHANGED 1' >> provider/inc.h"
+t.ReturnCode = 0
+
+t = Test.AddBuildRun('all', extra='-after-header-change')
+t.ReturnCode = 0
+t.Streams.All.Content = Testers.ContainsExpression(
+    r'\s-c\s.*main\.c\b', 'the consumer compiles main.c again')
